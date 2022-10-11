@@ -1,7 +1,6 @@
 Dlang UI
 ========
-
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui) [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KPSNU8TYF6M5N "Donate once-off to this project using Paypal")
+[![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KPSNU8TYF6M5N "Donate once-off to this project using Paypal")
 
 Cross platform GUI for D. Widgets, layouts, styles, themes, unicode, i18n, OpenGL based acceleration.
 
@@ -22,15 +21,6 @@ Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.
 
 Coding style: [https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md](https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md)
 
-
-*BeamUI* - actual fork of DlangUI - in active development : [https://github.com/dayllenger/beamui](https://github.com/dayllenger/beamui)
-
-
-
-
-WARNING: dependencies in dlangui/deps now are git submodules (if you previously cloned them into deps directory, remove deps dir before updating dlangui project)
-
-
 Main features:
 
 * Crossplatform (Win32, OSX, Linux and Android are supported in current version)
@@ -46,8 +36,7 @@ Main features:
 D compiler versions supported
 -----------------------------
 
-Needs DMD frontend 2.077 or newer to build
-
+Needs DMD frontend 2.100.2 or newer to build
 
 Widgets
 -------
@@ -150,7 +139,7 @@ Win32 builds
 ------------
 
 * Under windows, uses SDL2 or Win32 API as backend.
-* Optionally, may use OpenGL acceleration via DerelictGL3/WGL.
+* Optionally, may use OpenGL acceleration
 * Uses Win32 API for font rendering.
 * Optinally can use FreeType for font rendering.
 * Executable size for release Win32 API based build is 830K.
@@ -162,9 +151,6 @@ git clone --recursive https://github.com/buggins/dlangui.git
 cd dlangui/examples/example1
 dub run --build=release
 ```
-To develop using Visual-D or MonoD, open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
-
-
 
 To avoid showing console window add win_app.def file to your package source directory and add line to your dub.json.
 
@@ -177,220 +163,13 @@ dub.json:
 "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
 ```
 
-Mac OSX development using Mono-D
---------------------------------
-
-DMD, DUB, git, MonoDevelop with Mono-D plugin must be installed
-
-Can use SDL2 or X11 as a backend.
-
-Native Cocoa backend - work is in progress.
-
-In some directory, e.g. ~/src/d/ :
-
-Clone DlangUI repository
-```sh
-git clone --recursive https://github.com/buggins/dlangui.git
-```
-Enter dlangui directory
-```sh
-cd dlangui
-```
-Open solution file with Mono-D	
-```
-dlangui-monod-osx.sln
-```
-
-
-Linux development using Mono-D
-------------------------------
-
-Install DUB, DMD, MonoDevelop with Mono-D plugin.
-
-Required libraries: libsdl2, x11, libfreetype, libfontconfig and OpenGL.
-
-
-Clone DlangUI repository
-```sh
-git clone https://github.com/buggins/dlangui.git
-```
-Enter dlangui directory
-```sh
-cd dlangui
-```
-Open solution file with Mono-D	
-```
-dlangui-monod-linux.sln
-```
-Try running examples: helloworld, example1, tetris, dmledit, spreadsheet, opengl
-
-Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
-
-Configurations DebugMinimal, ReleaseMinimal, UnittestMinimal build pure SDL2 versions of apps.
-
-
-If you are creating your own solution / project which uses DlangUI in Mono-D:
-
-  * Create new solution (assuming that solution directory is located in the same directory as dlangui and "Create directory for solution" option is unchecked; if no - you will need to correct pathes)
-  * Add / create source files of your project (e.g. copy+paste helloworld.d)
-  * Add dlangui library project dlangui/dlangui-monod-linux.dproj to solution
-  
-Following settings are to be applied to all configurations of your new project (Debug, Release, Unittest):
-
-  * In your project options Build/Project Dependencies - mark dlangui-monod-linux item
-  * In your project options Build/Compiling/Linking - check "Link in static/shared libraries from nested dependencies"
-  * In your project options Build/Compiling/Compiling - specify Version constants as "USE_OPENGL;USE_SDL;USE_FREETYPE;EmbedStandardResources" (EmbedStandardResources is required if you want to embed your own additional resources into executable)
-  * If your project needs to embed some resources into executable (usually from "views" directory), specify all directories which contain resources in Build/Compiling/Compiling/Extra Compiler Options, e.g.:
-  
-        -Jviews
-        -Jviews/res
-        -Jviews/res/i18n
-        -Jviews/res/mdpi
-        -Jviews/res/hdpi
-  
-  * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
-  
-        ../dlangui/src
-        ../dlangui/deps/DerelictSDL2/source
-        ../dlangui/deps/DerelictFT/source
-        ../dlangui/deps/DerelictGL3/source
-        ../dlangui/deps/DerelictUtil/source
-        ../dlangui/3rdparty
-
-Now you can build and run your project.
- 
-To hack DlangIDE project, you can clone it from https://github.com/buggins/dlangide.git into the same directory dlangui is cloned to. Then just open solution dlangide/dlangide-monod-linux.sln with mono-d.
-
-
-Windows development using Mono-D
---------------------------------
-
-Install GIT, DUB, DMD, MonoDevelop with Mono-D plugin.
-
-
-Clone DlangUI repository
-```sh
-git clone https://github.com/buggins/dlangui.git
-```
-Enter dlangui directory
-```sh
-cd dlangui
-```
-Open solution file with Mono-D	
-```
-dlangui-monod-windows.sln
-```
-Try running examples: helloworld, example1, tetris, dmledit, spreadsheet, opengl
-
-Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
-
-Configurations DebugMinimal, ReleaseMinimal, UnittestMinimal build pure win32 versions of apps w/o OpenGL.
-
-
-If you are creating your own solution / project which uses DlangUI in Mono-D:
-
-  * Create new solution (assuming that solution directory is located in the same directory as dlangui and "Create directory for solution" option is unchecked; if no - you will need to correct pathes)
-  * Add / create source files of your project (e.g. copy+paste helloworld.d)
-  * Add dlangui library project dlangui/dlangui-monod-linux.dproj to solution
-  
-Following settings are to be applied to all configurations of your new project (Debug, Release, Unittest):
-
-  * In your project options Build/Project Dependencies - mark dlangui-monod-linux item
-  * In your project options Build/Compiling/Linking - check "Link in static/shared libraries from nested dependencies"
-  * In your project options Build/Compiling/Compiling - specify Version constants as "USE_FREETYPE;USE_OPENGL;EmbedStandardResources;Unicode;windows" (EmbedStandardResources is required if you want to embed your own additional resources into executable)
-  * If your project needs to embed some resources into executable (usually from "views" directory), specify all directories which contain resources in Build/Compiling/Compiling/Extra Compiler Options, e.g.:
-  
-        -Jviews
-        -Jviews/res
-        -Jviews/res/i18n
-        -Jviews/res/mdpi
-        -Jviews/res/hdpi
-  
-  * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
-  
-        ../dlangui/src
-        ../dlangui/3rdparty
-        ../dlangui/deps/DerelictSDL2/source
-        ../dlangui/deps/DerelictFT/source
-        ../dlangui/deps/DerelictGL3/source
-        ../dlangui/deps/DerelictUtil/source
-
-Now you can build and run your project.
- 
-To hack DlangIDE project, you can clone it from https://github.com/buggins/dlangide.git into the same directory dlangui is cloned to. Then just open solution dlangide/dlangide-monod-linux.sln with mono-d.
-
-
-Windows development using VisualD
----------------------------------
-
-Install GIT, DUB, DMD, MS Visual Studio (e.g. Community 2013) + VisualD plugin
-
-
-Clone DlangUI repository
-```sh
-git clone --recursive https://github.com/buggins/dlangui.git
-```
-For DlangIDE development, close dlangide project on the same directory level as dlangui is cloned:
-```sh
-git clone --recursive https://github.com/buggins/dlangide.git
-```
-Enter dlangui directory
-```sh
-cd dlangui
-```
-Open solution file with Visual-D
-```
-dlangui-msvc.sln
-```
-Try running examples: helloworld, example1, tetris, dmledit, spreadsheet, opengl
-
-Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
-
-Configurations DebugMinimal, ReleaseMinimal, UnittestMinimal build pure win32 versions of apps w/o OpenGL.
-
-
-If you are creating your own solution / project which uses DlangUI in Mono-D:
-
-  * Create new solution (assuming that solution directory is located in the same directory as dlangui and "Create directory for solution" option is unchecked; if no - you will need to correct pathes)
-  * Add / create source files of your project (e.g. copy+paste helloworld.d)
-  * Add dlangui library project dlangui/dlangui-monod-linux.dproj to solution
-  
-Following settings are to be applied to all configurations of your new project (Debug, Release, Unittest):
-
-  * In your project options Build/Project Dependencies - mark dlangui-monod-linux item
-  * In your project options Build/Compiling/Linking - check "Link in static/shared libraries from nested dependencies"
-  * In your project options Build/Compiling/Compiling - specify Version constants as "USE_FREETYPE;USE_OPENGL;EmbedStandardResources;Unicode;windows" (EmbedStandardResources is required if you want to embed your own additional resources into executable)
-  * If your project needs to embed some resources into executable (usually from "views" directory), specify all directories which contain resources in Build/Compiling/Compiling/Extra Compiler Options, e.g.:
-  
-        -Jviews
-        -Jviews/res
-        -Jviews/res/i18n
-        -Jviews/res/mdpi
-        -Jviews/res/hdpi
-  
-  * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
-  
-        ../dlangui/src
-        ../dlangui/deps/DerelictSDL2/source
-        ../dlangui/deps/DerelictFT/source
-        ../dlangui/deps/DerelictGL3/source
-        ../dlangui/deps/DerelictUtil/source
-
-Now you can build and run your project.
- 
-To hack DlangIDE project, you can clone it from https://github.com/buggins/dlangide.git into the same directory dlangui is cloned to. Then just open solution dlangide/dlangide-monod-linux.sln with mono-d.
-
-
-
-
-
 Linux builds (DUB)
 ------------------
 
 * Uses SDL2 as a backend.
 * Uses FreeType for font rendering.
 * Uses FontConfig to get list of available fonts.
-* OpenGL is can be optionally used for better drawing performance.
+* OpenGL can be optionally used for better drawing performance.
 
         libsdl2, libfreetype, libfontconfig
 
@@ -408,7 +187,10 @@ Build and run on Linux using DUB:
 cd examples/example1
 dub run dlangui:example1
 ```
-
+MacOS builds (DUB)
+------------------
+DlangUI theoretically supports MacOS, but I have no way of testing if it actually work.
+The support is **not guaranteed**.
 
 Other platforms
 ---------------
@@ -419,9 +201,9 @@ Other platforms
 Third party components used
 ---------------------------
 
-* DerelictGL3 - for OpenGL support
-* DerelictFT + FreeType library support under linux and optionally under Windows.
-* DerelictSDL2 + SDL2 for cross platform support
+* `binbc-opengl` - for OpenGL support
+* `bindbc-freetype` + FreeType library support under linux and optionally under Windows.
+* `bindbc-sdl` + SDL2 for cross platform support
 * WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
 * X11 binding when SDL2 is not used
 * PNG and JPEG reading code is based on dlib sources
