@@ -65,6 +65,16 @@ private __gshared bool isInitialized = false;
 __gshared HINSTANCE _hInstance;
 __gshared int _cmdShow;
 
+// TODO: Encapsulate this better
+private string GetErrorMessage(DWORD error) @trusted
+{
+    char[] err = new char[256];
+    err[0 .. $] = 0;
+    int chars = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, error,
+            MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT), err.ptr, 255, NULL);
+    return cast(string) err[0 .. chars];
+}
+
 static if (ENABLE_OPENGL) {
 
   // WGL stuff
@@ -205,8 +215,11 @@ const uint CUSTOM_MESSAGE_ID = WM_USER + 1;
 
 static if (ENABLE_OPENGL) {
 
-alias BOOL function(HDC hdc, const(int)* attributes, const(FLOAT)* fAttributes, UINT maxFormats, int* pixelFormat, UINT *numFormats) PFNWGLCHOOSEPIXELFORMATARBPROC;
-PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
+    alias PFNWGLCHOOSEPIXELFORMATARBPROC = extern(C) BOOL function(HDC hdc, const(int)* attributes, const(FLOAT)* fAttributes, UINT maxFormats, int* pixelFormat, UINT *numFormats);
+    PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
+
+    alias PFNWGLCREATECONTEXTATTRIBSARBPROC = extern(C) HGLRC function(HDC hdc, HGLRC hShareContext, const int *attribList);
+    PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
 
     /// Shared opengl context helper
     struct SharedGLContext {
@@ -295,7 +308,7 @@ PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
         void bind(HDC hDC) {
             if (!wglMakeCurrent(hDC, _hGLRC)) {
                 import std.string : format;
-                Log.e("wglMakeCurrent is failed. GetLastError=%x".format(GetLastError()));
+                Log.e("wglMakeCurrent is failed. ", GetErrorMessage(GetLastError()));
             }
         }
         /// make null context current for DC
@@ -309,7 +322,6 @@ PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
 
         int multisampleFormat(HDC hdc, int samples)
         {
-            bind(hdc);
             GLint pixelFormat;
             BOOL valid;
             GLuint numFormats;
@@ -318,29 +330,49 @@ PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
 
             int[] attribs =
             [
-                WGL_DRAW_TO_WINDOW_ARB,GL_TRUE,
-                WGL_SUPPORT_OPENGL_ARB,GL_TRUE,
-                WGL_ACCELERATION_ARB,WGL_FULL_ACCELERATION_ARB,
-                WGL_COLOR_BITS_ARB,24,
-                WGL_ALPHA_BITS_ARB,8,
-                WGL_DEPTH_BITS_ARB,16,
-                WGL_STENCIL_BITS_ARB,0,
-                WGL_DOUBLE_BUFFER_ARB,GL_TRUE,
-                WGL_SAMPLE_BUFFERS_ARB,GL_TRUE,
-                WGL_SAMPLES_ARB, samples,
-                WGL_CONTEXT_MAJOR_VERSION_ARB, Platform.instance.GLVersionMajor,
-                WGL_CONTEXT_MINOR_VERSION_ARB, Platform.instance.GLVersionMinor,
-                WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-                WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+                WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+                WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+                WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+                WGL_COLOR_BITS_ARB, 24,
+                WGL_ALPHA_BITS_ARB, 8,
+                WGL_DEPTH_BITS_ARB, 24,
+                WGL_STENCIL_BITS_ARB, 0,
+                WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+                WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+                WGL_SAMPLES_ARB, Platform.instance.multisamples,
                 0
             ];
 
             valid = wglChoosePixelFormatARB(hdc, attribs.ptr, fattribs.ptr, 1, &pixelFormat, &numFormats);
             if(!valid)
-                Log.e("wglMakeCurrent is failed. GetLastError=%x".format(GetLastError()));
+            {
+                Log.e("wglChoosePixelFormatARB failed. GetLastError=%x".format(GetLastError()));
+                return 0;
+            }
 
-            unbind(hdc);
-            return valid;
+            return pixelFormat;
+        }
+
+        bool createCoreRC(HDC hDC)
+        {
+            int[] attribs =
+            [
+                WGL_CONTEXT_MAJOR_VERSION_ARB, Platform.instance.GLVersionMajor,
+                WGL_CONTEXT_MINOR_VERSION_ARB, Platform.instance.GLVersionMinor,
+                WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+                0
+            ];
+            bind(hDC);
+            wglCreateContextAttribsARB = cast(PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
+            HGLRC tmpRC = wglCreateContextAttribsARB(hDC, null, attribs.ptr);
+            if(!tmpRC)
+                return false;
+            wglMakeCurrent(hDC, null);
+            wglDeleteContext(_hGLRC);
+            _hGLRC = tmpRC;
+            wglMakeCurrent(hDC, tmpRC);
+            unbind(hDC);
+            return true;
         }
     }
 
@@ -423,29 +455,35 @@ class Win32Window : Window {
 
             if (openglEnabled) {
                 useOpengl = sharedGLContext.init(hDC);
-            }
 
-            if(platform.multisamples != 0)
-            {
-                sharedGLContext.uninit();
-                ReleaseDC(_hwnd, hDC);
+                if(platform.multisamples != 0)
+                {
+                    sharedGLContext.uninit();
+                    ReleaseDC(_hwnd, hDC);
 
-                // Recreate window with multisampling (copy-paste from above)
-                DestroyWindow(_hwnd);
-                _hwnd = CreateWindowW(toUTF16z(WIN_CLASS_NAME),      // window class name
-                    toUTF16z(windowCaption),  // window caption
-                    ws,  // window style
-                    x,        // initial x position
-                    y,        // initial y position
-                    _dx,        // initial x size
-                    _dy,        // initial y size
-                    parenthwnd,                 // parent window handle
-                    null,                 // window menu handle
-                    _hInstance,           // program instance handle
-                    cast(void*)this);                // creation parameters
+                    // Recreate window with multisampling (copy-paste from above)
+                    DestroyWindow(_hwnd);
+                    _hwnd = CreateWindowW(toUTF16z(WIN_CLASS_NAME),      // window class name
+                        toUTF16z(windowCaption),  // window caption
+                        ws,  // window style
+                        x,        // initial x position
+                        y,        // initial y position
+                        _dx,        // initial x size
+                        _dy,        // initial y size
+                        parenthwnd,                 // parent window handle
+                        null,                 // window menu handle
+                        _hInstance,           // program instance handle
+                        cast(void*)this);                // creation parameters
 
-                hDC = GetDC(_hwnd);
-                useOpengl = sharedGLContext.reinit(hDC, platform.multisamples);
+                    hDC = GetDC(_hwnd);
+                    useOpengl = sharedGLContext.reinit(hDC, platform.multisamples);
+                }
+
+                if(!sharedGLContext.createCoreRC(hDC))
+                {
+                    Log.d("Unable to create Core OpenGL");
+                    throw new Exception("Unable to create Core OpenGL");
+                }
             }
         }
 
