@@ -31,6 +31,7 @@ import dlangui.core.math3d;
 import std.conv;
 import std.string;
 import std.array;
+import std.algorithm : any;
 
 version (Android) {
     enum SUPPORT_LEGACY_OPENGL = false;
@@ -49,11 +50,10 @@ version (Android) {
 } else {
     enum SUPPORT_LEGACY_OPENGL = false; //true;
     public import bindbc.opengl;
-    public import bindbc.opengl.bind.arb.core_30;
-    import loader = bindbc.loader.sharedlib;
+    import bindbc.loader : ErrorInfo, errors;
 
 
-private void gl3CheckMissingSymFunc(const(loader.ErrorInfo)[] errors)
+private void gl3CheckMissingSymFunc(const(ErrorInfo)[] errors)
 {
     import std.algorithm : equal;
     immutable names = ["glGetError", "glShaderSource", "glCompileShader",
@@ -119,7 +119,7 @@ template assertgl(alias func)
     {
         scope(success) assertNoError(func.stringof, functionName, line);
         return func(args);
-    };
+    }
 }
 void assertNoError(string context="", string functionName=__FUNCTION__, int line=__LINE__)
 {
@@ -665,44 +665,20 @@ __gshared bool glNoContext;
 /// initialize OpenGL support helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;
-    import loader = bindbc.loader.sharedlib;
+    import bindbc.opengl.config : GLVersion = GLSupport;
     if (_glSupport && _glSupport.valid)
         return true;
     version(Android) {
         Log.d("initGLSupport");
     } else {
-            static bool BINDBC_GL3_RELOADED;
-            static bool gl3ReloadedOk;
-            static bool glReloadedOk;
-            if (!BINDBC_GL3_RELOADED) {
-                BINDBC_GL3_RELOADED = true;
-                try {
-                    Log.v("Reloading bindbc-opengl");
-                    import bindbc.opengl;
-                    loadOpenGL();
-                    gl3CheckMissingSymFunc(loader.errors);
-                    gl3ReloadedOk = true;
-                } catch (Exception e) {
-                    Log.e("bindbc-opengl exception while reloading opengl", e);
-                }
-                try {
-                    Log.v("Reloading bindbc-opengl");
-                    import bindbc.opengl;
-                    loadOpenGL();
-                    gl3CheckMissingSymFunc(loader.errors);
-                    glReloadedOk = true;
-                } catch (Exception e) {
-                    Log.e("bindbc-opengl exception while reloading opengl", e);
-                }
-            }
-            if (!gl3ReloadedOk && !glReloadedOk) {
-                Log.e("bindbc-opengl reloaded unsuccessfully");
-            return false;
+        GLVersion res = loadOpenGL();
+        if([GLVersion.badLibrary, GLVersion.noLibrary, GLVersion.noContext].any!(x => x == res))
+        {
+            Log.e("bindbc-opengl cannot load OpenGL library!");
         }
-        if (!gl3ReloadedOk)
+        if(res < GLVersion.gl30)
             legacy = true;
-        else if (!glReloadedOk)
-            legacy = false;
+        gl3CheckMissingSymFunc(errors);
     }
     if (!_glSupport) { // TODO_GRIM: Legacy looks very broken to me.
         Log.d("glSupport not initialized: trying to create");
