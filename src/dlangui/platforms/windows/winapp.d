@@ -477,12 +477,12 @@ class Win32Window : Window {
 
                     hDC = GetDC(_hwnd);
                     useOpengl = sharedGLContext.reinit(hDC, platform.multisamples);
-                }
 
-                if(!sharedGLContext.createCoreRC(hDC))
-                {
-                    Log.d("Unable to create Core OpenGL");
-                    throw new Exception("Unable to create Core OpenGL");
+                    if(!sharedGLContext.createCoreRC(hDC))
+                    {
+                        Log.d("Unable to create Core OpenGL");
+                        throw new Exception("Unable to create Core OpenGL");
+                    }
                 }
             }
         }
