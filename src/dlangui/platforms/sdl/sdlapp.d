@@ -40,12 +40,12 @@ import dlangui.widgets.widget;
 import dlangui.platforms.common.platform;
 
 import bindbc.sdl;
+import loader = bindbc.loader.sharedlib;
 
 static if (ENABLE_OPENGL) {
     import bindbc.opengl;
     import dlangui.graphics.gldrawbuf;
     import dlangui.graphics.glsupport;
-    import loader = bindbc.loader.sharedlib;
 }
 
 private void sdlCheckMissingSymFunc(const(loader.ErrorInfo)[] errors) {

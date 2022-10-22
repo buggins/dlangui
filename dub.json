@@ -87,13 +87,14 @@
         {
             "name": "minimal",
             "versions": ["EmbedStandardResources", "ForceLogs"],
-            "versions-posix": ["USE_SDL", "USE_FREETYPE", "NO_OPENGL"],
+            "versions-posix": ["USE_SDL", "USE_FREETYPE", "NO_OPENGL", "SDL_204"],
             "versions-windows": ["Unicode" ,"NO_OPENGL"],
             "libs-windows": ["opengl32"],
             "dependencies-posix": {
                 "bindbc-opengl": "~>1.0.0",
                 "bindbc-freetype": "~>1.0.0",
-                "bindbc-sdl": "~>1.0.0"
+                "bindbc-sdl": "~>1.0.0",
+                "icontheme": "~>1.2.3"
             }
         },
         {
