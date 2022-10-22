@@ -70,27 +70,27 @@ out vec4 _fragColor;
 ///////////////////////////////////////////////////////////
 // Varyings
 #if defined(VERTEX_COLOR)
-varying vec3 v_color;
+in vec3 v_color;
 #endif
 
 #if defined(LIGHTMAP)
-varying vec2 v_texCoord1;
+in vec2 v_texCoord1;
 #endif
 
 #if defined(LIGHTING)
 
-varying vec3 v_normalVector;
+in vec3 v_normalVector;
 
 #if (POINT_LIGHT_COUNT > 0)
-varying vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
+in vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
 #endif
 
 #if (SPOT_LIGHT_COUNT > 0)
-varying vec3 v_vertexToSpotLightDirection[SPOT_LIGHT_COUNT];
+in vec3 v_vertexToSpotLightDirection[SPOT_LIGHT_COUNT];
 #endif
 
 #if defined(SPECULAR)
-varying vec3 v_cameraDirection; 
+in vec3 v_cameraDirection;
 #endif
 
 #include "lighting.frag"
@@ -98,7 +98,7 @@ varying vec3 v_cameraDirection;
 #endif
 
 #if defined(CLIP_PLANE)
-varying float v_clipDistance;
+in float v_clipDistance;
 #endif
 
 void main()
@@ -106,7 +106,7 @@ void main()
     #if defined(CLIP_PLANE)
     if(v_clipDistance < 0.0) discard;
     #endif
- 
+
     #if defined(LIGHTING)
 
     #if defined(VERTEX_COLOR)
@@ -114,19 +114,19 @@ void main()
     #else
     _baseColor = u_diffuseColor;
 	#endif
-    
+
     _fragColor.a = _baseColor.a;
     _fragColor.rgb = getLitPixel();
-    
+
     #else
-    
+
     #if defined(VERTEX_COLOR)
     _fragColor.rgb = v_color;
     _fragColor.a = 1.0;
     #else
     _fragColor = u_diffuseColor;
     #endif
-    
+
     #endif
 
 	#if defined(LIGHTMAP)

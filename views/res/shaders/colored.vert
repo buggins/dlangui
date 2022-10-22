@@ -13,23 +13,23 @@
 
 ///////////////////////////////////////////////////////////
 // Attributes
-attribute vec4 a_position;
+in vec4 a_position;
 
 #if defined(SKINNING)
-attribute vec4 a_blendWeights;
-attribute vec4 a_blendIndices;
+in vec4 a_blendWeights;
+in vec4 a_blendIndices;
 #endif
 
 #if defined(LIGHTMAP)
-attribute vec2 a_texCoord1;
+in vec2 a_texCoord1;
 #endif
 
 #if defined(LIGHTING)
-attribute vec3 a_normal;
+in vec3 a_normal;
 #endif
 
 #if defined(VERTEX_COLOR)
-attribute vec3 a_color;
+in vec3 a_color;
 #endif
 
 ///////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ uniform mat4 u_worldViewMatrix;
 uniform vec3 u_directionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
 #endif
 
-#if (POINT_LIGHT_COUNT > 0) 
+#if (POINT_LIGHT_COUNT > 0)
 uniform vec3 u_pointLightPosition[POINT_LIGHT_COUNT];
 #endif
 
@@ -74,31 +74,31 @@ uniform vec4 u_clipPlane;
 ///////////////////////////////////////////////////////////
 // Varyings
 #if defined(LIGHTMAP)
-varying vec2 v_texCoord1;
+out vec2 v_texCoord1;
 #endif
 
 #if defined(VERTEX_COLOR)
-varying vec3 v_color;
+out vec3 v_color;
 #endif
 
 #if defined(LIGHTING)
 
-varying vec3 v_normalVector;
+out vec3 v_normalVector;
 
-#if (DIRECTIONAL_LIGHT_COUNT > 0) 
-varying vec3 v_lightDirection[DIRECTIONAL_LIGHT_COUNT];
+#if (DIRECTIONAL_LIGHT_COUNT > 0)
+out vec3 v_lightDirection[DIRECTIONAL_LIGHT_COUNT];
 #endif
 
 #if (POINT_LIGHT_COUNT > 0)
-varying vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
+out vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
 #endif
 
 #if (SPOT_LIGHT_COUNT > 0)
-varying vec3 v_vertexToSpotLightDirection[SPOT_LIGHT_COUNT];
+out vec3 v_vertexToSpotLightDirection[SPOT_LIGHT_COUNT];
 #endif
 
 #if defined(SPECULAR)
-varying vec3 v_cameraDirection;
+out vec3 v_cameraDirection;
 #endif
 
 #include "lighting.vert"
@@ -108,11 +108,11 @@ varying vec3 v_cameraDirection;
 #if defined(SKINNING)
 #include "skinning.vert"
 #else
-#include "skinning-none.vert" 
+#include "skinning-none.vert"
 #endif
 
 #if defined(CLIP_PLANE)
-varying float v_clipDistance;
+out float v_clipDistance;
 #endif
 
 void main()
@@ -137,13 +137,13 @@ void main()
     #if defined(LIGHTMAP)
     v_texCoord1 = a_texCoord1;
     #endif
-    
+
     // Pass the vertex color
     #if defined(VERTEX_COLOR)
 	v_color = a_color;
     #endif
-    
+
     #if defined(CLIP_PLANE)
     v_clipDistance = dot(u_worldMatrix * position, u_clipPlane);
-    #endif    
+    #endif
 }

@@ -84,35 +84,35 @@ vec4 _baseColor;
 out vec4 _fragColor;
 ///////////////////////////////////////////////////////////
 // Varyings
-varying vec2 v_texCoord;
+in vec2 v_texCoord;
 
 #if defined(LIGHTMAP)
-varying vec2 v_texCoord1;
+in vec2 v_texCoord1;
 #endif
 
 #if defined(LIGHTING)
 
 #if !defined(BUMPED)
-varying vec3 v_normalVector;
+in vec3 v_normalVector;
 #endif
 
 #if defined(BUMPED) && (DIRECTIONAL_LIGHT_COUNT > 0)
-varying vec3 v_directionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
+in vec3 v_directionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
 #endif
 
 #if (POINT_LIGHT_COUNT > 0)
-varying vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
+in vec3 v_vertexToPointLightDirection[POINT_LIGHT_COUNT];
 #endif
 
 #if (SPOT_LIGHT_COUNT > 0)
-varying vec3 v_vertexToSpotLightDirection[SPOT_LIGHT_COUNT];
+in vec3 v_vertexToSpotLightDirection[SPOT_LIGHT_COUNT];
 #if defined(BUMPED)
-varying vec3 v_spotLightDirection[SPOT_LIGHT_COUNT];
+in vec3 v_spotLightDirection[SPOT_LIGHT_COUNT];
 #endif
 #endif
 
 #if defined(SPECULAR)
-varying vec3 v_cameraDirection; 
+in vec3 v_cameraDirection;
 #endif
 
 #include "lighting.frag"
@@ -120,11 +120,11 @@ varying vec3 v_cameraDirection;
 #endif
 
 #if defined(CLIP_PLANE)
-varying float v_clipDistance;
+in float v_clipDistance;
 #endif
 
 #if defined(FOG)
-varying vec4 viewSpace;
+in vec4 viewSpace;
 #endif
 
 void main()
@@ -145,7 +145,7 @@ void main()
     fogFactor = clamp( fogFactor, 0.0, 1.0 );
     _baseColor = mix(u_fogColor, _baseColor, fogFactor);
 #endif
- 
+
     _fragColor.a = _baseColor.a;
 
     #if defined(TEXTURE_DISCARD_ALPHA)

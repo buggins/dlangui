@@ -197,7 +197,7 @@ struct SmallChunk {
     }
 
     /// return chunk position in world (aligned to chunk origin)
-    @property ref const(Vector3d) position() {
+    @property const(Vector3d) position() {
         return _pos;
     }
 
