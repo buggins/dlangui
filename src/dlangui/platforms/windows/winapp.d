@@ -448,7 +448,7 @@ class Win32Window : Window {
                             parenthwnd,                 // parent window handle
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
-                            platform.multisamples ? cast(void*)null : cast(void*)this); // creation parameters
+                            platform.getMultisamples ? cast(void*)null : cast(void*)this); // creation parameters
         static if (ENABLE_OPENGL) {
             /* initialize OpenGL rendering */
             HDC hDC = GetDC(_hwnd);
@@ -485,9 +485,9 @@ class Win32Window : Window {
                     }
                 }
             }
+            sharedGLContext.initGLBindings(hDC);
         }
 
-        sharedGLContext.initGLBindings(hDC);
         isInitialized = true;
 
         RECT rect;

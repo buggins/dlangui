@@ -190,11 +190,11 @@ struct Cup {
 
     private FigurePosition _currentFigure;
     /// current figure index, orientation, position
-    @property ref FigurePosition currentFigure() { return _currentFigure; }
+    @property ref FigurePosition currentFigure() return { return _currentFigure; }
 
     private FigurePosition _nextFigure;
     /// next figure
-    @property ref FigurePosition nextFigure() { return _nextFigure; }
+    @property ref FigurePosition nextFigure() return { return _nextFigure; }
 
     /// returns number of columns
     @property int cols() {

@@ -1851,6 +1851,17 @@ class Platform {
          */
         int multisamples = 0;
     }
+
+    /**
+     * Returns the amount of multisamples. Returns 0 if no OpenGL support
+     */
+    int getMultisamples()
+    {
+        static if(ENABLE_OPENGL)
+            return multisamples;
+        else
+            return 0;
+    }
     /**
      * close window
      *
