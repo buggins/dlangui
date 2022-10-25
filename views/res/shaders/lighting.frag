@@ -30,7 +30,7 @@ vec3 getLitPixel()
 {
     #if defined(BUMPED)
     
-    vec3 normalVector = normalize(texture2D(u_normalmapTexture, v_texCoord).rgb * 2.0 - 1.0);
+    vec3 normalVector = normalize(texture(u_normalmapTexture, v_texCoord).rgb * 2.0 - 1.0);
     
     #else
     

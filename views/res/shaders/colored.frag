@@ -130,7 +130,7 @@ void main()
     #endif
 
 	#if defined(LIGHTMAP)
-	vec4 lightColor = texture2D(u_lightmapTexture, v_texCoord1);
+	vec4 lightColor = texture(u_lightmapTexture, v_texCoord1);
 	_fragColor.rgb *= lightColor.rgb;
 	#endif
 

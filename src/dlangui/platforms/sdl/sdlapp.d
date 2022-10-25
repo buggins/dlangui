@@ -231,6 +231,7 @@ class SDLWindow : Window {
             Log.i("Trying to create OpenGL ", versionMajor, ".", versionMinor, " context");
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, versionMajor);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, versionMinor);
+            // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, _platform.instance.getMultisamples());
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
             if (!_context)
