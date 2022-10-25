@@ -28,13 +28,12 @@ import x11.Xatom;
 import x11.X;
 
 static if (ENABLE_OPENGL) {
-    import derelict.opengl3.gl3;
-    import derelict.opengl3.gl;
+    import bindbc.opengl;
     import dlangui.graphics.gldrawbuf;
     import dlangui.graphics.glsupport;
-    import derelict.opengl3.glx;
+    import glx.glx;
 
-    private __gshared derelict.util.xtypes.XVisualInfo * x11visual;
+    private __gshared XVisualInfo * x11visual;
     private __gshared Colormap x11cmap;
     private __gshared bool _gl3Reloaded = false;
 }
@@ -1292,6 +1291,8 @@ private immutable int TIMER_EVENT = 8;
 class X11Platform : Platform {
 
     this() {
+        static if(ENABLE_OPENGL)
+            _enableOpengl = true;
         import std.file : thisExePath;
         import std.path : baseName;
         _classname = (baseName(thisExePath()) ~ "\0").dup.ptr;
@@ -1947,20 +1948,26 @@ extern(C) int DLANGUImain(string[] args)
 
     static if (ENABLE_OPENGL) {
         try {
-            DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-            DerelictGL3.load();
-            DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
-            DerelictGL.load();
-            Log.d("OpenGL library loaded ok");
-            GLint[] att = [ GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None ];
-            XWindow root;
-            root = DefaultRootWindow(x11display);
-            x11visual = glXChooseVisual(x11display, 0, cast(int*)att.ptr);
-            if (x11visual) {
-                x11cmap = XCreateColormap(x11display, root, cast(Visual*)x11visual.visual, AllocNone);
-                _enableOpengl = true;
-            } else {
-                Log.e("Cannot find suitable Visual for using of OpenGL");
+            import bindbc.opengl : GLVersion = GLSupport;
+            GLVersion support = loadOpenGL();
+            if(support == GLVersion.badLibrary)
+            {
+                _enableOpengl = false;
+                Log.e("Error loading OpenGL library");
+            }
+            else
+            {
+                Log.d("OpenGL library loaded ok");
+                GLint[] att = [ GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None ];
+                XWindow root;
+                root = DefaultRootWindow(x11display);
+                x11visual = glXChooseVisual(x11display, 0, cast(int*)att.ptr);
+                if (x11visual) {
+                    x11cmap = XCreateColormap(x11display, root, cast(Visual*)x11visual.visual, AllocNone);
+                    _enableOpengl = true;
+                } else {
+                    Log.e("Cannot find suitable Visual for using of OpenGL");
+                }
             }
         } catch (Exception e) {
             Log.e("Cannot load OpenGL library", e);

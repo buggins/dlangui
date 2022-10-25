@@ -120,13 +120,15 @@
         },
         {
             "name": "x11",
-            "versions": ["USE_X11", "USE_FREETYPE", "EmbedStandardResources", "GL_32"],
+            "versions": ["USE_X11", "USE_FREETYPE", "EmbedStandardResources", "USE_OPENGL", "GL_32"],
             "versions-windows": ["Unicode"],
+            "libs-posix": ["GLX"],
             "dependencies": {
                 "bindbc-opengl": "~>1.0.0",
                 "bindbc-freetype": "~>1.0.0",
                 "x11": "~>1.0.21",
-                "icontheme": "~>1.2.3"
+                "icontheme": "~>1.2.3",
+                "glx-d": "~>1.0.0"
             }
         },
         {
