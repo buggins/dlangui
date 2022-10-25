@@ -1159,7 +1159,12 @@ private extern(C) uint myTimerCallbackFunc(uint interval, void *param) nothrow {
 private __gshared bool _enableOpengl;
 
 class SDLPlatform : Platform {
-    this() {
+    this()
+    {
+        static if(ENABLE_OPENGL)
+            _enableOpengl = true;
+        else
+            _enableOpengl = false;
     }
 
     private SDLWindow[uint] _windowMap;
