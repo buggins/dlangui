@@ -443,6 +443,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         if (executableFilterSelected()) {
             attrFilter |= AttrFilter.executable;
         }
+        if (_action.id == ACTION_OPEN_DIRECTORY.id) {
+          attrFilter = AttrFilter.dirs;
+          if (showHiddenFiles)
+            attrFilter |= AttrFilter.hidden;
+        }
         try {
             _entries = listDirectory(dir, attrFilter, selectedFilter());
         } catch(Exception e) {
