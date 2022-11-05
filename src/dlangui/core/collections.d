@@ -241,26 +241,26 @@ struct ObjectList(T) {
     protected T[] _list;
     protected int _count;
     /** returns count of items */
-    @property int count() const { return _count; }
+    @property int count() @safe @nogc const { return _count; }
     alias length = count;
     /** get item by index */
-    inout(T) get(int index) inout {
+    inout(T) get(int index) @safe inout {
         assert(index >= 0 && index < _count, "child index out of range");
         return _list[index];
     }
     /// get item by index
-    T opIndex(int index) {
+    T opIndex(int index) @safe {
         return get(index);
     }
     /** add item to list */
-    T add(T item) {
+    T add(T item) @safe {
         if (_list.length <= _count) // resize
             _list.length = _list.length < 4 ? 4 : _list.length * 2;
         _list[_count++] = item;
         return item;
     }
     /** add item to list */
-    T insert(T item, int index = -1) {
+    T insert(T item, int index = -1) @safe {
         if (index > _count || index < 0)
             index = _count;
         if (_list.length <= _count) // resize
@@ -272,7 +272,7 @@ struct ObjectList(T) {
         return item;
     }
     /** find child index for item, return -1 if not found */
-    int indexOf(T item) {
+    int indexOf(T item) @safe @nogc const{
         if (item is null)
             return -1;
         for (int i = 0; i < _count; i++)
@@ -290,7 +290,7 @@ struct ObjectList(T) {
         }
     }
     /** remove item from list, return removed item */
-    T remove(int index) {
+    T remove(int index) @safe {
         assert(index >= 0 && index < _count, "child index out of range");
         T item = _list[index];
         for (int i = index; i < _count - 1; i++)
@@ -351,3 +351,31 @@ struct ObjectList(T) {
     }
 }
 
+unittest
+{
+    class Dummy
+    {
+        this() { }
+        this(int v) { a = v; }
+        int a = 11;
+    }
+    Dummy test = new Dummy(123);
+    ObjectList!Dummy d;
+    d.add(new Dummy());
+    assert(d.count == 1);
+    d.add(new Dummy(13));
+    assert(d.count == 2);
+    int count = 0;
+    foreach(a; d)
+        count++;
+    assert(count == 2);
+    d.remove(0);
+    assert(d[0].a == 13);
+    d.insert(new Dummy(44), 0);
+    d.insert(new Dummy(0), 1);
+    assert(d[0].a == 44 && d[1].a == 0);
+    d.insert(test);
+    assert(d.indexOf(test) == d.count() - 1);
+    d.replace(new Dummy(456), 0);
+    assert(d[0].a == 456);
+}
