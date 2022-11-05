@@ -19,6 +19,12 @@
 
     "configurations": [
         {
+            "name": "default",
+            "subConfigurations": {
+                "dlangui": "default"
+            }
+        },
+        {
             "name": "x11",
             "subConfigurations": {
                 "dlangui": "x11"
