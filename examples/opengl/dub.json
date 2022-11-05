@@ -15,5 +15,14 @@
 
     "dependencies": {
         "dlangui": {"path": "../../"}
-    }
+    },
+
+    "configurations": [
+        {
+            "name": "x11",
+            "subConfigurations": {
+                "dlangui": "x11"
+            }
+        }
+    ]
 }
