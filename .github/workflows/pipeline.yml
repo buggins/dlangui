@@ -38,21 +38,9 @@ jobs:
           # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
           # See https://dub.pm/package-format-json.html#configurations
           dub test
-          cd examples/bezier
-          dub build -b=release
-          cd ../dminer
-          dub build -b=release
-          cd ../dmledit
-          dub build -b=release
-          cd ../dragon
-          dub build -b=release
-          cd ../example1
+          cd examples/example1
           dub build -b=release
           cd ../helloworld
           dub build -b=release
-          cd ../ircclient
-          dub build -b=release
           cd ../opengl
-          dub build -b=release
-          cd ../tetris
           dub build -b=release

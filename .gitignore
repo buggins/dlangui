@@ -27,3 +27,4 @@ lib/res
 *.lst
 *.a
 dlangui-test-default
+.vscode

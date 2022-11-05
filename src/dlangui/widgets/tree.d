@@ -268,6 +268,10 @@ class TreeItem {
         return this;
     }
 
+    /// Support foreach
+    int opApply(int delegate(ref TreeItem) callback) {
+        return _children.opApply(callback);
+    }
 
     /// returns true if item has at least one child
     @property bool hasChildren() { return childCount > 0; }
