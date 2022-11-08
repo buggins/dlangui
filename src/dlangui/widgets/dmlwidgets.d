@@ -84,6 +84,8 @@ extern(C) void registerStandardWidgets() {
     mixin(registerWidgetMetadataClass!FileNameEditLine);
     mixin(registerWidgetMetadataClass!DirEditLine);
 
+    mixin(registerWidgetMetadataClass!ResizerWidget);
+
     /*
     mixin (registerWidgets!("void registerWidgets1",
     FileNameEditLine, DirEditLine, //dlangui.dialogs.filedlg
