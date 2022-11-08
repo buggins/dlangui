@@ -1014,6 +1014,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         }
         return true;
     }
+
+    override void invalidate()
+    {
+        super.invalidate();
+        updateWidgets();
+    }
 }
 
 /// Tree widget with items which can have icons and labels
