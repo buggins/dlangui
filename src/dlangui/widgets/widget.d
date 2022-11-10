@@ -1280,7 +1280,7 @@ public:
                     setFocus();
                 return true;
             }
-            if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left && state & State.Pressed) {
                 resetState(State.Pressed);
                 handleClick();
                 return true;
