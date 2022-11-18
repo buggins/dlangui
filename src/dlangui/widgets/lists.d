@@ -1315,6 +1315,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+        super.onMouseEvent(event);
         if (event.action == MouseAction.Leave || event.action == MouseAction.Cancel) {
             setHoverItem(-1);
             return true;
@@ -1410,24 +1411,28 @@ class StringListWidget : ListWidget {
     this(string ID = null) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
+        clickable = true;
     }
 
     this(string ID, string[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
         ownAdapter = new StringListAdapter(items);
+        clickable = true;
     }
 
     this(string ID, dstring[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
         ownAdapter = new StringListAdapter(items);
+        clickable = true;
     }
 
     this(string ID, StringListValue[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
         ownAdapter = new StringListAdapter(items);
+        clickable = true;
     }
 
     @property void items(string[] itemResourceIds) {
