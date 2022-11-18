@@ -187,7 +187,7 @@ class Dialog : VerticalLayout {
                 _parentWindow.dispatchAction(action);
         }
         if (_popup)
-            _parentWindow.removePopup(_popup);
+            _parentWindow.executeInUiThread( (){ _parentWindow.removePopup(_popup); });
         else
             window.close();
     }
