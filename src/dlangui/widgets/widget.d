@@ -82,6 +82,12 @@ interface OnClickHandler {
     bool onClick(Widget source);
 }
 
+/// Interface slot for OnDoubleClick
+interface OnDoubleClickHandler
+{
+    bool onDoubleClick(Widget source);
+}
+
 /// interface - slot for onCheckChanged
 interface OnCheckHandler {
     bool onCheckChanged(Widget source, bool checked);
@@ -1172,6 +1178,14 @@ public:
         return res;
     }
 
+    // called to process double click and notify listeners
+    protected bool handleDoubleClick()
+    {
+        if (doubleClick.assigned)
+            return doubleClick(this);
+        return false;
+    }
+
 
     void cancelLayout() {
         _needLayout = false;
@@ -1278,11 +1292,16 @@ public:
                 setState(State.Pressed);
                 if (canFocus)
                     setFocus();
+                nextClickIsDouble = event.doubleClick;
                 return true;
             }
             if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left && state & State.Pressed) {
                 resetState(State.Pressed);
-                handleClick();
+                if(nextClickIsDouble)
+                    handleDoubleClick();
+                else
+                    handleClick();
+                nextClickIsDouble = false;
                 return true;
             }
             if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
@@ -1338,6 +1357,9 @@ public:
 
     /// on click event listener (bool delegate(Widget))
     Signal!OnClickHandler click;
+
+    /// On double click event listener (bool delegate(Widget))
+    Signal!OnDoubleClickHandler doubleClick;
 
     /// checked state change event listener (bool delegate(Widget, bool))
     Signal!OnCheckHandler checkChange;
@@ -1764,6 +1786,9 @@ public:
         mixin(generatePropertySetters("margins", "padding"));
         return false;
     }
+
+private:
+    bool nextClickIsDouble = false;
 }
 
 /** Widget list holder. */
