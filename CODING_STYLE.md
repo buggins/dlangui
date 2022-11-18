@@ -1,3 +1,12 @@
+Follow the D Style
+===================
+
+From now one, it is advised to follow the [D Style](https://dlang.org/dstyle.html) for ease of future possible integration with
+the D community. While the coding style is changing, it is discouraged to submit styling only PRs. Those **will not be merged**.
+It's OK to change styling in the code you're submitting.
+
+The below codestyle is outdated, but is kept for historical purposes.
+
 DlangUI Coding Style
 ====================
 
@@ -11,11 +20,11 @@ Use 4 spaces instead of tabs.
 Identifiers
 -----------
 
-Class names: CamelCase with uppercase first letter, e.g.: `LinearLayout`, `GridWidget`.  
-Method and property names: camelCase with lowercase first letter, e.g.: `textAlign`, `layoutWidth`.  
-Private and protected class and struct fields: \_camelCase prepended with underscore, e.g. `_windowWidth`.  
-Signal names: camelCase.  
-Enum member names: currently, 3 styles are used: JAVA_LIKE, CamelCase and camelCase. TODO: make it consistent?  
+Class names: CamelCase with uppercase first letter, e.g.: `LinearLayout`, `GridWidget`.
+Method and property names: camelCase with lowercase first letter, e.g.: `textAlign`, `layoutWidth`.
+Private and protected class and struct fields: \_camelCase prepended with underscore, e.g. `_windowWidth`.
+Signal names: camelCase.
+Enum member names: currently, 3 styles are used: JAVA_LIKE, CamelCase and camelCase. TODO: make it consistent?
 ```D
 class MyClass {
     private int _magicNumber;
@@ -66,7 +75,7 @@ switch(action.id) {
         break;
 }
 ```
-For classes and structs opening { can be either at end of line or in a new line). 
+For classes and structs opening { can be either at end of line or in a new line).
 ```D
 class Foo {
 }

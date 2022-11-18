@@ -41,60 +41,7 @@ Needs DMD frontend 2.100.2 or newer to build
 Widgets
 -------
 
-* Widget - base class for all widgets and widget containers, similar to Android's View
-
-Currently implemented widgets:
-
-* TextWidget - simple static text (TODO: implement multiline formatting)
-* ImageWidget - static image
-* Button - simple button with text label
-* ImageButton - image only button
-* TextImageButton - button with icon and label
-* CheckBox - check button with label
-* RadioButton - radio button with label
-* SwitchButton - a toggle switch button
-* GroupBox - frame and caption for grouping other controls
-* EditLine - single line edit
-* EditBox - multiline editor
-* VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
-* HSpacer - horizontal spacer - just an empty widget with layoutWidth == FILL_PARENT, to fill horizontal space in layouts
-* ScrollBar - scroll bar
-* SliderWidget - slider
-* ProgressBarWidget - progress bar
-* TabControl - tabs widget, allows to select one of tabs
-* TabHost - container for pages controlled by TabControl
-* TabWidget - combination of TabControl and TabHost
-* GridWidgetBase - abstract Grid widget
-* StringGrid - grid view with strings content
-* TreeWidget - tree view
-* ComboBox - combo box with text items
-* ToolBar - tool bar with buttons
-* StatusLine - control to show misc application statuses
-* AppFrame - base class for easy implementation of apps with main menu, toolbars, status bar
-
-Layouts
--------
-
-Similar to layouts in Android
-
-* LinearLayout - layout children horizontally or vertically depending on orientation
-* VerticalLayout - just a LinearLayout with vertical orientation
-* HorizontalLayout - just a LinearLayout with horizontal orientation
-* FrameLayout - all children occupy the same place; usually only one of them is visible
-* TableLayout - children are aligned into rows and columns of table
-* ResizerWidget - put into LinearLayout between two other widgets to resize them using mouse
-* ScrollWidget - allow to scroll its child if its dimensions are bigger than possible
-* DockHost - layout with main widget and additional dockable panels around it
-* DockWindow - dockable window with caption, usually to be used with DockHost
-
-List Views
-----------
-
-Lists are implemented similar to Android UI API.
-
-* ListWidget - layout dynamic items horizontally or vertically (one in row/column) with automatic scrollbar; can reuse widgets for similar items
-* ListAdapter - interface to provide data and widgets for ListWidget
-* WidgetListAdapter - simple implementation of ListAdapter interface - just a list of widgets (one per list item) to show
+List of widgets, layouts and other is available in the [Wiki](https://github.com/buggins/dlangui/wiki#widgets)
 
 Resources
 ---------
@@ -116,8 +63,8 @@ Styles and themes are a bit similar to ones in Android API.
 * Styles are accessible in theme by string ID.
 * Styles can be nested to form hierarchy - when some attribute is missing in style, value from base style will be used.
 * State substyles are supported: allow to change widget appearance dynamically based on its state.
-* Widgets use style attributes directly from assigned style. When some attribute is being changed in widget, it creates its own copy of base style, 
-which allows to modify some of attributes, while getting base style attributes if they are not changed in widget. This trick can minimize memory usage for widget attributes when 
+* Widgets use style attributes directly from assigned style. When some attribute is being changed in widget, it creates its own copy of base style,
+which allows to modify some of attributes, while getting base style attributes if they are not changed in widget. This trick can minimize memory usage for widget attributes when
 standard values are used.
 * Current default theme is similar to one in MS Visual Studio 2013
 * Resources can be either embedded into executable or loaded from external resource directory in runtime
@@ -211,130 +158,8 @@ Third party components used
 
 Hello World
 --------------------------------------------------------------
-```D
-// myproject.d
-import dlangui;
-mixin APP_ENTRY_POINT;
 
-/// entry point for dlangui based application
-extern (C) int UIAppMain(string[] args) {
-    // create window
-    Window window = Platform.instance.createWindow("My Window", null);
-    // create some widget to show in window
-    window.mainWidget = (new Button()).text("Hello world"d).textColor(0xFF0000); // red text
-    // show window
-    window.show();
-    // run message loop
-    return Platform.instance.enterMessageLoop();
-}
-```
-
-Sample dub.json:
---------------------------------
-```json
-{
-    "name": "myproject",
-    "description": "sample DLangUI project",
-
-    "targetPath": "bin",
-    "targetType": "executable",
-
-    "dependencies": {
-        "dlangui": "~master"
-    }
-}
-```
-    
-Hello World using DML
---------------------------------------------------------------
-
-DlangUI supports creation of widgets from markup.
-
-DML - DlangUI Markup Language - similar to QML.
-
-Example of complex UI easy created from text:
-```D
-module app;
-
-import dlangui;
-
-mixin APP_ENTRY_POINT;
-
-/// entry point for dlangui based application
-extern (C) int UIAppMain(string[] args) {
-    // create window
-    Window window = Platform.instance.createWindow("DlangUI example - HelloWorld", null);
-
-    // create some widget to show in window
-    //window.mainWidget = (new Button()).text("Hello, world!"d).margins(Rect(20,20,20,20));
-    window.mainWidget = parseML(q{
-        VerticalLayout {
-            margins: 10
-            padding: 10
-            backgroundColor: "#C0E0E070" // semitransparent yellow background
-            // red bold text with size = 150% of base style size and font face Arial
-            TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
-            // arrange controls as form - table with two columns
-            TableLayout {
-                colCount: 2
-                TextWidget { text: "param 1" }
-                EditLine { id: edit1; text: "some text" }
-                TextWidget { text: "param 2" }
-                EditLine { id: edit2; text: "some text for param2" }
-                TextWidget { text: "some radio buttons" }
-                // arrange some radio buttons vertically
-                VerticalLayout {
-                    RadioButton { id: rb1; text: "Item 1" }
-                    RadioButton { id: rb2; text: "Item 2" }
-                    RadioButton { id: rb3; text: "Item 3" }
-                }
-                TextWidget { text: "and checkboxes" }
-                // arrange some checkboxes horizontally
-                HorizontalLayout {
-                    CheckBox { id: cb1; text: "checkbox 1" }
-                    CheckBox { id: cb2; text: "checkbox 2" }
-                }
-            }
-            HorizontalLayout {
-                Button { id: btnOk; text: "Ok" }
-                Button { id: btnCancel; text: "Cancel" }
-            }
-        }
-    });
-    // you can access loaded items by id - e.g. to assign signal listeners
-    auto edit1 = window.mainWidget.childById!EditLine("edit1");
-    auto edit2 = window.mainWidget.childById!EditLine("edit2");
-    // close window on Cancel button click
-    window.mainWidget.childById!Button("btnCancel").click = delegate(Widget w) {
-        window.close();
-        return true;
-    };
-    // show message box with content of editors
-    window.mainWidget.childById!Button("btnOk").click = delegate(Widget w) {
-        window.showMessageBox(UIString("Ok button pressed"d), 
-                UIString("Editors content\nEdit1: "d ~ edit1.text ~ "\nEdit2: "d ~ edit2.text));
-        return true;
-    };
-
-    // show window
-    window.show();
-
-    // run message loop
-    return Platform.instance.enterMessageLoop();
-}
-```
-    
-
-There is DMLEdit sample app in DlangUI/examples directory.
-
-You can run it with dub:
-```sh
-dub run dlangui:dmledit
-```
-It allows to edit DML text and see how it will look like when loaded into app (F5 refreshes view).
-
-Syntax highlight, bracket matching, go to error and other useful features are implemented.
-
+Please refer to the [Wiki](https://github.com/buggins/dlangui/wiki#hello-world) for a hello world example.
 
 DlangIDE project
 ------------------------------------------------------------

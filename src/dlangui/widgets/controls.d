@@ -55,7 +55,7 @@ class VSpacer : Widget {
     this() {
         styleId = STYLE_VSPACER;
     }
-    //override void measure(int parentWidth, int parentHeight) { 
+    //override void measure(int parentWidth, int parentHeight) {
     //    measuredContent(parentWidth, parentHeight, 8, 8);
     //}
 }
@@ -65,27 +65,35 @@ class HSpacer : Widget {
     this() {
         styleId = STYLE_HSPACER;
     }
-    //override void measure(int parentWidth, int parentHeight) { 
+    //override void measure(int parentWidth, int parentHeight) {
     //    measuredContent(parentWidth, parentHeight, 8, 8);
     //}
 }
 
 /// static text widget
 class TextWidget : Widget {
-    this(string ID = null, string textResourceId = null) {
+    this(string ID = null, string textResourceId = null)
+    {
         super(ID);
         styleId = STYLE_TEXT;
         _text.id = textResourceId;
+        trackHover = true;
     }
-    this(string ID, dstring rawText) {
+
+    this(string ID, dstring rawText)
+    {
         super(ID);
         styleId = STYLE_TEXT;
         _text.value = rawText;
+        trackHover = true;
     }
-    this(string ID, UIString uitext) {
+
+    this(string ID, UIString uitext)
+    {
         super(ID);
         styleId = STYLE_TEXT;
         _text = uitext;
+        trackHover = true;
     }
 
     /// max lines to show
@@ -97,20 +105,20 @@ class TextWidget : Widget {
     /// get widget text
     override @property dstring text() const { return _text; }
     /// set text to show
-    override @property Widget text(dstring s) { 
-        _text = s; 
+    override @property Widget text(dstring s) {
+        _text = s;
         requestLayout();
         return this;
     }
     /// set text to show
-    override @property Widget text(UIString s) { 
+    override @property Widget text(UIString s) {
         _text = s;
         requestLayout();
         return this;
     }
     /// set text resource ID to show
-    @property Widget textResource(string s) { 
-        _text = s; 
+    @property Widget textResource(string s) {
+        _text = s;
         requestLayout();
         return this;
     }
@@ -119,9 +127,9 @@ class TextWidget : Widget {
 
     override void measure(int parentWidth, int parentHeight) {
         FontRef font = font();
-        
+
         uint w;
-        if (maxLines == 1) 
+        if (maxLines == 1)
             w = MAX_WIDTH_UNSPECIFIED;
         else {
             w = parentWidth - margins.left - margins.right - padding.left - padding.right;
@@ -198,7 +206,7 @@ class SwitchButton : Widget {
         checked = !checked;
         return super.handleClick();
     }
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         DrawableRef img = backgroundDrawable;
         int w = 0;
         int h = 0;
@@ -246,7 +254,7 @@ class ImageWidget : Widget {
     /// get drawable image id
     @property string drawableId() { return _drawableId; }
     /// set drawable image id
-    @property ImageWidget drawableId(string id) { 
+    @property ImageWidget drawableId(string id) {
         _drawableId = id;
         _drawable.clear();
         requestLayout();
@@ -270,7 +278,7 @@ class ImageWidget : Widget {
     @property ImageWidget drawable(string drawableId) {
         if (_drawableId.equal(drawableId))
             return this;
-        _drawableId = drawableId; 
+        _drawableId = drawableId;
         _drawable.clear();
         requestLayout();
         return this;
@@ -287,7 +295,7 @@ class ImageWidget : Widget {
             _drawable.clear(); // remove cached drawable
     }
 
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         DrawableRef img = drawable;
         int w = 0;
         int h = 0;
@@ -391,7 +399,7 @@ class ImageTextButton : HorizontalLayout {
     override @property Widget fontWeight(int weight) { _label.fontWeight(weight); return this; }
     /// returns font size in pixels
     override @property int fontSize() const { return _label.fontSize; }
-    /// Set label font size 
+    /// Set label font size
     override @property Widget fontSize(int size) { _label.fontSize(size); return this; }
     /// returns font family
     override @property FontFamily fontFamily() const { return _label.fontFamily; }
@@ -419,7 +427,7 @@ class ImageTextButton : HorizontalLayout {
                 _label.alignment = Align.Bottom | Align.HCenter;
             }
         }
-        return this; 
+        return this;
     }
 
     protected void initialize(string drawableId, UIString caption) {
@@ -530,7 +538,7 @@ class RadioButton : ImageTextButton {
     }
 
     private bool blockUnchecking = false;
-    
+
     void uncheckSiblings() {
         Widget p = parent;
         if (!p)
@@ -555,14 +563,14 @@ class RadioButton : ImageTextButton {
 
         return super.handleClick();
     }
-    
+
     override protected void handleCheckChange(bool checked) {
         if (!blockUnchecking)
             uncheckSiblings();
         invalidate();
         checkChange(this, checked);
     }
-    
+
 }
 
 /// Text only button
@@ -609,7 +617,7 @@ class Button : Widget {
         action = a;
     }
 
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         FontRef font = font();
         Point sz = font.textSize(text);
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
@@ -640,14 +648,14 @@ interface OnDrawHandler {
 
 /// canvas widget - draw on it either by overriding of doDraw() or by assigning of onDrawListener
 class CanvasWidget : Widget {
-    
+
     Listener!OnDrawHandler onDrawListener;
 
     this(string ID = null) {
         super(ID);
     }
 
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         measuredContent(parentWidth, parentHeight, 0, 0);
     }
 
