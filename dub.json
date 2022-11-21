@@ -30,7 +30,7 @@
     "excludedSourceFiles-windows": ["3rdparty/fontconfig/*"],
 
     "dependencies": {
-        "inilike": "~>1.2.1",
+        "inilike": "~>1.2.2",
         "undead": "~>1.1.7"
     },
 
