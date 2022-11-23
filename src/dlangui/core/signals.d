@@ -243,6 +243,13 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     final void clear() {
         _listeners.clear();
     }
+
+    /// Provides `~=` syntax for connecting to this `Signal`
+    void opOpAssign(string op, T1)(T1 listener)
+    if(op == "~=")
+    {
+        connect(listener);
+    }
 }
 
 /// Multiple listeners; implicitly specified return and parameter types
@@ -299,4 +306,51 @@ struct Signal(RETURN_T, T1...)
     final void clear() {
         _listeners.clear();
     }
+
+    /// Provides `~=` syntax for connecting to this `Signal`
+    void opOpAssign(string op, T1)(T1 listener)
+    if(op == "~=")
+    {
+        connect(listener);
+    }
+}
+
+unittest
+{
+    interface IHandler
+    {
+        void onHandler();
+    }
+
+    class Component
+    {
+        Signal!IHandler signal;
+
+        void doStuff()
+        {
+            signal();
+        }
+    }
+
+    class Handler : IHandler
+    {
+        this()
+        {
+            c = new Component();
+            c.signal = this;
+        }
+
+        void onHandler()
+        {
+            res = 1;
+        }
+
+        int res = 0;
+        Component c;
+    }
+
+    scope Handler h = new Handler();
+    h.c.doStuff();
+    assert(h.c.signal.assigned);
+    assert(h.res == 1);
 }
