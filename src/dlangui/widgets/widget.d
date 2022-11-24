@@ -1298,7 +1298,10 @@ public:
             if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left && state & State.Pressed) {
                 resetState(State.Pressed);
                 if(nextClickIsDouble)
+                {
+                    handleClick();
                     handleDoubleClick();
+                }
                 else
                     handleClick();
                 nextClickIsDouble = false;
