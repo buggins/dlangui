@@ -129,6 +129,12 @@ interface OnWindowActivityHandler {
     bool onWindowActivityChange(Window window, bool isWindowActive);
 }
 
+/// Window main widget changing signal listener
+interface OnMainWidgetChange
+{
+    void onMainWidgetChange(Window window, Widget previous, Widget newWidget);
+}
+
 /// protected event list
 /// references to posted messages can be stored here at least to keep live reference and avoid GC
 /// as well, on some platforms it's easy to send id to message queue, but not pointer
@@ -264,8 +270,11 @@ class Window : CustomEventTarget {
     @property int height() const { return _dy; }
     @property uint keyboardModifiers() const { return _keyboardModifiers; }
     @property inout(Widget) mainWidget() inout { return _mainWidget; }
-    @property void mainWidget(Widget widget) {
-        if (_mainWidget !is null) {
+    @property void mainWidget(Widget widget)
+    {
+        mainWidgetChange(this, _mainWidget, widget);
+        if (_mainWidget !is null)
+        {
             _mainWidget.window = null;
             destroy(_mainWidget);
         }
@@ -273,6 +282,8 @@ class Window : CustomEventTarget {
         if (_mainWidget !is null)
             _mainWidget.window = this;
     }
+
+    Signal!OnMainWidgetChange mainWidgetChange;
 
     /// save window state to setting object
     void saveWindowState(Setting setting) {
