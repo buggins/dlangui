@@ -31,7 +31,8 @@
 
     "dependencies": {
         "inilike": "~>1.2.2",
-        "undead": "~>1.1.7"
+        "undead": "~>1.1.7",
+        "icontheme": "~>1.2.3"
     },
 
     "subPackages": [
@@ -57,10 +58,6 @@
             "dependencies": {
                 "bindbc-opengl": "~>1.0.0",
                 "bindbc-freetype": "~>1.0.0"
-            },
-            "dependencies-posix": {
-                "bindbc-sdl": "~>1.0.0",
-                "icontheme": "~>1.2.3"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll"
@@ -104,9 +101,7 @@
             "dependencies": {
                 "bindbc-opengl": "~>1.0.0",
                 "bindbc-freetype": "~>1.0.0",
-                "bindbc-sdl": "~>1.0.0"
-            },
-            "dependencies-posix": {
+                "bindbc-sdl": "~>1.0.0",
                 "icontheme": "~>1.2.3"
             },
             "copyFiles-windows-x86_64": [
