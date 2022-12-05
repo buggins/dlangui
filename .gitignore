@@ -28,3 +28,6 @@ lib/res
 *.a
 dlangui-test-default
 .vscode
+*.exe
+*.pdb
+dlangui.lib
