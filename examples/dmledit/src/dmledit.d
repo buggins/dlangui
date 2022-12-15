@@ -6,6 +6,10 @@ import dlangui.dialogs.dialog;
 import dlangui.dml.dmlhighlight;
 import dlangui.widgets.metadata;
 import std.array : replaceFirst;
+import std.algorithm;
+import std.stdio;
+import std.array;
+import std.file;
 
 mixin APP_ENTRY_POINT;
 
@@ -305,41 +309,70 @@ class EditFrame : AppFrame {
     protected ScrollWidget _preview;
     /// create app body widget
     override protected Widget createBody() {
-        VerticalLayout bodyWidget = new VerticalLayout();
-        bodyWidget.layoutWidth = FILL_PARENT;
-        bodyWidget.layoutHeight = FILL_PARENT;
-        HorizontalLayout hlayout = new HorizontalLayout();
-        hlayout.layoutWidth = FILL_PARENT;
-        hlayout.layoutHeight = FILL_PARENT;
+
+        DockHost dockHost = new DockHost();
+
+        dockHost.layoutWidth = FILL_PARENT;
+        dockHost.layoutHeight = FILL_PARENT;
+
         WidgetsList widgetsList = new WidgetsList();
         StringListWidget propList = new StringListWidget();
+
         auto sla = new StringListAdapter();
-        foreach(const ref widget; getRegisteredWidgetsList())
-        {
-            auto propertyListAdapter = new StringListAdapter();
-            if ( auto meta = findWidgetMetadata(widget) )
-            {
-                foreach(prop; meta.properties)
-                {
-                    propertyListAdapter.add(UIString.fromRaw(prop.name ~ "   [" ~ to!string(prop.type) ~ "]" ));
-                    propListsAdapters[widget] = propertyListAdapter;
-                }
-            }
+
+        auto registeredWidgetList = getRegisteredWidgetsList();
+        registeredWidgetList.sort!("a > b");
+
+        foreach(const ref widget; registeredWidgetList) { 
+	    
+	    auto propertyListAdapter = new StringListAdapter();
+	    if ( auto meta = findWidgetMetadata(widget) )
+	    {
+	        auto mp = meta.properties;
+		mp.sort!("a.name < b.name");
+	        foreach(const ref prop; mp)
+	        {
+		   propertyListAdapter.add(UIString.fromRaw(prop.name ~ "   [" ~ to!string(prop.type) ~ "]" ));
+		   propListsAdapters[widget] = propertyListAdapter;
+	        }
+	    }
             sla.add(UIString.fromRaw(widget));
-        }
+	}
+
         widgetsList.adapter = sla;
+
         auto leftPanel = new VerticalLayout();
-        leftPanel.addChild(new TextWidget().text("Widgets").backgroundColor(0x7F7F7F) );
+        leftPanel.layoutHeight = FILL_PARENT;
+
+	widgetsList.minHeight=800;
+	propList.minHeight=600;
+
+        leftPanel.addChild(new TextWidget().text("Widgets").backgroundColor(0xdddddd).minHeight(50) );
         leftPanel.addChild(widgetsList);
-        leftPanel.addChild(new TextWidget().text("Widget properties").backgroundColor(0x7F7F7F));
+        leftPanel.addChild(new TextWidget().text("Widget properties").backgroundColor(0xdddddd).minHeight(50));
         leftPanel.addChild(propList);
-        hlayout.addChild(leftPanel);
+
+	auto leftDockWin = new DockWindow("left dock");
+
+	leftDockWin.bodyWidget = leftPanel;
+	leftDockWin.dockAlignment = DockAlignment.Left;
+        leftDockWin.layoutWidth = makePercentSize(25);
+        leftDockWin.layoutHeight = FILL_PARENT;
+        dockHost.addDockedWindow(leftDockWin);
+
         _editor = new DMLSourceEdit();
-        hlayout.addChild(_editor);
         _editor.text = SAMPLE_SOURCE_CODE;
+
+	auto editorDockWin = new DockWindow("editor");
+        editorDockWin.layoutWidth = makePercentSize(50);
+	editorDockWin.bodyWidget = _editor;
+	editorDockWin.dockAlignment = DockAlignment.Left;
+	editorDockWin.layoutHeight = FILL_PARENT;
+        dockHost.addDockedWindow(editorDockWin);
+
         VerticalLayout previewLayout = new VerticalLayout();
-        previewLayout.layoutWidth = makePercentSize(50);
         previewLayout.layoutHeight = FILL_PARENT;
+
         auto previewControls = new HorizontalLayout();
         auto cbFillHorizontal = new CheckBox(null, "Fill Horizontal"d);
         auto cbFillVertical = new CheckBox(null, "Fill Vertical"d);
@@ -380,11 +413,18 @@ class EditFrame : AppFrame {
         _preview.backgroundImageId = "tx_fabric.tiled";
         previewLayout.addChild(previewControls);
         previewLayout.addChild(_preview);
-        hlayout.addChild(previewLayout);
-        bodyWidget.addChild(hlayout);
-        return bodyWidget;
-    }
 
+	auto previewDockWin = new DockWindow("preview");
+        previewDockWin.layoutWidth = makePercentSize(25);
+	previewDockWin.bodyWidget = previewLayout;
+	previewDockWin.dockAlignment = DockAlignment.Right;
+
+	previewDockWin.layoutHeight = FILL_PARENT;
+        dockHost.bodyWidget = editorDockWin;
+        dockHost.addDockedWindow(previewDockWin);
+
+        return dockHost;
+    }
 }
 
 alias onItemDoubleClickHandler = void delegate (Widget source, int itemIndex);
@@ -418,7 +458,6 @@ extern (C) int UIAppMain(string[] args) {
 
     // create some widget to show in window
     window.windowIcon = drawableCache.getImage("dlangui-logo1");
-
 
     // create some widget to show in window
     window.mainWidget = new EditFrame();
