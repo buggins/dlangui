@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<theme id="theme_default" 
-        fontSize="10pt" 
+<theme id="theme_default"
+        fontSize="10pt"
         fontFace="Helvetica Neue,Verdana,Arial,DejaVu Sans,Liberation Sans,Helvetica,Roboto,Droid Sans"
         fontFamily="SansSerif"
         >
@@ -117,7 +117,7 @@
         margins="2,2,2,2"
         padding="1,1,1,1"
         align="Left|VCenter"
-        maxLines = "0"
+        maxLines="0"
         >
         <state state_enabled="false" textColor="#A0000000"/>
     </style>
@@ -540,7 +540,7 @@
 	textColor="#504840"
         padding="1pt,1pt,1pt,1pt">
     </style>
-    
+
     <style id="PROGRESS_BAR"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
@@ -563,6 +563,6 @@
         <color id="chart_axis_color" value="#C0C0C0"/>
         <color id="chart_segment_tag_color" value="#C0C0C0"/>
    </style>
-    
+
 </theme>
 

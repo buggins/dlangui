@@ -101,7 +101,7 @@ import dlangui.graphics.colors;
 import dlangui.graphics.drawbuf;
 import std.file;
 import std.algorithm;
-import undead.xml;
+import arsd.dom;
 import std.conv;
 import std.string;
 import std.path;
@@ -985,22 +985,18 @@ class ImageDrawable : Drawable {
 }
 
 string attrValue(Element item, string attrname, string attrname2 = null) {
-    if (attrname in item.tag.attr)
-        return item.tag.attr[attrname];
-    if (attrname2 && attrname2 in item.tag.attr)
-        return item.tag.attr[attrname2];
+    return attrValue(item.attrs, attrname, attrname2);
+}
+
+string attrValue(AttributeSet attr, string attrname, string attrname2 = null) {
+    if (attr.get(attrname) !is null) // TODO_GRIM: Add support of in to arsd.dom?
+        return attr.get(attrname);
+    if (attrname2 !is null && attr.get(attrname2) !is null)
+        return attr.get(attrname2);
     return null;
 }
 
-string attrValue(ref string[string] attr, string attrname, string attrname2 = null) {
-    if (attrname in attr)
-        return attr[attrname];
-    if (attrname2 && attrname2 in attr)
-        return attr[attrname2];
-    return null;
-}
-
-void extractStateFlag(ref string[string] attr, string attrName, string attrName2, State state, ref uint stateMask, ref uint stateValue) {
+void extractStateFlag(ref AttributeSet attr, string attrName, string attrName2, State state, ref uint stateMask, ref uint stateValue) {
     string value = attrValue(attr, attrName, attrName2);
     if (value !is null) {
         if (value.equal("true"))
@@ -1010,7 +1006,7 @@ void extractStateFlag(ref string[string] attr, string attrName, string attrName2
 }
 
 /// converts XML attribute name to State (see http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList)
-void extractStateFlags(ref string[string] attr, ref uint stateMask, ref uint stateValue) {
+void extractStateFlags(AttributeSet attr, ref uint stateMask, ref uint stateValue) {
     extractStateFlag(attr, "state_pressed", "android:state_pressed", State.Pressed, stateMask, stateValue);
     extractStateFlag(attr, "state_focused", "android:state_focused", State.Focused, stateMask, stateValue);
     extractStateFlag(attr, "state_default", "android:state_default", State.Default, stateMask, stateValue);
@@ -1148,9 +1144,9 @@ class StateDrawable : Drawable {
         return (nn[0] << 24) | (nn[1] << 16) | (nn[2] << 8) | (nn[3] << 0);
     }
 
-    bool load(Element element) {
-        foreach(item; element.elements) {
-            if (item.tag.name.equal("item")) {
+    bool load(XmlDocument document) {
+        foreach(item; document.root.children) {
+            if (item.tagName.equal("item")) {
                 string drawableId = attrValue(item, "drawable", "android:drawable");
                 if (drawableId.startsWith("@drawable/"))
                     drawableId = drawableId[10 .. $];
@@ -1160,7 +1156,7 @@ class StateDrawable : Drawable {
                 transform.addAfter = colorTransformFromStringAdd(attrValue(item, "color_transform_add2", "android:transform_color_add2"));
                 if (drawableId !is null) {
                     uint stateMask, stateValue;
-                    extractStateFlags(item.tag.attr, stateMask, stateValue);
+                    extractStateFlags(item.attrs, stateMask, stateValue);
                     if (drawableId !is null) {
                         addState(stateMask, stateValue, drawableId, transform);
                     }
@@ -1183,10 +1179,10 @@ class StateDrawable : Drawable {
             //check(s);
 
             // Make a DOM tree
-            auto doc = new Document(s);
+            auto doc = new XmlDocument(s);
 
             return load(doc);
-        } catch (CheckException e) {
+        } catch (Exception e) {
             Log.e("Invalid XML file ", filename);
             return false;
         }

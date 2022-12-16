@@ -25,7 +25,7 @@ module dlangui.widgets.styles;
 
 import dlangui.core.config;
 
-import undead.xml;
+import arsd.dom;
 import std.string;
 import std.algorithm;
 
@@ -1562,73 +1562,74 @@ string sanitizeBoxShadowProperty(string s) pure {
 /// load style attributes from XML element
 bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
     //Log.d("Theme: loadStyleAttributes ", style.id, " ", elem.tag.attr);
-    if ("backgroundImageId" in elem.tag.attr)
-        style.backgroundImageId = elem.tag.attr["backgroundImageId"];
-    if ("backgroundColor" in elem.tag.attr)
-        style.backgroundColor = decodeHexColor(elem.tag.attr["backgroundColor"]);
-    if ("textColor" in elem.tag.attr)
-        style.textColor = decodeHexColor(elem.tag.attr["textColor"]);
-    if ("margins" in elem.tag.attr)
-        style.margins = decodeRect(elem.tag.attr["margins"]);
-    if ("padding" in elem.tag.attr)
-        style.padding = decodeRect(elem.tag.attr["padding"]);
-    if ("border" in elem.tag.attr)
-        style.border = sanitizeBorderProperty(elem.tag.attr["border"]);
-    if ("boxShadow" in elem.tag.attr)
-        style.boxShadow = sanitizeBoxShadowProperty(elem.tag.attr["boxShadow"]);
-    if ("align" in elem.tag.attr)
-        style.alignment = decodeAlignment(elem.tag.attr["align"]);
-    if ("minWidth" in elem.tag.attr)
-        style.minWidth = decodeDimension(elem.tag.attr["minWidth"]);
-    if ("maxWidth" in elem.tag.attr)
-        style.maxWidth = decodeDimension(elem.tag.attr["maxWidth"]);
-    if ("minHeight" in elem.tag.attr)
-        style.minHeight = decodeDimension(elem.tag.attr["minHeight"]);
-    if ("maxHeight" in elem.tag.attr)
-        style.maxHeight = decodeDimension(elem.tag.attr["maxHeight"]);
-    if ("maxLines" in elem.tag.attr)
-        style.maxLines = decodeDimension(elem.tag.attr["maxLines"]);
-    if ("fontFace" in elem.tag.attr)
-        style.fontFace = elem.tag.attr["fontFace"];
-    if ("fontFamily" in elem.tag.attr)
-        style.fontFamily = decodeFontFamily(elem.tag.attr["fontFamily"]);
-    if ("fontSize" in elem.tag.attr)
-        style.fontSize = cast(int)decodeDimension(elem.tag.attr["fontSize"]);
-    if ("fontWeight" in elem.tag.attr)
-        style.fontWeight = cast(ushort)decodeFontWeight(elem.tag.attr["fontWeight"]);
-    if ("layoutWidth" in elem.tag.attr)
-        style.layoutWidth = decodeLayoutDimension(elem.tag.attr["layoutWidth"]);
-    if ("layoutHeight" in elem.tag.attr)
-        style.layoutHeight = decodeLayoutDimension(elem.tag.attr["layoutHeight"]);
-    if ("alpha" in elem.tag.attr)
-        style.alpha = decodeDimension(elem.tag.attr["alpha"]);
-    if ("textFlags" in elem.tag.attr)
-        style.textFlags = decodeTextFlags(elem.tag.attr["textFlags"]);
-    if ("focusRectColors" in elem.tag.attr)
-        style.focusRectColors = decodeFocusRectColors(elem.tag.attr["focusRectColors"]);
-    foreach(item; elem.elements) {
-        if (allowStates && item.tag.name.equal("state")) {
+    if ("backgroundImageId" in elem.attributes)
+        style.backgroundImageId = elem.attrs["backgroundImageId"];
+    if ("backgroundColor" in elem.attributes)
+        style.backgroundColor = decodeHexColor(elem.attrs["backgroundColor"]);
+    if ("textColor" in elem.attributes)
+        style.textColor = decodeHexColor(elem.attrs["textColor"]);
+    if ("margins" in elem.attributes)
+        style.margins = decodeRect(elem.attrs["margins"]);
+    if ("padding" in elem.attributes)
+        style.padding = decodeRect(elem.attrs["padding"]);
+    if ("border" in elem.attributes)
+        style.border = sanitizeBorderProperty(elem.attrs["border"]);
+    if ("boxShadow" in elem.attributes)
+        style.boxShadow = sanitizeBoxShadowProperty(elem.attrs["boxShadow"]);
+    if ("align" in elem.attributes)
+        style.alignment = decodeAlignment(elem.attrs["align"]);
+    if ("minWidth" in elem.attributes)
+        style.minWidth = decodeDimension(elem.attrs["minWidth"]);
+    if ("maxWidth" in elem.attributes)
+        style.maxWidth = decodeDimension(elem.attrs["maxWidth"]);
+    if ("minHeight" in elem.attributes)
+        style.minHeight = decodeDimension(elem.attrs["minHeight"]);
+    if ("maxHeight" in elem.attributes)
+        style.maxHeight = decodeDimension(elem.attrs["maxHeight"]);
+    if ("maxLines" in elem.attributes)
+        style.maxLines = decodeDimension(elem.attrs["maxLines"]);
+    if ("fontFace" in elem.attributes)
+        style.fontFace = elem.attrs["fontFace"];
+    if ("fontFamily" in elem.attributes)
+        style.fontFamily = decodeFontFamily(elem.attrs["fontFamily"]);
+    if ("fontSize" in elem.attributes)
+        style.fontSize = cast(int)decodeDimension(elem.attrs["fontSize"]);
+    if ("fontWeight" in elem.attributes)
+        style.fontWeight = cast(ushort)decodeFontWeight(elem.attrs["fontWeight"]);
+    if ("layoutWidth" in elem.attributes)
+        style.layoutWidth = decodeLayoutDimension(elem.attrs["layoutWidth"]);
+    if ("layoutHeight" in elem.attributes)
+        style.layoutHeight = decodeLayoutDimension(elem.attrs["layoutHeight"]);
+    if ("alpha" in elem.attributes)
+        style.alpha = decodeDimension(elem.attrs["alpha"]);
+    if ("textFlags" in elem.attributes)
+        style.textFlags = decodeTextFlags(elem.attrs["textFlags"]);
+    if ("focusRectColors" in elem.attributes)
+        style.focusRectColors = decodeFocusRectColors(elem.attrs["focusRectColors"]);
+    foreach(item; elem.childNodes) {
+        if (allowStates && item.tagName.equal("state")) {
             uint stateMask = 0;
             uint stateValue = 0;
-            extractStateFlags(item.tag.attr, stateMask, stateValue);
+            extractStateFlags(item.attrs, stateMask, stateValue);
             if (stateMask) {
                 Style state = style.getOrCreateState(stateMask, stateValue);
+                Log.d(item.attributes);
                 loadStyleAttributes(state, item, false);
             }
-        } else if (item.tag.name.equal("drawable")) {
+        } else if (item.tagName.equal("drawable")) {
             // <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
             string drawableid = attrValue(item, "id");
             string drawablevalue = attrValue(item, "value");
             if (drawableid)
                 style.setCustomDrawable(drawableid, drawablevalue);
-        } else if (item.tag.name.equal("color")) {
+        } else if (item.tagName.equal("color")) {
             // <color id="buttons_panel_color" value="#303080"/>
             string colorid = attrValue(item, "id");
             string colorvalue = attrValue(item, "value");
             uint color = decodeHexColor(colorvalue, COLOR_TRANSPARENT);
             if (colorid)
                 style.setCustomColor(colorid, color);
-        } else if (item.tag.name.equal("length")) {
+        } else if (item.tagName.equal("length")) {
             // <length id="overlap" value="2"/>
             string lenid = attrValue(item, "id");
             string lenvalue = attrValue(item, "value");
@@ -1655,24 +1656,28 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
  * ---
  *
  */
-bool loadTheme(Theme theme, Element doc, int level = 0) {
-    if (!doc.tag.name.equal("theme")) {
+bool loadTheme(Theme theme, XmlDocument doc, int level = 0) {
+    if (!doc.root.tagName.equal("theme")) {
         Log.e("<theme> element should be main in theme file!");
         return false;
     }
     // <theme>
-    string id = attrValue(doc, "id");
-    string parent = attrValue(doc, "parent");
+    string id = attrValue(doc.root, "id");
+    string parent = attrValue(doc.root, "parent");
     theme.id = id;
     if (parent.length > 0) {
         // load base theme
         if (level < 3) // to prevent infinite recursion
             loadTheme(theme, parent, level + 1);
     }
-    loadStyleAttributes(theme, doc, false);
-    foreach(styleitem; doc.elements) {
-        if (styleitem.tag.name.equal("style")) {
+    loadStyleAttributes(theme, doc.root, false);
+    foreach(styleitem; doc.root.childNodes) {
+        if (styleitem.tagName.equal("style")) {
             // load <style>
+            if(styleitem.children.length > 0)
+            {
+                styleitem.innerHTML(styleitem.children[0].nodeValue, true); // HACK by adr
+            }
             string styleid = attrValue(styleitem, "id");
             string styleparent = attrValue(styleitem, "parent");
             if (styleid.length) {
@@ -1703,15 +1708,18 @@ bool loadTheme(Theme theme, string resourceId, int level = 0) {
             return false;
         }
 
+        Log.d(s);
+
         // Check for well-formedness
         //check(s);
 
         // Make a DOM tree
-        auto doc = new Document(s);
+        auto doc = new XmlDocument(s);
 
         return loadTheme(theme, doc);
-    } catch (CheckException e) {
+    } catch (Exception e) {
         Log.e("Invalid XML resource ", resourceId);
+        Log.e(e.msg);
         return false;
     }
 }
