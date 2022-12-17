@@ -32,7 +32,7 @@
     "dependencies": {
         "inilike": "~>1.2.2",
         "icontheme": "~>1.2.3",
-        "arsd-official:dom": "~>10.9.7"
+        "arsd-official:dom": "~>10.9.8"
     },
 
     "subPackages": [
