@@ -13,7 +13,7 @@ Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
 Authors:   Vadim Lopatin, coolreader.org@gmail.com
  */
-module main;
+module example1;
 
 import dlangui;
 import dlangui.dialogs.dialog;
@@ -25,6 +25,7 @@ import std.utf;
 import std.algorithm;
 import std.path;
 
+import widgets;
 
 mixin APP_ENTRY_POINT;
 
@@ -64,60 +65,6 @@ class TimerTest : HorizontalLayout {
     }
 }
 
-static if (BACKEND_GUI) {
-    class AnimatedDrawable : Drawable {
-        DrawableRef background;
-        this() {
-            background = drawableCache.get("tx_fabric.tiled");
-        }
-        void drawAnimatedRect(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, int sz) {
-            int x = (p * speedx % rc.width);
-            int y = (p * speedy % rc.height);
-            if (x < 0)
-                x += rc.width;
-            if (y < 0)
-                y += rc.height;
-            uint a = 64 + ((p / 2) & 0x7F);
-            uint r = 128 + ((p / 7) & 0x7F);
-            uint g = 128 + ((p / 5) & 0x7F);
-            uint b = 128 + ((p / 3) & 0x7F);
-            uint color = (a << 24) | (r << 16) | (g << 8) | b;
-            buf.fillRect(Rect(rc.left + x, rc.top + y, rc.left + x + sz, rc.top + y + sz), color);
-        }
-        void drawAnimatedIcon(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, string resourceId) {
-            int x = (p * speedx % rc.width);
-            int y = (p * speedy % rc.height);
-            if (x < 0)
-                x += rc.width;
-            if (y < 0)
-                y += rc.height;
-            DrawBufRef image = drawableCache.getImage(resourceId);
-            buf.drawImage(x, y, image.get);
-        }
-        override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-            background.drawTo(buf, rc, state, cast(int)(animationProgress / 695430), cast(int)(animationProgress / 1500000));
-            drawAnimatedRect(buf, cast(uint)(animationProgress / 295430), rc, 2, 3, 100);
-            drawAnimatedRect(buf, cast(uint)(animationProgress / 312400) + 100, rc, 3, 2, 130);
-            drawAnimatedIcon(buf, cast(uint)(animationProgress / 212400) + 200, rc, -2, 1, "dlangui-logo1");
-            drawAnimatedRect(buf, cast(uint)(animationProgress / 512400) + 300, rc, 2, -2, 200);
-            drawAnimatedRect(buf, cast(uint)(animationProgress / 214230) + 800, rc, 1, 2, 390);
-            drawAnimatedIcon(buf, cast(uint)(animationProgress / 123320) + 900, rc, 1, 2, "cr3_logo");
-            drawAnimatedRect(buf, cast(uint)(animationProgress / 100000) + 100, rc, -1, -1, 120);
-        }
-        @property override int width() {
-            return 1;
-        }
-        @property override int height() {
-            return 1;
-        }
-        ulong animationProgress;
-        void animate(long interval) {
-            animationProgress += interval;
-        }
-
-    }
-}
-
 class TextEditorWidget : VerticalLayout {
     EditBox _edit;
     this(string ID) {
@@ -126,36 +73,6 @@ class TextEditorWidget : VerticalLayout {
         _edit.layoutWidth = FILL_PARENT;
         _edit.layoutHeight = FILL_PARENT;
         addChild(_edit);
-    }
-}
-
-static if (BACKEND_GUI) {
-    class SampleAnimationWidget : VerticalLayout {
-        AnimatedDrawable drawable;
-        DrawableRef drawableRef;
-        this(string ID) {
-            super(ID);
-            drawable = new AnimatedDrawable();
-            drawableRef = drawable;
-            padding = Rect(20, 20, 20, 20);
-            addChild(new TextWidget(null, "This is TextWidget on top of animated background"d));
-            addChild(new EditLine(null, "This is EditLine on top of animated background"d));
-            addChild(new Button(null, "This is Button on top of animated background"d));
-            addChild(new VSpacer());
-        }
-
-        /// background drawable
-        @property override DrawableRef backgroundDrawable() const {
-            return (cast(SampleAnimationWidget)this).drawableRef;
-        }
-
-        /// returns true is widget is being animated - need to call animate() and redraw
-        @property override bool animating() { return true; }
-        /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
-        override void animate(long interval) {
-            drawable.animate(interval);
-            invalidate();
-        }
     }
 }
 
@@ -1139,123 +1056,15 @@ void main()
         tree.items.selectItem(tree.items.child(0));
 
         tabs.addTab(treeLayout, "Tree"d);
-        //==========================================================================
-        // charts example
-        SimpleBarChart barChart1 = new SimpleBarChart("barChart1","SimpleBarChart Example"d);
-        barChart1.addBar(12.0, makeRGBA(255,0,0,0), "Red bar"d);
-        barChart1.addBar(24.0, makeRGBA(0,255,0,0), "Green bar"d);
-        barChart1.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar"d);
-        barChart1.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar"d);
-        //barChart1.layoutWidth = FILL_PARENT;
-        //barChart1.layoutHeight = FILL_PARENT;
 
-        SimpleBarChart barChart2 = new SimpleBarChart("barChart2","SimpleBarChart Example - long descriptions"d);
-        barChart2.addBar(12.0, makeRGBA(255,0,0,0), "Red bar\n(12.0)"d);
-        barChart2.addBar(24.0, makeRGBA(0,255,0,0), "Green bar\n(24.0)"d);
-        barChart2.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar\n(5.0)"d);
-        barChart2.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar\n(12.0)\nlong long long description added here"d);
+        tabs.addTab(new ChartsExample("charts"), "Charts"d);
+        tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
+        tabs.addTab(new CanvasExample("canvas"), UIString.fromId("TAB_CANVAS"));
+        tabs.addTab(new IconsExample("icons"), "Icons"d);
 
-        SimpleBarChart barChart3 = new SimpleBarChart("barChart3","SimpleBarChart Example with axis ratio 0.3"d);
-        barChart3.addBar(12.0, makeRGBA(255,0,0,0), "Red bar"d);
-        barChart3.addBar(24.0, makeRGBA(0,255,0,0), "Green bar"d);
-        barChart3.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar"d);
-        barChart3.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar"d);
-        barChart3.axisRatio = 0.3;
-
-        SimpleBarChart barChart4 = new SimpleBarChart("barChart4","SimpleBarChart Example with axis ratio 1.3"d);
-        barChart4.addBar(12.0, makeRGBA(255,0,0,0), "Red bar"d);
-        barChart4.addBar(24.0, makeRGBA(0,255,0,0), "Green bar"d);
-        barChart4.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar"d);
-        barChart4.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar"d);
-        barChart4.axisRatio = 1.3;
-
-        HorizontalLayout chartsLayout = new HorizontalLayout("CHARTS");
-        chartsLayout.layoutWidth = FILL_PARENT;
-        chartsLayout.layoutHeight = FILL_PARENT;
-
-        VerticalLayout chartColumn1 = new VerticalLayout();
-        VerticalLayout chartColumn2 = new VerticalLayout();
-
-        chartColumn1.addChild(barChart1);
-        chartColumn1.addChild(barChart2);
-        chartsLayout.addChild(chartColumn1);
-        chartColumn2.addChild(barChart3);
-        chartColumn2.addChild(barChart4);
-        chartsLayout.addChild(chartColumn2);
-        tabs.addTab(chartsLayout, "Charts"d);
-
-        static if (BACKEND_GUI) {
-
-            tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
-
-            CanvasWidget canvas = new CanvasWidget("canvas");
-            canvas.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-            canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
-                //Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
-                buf.fill(0xFFFFFF);
-                int x = rc.left;
-                int y = rc.top;
-                buf.fillRect(Rect(x+20, y+20, x+150, y+200), 0x80FF80);
-                buf.fillRect(Rect(x+90, y+80, x+250, y+250), 0x80FF80FF);
-                canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
-                buf.drawFrame(Rect(x + 400, y + 30, x + 550, y + 150), 0x204060, Rect(2,3,4,5), 0x80704020);
-                canvas.font.drawText(buf, x + 400, y + 5, "drawFrame()"d, 0x208020);
-                canvas.font.drawText(buf, x + 300, y + 100, "drawPixel()"d, 0x000080);
-                for (int i = 0; i < 80; i++)
-                    buf.drawPixel(x+300 + i * 4, y+140 + i * 3 % 100, 0xFF0000 + i * 2);
-                canvas.font.drawText(buf, x + 300, y + 420, "drawLine()"d, 0x800020);
-                for (int i = 0; i < 40; i+=3)
-                    buf.drawLine(Point(x+200 + i * 4, y+290), Point(x+150 + i * 7, y+420 + i * 2), 0x008000 + i * 5);
-                // poly line test
-                //Rect newClipRect = Rect(x + 110, y + 100, x + 350, y + 320);
-                //buf.fillRect(newClipRect, 0xC08080FF);
-                //Rect oldClip = buf.clipRect;
-                //buf.clipRect = newClipRect;
-                PointF[] poly = [vec2(x+130, y+150), vec2(x+240, y+80), vec2(x+170, y+170), vec2(x+380, y+270), vec2(x+220, y+400), vec2(x+130, y+330)];
-                buf.polyLineF(poly, 18.0f, 0x80804020, true, 0x80FFFF00);
-                //buf.fillTriangleF(vec2(x+230, y+50), vec2(x+400, y+250), vec2(x+130, y+200), 0xC0FF0000);
-                //buf.fillTriangleF(vec2(x+230, y+250), vec2(x+200, y+350), vec2(x+80, y+200), 0xC000FF00);
-                //buf.fillTriangleF(vec2(x+430, y+250), vec2(x+280, y+150), vec2(x+200, y+300), 0xC00000FF);
-                //buf.fillTriangleF(vec2(x+80, y+150), vec2(x+280, y+250), vec2(x+80, y+200), 0xC0008080);
-                //buf.clipRect = oldClip;
-                canvas.font.drawText(buf, x + 190, y + 260, "polyLineF()"d, 0x603010);
-                PointF[] poly2 = [vec2(x+430, y+250), vec2(x+540, y+180), vec2(x+470, y+270), vec2(x+580, y+300),
-                    vec2(x+620, y+400), vec2(x+480, y+350), vec2(x+520, y+450), vec2(x+480, y+430)];
-                buf.fillPolyF(poly2, 0x80203050);
-                //buf.polyLineF(poly2, 2.0f, 0x80000000, true);
-                canvas.font.drawText(buf, x + 500, y + 460, "fillPolyF()"d, 0x203050);
-
-                buf.drawEllipseF(x+300, y+600, 200, 150, 3, 0x80008000, 0x804040FF);
-                canvas.font.drawText(buf, x + 300, y + 600, "fillEllipseF()"d, 0x208050);
-
-                buf.drawEllipseArcF(x+540, y+600, 150, 180, 45, 130, 3, 0x40008000, 0x804040FF);
-                canvas.font.drawText(buf, x + 540, y + 580, "drawEllipseArcF()"d, 0x208050);
-            };
-            tabs.addTab(canvas, "TAB_CANVAS"c);
-
-            static if (ENABLE_OPENGL) {
-                //
-                tabs.addTab(new MyOpenglWidget(), "OpenGL"d);
-            }
-
-            {
-                import dlangui.graphics.iconprovider;
-                TableLayout icons = new TableLayout("icons");
-                icons.colCount = 6;
-                for(StandardIcon icon = StandardIcon.init; icon <= StandardIcon.deviceCameraVideo; ++icon)
-                {
-                    icons.addChild(new TextWidget(to!string(icon), to!dstring(icon)).fontSize(12.pointsToPixels).alignment(Align.Right | Align.VCenter));
-                    auto imageBufRef = platform.iconProvider().getStandardIcon(icon);
-                    auto imageWidget = new ImageWidget();
-                    if (!imageBufRef.isNull()) {
-                        auto imageDrawable = new ImageDrawable(imageBufRef);
-                        imageWidget.drawable = imageDrawable;
-                    }
-                    icons.addChild(imageWidget).alignment(Align.Left | Align.VCenter);
-                }
-                icons.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
-                tabs.addTab(icons, "Icons"d);
-            }
+        static if (BACKEND_GUI && ENABLE_OPENGL)
+        {
+            tabs.addTab(new MyOpenglWidget(), "OpenGL"d);
         }
 
         //==========================================================================

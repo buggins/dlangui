@@ -40,7 +40,3 @@ jobs:
           dub test
           cd examples/example1
           dub build -b=release
-          cd ../helloworld
-          dub build -b=release
-          cd ../opengl
-          dub build -b=release
