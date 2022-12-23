@@ -42,7 +42,6 @@
         "./examples/d3d/",
         "./examples/dminer/",
         "./examples/tetris/",
-        "./examples/opengl/",
         "./examples/ircclient/",
         "./examples/spreadsheet/",
         "./examples/dragon/"

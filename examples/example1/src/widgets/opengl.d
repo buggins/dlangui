@@ -1,46 +1,13 @@
-module openglexample;
-
-import dlangui;
-
-mixin APP_ENTRY_POINT;
-
-/// entry point for dlangui based application
-extern (C) int UIAppMain(string[] args) {
-    // embed resources listed in views/resources.list into executable
-    embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
-
-    // the old API example works on old context because of OpenGL deprecation model
-    // otherwise there will be GL_INVALID_OPERATION error
-    // new API functions on a modern graphics card will work even if you set context version to 1.0
-    Platform.instance.GLVersionMajor = 2;
-    Platform.instance.GLVersionMinor = 1;
-
-    // Enable multisampling
-    Platform.instance.multisamples = 16;
-
-    // create window
-    Window window = Platform.instance.createWindow("DlangUI OpenGL Example", null, WindowFlag.Resizable, 800, 700);
-
-    static if (ENABLE_OPENGL) {
-        window.mainWidget = new MyOpenglWidget();
-    } else {
-        window.mainWidget = new TextWidget(null, "DlangUI is built with OpenGL support disabled"d);
-    }
-
-    window.windowIcon = drawableCache.getImage("dlangui-logo1");
-
-    window.show();
-    // run message loop
-    return Platform.instance.enterMessageLoop();
-}
-
-static if (ENABLE_OPENGL):
+module widgets.opengl;
 
 import bindbc.opengl;
+import dlangui;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 
-class MyOpenglWidget : VerticalLayout {
+static if(ENABLE_OPENGL):
+
+class OpenGLExample : VerticalLayout {
     this() {
         super("OpenGLView");
         layoutWidth = FILL_PARENT;
