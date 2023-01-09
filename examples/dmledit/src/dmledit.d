@@ -308,7 +308,8 @@ class EditFrame : AppFrame {
     protected DMLSourceEdit _editor;
     protected ScrollWidget _preview;
     /// create app body widget
-    override protected Widget createBody() {
+    override protected Widget createBody()
+    {
 
         DockHost dockHost = new DockHost();
 
@@ -321,41 +322,41 @@ class EditFrame : AppFrame {
         auto sla = new StringListAdapter();
 
         auto registeredWidgetList = getRegisteredWidgetsList();
-        registeredWidgetList.sort!("a > b");
+        registeredWidgetList.sort!("a < b");
 
-        foreach(const ref widget; registeredWidgetList) { 
-	    
-	    auto propertyListAdapter = new StringListAdapter();
-	    if ( auto meta = findWidgetMetadata(widget) )
-	    {
-	        auto mp = meta.properties;
-		mp.sort!("a.name < b.name");
-	        foreach(const ref prop; mp)
-	        {
-		   propertyListAdapter.add(UIString.fromRaw(prop.name ~ "   [" ~ to!string(prop.type) ~ "]" ));
-		   propListsAdapters[widget] = propertyListAdapter;
-	        }
-	    }
+        foreach(const ref widget; registeredWidgetList)
+        { 
+            auto propertyListAdapter = new StringListAdapter();
+            if ( auto meta = findWidgetMetadata(widget) )
+            {
+                auto mp = meta.properties;
+                mp.sort!("a.name < b.name");
+                foreach(const ref prop; mp)
+                {
+                propertyListAdapter.add(UIString.fromRaw(prop.name ~ "   [" ~ to!string(prop.type) ~ "]" ));
+                propListsAdapters[widget] = propertyListAdapter;
+                }
+            }
             sla.add(UIString.fromRaw(widget));
-	}
+        }
 
         widgetsList.adapter = sla;
 
         auto leftPanel = new VerticalLayout();
         leftPanel.layoutHeight = FILL_PARENT;
 
-	widgetsList.minHeight=800;
-	propList.minHeight=600;
+        widgetsList.minHeight=800;
+        propList.minHeight=600;
 
         leftPanel.addChild(new TextWidget().text("Widgets").backgroundColor(0xdddddd).minHeight(50) );
         leftPanel.addChild(widgetsList);
         leftPanel.addChild(new TextWidget().text("Widget properties").backgroundColor(0xdddddd).minHeight(50));
         leftPanel.addChild(propList);
 
-	auto leftDockWin = new DockWindow("left dock");
+        auto leftDockWin = new DockWindow("left dock");
 
-	leftDockWin.bodyWidget = leftPanel;
-	leftDockWin.dockAlignment = DockAlignment.Left;
+        leftDockWin.bodyWidget = leftPanel;
+        leftDockWin.dockAlignment = DockAlignment.Left;
         leftDockWin.layoutWidth = makePercentSize(25);
         leftDockWin.layoutHeight = FILL_PARENT;
         dockHost.addDockedWindow(leftDockWin);
@@ -363,11 +364,11 @@ class EditFrame : AppFrame {
         _editor = new DMLSourceEdit();
         _editor.text = SAMPLE_SOURCE_CODE;
 
-	auto editorDockWin = new DockWindow("editor");
+        auto editorDockWin = new DockWindow("editor");
         editorDockWin.layoutWidth = makePercentSize(50);
-	editorDockWin.bodyWidget = _editor;
-	editorDockWin.dockAlignment = DockAlignment.Left;
-	editorDockWin.layoutHeight = FILL_PARENT;
+        editorDockWin.bodyWidget = _editor;
+        editorDockWin.dockAlignment = DockAlignment.Left;
+        editorDockWin.layoutHeight = FILL_PARENT;
         dockHost.addDockedWindow(editorDockWin);
 
         VerticalLayout previewLayout = new VerticalLayout();
@@ -414,12 +415,12 @@ class EditFrame : AppFrame {
         previewLayout.addChild(previewControls);
         previewLayout.addChild(_preview);
 
-	auto previewDockWin = new DockWindow("preview");
+        auto previewDockWin = new DockWindow("preview");
         previewDockWin.layoutWidth = makePercentSize(25);
-	previewDockWin.bodyWidget = previewLayout;
-	previewDockWin.dockAlignment = DockAlignment.Right;
+        previewDockWin.bodyWidget = previewLayout;
+        previewDockWin.dockAlignment = DockAlignment.Right;
 
-	previewDockWin.layoutHeight = FILL_PARENT;
+        previewDockWin.layoutHeight = FILL_PARENT;
         dockHost.bodyWidget = editorDockWin;
         dockHost.addDockedWindow(previewDockWin);
 
