@@ -163,9 +163,6 @@ class OpenGLExample : VerticalLayout {
             return;
         }
 
-        checkgl!glEnable(GL_MULTISAMPLE);
-        checkgl!glEnable(GL_POLYGON_SMOOTH);
-
         checkgl!glEnable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
