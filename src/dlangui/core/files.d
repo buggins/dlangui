@@ -366,7 +366,7 @@ private:
     import core.sys.windows.objbase;
     import core.sys.windows.objidl;
 
-    pragma(lib, "Ole32");
+    pragma(lib, "ole32");
 
     alias GUID KNOWNFOLDERID;
 
