@@ -19,6 +19,8 @@
 
     "libs-linux": ["z"],
 
+    "libs-windows": ["ole32"],
+
     "stringImportPaths": [
         "views"
     ],
