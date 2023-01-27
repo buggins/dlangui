@@ -366,8 +366,6 @@ private:
     import core.sys.windows.objbase;
     import core.sys.windows.objidl;
 
-    pragma(lib, "Ole32");
-
     alias GUID KNOWNFOLDERID;
 
     extern(Windows) @nogc @system HRESULT _dummy_SHGetKnownFolderPath(const(KNOWNFOLDERID)* rfid, DWORD dwFlags, HANDLE hToken, wchar** ppszPath) nothrow;
