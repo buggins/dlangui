@@ -312,44 +312,86 @@ bool isFullyTransparentColor(uint color) pure nothrow {
     return (color >> 24) == 0xFF;
 }
 
-/// decode color string  supported formats: #RGB #ARGB #RRGGBB #AARRGGBB
-uint decodeHexColor(string s, uint defValue = 0) pure {
-    s = strip(s);
-    switch (s) {
-        case "@null":
-        case "transparent":
-            return COLOR_TRANSPARENT;
-        case "black":
-            return 0x000000;
-        case "white":
-            return 0xFFFFFF;
-        case "red":
-            return 0xFF0000;
-        case "green":
-            return 0x00FF00;
-        case "blue":
-            return 0x0000FF;
-        case "gray":
-            return 0x808080;
-        case "lightgray":
-        case "silver":
-            return 0xC0C0C0;
-        default:
-            break;
+/// decode color string  supported formats: #RGB, #ARGB, #RRGGBB, #AARRGGBB, rgb(r,g,b), rgba(r,g,b,a), rgba(r,g,b,a%)
+//TODO: the name doesn't match function
+uint decodeHexColor(string s, uint defValue = 0) pure
+{
+    s = s.strip.toLower;
+    if (s.empty)
+        return defValue;
+    if (s == "@null" || s == "transparent")
+        return COLOR_TRANSPARENT;
+    if (s.startsWith("#") && (s.length == 4 || s.length == 5 || s.length == 7 || s.length == 9))
+    { //#RGB #ARGB #RRGGBB #AARRGGBB
+        s = s[1 .. $];
+        auto color = parse!uint(s, 16); //RGB(A) by default
+        if (s.length == 4)
+        { //ARGB
+            color = ((color & 0xF00) >> 4) | ((color & 0xF0) << 8) | ((color & 0xF) << 20);
+        }
+        else if (s.length == 8)
+        { //AARRGGBB
+            color = ((color & 0xFF00) >> 8) | ((color & 0xFF) << 24) | (
+                (color & 0xFF0000) >> 8) | ((color & 0xFF000000) >> 24);
+        }
+        return color;
     }
-    if (s.length != 4 && s.length != 5 && s.length != 7 && s.length != 9)
-        return defValue;
-    if (s[0] != '#')
-        return defValue;
-    uint value = 0;
-    foreach(i; 1 .. s.length) {
-        uint digit = parseHexDigit(s[i]);
-        if (digit == uint.max)
+    else if (s.startsWith("rgba(") && s.endsWith(")"))
+    {
+        s = s[5 .. $ - 1];
+        auto parts = s.split(",");
+        if (parts.length != 4)
             return defValue;
-        value = (value << 4) | digit;
-        if (s.length < 7) // double the same digit for short forms
-            value = (value << 4) | digit;
+        uint r = to!uint(parts[0].strip);
+        uint g = to!uint(parts[1].strip);
+        uint b = to!uint(parts[2].strip);
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
+            return defValue;
+        uint a = 1;
+        auto ap = parts[3].strip;
+        if (ap.endsWith("%")) //rgba(r,g,b,a%)
+            a = cast(uint) round(to!float(ap[0 .. $ - 1].strip) / 100.0 * 255.0);
+        else //rgba(r,g,b,a)
+            a = cast(uint) round(to!float(parts[3].strip) * 255.0);
+        if (a < 0)
+            a = 0;
+        else if (a > 255)
+            a = 255;
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
-    return value;
+    else if (s.startsWith("rgb(") && s.endsWith(")"))
+    {
+        s = s[4 .. $ - 1];
+        auto parts = s.split(",");
+        if (parts.length != 3)
+            return defValue;
+        uint r = to!uint(parts[0].strip);
+        uint g = to!uint(parts[1].strip);
+        uint b = to!uint(parts[2].strip);
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
+            return defValue;
+        return (r << 16) | (g << 8) | b;
+    }
+    foreach (color; __traits(allMembers, Color))
+    {
+        if (color == s)
+            return color.to!Color;
+    }
+    return defValue;
+}
+
+unittest
+{
+    static assert(decodeHexColor("") == 0);
+    static assert(decodeHexColor("@null") == COLOR_TRANSPARENT);
+    static assert(decodeHexColor("trAnsParent") == COLOR_TRANSPARENT);
+    static assert(decodeHexColor("grAy") == 0x808080);
+    static assert(decodeHexColor("#8B008B") == 0x8B008B);
+    static assert(decodeHexColor("#fFf") == 0xfff);
+    static assert(decodeHexColor("#f0F0") == 0xf0f0);
+    static assert(decodeHexColor("#80ff0000") == 0x80ff0000);
+    static assert(decodeHexColor("rgba(255, 0, 0,.5 )") == 0x80ff0000);
+    static assert(decodeHexColor("rgba(255,0, 0, 50%)") == 0x80ff0000);
+    static assert(decodeHexColor("rgb(255,255, 255)") == 0xffffff);
 }
 
