@@ -20,7 +20,7 @@ module dlangui.graphics.colors;
 
 import dlangui.core.types;
 
-private import std.string : strip;
+private import std.string, std.algorithm, std.traits, std.conv, std.range, std.math;
 
 /// special color constant to identify value as not a color (to use default/parent value instead)
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
@@ -314,27 +314,28 @@ bool isFullyTransparentColor(uint color) pure nothrow {
 
 /// decode color string  supported formats: #RGB, #ARGB, #RRGGBB, #AARRGGBB, rgb(r,g,b), rgba(r,g,b,a), rgba(r,g,b,a%)
 //TODO: the name doesn't match function
-uint decodeHexColor(string s, uint defValue = 0) pure
-{
+uint decodeHexColor(string s, uint defValue = 0) pure {
     s = s.strip.toLower;
     if (s.empty)
         return defValue;
     if (s == "@null" || s == "transparent")
         return COLOR_TRANSPARENT;
-    if (s.startsWith("#") && (s.length == 4 || s.length == 5 || s.length == 7 || s.length == 9))
-    { //#RGB #ARGB #RRGGBB #AARRGGBB
-        s = s[1 .. $];
-        auto color = parse!uint(s, 16); //RGB(A) by default
-        if (s.length == 4)
-        { //ARGB
-            color = ((color & 0xF00) >> 4) | ((color & 0xF0) << 8) | ((color & 0xF) << 20);
+    if (s.startsWith("#")) {
+        if (s.length == 4 || s.length == 5 || s.length == 7 || s.length == 9) { //#RGB #ARGB #RRGGBB #AARRGGBB
+            s = s[1 .. $];
+            auto color = parse!uint(s, 16); //RGB(A) by default
+            if (s.length == 4)
+            { //ARGB
+                color = ((color & 0xF00) >> 4) | ((color & 0xF0) << 8) | ((color & 0xF) << 20);
+            }
+            else if (s.length == 8)
+            { //AARRGGBB
+                color = ((color & 0xFF00) >> 8) | ((color & 0xFF) << 24) | (
+                    (color & 0xFF0000) >> 8) | ((color & 0xFF000000) >> 24);
+            }
+            return color;
         }
-        else if (s.length == 8)
-        { //AARRGGBB
-            color = ((color & 0xFF00) >> 8) | ((color & 0xFF) << 24) | (
-                (color & 0xFF0000) >> 8) | ((color & 0xFF000000) >> 24);
-        }
-        return color;
+        return defValue;
     }
     else if (s.startsWith("rgba(") && s.endsWith(")"))
     {
@@ -349,10 +350,18 @@ uint decodeHexColor(string s, uint defValue = 0) pure
             return defValue;
         uint a = 1;
         auto ap = parts[3].strip;
-        if (ap.endsWith("%")) //rgba(r,g,b,a%)
-            a = cast(uint) round(to!float(ap[0 .. $ - 1].strip) / 100.0 * 255.0);
-        else //rgba(r,g,b,a)
-            a = cast(uint) round(to!float(parts[3].strip) * 255.0);
+        if (ap.endsWith("%")) { //rgba(r,g,b,a%)
+            auto alpha = to!float(ap[0 .. $ - 1].strip);
+            if(alpha < 0 || alpha > 100)
+                return defValue;
+            a = cast(uint) round(alpha / 100.0 * 255.0);
+        }
+        else { //rgba(r,g,b,a)
+            auto alpha = to!float(parts[3].strip);
+            if (alpha < 0 || alpha > 1)
+                return defValue;
+            a = cast(uint) round(alpha * 255.0);
+        }
         if (a < 0)
             a = 0;
         else if (a > 255)
@@ -393,5 +402,10 @@ unittest
     static assert(decodeHexColor("rgba(255, 0, 0,.5 )") == 0x80ff0000);
     static assert(decodeHexColor("rgba(255,0, 0, 50%)") == 0x80ff0000);
     static assert(decodeHexColor("rgb(255,255, 255)") == 0xffffff);
+    static assert(decodeHexColor("rgb(321,321,321)") == 0); // invalid input
+    static assert(decodeHexColor("not_valid_color_name") == 0); // invalid input
+    static assert(decodeHexColor("#80ff00000") == 0); // invalid input
+    static assert(decodeHexColor("#f0") == 0); // invalid input
+    static assert(decodeHexColor("rgba(255,255, 255, 10)") == 0); // invalid input
 }
 
