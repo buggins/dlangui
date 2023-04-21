@@ -20,7 +20,7 @@ module dlangui.graphics.colors;
 
 import dlangui.core.types;
 
-private import std.string, std.algorithm, std.traits, std.conv, std.range, std.math;
+private import std.string, std.algorithm, std.traits, std.conv, std.range;
 
 /// special color constant to identify value as not a color (to use default/parent value instead)
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
@@ -348,24 +348,20 @@ uint decodeHexColor(string s, uint defValue = 0) pure {
         uint b = to!uint(parts[2].strip);
         if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
             return defValue;
-        uint a = 1;
+        uint a = 255;
         auto ap = parts[3].strip;
         if (ap.endsWith("%")) { //rgba(r,g,b,a%)
             auto alpha = to!float(ap[0 .. $ - 1].strip);
             if(alpha < 0 || alpha > 100)
                 return defValue;
-            a = cast(uint) round(alpha / 100.0 * 255.0);
+            a = (cast(uint)(alpha * 2.55 + 0.5)).min(255);
         }
         else { //rgba(r,g,b,a)
             auto alpha = to!float(parts[3].strip);
             if (alpha < 0 || alpha > 1)
                 return defValue;
-            a = cast(uint) round(alpha * 255.0);
+            a = cast(uint)(alpha * 255.0 + 0.5);
         }
-        if (a < 0)
-            a = 0;
-        else if (a > 255)
-            a = 255;
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
     else if (s.startsWith("rgb(") && s.endsWith(")"))
