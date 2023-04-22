@@ -354,7 +354,7 @@ uint decodeHexColor(string s, uint defValue = 0) pure {
             auto alpha = to!float(ap[0 .. $ - 1].strip);
             if(alpha < 0 || alpha > 100)
                 return defValue;
-            a = (cast(uint)(alpha * 2.55 + 0.5)).min(255);
+            a = cast(uint)((alpha * 255.0 / 100.0) + 0.5);
         }
         else { //rgba(r,g,b,a)
             auto alpha = to!float(parts[3].strip);
@@ -397,11 +397,15 @@ unittest
     static assert(decodeHexColor("#80ff0000") == 0x80ff0000);
     static assert(decodeHexColor("rgba(255, 0, 0,.5 )") == 0x80ff0000);
     static assert(decodeHexColor("rgba(255,0, 0, 50%)") == 0x80ff0000);
+    static assert(decodeHexColor("rgba(255,0, 0, 100%)") == 0xffff0000);
+    static assert(decodeHexColor("rgba(255,0, 0, 0%)") == 0xff0000);
     static assert(decodeHexColor("rgb(255,255, 255)") == 0xffffff);
-    static assert(decodeHexColor("rgb(321,321,321)") == 0); // invalid input
-    static assert(decodeHexColor("not_valid_color_name") == 0); // invalid input
-    static assert(decodeHexColor("#80ff00000") == 0); // invalid input
-    static assert(decodeHexColor("#f0") == 0); // invalid input
-    static assert(decodeHexColor("rgba(255,255, 255, 10)") == 0); // invalid input
+    static assert(decodeHexColor("rgba(255,0, 0, 150%)") == 0); // invalid input, return def value
+    static assert(decodeHexColor("rgba(255,0, 0, -34%)") == 0); // invalid input, return def value
+    static assert(decodeHexColor("rgb(321,321,321)") == 0); // invalid input, return def value
+    static assert(decodeHexColor("not_valid_color_name") == 0); // invalid input, return def value
+    static assert(decodeHexColor("#80ff00000") == 0); // invalid input, return def value
+    static assert(decodeHexColor("#f0") == 0); // invalid input, return def value
+    static assert(decodeHexColor("rgba(255,255, 255, 10)") == 0); // invalid input, return def value
 }
 
