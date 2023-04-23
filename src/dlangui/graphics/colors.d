@@ -20,7 +20,11 @@ module dlangui.graphics.colors;
 
 import dlangui.core.types;
 
-private import std.string, std.algorithm, std.traits, std.conv, std.range;
+import std.string;
+import std.algorithm;
+import std.traits;
+import std.conv;
+import std.range;
 
 /// special color constant to identify value as not a color (to use default/parent value instead)
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
