@@ -25,6 +25,7 @@ import std.algorithm;
 import std.traits;
 import std.conv;
 import std.range;
+import dimage.jpeg;
 
 /// special color constant to identify value as not a color (to use default/parent value instead)
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
@@ -318,14 +319,14 @@ bool isFullyTransparentColor(uint color) pure nothrow {
 
 /// decode color string  supported formats: #RGB, #ARGB, #RRGGBB, #AARRGGBB, rgb(r,g,b), rgba(r,g,b,a), rgba(r,g,b,a%)
 //TODO: the name doesn't match function
-uint decodeHexColor(string s, uint defValue = 0) pure {
+uint decodeHexColor(string s, uint defValue = 0) { //pure
     s = s.strip.toLower;
     if (s.empty)
         return defValue;
     if (s == "@null" || s == "transparent")
         return COLOR_TRANSPARENT;
     if (s.startsWith("#")) {
-        if (s.length == 4 || s.length == 5 || s.length == 7 || s.length == 9) { //#RGB #ARGB #RRGGBB #AARRGGBB
+        if (s.length.among(4, 5, 7, 9)) { //#RGB #ARGB #RRGGBB #AARRGGBB
             s = s[1 .. $];
             auto color = parse!uint(s, 16); //RGB(A) by default
             if (s.length == 4)
@@ -347,26 +348,22 @@ uint decodeHexColor(string s, uint defValue = 0) pure {
         auto parts = s.split(",");
         if (parts.length != 4)
             return defValue;
-        uint r = to!uint(parts[0].strip);
-        uint g = to!uint(parts[1].strip);
-        uint b = to!uint(parts[2].strip);
-        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
-            return defValue;
+        uint r = to!uint(parts[0].strip).clamp(0, 255);
+        uint g = to!uint(parts[1].strip).clamp(0, 255);
+        uint b = to!uint(parts[2].strip).clamp(0, 255);
         uint a = 255;
         auto ap = parts[3].strip;
         if (ap.endsWith("%")) { //rgba(r,g,b,a%)
             auto alpha = to!float(ap[0 .. $ - 1].strip);
-            if(alpha < 0 || alpha > 100)
-                return defValue;
-            a = cast(uint)((alpha * 255.0 / 100.0) + 0.5);
+            a = cast(uint)((alpha * 255.0 / 100.0) + 0.5).clamp(0, 255);
         }
         else { //rgba(r,g,b,a)
             auto alpha = to!float(parts[3].strip);
-            if (alpha < 0 || alpha > 1)
-                return defValue;
-            a = cast(uint)(alpha * 255.0 + 0.5);
+            a = cast(uint)(alpha * 255.0 + 0.5).clamp(0, 255);
         }
-        return (a << 24) | (r << 16) | (g << 8) | b;
+        if(a == 255)
+            return (r << 16) | (g << 8) | b;
+        return (a == 0) ? 0x00000000 : (a << 24) | (r << 16) | (g << 8) | b;
     }
     else if (s.startsWith("rgb(") && s.endsWith(")"))
     {
@@ -374,11 +371,9 @@ uint decodeHexColor(string s, uint defValue = 0) pure {
         auto parts = s.split(",");
         if (parts.length != 3)
             return defValue;
-        uint r = to!uint(parts[0].strip);
-        uint g = to!uint(parts[1].strip);
-        uint b = to!uint(parts[2].strip);
-        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255)
-            return defValue;
+        uint r = to!uint(parts[0].strip).clamp(0, 255);
+        uint g = to!uint(parts[1].strip).clamp(0, 255);
+        uint b = to!uint(parts[2].strip).clamp(0, 255);
         return (r << 16) | (g << 8) | b;
     }
     foreach (color; __traits(allMembers, Color))
@@ -401,15 +396,16 @@ unittest
     static assert(decodeHexColor("#80ff0000") == 0x80ff0000);
     static assert(decodeHexColor("rgba(255, 0, 0,.5 )") == 0x80ff0000);
     static assert(decodeHexColor("rgba(255,0, 0, 50%)") == 0x80ff0000);
-    static assert(decodeHexColor("rgba(255,0, 0, 100%)") == 0xffff0000);
-    static assert(decodeHexColor("rgba(255,0, 0, 0%)") == 0xff0000);
+    static assert(decodeHexColor("rgba(255,0, 0, 100%)") == 0xff0000);
+    static assert(decodeHexColor("rgba(255,0, 0, 0%)") == 0x00000000);
     static assert(decodeHexColor("rgb(255,255, 255)") == 0xffffff);
-    static assert(decodeHexColor("rgba(255,0, 0, 150%)") == 0); // invalid input, return def value
-    static assert(decodeHexColor("rgba(255,0, 0, -34%)") == 0); // invalid input, return def value
-    static assert(decodeHexColor("rgb(321,321,321)") == 0); // invalid input, return def value
-    static assert(decodeHexColor("not_valid_color_name") == 0); // invalid input, return def value
-    static assert(decodeHexColor("#80ff00000") == 0); // invalid input, return def value
-    static assert(decodeHexColor("#f0") == 0); // invalid input, return def value
-    static assert(decodeHexColor("rgba(255,255, 255, 10)") == 0); // invalid input, return def value
+    static assert(decodeHexColor("rgba(255,0, 0, 150%)") == 0xff0000); // invalid input
+    static assert(decodeHexColor("rgba(255,0, 0, -34%)") == 0x00000000); // invalid input
+    static assert(decodeHexColor("rgb(321,321,321)") == 0xffffff); // invalid input
+    static assert(decodeHexColor("not_valid_color_name") == 0x00000000); // invalid input, return def value
+    static assert(decodeHexColor("#80ff00000") == 0x000000000); // invalid input, return def value
+    static assert(decodeHexColor("#f0") == 0x00000000); // invalid input, return def value
+    static assert(decodeHexColor("rgba(255,255, 255, 10)") == 0xffffff); // invalid input
+    static assert(decodeHexColor("rgba(444,0, 0, -5)") == 0x00000000); // invalid input
 }
 
