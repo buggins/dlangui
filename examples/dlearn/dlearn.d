@@ -112,9 +112,7 @@ class MainFrame : AppFrame {
     }
 
     this(Window window) {
-	//_settings = new AppSettings("_dlearnrc.json");
 	_settings = new AppSettings(buildNormalizedPath(settingsDir, "dlearnrc.json"));
-	//Log.d("_dlearnrc = " ~ buildNormalizedPath(settingsDir, "_dlearnrc.json"));
 	cacheFile = buildNormalizedPath(settingsDir, "dlearn_ini.d");
         applySettings(_settings);
 
