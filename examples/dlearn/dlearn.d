@@ -339,12 +339,6 @@ extern (C) int UIAppMain(string[] args) {
     FontManager.fontGamma = 0.8;
     FontManager.hintingMode = HintingMode.Normal;
 
-    //cacheFile = buildNormalizedPath(settingsDir, "dlearn_ini.d");
-    //cacheFile = buildPath(dirName(thisExePath), "dlearn_ini.d");
-
-    // _settings = new AppSettings("settings.json");
-    // Platform.instance.uiLanguage = settings.uiLanguage;
-
     Window window = Platform.instance.createWindow("Dlang Learn"d, null, 
 			WindowFlag.Resizable, 500, 500);
 

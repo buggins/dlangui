@@ -6,7 +6,7 @@
 	"dependencies": {
 		"dlangui": "~>0.10.2"
 	},
-	"description": "Test Dlang",
+	"description": "Leanr/Test Dlang",
 	"homepage": "https://...",
 	"license": "Boost",
 	"stringImportPaths": [
