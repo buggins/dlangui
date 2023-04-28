@@ -1,0 +1,31 @@
+{
+	"name": "dlearn",
+	"authors": [
+		"John Xu"
+	],
+	"dependencies": {
+		"dlangui": "~>0.10.2"
+	},
+	"description": "Test Dlang",
+	"homepage": "https://...",
+	"license": "Boost",
+	"stringImportPaths": [
+		"views",
+		"views/res",
+		"views/res/i18n",
+		"views/res/mdpi"
+	],
+	"subConfigurations": {
+		"dlangui": "minimal"
+	},
+
+	"targetName": "dlearn",
+	"targetPath": ".",
+	"targetType": "executable",
+        "mainSourceFile": "dlearn.d",
+        "sourceFiles": ["appSettings.d", "settings.d"],
+
+	"versions": [
+		"EmbedStandardResources"
+	]
+}
