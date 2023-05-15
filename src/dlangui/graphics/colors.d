@@ -190,20 +190,26 @@ uint makeRGBA(T)(T r, T g, T b, T a) pure nothrow {
 
 /// blend two RGB pixels using alpha
 uint blendARGB(uint dst, uint src, uint alpha) pure nothrow {
-    uint dstalpha = dst >> 24;
-    if (dstalpha > 0x80)
-        return src;
+    uint srca = (src >> 24) & 0xFF;
+    uint dsta = (dst >> 24) & 0xFF;
+
     uint srcr = (src >> 16) & 0xFF;
     uint srcg = (src >> 8) & 0xFF;
     uint srcb = (src >> 0) & 0xFF;
+
     uint dstr = (dst >> 16) & 0xFF;
     uint dstg = (dst >> 8) & 0xFF;
     uint dstb = (dst >> 0) & 0xFF;
+
     uint ialpha = 255 - alpha;
+
     uint r = ((srcr * ialpha + dstr * alpha) >> 8) & 0xFF;
     uint g = ((srcg * ialpha + dstg * alpha) >> 8) & 0xFF;
     uint b = ((srcb * ialpha + dstb * alpha) >> 8) & 0xFF;
-    return (r << 16) | (g << 8) | b;
+
+    uint a = ((srca * ialpha + dsta * alpha) >> 8) & 0xFF;
+
+    return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
 //immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
