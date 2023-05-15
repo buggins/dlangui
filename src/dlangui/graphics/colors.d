@@ -25,7 +25,6 @@ import std.algorithm;
 import std.traits;
 import std.conv;
 import std.range;
-import dimage.jpeg;
 
 /// special color constant to identify value as not a color (to use default/parent value instead)
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
