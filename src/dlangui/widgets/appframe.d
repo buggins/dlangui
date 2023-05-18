@@ -118,7 +118,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
 
     bool applyShortcutsSettings() {
         if (shortcutSettings.loaded) {
-            foreach(key, value; _shortcutSettings.map) {
+            foreach(key, value; _shortcutSettings.setting.map) {
                 int actionId = actionNameToId(key);
                 if (actionId == 0) {
                     Log.e("applyShortcutsSettings: Unknown action name: ", key);
@@ -153,20 +153,20 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
 
     /// set shortcut settings from actions and save to file - useful for initial settings file version creation
     bool saveShortcutsSettings(const(Action)[] actions) {
-        shortcutSettings.clear();
+        shortcutSettings.setting.clear();
         foreach(a; actions) {
             string name = actionIdToName(a.id);
             if (name) {
                 const(Accelerator)[] acc = a.accelerators;
                 if (acc.length > 0) {
                     if (acc.length == 1) {
-                        _shortcutSettings[name] = acc[0].toString;
+                        _shortcutSettings.setting[name] = acc[0].toString;
                     } else {
                         string[] array;
                         foreach(accel; acc) {
                             array ~= accel.toString;
                         }
-                        _shortcutSettings[name] = array;
+                        _shortcutSettings.setting[name] = array;
                     }
                 }
             }

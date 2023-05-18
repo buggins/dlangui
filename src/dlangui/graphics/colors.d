@@ -319,8 +319,77 @@ bool isFullyTransparentColor(uint color) pure nothrow {
 
 /// decode color string  supported formats: #RGB, #ARGB, #RRGGBB, #AARRGGBB, rgb(r,g,b), rgba(r,g,b,a), rgba(r,g,b,a%)
 //TODO: the name doesn't match function
-uint decodeHexColor(string s, uint defValue = 0) { //pure
+uint decodeHexColor(string s, uint defValue = 0) @safe
+{
     s = s.strip.toLower;
+    return decodeColorInternal(s, defValue);
+}
+///
+@safe unittest
+{
+    assert(decodeHexColor("") == 0);
+    assert(decodeHexColor("@null") == COLOR_TRANSPARENT);
+    assert(decodeHexColor("trAnsParent") == COLOR_TRANSPARENT);
+    assert(decodeHexColor("grAy") == 0x808080);
+    assert(decodeHexColor("#8B008B") == 0x8B008B);
+    assert(decodeHexColor("#fFf") == 0xfff);
+    assert(decodeHexColor("#f0F0") == 0xf0f0);
+    assert(decodeHexColor("#80ff0000") == 0x80ff0000);
+    assert(decodeHexColor("rgba(255, 0, 0,.5 )") == 0x80ff0000);
+    assert(decodeHexColor("rgba(255,0, 0, 50%)") == 0x80ff0000);
+    assert(decodeHexColor("rgba(255,0, 0, 100%)") == 0xff0000);
+    assert(decodeHexColor("rgba(255,0, 0, 0%)") == 0x00000000);
+    assert(decodeHexColor("rgb(255,255, 255)") == 0xffffff);
+    assert(decodeHexColor("rgba(255,0, 0, 150%)") == 0xff0000); // invalid input
+    assert(decodeHexColor("rgba(255,0, 0, -34%)") == 0x00000000); // invalid input
+    assert(decodeHexColor("rgb(321,321,321)") == 0xffffff); // invalid input
+    assert(decodeHexColor("not_valid_color_name") == 0x00000000); // invalid input, return def value
+    assert(decodeHexColor("#80ff00000") == 0x000000000); // invalid input, return def value
+    assert(decodeHexColor("#f0") == 0x00000000); // invalid input, return def value
+    assert(decodeHexColor("rgba(255,255, 255, 10)") == 0xffffff); // invalid input
+    assert(decodeHexColor("rgba(444,0, 0, -5)") == 0x00000000); // invalid input
+}
+
+uint decodeCSSColor(string s, uint defValue = 0) @safe
+{
+    s = s.strip.toLower;
+    if (s.startsWith("#")) {
+        if (s.length.among(7, 9)) { //#RRGGBB #AARRGGBB
+            //s = s[1 .. $];
+            import std.stdio : writeln;
+            auto d = s[1 .. $];
+            auto color = parse!uint(d, 16); //RGB(A) by default
+            if (s.length == 5)
+            { //RGBA
+                color = ((color & 0xF00) >> 4) | ((color & 0xF0) << 8) | ((color & 0xF) << 20);
+            }
+            else if (s.length == 9)
+            { //RRGGBBAA
+                color = ((color & 0xFF) << 24) | (color >> 8);
+            }
+            return color;
+        }
+        return defValue;
+    }
+    return decodeColorInternal(s, defValue);
+}
+///
+@safe unittest
+{
+    assert(decodeCSSColor("gray") == Color.gray);
+    assert(decodeCSSColor("#AABBCC80") == 0x80AABBCC);
+}
+
+@safe unittest
+{
+    assert(decodeCSSColor("#AABBCC80") == decodeColorInternal("#80AABBCC"));
+    assert(decodeCSSColor("#FF000080") == decodeColorInternal("#80FF0000"));
+    assert(decodeCSSColor("#0000FF80") == decodeColorInternal("#800000FF"));
+}
+
+
+private uint decodeColorInternal(string s, uint defValue = 0) @safe
+{
     if (s.empty)
         return defValue;
     if (s == "@null" || s == "transparent")
@@ -329,15 +398,6 @@ uint decodeHexColor(string s, uint defValue = 0) { //pure
         if (s.length.among(4, 5, 7, 9)) { //#RGB #ARGB #RRGGBB #AARRGGBB
             s = s[1 .. $];
             auto color = parse!uint(s, 16); //RGB(A) by default
-            if (s.length == 4)
-            { //ARGB
-                color = ((color & 0xF00) >> 4) | ((color & 0xF0) << 8) | ((color & 0xF) << 20);
-            }
-            else if (s.length == 8)
-            { //AARRGGBB
-                color = ((color & 0xFF00) >> 8) | ((color & 0xFF) << 24) | (
-                    (color & 0xFF0000) >> 8) | ((color & 0xFF000000) >> 24);
-            }
             return color;
         }
         return defValue;
@@ -383,29 +443,3 @@ uint decodeHexColor(string s, uint defValue = 0) { //pure
     }
     return defValue;
 }
-
-unittest
-{
-    static assert(decodeHexColor("") == 0);
-    static assert(decodeHexColor("@null") == COLOR_TRANSPARENT);
-    static assert(decodeHexColor("trAnsParent") == COLOR_TRANSPARENT);
-    static assert(decodeHexColor("grAy") == 0x808080);
-    static assert(decodeHexColor("#8B008B") == 0x8B008B);
-    static assert(decodeHexColor("#fFf") == 0xfff);
-    static assert(decodeHexColor("#f0F0") == 0xf0f0);
-    static assert(decodeHexColor("#80ff0000") == 0x80ff0000);
-    static assert(decodeHexColor("rgba(255, 0, 0,.5 )") == 0x80ff0000);
-    static assert(decodeHexColor("rgba(255,0, 0, 50%)") == 0x80ff0000);
-    static assert(decodeHexColor("rgba(255,0, 0, 100%)") == 0xff0000);
-    static assert(decodeHexColor("rgba(255,0, 0, 0%)") == 0x00000000);
-    static assert(decodeHexColor("rgb(255,255, 255)") == 0xffffff);
-    static assert(decodeHexColor("rgba(255,0, 0, 150%)") == 0xff0000); // invalid input
-    static assert(decodeHexColor("rgba(255,0, 0, -34%)") == 0x00000000); // invalid input
-    static assert(decodeHexColor("rgb(321,321,321)") == 0xffffff); // invalid input
-    static assert(decodeHexColor("not_valid_color_name") == 0x00000000); // invalid input, return def value
-    static assert(decodeHexColor("#80ff00000") == 0x000000000); // invalid input, return def value
-    static assert(decodeHexColor("#f0") == 0x00000000); // invalid input, return def value
-    static assert(decodeHexColor("rgba(255,255, 255, 10)") == 0xffffff); // invalid input
-    static assert(decodeHexColor("rgba(444,0, 0, -5)") == 0x00000000); // invalid input
-}
-

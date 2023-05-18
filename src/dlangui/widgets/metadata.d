@@ -163,15 +163,15 @@ private string[] generatePropertyTypeList(alias T)() {
     foreach(m; __traits(allMembers, T)) {
         static if (__traits(compiles, (typeof(__traits(getMember, T, m))))){
             //static if (is (typeof(__traits(getMember, T, m)) == function)) {
-            static if (__traits(isVirtualFunction, __traits(getMember, T, m))) {//
+            static if (__traits(isVirtualMethod, __traits(getMember, T, m))) {//
                 import std.traits : MemberFunctionsTuple;
-                alias overloads = typeof(__traits(getVirtualFunctions, T, m));
+                alias overloads = typeof(__traits(getVirtualMethods, T, m));
                 static if (overloads.length == 2) {
-                    static if (isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[0]) && isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[1])) {
+                    static if (isPublicPropertyFunction!(__traits(getVirtualMethods, T, m)[0]) && isPublicPropertyFunction!(__traits(getVirtualMethods, T, m)[1])) {
                         //pragma(msg, m ~ " isPublicPropertyFunction0=" ~ isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[0]).stringof);
                         //pragma(msg, m ~ " isPublicPropertyFunction1=" ~ isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[1]).stringof);
-                        immutable getterType = markupPropertyType!(__traits(getVirtualFunctions, T, m)[0]);
-                        immutable setterType = markupPropertyType!(__traits(getVirtualFunctions, T, m)[1]);
+                        immutable getterType = markupPropertyType!(__traits(getVirtualMethods, T, m)[0]);
+                        immutable setterType = markupPropertyType!(__traits(getVirtualMethods, T, m)[1]);
                         static if (getterType && setterType && getterType == setterType) {
                             //pragma(msg, "markup property found: " ~ getterType ~ " " ~ m.stringof);
                             properties ~= "WidgetPropertyMetadata( typeid(" ~ getterType ~ "), " ~ m.stringof ~ " ), ";

@@ -79,7 +79,6 @@ class SettingsFile {
         _setting = settings;
         //_setting.apply(settings);
     }
-    alias setting this;
 
     /// create settings file object; if filename is provided, attempts to load settings from file
     this(string filename = null) {
