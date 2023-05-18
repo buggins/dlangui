@@ -27,9 +27,9 @@ class GridExample : VerticalLayout
         // create sample grid content
         for (int y = 0; y < grid.rows; y++) {
             for (int x = 0; x < grid.cols; x++) {
-                grid.setCellText(x, y, "cell("d ~ to!dstring(x + 1) ~ ","d ~ to!dstring(y + 1) ~ ")"d);
+                grid.setCellText(x, y, UIString.fromRaw("cell(" ~ to!string(x + 1) ~ "," ~ to!string(y + 1) ~ ")"));
             }
-            grid.setRowTitle(y, to!dstring(y + 1));
+            grid.setRowTitle(y, UIString.fromRaw(to!string(y + 1)));
         }
         for (int x = 0; x < grid.cols; x++) {
             int col = x + 1;
@@ -39,7 +39,7 @@ class GridExample : VerticalLayout
             if (n1)
                 res ~= n1 + 'A';
             res ~= n2 + 'A';
-            grid.setColTitle(x, res);
+            grid.setColTitle(x, UIString.fromRaw(res));
         }
         grid.autoFit();
         addChild(grid);

@@ -106,10 +106,10 @@ class BasicControls : LinearLayout
         gbgrid.layoutHeight(FILL_PARENT);
         grid.layoutWidth(FILL_PARENT);
         grid.layoutHeight(FILL_PARENT);
-        foreach (index, month; ["January"d, "February"d, "March"d, "April"d, "May"d, "June"d, "July"d, "August"d, "September"d, "October"d, "November"d, "December"d])
-            grid.setColTitle(cast(int)index, month);
+        foreach (index, month; ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"])
+            grid.setColTitle(cast(int)index, UIString.fromRaw(month));
         for (int y = 0; y < 10; y++)
-            grid.setRowTitle(y, to!dstring(y+1));
+            grid.setRowTitle(y, UIString.fromRaw(to!string(y+1)));
 
         grid.setColWidth(0, 30.pointsToPixels);
         grid.autoFit();
@@ -118,7 +118,7 @@ class BasicControls : LinearLayout
         for (int x = 0; x < 12; x++) {
             for (int y = 0; y < 10; y++) {
                 int n = uniform(0, 10000);
-                grid.setCellText(x, y, to!dstring("%.2f".format(n / 100.0)));
+                grid.setCellText(x, y, UIString.fromRaw(to!string("%.2f".format(n / 100.0))));
             }
         }
 

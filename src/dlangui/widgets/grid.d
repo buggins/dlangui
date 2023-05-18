@@ -1828,17 +1828,17 @@ class StringGridWidgetBase : GridWidgetBase {
         super(ID);
     }
     /// get cell text
-    abstract dstring cellText(int col, int row);
+    abstract UIString cellText(int col, int row);
     /// set cell text
-    abstract StringGridWidgetBase setCellText(int col, int row, dstring text);
+    abstract StringGridWidgetBase setCellText(int col, int row, UIString text);
     /// returns row header title
-    abstract dstring rowTitle(int row);
+    abstract UIString rowTitle(int row);
     /// set row header title
-    abstract StringGridWidgetBase setRowTitle(int row, dstring title);
+    abstract StringGridWidgetBase setRowTitle(int row, UIString title);
     /// returns row header title
-    abstract dstring colTitle(int col);
+    abstract UIString colTitle(int col);
     /// set col header title
-    abstract StringGridWidgetBase setColTitle(int col, dstring title);
+    abstract StringGridWidgetBase setColTitle(int col, UIString title);
 
     ///// selected column
     //@property override int col() { return _col - _headerCols; }
@@ -1865,9 +1865,9 @@ class StringGridWidgetBase : GridWidgetBase {
  */
 class StringGridWidget : StringGridWidgetBase {
 
-    protected dstring[][] _data;
-    protected dstring[] _rowTitles;
-    protected dstring[] _colTitles;
+    protected UIString[][] _data;
+    protected UIString[] _rowTitles;
+    protected UIString[] _colTitles;
 
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -1881,14 +1881,21 @@ class StringGridWidget : StringGridWidgetBase {
     }
 
     /// get cell text
-    override dstring cellText(int col, int row) {
+    override UIString cellText(int col, int row) {
         if (col >= 0 && col < cols && row >= 0 && row < rows)
             return _data[row][col];
-        return ""d;
+        return UIString.fromRaw("");
     }
 
     /// set cell text
-    override StringGridWidgetBase setCellText(int col, int row, dstring text) {
+    override StringGridWidgetBase setCellText(int col, int row, UIString text) {
+        if (col >= 0 && col < cols && row >= 0 && row < rows)
+            _data[row][col] = text;
+        return this;
+    }
+
+    deprecated("This overload is deprecated, use the `UIString` overload instead")
+    StringGridWidgetBase setCellText(int col, int row, dstring text) {
         if (col >= 0 && col < cols && row >= 0 && row < rows)
             _data[row][col] = text;
         return this;
@@ -1909,22 +1916,34 @@ class StringGridWidget : StringGridWidgetBase {
     }
 
     /// returns row header title
-    override dstring rowTitle(int row) {
+    override UIString rowTitle(int row) {
         return _rowTitles[row];
     }
     /// set row header title
-    override StringGridWidgetBase setRowTitle(int row, dstring title) {
+    override StringGridWidgetBase setRowTitle(int row, UIString title) {
+        _rowTitles[row] = title;
+        return this;
+    }
+
+    deprecated("This overload is deprecated, use the `UIString` overload instead")
+    StringGridWidgetBase setRowTitle(int row, dstring title) {
         _rowTitles[row] = title;
         return this;
     }
 
     /// returns row header title
-    override dstring colTitle(int col) {
+    override UIString colTitle(int col) {
         return _colTitles[col];
     }
 
     /// set col header title
-    override StringGridWidgetBase setColTitle(int col, dstring title) {
+    override StringGridWidgetBase setColTitle(int col, UIString title) {
+        _colTitles[col] = title;
+        return this;
+    }
+
+    deprecated("This overload is deprecated, use the `UIString` overload instead")
+    StringGridWidgetBase setColTitle(int col, dstring title) {
         _colTitles[col] = title;
         return this;
     }
