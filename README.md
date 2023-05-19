@@ -151,9 +151,8 @@ Third party components used
 * `binbc-opengl` - for OpenGL support
 * `bindbc-freetype` + FreeType library support under linux and optionally under Windows.
 * `bindbc-sdl` + SDL2 for cross platform support
-* WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
 * X11 binding when SDL2 is not used
-* PNG and JPEG reading code is based on dlib sources
+* `arsd-official` For image reading and XML parsing
 
 
 Hello World

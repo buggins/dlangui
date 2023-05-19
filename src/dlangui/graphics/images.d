@@ -23,25 +23,7 @@ module dlangui.graphics.images;
 public import dlangui.core.config;
 static if (BACKEND_GUI):
 
-//version = USE_DEIMAGE;
-//version = USE_DLIBIMAGE;
-version = USE_DIMAGE;
-
-version (USE_DEIMAGE) {
-    import devisualization.image;
-    import devisualization.image.png;
-} else version (USE_DIMAGE) {
-    //import dimage.io;
-    import dimage.image;
-    import dimage.png;
-    import dimage.jpeg;
-} else version (USE_DLIBIMAGE) {
-    import dlib.image.io.io;
-    import dlib.image.image;
-    import dlib.image.io.png;
-    import dlib.image.io.jpeg;
-    version = ENABLE_DLIBIMAGE_JPEG;
-}
+import arsd.image;
 
 import dlangui.core.logger;
 import dlangui.core.types;
@@ -82,138 +64,16 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
         }
     }
 
-    version (USE_DEIMAGE) {
-        try {
-            Image image = imageFromData(extension(filename)[1 ..$], cast(ubyte[])data); //imageFromFile(filename);
-            int w = cast(int)image.width;
-            int h = cast(int)image.height;
-            ColorDrawBuf buf = new ColorDrawBuf(w, h);
-            Color_RGBA[] pixels = image.rgba.allPixels;
-            int index = 0;
-            foreach(y; 0 .. h) {
-                uint * dstLine = buf.scanLine(y);
-                foreach(x; 0 .. w) {
-                    Color_RGBA * pixel = &pixels[index + x];
-                    dstLine[x] = makeRGBA(pixel.r_ubyte, pixel.g_ubyte, pixel.b_ubyte, pixel.a_ubyte);
-                }
-                index += w;
-            }
-            //destroy(image);
-            return buf;
-        } catch (NotAnImageException e) {
-            Log.e("Failed to load image from file ", filename, " using de_image");
-            Log.e(to!string(e));
-            return null;
-        }
-    } else version (USE_DLIBIMAGE) {
-        static import dlib.core.stream;
-        try {
-            version (ENABLE_DLIBIMAGE_JPEG) {
-            } else {
-                // temporary disabling of JPEG support - until DLIB included it
-                if (filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".JPG") || filename.endsWith(".JPEG"))
-                    return null;
-            }
-            SuperImage image = null;
-            dlib.core.stream.ArrayStream dlibstream = new dlib.core.stream.ArrayStream(cast(ubyte[])data, data.length);
-            switch(filename.extension)
-            {
-                case ".jpg", ".JPG", ".jpeg":
-                    image = dlib.image.io.jpeg.loadJPEG(dlibstream);
-                    break;
-                case ".png", ".PNG":
-                    image = dlib.image.io.png.loadPNG(dlibstream);
-                    break;
-                default:
-                    break;
-            }
-            //SuperImage image = dlib.image.io.io.loadImage(filename);
-            if (!image)
-                return null;
-            ColorDrawBuf buf = importImage(image);
-            destroy(image);
-            return buf;
-        } catch (Exception e) {
-            Log.e("Failed to load image from file ", filename, " using dlib image");
-            Log.e(to!string(e));
-            return null;
-        }
-    } else version (USE_DIMAGE) {
-        static import dimage.stream;
-        try {
-            SuperImage image = null;
-            dimage.stream.ArrayStream dlibstream = new dimage.stream.ArrayStream(cast(ubyte[])data, data.length);
-            switch(filename.extension)
-            {
-                case ".jpg", ".JPG", ".jpeg":
-                    image = dimage.jpeg.loadJPEG(dlibstream);
-                    break;
-                case ".png", ".PNG":
-                    image = dimage.png.loadPNG(dlibstream);
-                    break;
-                default:
-                    break;
-            }
-            //SuperImage image = dlib.image.io.io.loadImage(filename);
-            if (!image)
-                return null;
-            ColorDrawBuf buf = importImage(image);
-            destroy(image);
-            return buf;
-        } catch (Exception e) {
-            Log.e("Failed to load image from file ", filename, " using dlib image");
-            Log.e(to!string(e));
-            return null;
-        }
-    } else {
-        try {
-            std.stream.File f = new std.stream.File(filename);
-            scope(exit) { f.close(); }
-            return loadImage(f);
-        } catch (Exception e) {
-            Log.e("exception while loading image from file ", filename);
-            Log.e(to!string(e));
-            return null;
+    auto image = loadImageFromMemory(data);
+    ColorDrawBuf buf = new ColorDrawBuf(image.width, image.height);
+    for(int j = 0; j < buf.height; j++)
+    {
+        auto scanLine = buf.scanLine(j);
+        for(int i = 0; i < buf.width; i++)
+        {
+            auto color = image.getPixel(i, j);
+            scanLine[i] = makeRGBA(color.r, color.g, color.b, 255 - color.a);
         }
     }
-
+    return buf;
 }
-
-version (USE_DLIBIMAGE) {
-    ColorDrawBuf importImage(SuperImage image) {
-        int w = image.width;
-        int h = image.height;
-        ColorDrawBuf buf = new ColorDrawBuf(w, h);
-        foreach(y; 0 .. h) {
-            uint * dstLine = buf.scanLine(y);
-            foreach(x; 0 .. w) {
-                auto pixel = image[x, y].convert(8);
-                dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
-            }
-        }
-        return buf;
-    }
-}
-
-version (USE_DIMAGE) {
-    ColorDrawBuf importImage(SuperImage image) {
-        int w = image.width;
-        int h = image.height;
-        ColorDrawBuf buf = new ColorDrawBuf(w, h);
-        foreach(y; 0 .. h) {
-            uint * dstLine = buf.scanLine(y);
-            foreach(x; 0 .. w) {
-                uint pixel = image[x, y];
-                dstLine[x] = pixel ^ 0xFF000000;
-            }
-        }
-        return buf;
-    }
-}
-
-class ImageDecodingException : Exception {
-    this(string msg) {
-        super(msg);
-    }
-}
-
