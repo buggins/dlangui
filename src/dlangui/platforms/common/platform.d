@@ -421,6 +421,9 @@ class Window : CustomEventTarget {
             signalWindow = true;
         }
 
+        if(newState == WindowState.minimized)
+            _popups.each!(x => x.close());
+
         if (signalWindow && windowStateChanged.assigned)
             windowStateChanged(this, newState, newWindowRect);
     }

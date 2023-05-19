@@ -619,14 +619,10 @@ class MenuWidgetBase : ListWidget {
         // override in main menu
     }
 
-    protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
+    protected void openSubmenu(int index, MenuItemWidget itemWidget) {
         debug(DebugMenus) Log.d("menu", id, " open submenu ", index);
         if (_openedPopup !is null) {
             if (_openedPopupIndex == index) {
-                if (selectFirstItem) {
-                    window.setFocus(_openedMenu);
-                    _openedMenu.selectItem(0);
-                }
                 return;
             } else {
                 _openedPopup.close();
@@ -651,11 +647,11 @@ class MenuWidgetBase : ListWidget {
         _openedMenu = popupMenu;
         _openedPopupIndex = index;
         _selectedItemIndex = index;
-        if (selectFirstItem) {
+        /*if (selectFirstItem) {
             debug(DebugMenus) Log.d("menu: selecting first item");
             window.setFocus(popupMenu);
-            _openedMenu.selectItem(0);
-        }
+            _openedMenu.selectItem(-1);
+        }*/
     }
 
     enum MENU_OPEN_DELAY_MS = 400;
@@ -683,7 +679,7 @@ class MenuWidgetBase : ListWidget {
             if (itemWidget !is null) {
                 if (itemWidget.item.isSubmenu()) {
                     Log.d("Opening submenu by timer");
-                    openSubmenu(_submenuOpenItemIndex, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                    openSubmenu(_submenuOpenItemIndex, itemWidget);
                 } else {
                     // normal item
                 }
@@ -723,7 +719,7 @@ class MenuWidgetBase : ListWidget {
                 if (_selectOnHover || popupWasOpen) {
                     if (popupWasOpen && _orientation == Orientation.Horizontal) {
                         // instantly open submenu in main menu if previous submenu was opened
-                        openSubmenu(index, itemWidget, false); // _orientation == Orientation.Horizontal for main menu, select first item
+                        openSubmenu(index, itemWidget);
                     } else {
                         if (!isMainMenu)
                             scheduleOpenSubmenu(index);
@@ -817,7 +813,14 @@ class MenuWidgetBase : ListWidget {
                     //selectItem(-1);
                     selectOnHover = false;
                 } else {
-                    openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                    if(_openedPopupIndex == index)
+                    {
+                        _openedPopup.close();
+                        _openedPopup = null;
+                        _openedPopupIndex = -1;
+                    }
+                    else
+                        openSubmenu(index, itemWidget);
                     selectOnHover = true;
                 }
             } else {
@@ -882,7 +885,7 @@ class MenuWidgetBase : ListWidget {
                 } else if (event.keyCode == KeyCode.RIGHT) {
                     MenuItemWidget thisItem = selectedMenuItemWidget();
                     if (thisItem !is null && thisItem.item.isSubmenu) {
-                        openSubmenu(_selectedItemIndex, thisItem, true);
+                        openSubmenu(_selectedItemIndex, thisItem);
                         return true;
                     } else if (_parentMenu !is null && _parentMenu.orientation == Orientation.Horizontal) {
                         _parentMenu.moveSelection(1);
