@@ -213,6 +213,10 @@ static if (ENABLE_OPENGL) {
 
 const uint CUSTOM_MESSAGE_ID = WM_USER + 1;
 
+// HACK: To allow Drag & Drop when running as admin
+extern(Windows) BOOL ChangeWindowMessageFilter(UINT message, DWORD dwFlag);
+enum MSGFLT_ADD = 1;
+
 static if (ENABLE_OPENGL) {
 
     alias PFNWGLCHOOSEPIXELFORMATARBPROC = extern(C) BOOL function(HDC hdc, const(int)* attributes, const(FLOAT)* fAttributes, UINT maxFormats, int* pixelFormat, UINT *numFormats);
@@ -493,6 +497,12 @@ class Win32Window : Window {
         RECT rect;
         GetWindowRect(_hwnd, &rect);
         handleWindowStateChange(WindowState.unspecified, Rect(rect.left, rect.top, _dx, _dy));
+
+        // HACK: This allows drag and drop when ran as admin. Preferable solution is to implement IDragDrop as MS suggests
+        // See https://stackoverflow.com/questions/64485600/wm-dropfiles-not-called-on-x64
+        ChangeWindowMessageFilter (WM_DROPFILES, MSGFLT_ADD);
+        ChangeWindowMessageFilter (WM_COPYDATA, MSGFLT_ADD);
+        ChangeWindowMessageFilter (0x0049, MSGFLT_ADD);
 
         if (platform.defaultWindowIcon.length != 0)
             windowIcon = drawableCache.getImage(platform.defaultWindowIcon);
