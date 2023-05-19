@@ -813,7 +813,7 @@ class MenuWidgetBase : ListWidget {
                     //selectItem(-1);
                     selectOnHover = false;
                 } else {
-                    if(_openedPopupIndex == index)
+                    if(_openedPopup !is null && _openedPopupIndex == index)
                     {
                         _openedPopup.close();
                         _openedPopup = null;
