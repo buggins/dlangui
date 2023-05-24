@@ -485,6 +485,7 @@ static if (!WIDGET_STYLE_CONSOLE) {
             DrawBufRef getIconFromTheme(string name, string context = null)
             {
                 static if (!WIDGET_STYLE_CONSOLE) {
+                    immutable extensions = [".svg",".png"];
                     auto found = name in _cache;
                     if (found) {
                         return *found;
@@ -492,9 +493,11 @@ static if (!WIDGET_STYLE_CONSOLE) {
                     string iconPath;
                     try {
                         if (context.length) {
-                            iconPath = findClosestIcon!(subdir => subdir.context == context)(name, 32, _iconThemes, _baseIconDirs);
+                            // Take the context into account to reduce the number of searches.
+                            // In practice some icons that should be in Status context can be found in Places context for some icon themes.
+                            iconPath = findClosestIcon!(subdir => subdir.context == context || (context == "Status" && subdir.context == "Places"))(name, 32, _iconThemes, _baseIconDirs, extensions);
                         } else {
-                            iconPath = findClosestIcon(name, 32, _iconThemes, _baseIconDirs);
+                            iconPath = findClosestIcon(name, 32, _iconThemes, _baseIconDirs, extensions);
                         }
                     } catch(Exception e) {
                         Log.e("Error while searching for icon", name);
