@@ -507,6 +507,9 @@ class MenuWidgetBase : ListWidget {
     }
 
     @property void menuItems(MenuItem item) {
+        // Do not reassign the same item (https://github.com/buggins/dlangui/issues/613)
+        if(_item == item)
+            return;
         if (_item) {
             destroy(_item);
             _item = null;
