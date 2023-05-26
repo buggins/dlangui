@@ -313,11 +313,18 @@ class ResizerWidget : Widget {
     protected string _styleHorizontal;
     Signal!ResizeHandler resizeEvent;
 
+    /// Controls the minimum width of the previous item
+    size_t minPreviousItemWidth = 100;
+
+    /// Controls the minimum width of the next item
+    size_t minNextItemWidth = 100;
+
     /// Orientation: Vertical to resize vertically, Horizontal - to resize horizontally
     @property Orientation orientation() { return _orientation; }
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
+        minWidth = 7;
     }
     /// create with ID parameter
     this(string ID, Orientation orient = Orientation.Vertical) {
@@ -399,6 +406,7 @@ class ResizerWidget : Widget {
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         // support onClick
+        immutable newWidth = _orientation == Orientation.Vertical ? event.y : event.x;
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setState(State.Pressed);
             _dragging = true;
@@ -424,8 +432,8 @@ class ResizerWidget : Widget {
                     _delta = _minDragDelta;
                 if (_delta > _maxDragDelta)
                     _delta = _maxDragDelta;
-            } else if (resizeEvent.assigned) {
-                resizeEvent(this, ResizerEventType.StartDragging, _orientation == Orientation.Vertical ? event.y : event.x);
+            } else {
+                resizeAndFireEvent(newWidth, ResizerEventType.StartDragging);
             }
             return true;
         }
@@ -437,18 +445,13 @@ class ResizerWidget : Widget {
             if (_dragging) {
                 //sendScrollEvent(ScrollAction.SliderReleased, _position);
                 _dragging = false;
-                if (resizeEvent.assigned) {
-                    resizeEvent(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
-                }
+                resizeAndFireEvent(newWidth, ResizerEventType.EndDragging);
             }
             return true;
         }
         if (event.action == MouseAction.Move && _dragging) {
             int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
-            if (resizeEvent.assigned) {
-                resizeEvent(this, ResizerEventType.Dragging, _orientation == Orientation.Vertical ? event.y : event.x);
-                return true;
-            }
+            resizeAndFireEvent(newWidth, ResizerEventType.Dragging);
             _delta = _dragStartPosition + delta;
             if (_delta < _minDragDelta)
                 _delta = _minDragDelta;
@@ -506,13 +509,25 @@ class ResizerWidget : Widget {
             if (_dragging) {
                 resetState(State.Pressed);
                 _dragging = false;
-                if (resizeEvent.assigned) {
-                    resizeEvent(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
-                }
+                resizeAndFireEvent(newWidth, ResizerEventType.EndDragging);
             }
             return true;
         }
         return false;
+    }
+
+    private void resizeAndFireEvent(short newWidth, ResizerEventType type)
+    {
+        // Respect the dimensions
+        if(newWidth > minPreviousItemWidth && newWidth < (parent.width - minWidth - minNextItemWidth) &&
+           newWidth > _previousWidget.minWidth() && newWidth < (parent.width - minWidth - _nextWidget.minWidth()))
+        {
+            _previousWidget.layoutWidth = newWidth;
+            if (resizeEvent.assigned)
+            {
+               resizeEvent(this, type, newWidth);
+            }
+        }
     }
 }
 
