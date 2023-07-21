@@ -206,6 +206,11 @@ EmbeddedResource[] embedResource(string resourceName)() {
 
 /// embed all resources from list
 EmbeddedResource[] embedResources(string[] resourceNames)() {
+    version(DigitalMars)
+    {
+        pragma(inline, false); // needed because https://issues.dlang.org/show_bug.cgi?id=24052
+    }
+
     static if (resourceNames.length == 0)
         return [];
     static if (resourceNames.length == 1)
