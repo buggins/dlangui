@@ -519,10 +519,14 @@ class ResizerWidget : Widget {
     private void resizeAndFireEvent(short newWidth, ResizerEventType type)
     {
         // Respect the dimensions
-        if(newWidth > minPreviousItemWidth && newWidth < (parent.width - minWidth - minNextItemWidth) &&
-           newWidth > _previousWidget.minWidth() && newWidth < (parent.width - minWidth - _nextWidget.minWidth()))
+        if( (newWidth > minPreviousItemWidth) && (newWidth < (parent.width - minWidth - minNextItemWidth)) && (_previousWidget is null ||
+           ( (newWidth > _previousWidget.minWidth) && 
+	     (newWidth < (parent.width - minWidth - _nextWidget.minWidth))
+	    )))
         {
-            _previousWidget.layoutWidth = newWidth;
+	    if (_previousWidget !is null) {
+		_previousWidget.layoutWidth = newWidth;
+	    }
             if (resizeEvent.assigned)
             {
                resizeEvent(this, type, newWidth);
