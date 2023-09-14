@@ -180,9 +180,13 @@ enum EditorActions : int {
     // Scroll operations
 
     /// Scroll one line up (not changing cursor)
-    ScrollLineUp,
+    ScrollLineUpSingle,
     /// Scroll one line down (not changing cursor)
-    ScrollLineDown,
+    ScrollLineDownSingle,
+    /// Scroll one line up (not changing cursor)
+    ScrollLineUpTriple,
+    /// Scroll one line down (not changing cursor)
+    ScrollLineDownTriple,
     /// Scroll one page up (not changing cursor)
     ScrollPageUp,
     /// Scroll one page down (not changing cursor)
@@ -817,8 +821,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control, ActionStateUpdateFlag.never),
             new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift, ActionStateUpdateFlag.never),
 
-            new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control, ActionStateUpdateFlag.never),
-            new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control, ActionStateUpdateFlag.never),
+            new Action(EditorActions.ScrollLineUpSingle, KeyCode.UP, KeyFlag.Control, ActionStateUpdateFlag.never),
+            new Action(EditorActions.ScrollLineDownSingle, KeyCode.DOWN, KeyFlag.Control, ActionStateUpdateFlag.never),
 
             // Backspace/Del
             new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0, ActionStateUpdateFlag.never),
@@ -2205,6 +2209,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
         if (event.action == MouseAction.Move && (event.flags & MouseButton.Left) != 0) {
             updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, true);
+            if (event.y < _clientRect.top) {
+                handleAction(new Action(EditorActions.ScrollLineUpSingle));
+            }
+            else if (event.y > _clientRect.bottom) {
+                handleAction(new Action(EditorActions.ScrollLineDownSingle));
+            }
             return true;
         }
         if (event.action == MouseAction.Move && event.flags == 0) {
@@ -2236,13 +2246,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     return handleAction(new Action(EditorActions.ScrollRight));
                 if (keyFlags == MouseFlag.Control)
                     return handleAction(new Action(EditorActions.ZoomOut));
-                return handleAction(new Action(EditorActions.ScrollLineDown));
+                return handleAction(new Action(EditorActions.ScrollLineDownTriple));
             } else if (event.wheelDelta > 0) {
                 if (keyFlags == MouseFlag.Shift)
                     return handleAction(new Action(EditorActions.ScrollLeft));
                 if (keyFlags == MouseFlag.Control)
                     return handleAction(new Action(EditorActions.ZoomIn));
-                return handleAction(new Action(EditorActions.ScrollLineUp));
+                return handleAction(new Action(EditorActions.ScrollLineUpTriple));
             }
         }
         cancelHoverTimer();
@@ -2917,9 +2927,9 @@ class EditBox : EditWidgetBase {
         } else if (event.action == ScrollAction.PageDown) {
             dispatchAction(new Action(EditorActions.ScrollPageDown));
         } else if (event.action == ScrollAction.LineUp) {
-            dispatchAction(new Action(EditorActions.ScrollLineUp));
+            dispatchAction(new Action(EditorActions.ScrollLineUpSingle));
         } else if (event.action == ScrollAction.LineDown) {
-            dispatchAction(new Action(EditorActions.ScrollLineDown));
+            dispatchAction(new Action(EditorActions.ScrollLineDownSingle));
         }
         return true;
     }
@@ -3228,7 +3238,19 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case ScrollLineUp:
+            case ScrollLineUpSingle:
+                {
+                    if (_firstVisibleLine > 0) {
+                        _firstVisibleLine -= 1;
+                        if (_firstVisibleLine < 0)
+                            _firstVisibleLine = 0;
+                        measureVisibleText();
+                        updateScrollBars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case ScrollLineUpTriple:
                 {
                     if (_firstVisibleLine > 0) {
                         _firstVisibleLine -= 3;
@@ -3253,7 +3275,22 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case ScrollLineDown:
+            case ScrollLineDownSingle:
+                {
+                    int fullLines = _clientRect.height / _lineHeight;
+                    if (_firstVisibleLine + fullLines < _content.length) {
+                        _firstVisibleLine += 1;
+                        if (_firstVisibleLine > _content.length - fullLines)
+                            _firstVisibleLine = _content.length - fullLines;
+                        if (_firstVisibleLine < 0)
+                            _firstVisibleLine = 0;
+                        measureVisibleText();
+                        updateScrollBars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case ScrollLineDownTriple:
                 {
                     int fullLines = _clientRect.height / _lineHeight;
                     if (_firstVisibleLine + fullLines < _content.length) {
