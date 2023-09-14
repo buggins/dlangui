@@ -183,10 +183,10 @@ enum EditorActions : int {
     ScrollLineUpSingle,
     /// Scroll one line down (not changing cursor)
     ScrollLineDownSingle,
-    /// Scroll one line up (not changing cursor)
-    ScrollLineUpTriple,
-    /// Scroll one line down (not changing cursor)
-    ScrollLineDownTriple,
+    /// Scroll three lines up (not changing cursor)
+    ScrollLineUp,
+    /// Scroll three lines down (not changing cursor)
+    ScrollLineDown,
     /// Scroll one page up (not changing cursor)
     ScrollPageUp,
     /// Scroll one page down (not changing cursor)
@@ -2246,13 +2246,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     return handleAction(new Action(EditorActions.ScrollRight));
                 if (keyFlags == MouseFlag.Control)
                     return handleAction(new Action(EditorActions.ZoomOut));
-                return handleAction(new Action(EditorActions.ScrollLineDownTriple));
+                return handleAction(new Action(EditorActions.ScrollLineDown));
             } else if (event.wheelDelta > 0) {
                 if (keyFlags == MouseFlag.Shift)
                     return handleAction(new Action(EditorActions.ScrollLeft));
                 if (keyFlags == MouseFlag.Control)
                     return handleAction(new Action(EditorActions.ZoomIn));
-                return handleAction(new Action(EditorActions.ScrollLineUpTriple));
+                return handleAction(new Action(EditorActions.ScrollLineUp));
             }
         }
         cancelHoverTimer();
@@ -3238,10 +3238,10 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case ScrollLineUpSingle:
+            case ScrollLineUp:
                 {
                     if (_firstVisibleLine > 0) {
-                        _firstVisibleLine -= 1;
+                        _firstVisibleLine -= 3;
                         if (_firstVisibleLine < 0)
                             _firstVisibleLine = 0;
                         measureVisibleText();
@@ -3250,10 +3250,10 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case ScrollLineUpTriple:
+            case ScrollLineUpSingle:
                 {
                     if (_firstVisibleLine > 0) {
-                        _firstVisibleLine -= 3;
+                        _firstVisibleLine -= 1;
                         if (_firstVisibleLine < 0)
                             _firstVisibleLine = 0;
                         measureVisibleText();
@@ -3275,11 +3275,11 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case ScrollLineDownSingle:
+            case ScrollLineDown:
                 {
                     int fullLines = _clientRect.height / _lineHeight;
                     if (_firstVisibleLine + fullLines < _content.length) {
-                        _firstVisibleLine += 1;
+                        _firstVisibleLine += 3;
                         if (_firstVisibleLine > _content.length - fullLines)
                             _firstVisibleLine = _content.length - fullLines;
                         if (_firstVisibleLine < 0)
@@ -3290,11 +3290,11 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case ScrollLineDownTriple:
+            case ScrollLineDownSingle:
                 {
                     int fullLines = _clientRect.height / _lineHeight;
                     if (_firstVisibleLine + fullLines < _content.length) {
-                        _firstVisibleLine += 3;
+                        _firstVisibleLine += 1;
                         if (_firstVisibleLine > _content.length - fullLines)
                             _firstVisibleLine = _content.length - fullLines;
                         if (_firstVisibleLine < 0)
