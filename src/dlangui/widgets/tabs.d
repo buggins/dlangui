@@ -475,7 +475,7 @@ class TabControl : WidgetGroupDefaultDrawing {
     }
 
     /// change name of tab
-    void renameTab(string ID, dstring name) {
+    void renameTab(string id, dstring name) {
         int index = _items.indexById(id);
         if (index >= 0) {
             renameTab(index, name);
