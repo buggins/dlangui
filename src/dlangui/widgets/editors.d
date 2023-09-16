@@ -180,12 +180,8 @@ enum EditorActions : int {
     // Scroll operations
 
     /// Scroll one line up (not changing cursor)
-    ScrollLineUpSingle,
-    /// Scroll one line down (not changing cursor)
-    ScrollLineDownSingle,
-    /// Scroll three lines up (not changing cursor)
     ScrollLineUp,
-    /// Scroll three lines down (not changing cursor)
+    /// Scroll one line down (not changing cursor)
     ScrollLineDown,
     /// Scroll one page up (not changing cursor)
     ScrollPageUp,
@@ -821,8 +817,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control, ActionStateUpdateFlag.never),
             new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift, ActionStateUpdateFlag.never),
 
-            new Action(EditorActions.ScrollLineUpSingle, KeyCode.UP, KeyFlag.Control, ActionStateUpdateFlag.never),
-            new Action(EditorActions.ScrollLineDownSingle, KeyCode.DOWN, KeyFlag.Control, ActionStateUpdateFlag.never),
+            new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control, ActionStateUpdateFlag.never),
+            new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control, ActionStateUpdateFlag.never),
 
             // Backspace/Del
             new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0, ActionStateUpdateFlag.never),
@@ -1464,14 +1460,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     /// Used instead of using clientToTextPos for mouse input when in word wrap mode
-    protected TextPosition wordWrapMouseOffset(int x, int y)
-    {
-        if(_span.length == 0)
+    protected TextPosition wordWrapMouseOffset(int x, int y) {
+        if (y < 0 || _span.length == 0)
             return clientToTextPos(Point(x,y));
+
         int selectedVisibleLine = y / _lineHeight;
-
         LineSpan _curSpan;
-
         int wrapLine = 0;
         int curLine = 0;
         bool foundWrap = false;
@@ -1503,7 +1497,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         });
 
         int fakeLineHeight = curLine * _lineHeight;
-        return clientToTextPos(Point(x + accumulativeWidths,fakeLineHeight));
+        return clientToTextPos(Point(x + accumulativeWidths, fakeLineHeight));
     }
 
     protected void selectWordByMouse(int x, int y) {
@@ -2209,12 +2203,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
         if (event.action == MouseAction.Move && (event.flags & MouseButton.Left) != 0) {
             updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, true);
-            if (event.y < _clientRect.top) {
-                handleAction(new Action(EditorActions.ScrollLineUpSingle));
-            }
-            else if (event.y > _clientRect.bottom) {
-                handleAction(new Action(EditorActions.ScrollLineDownSingle));
-            }
+            ensureCaretVisible();
             return true;
         }
         if (event.action == MouseAction.Move && event.flags == 0) {
@@ -2381,13 +2370,13 @@ class EditLine : EditWidgetBase {
         Rect rc = textPosToClient(_caretPos);
         if (rc.left < 0) {
             // scroll left
-            _scrollPos.x -= -rc.left + _clientRect.width / 10;
+            _scrollPos.x += rc.left - _spaceWidth * 4;
             if (_scrollPos.x < 0)
                 _scrollPos.x = 0;
             invalidate();
-        } else if (rc.left >= _clientRect.width - 10) {
+        } else if (rc.left >= _clientRect.width - _spaceWidth * 4) {
             // scroll right
-            _scrollPos.x += (rc.left - _clientRect.width) + _spaceWidth * 4;
+            _scrollPos.x += rc.left - _clientRect.width + _spaceWidth * 4;
             invalidate();
         }
         updateScrollBars();
@@ -2927,9 +2916,9 @@ class EditBox : EditWidgetBase {
         } else if (event.action == ScrollAction.PageDown) {
             dispatchAction(new Action(EditorActions.ScrollPageDown));
         } else if (event.action == ScrollAction.LineUp) {
-            dispatchAction(new Action(EditorActions.ScrollLineUpSingle));
+            dispatchAction(new Action(EditorActions.ScrollLineUp));
         } else if (event.action == ScrollAction.LineDown) {
-            dispatchAction(new Action(EditorActions.ScrollLineDownSingle));
+            dispatchAction(new Action(EditorActions.ScrollLineDown));
         }
         return true;
     }
@@ -2997,14 +2986,14 @@ class EditBox : EditWidgetBase {
         Rect rc = textPosToClient(_caretPos);
         if (rc.left < 0) {
             // scroll left
-            _scrollPos.x -= -rc.left + _clientRect.width / 4;
+            _scrollPos.x += rc.left - _spaceWidth * 4;
             if (_scrollPos.x < 0)
                 _scrollPos.x = 0;
             invalidate();
-        } else if (rc.left >= _clientRect.width - 10) {
+        } else if (rc.left >= _clientRect.width - _spaceWidth * 4) {
             // scroll right
             if (!_wordWrap)
-                _scrollPos.x += (rc.left - _clientRect.width) + _clientRect.width / 4;
+                _scrollPos.x += rc.left - _clientRect.width + _spaceWidth * 4;
             invalidate();
         }
         updateScrollBars();
@@ -3033,9 +3022,13 @@ class EditBox : EditWidgetBase {
     override protected TextPosition clientToTextPos(Point pt) {
         TextPosition res;
         pt.x += _scrollPos.x;
+        // if the point is above the first visible line
+        if (pt.y < 0) {
+            res.line = _firstVisibleLine > 0 ? _firstVisibleLine - 1 : _firstVisibleLine;
+            res.pos = 0;
+            return res;
+        }
         int lineIndex = pt.y / _lineHeight;
-        if (lineIndex < 0)
-            lineIndex = 0;
         if (lineIndex < _visibleLines.length) {
             res.line = lineIndex + _firstVisibleLine;
             int len = cast(int)_visibleLines[lineIndex].length;
@@ -3250,18 +3243,6 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case ScrollLineUpSingle:
-                {
-                    if (_firstVisibleLine > 0) {
-                        _firstVisibleLine -= 1;
-                        if (_firstVisibleLine < 0)
-                            _firstVisibleLine = 0;
-                        measureVisibleText();
-                        updateScrollBars();
-                        invalidate();
-                    }
-                }
-                return true;
             case ScrollPageUp:
                 {
                     int fullLines = _clientRect.height / _lineHeight;
@@ -3280,21 +3261,6 @@ class EditBox : EditWidgetBase {
                     int fullLines = _clientRect.height / _lineHeight;
                     if (_firstVisibleLine + fullLines < _content.length) {
                         _firstVisibleLine += 3;
-                        if (_firstVisibleLine > _content.length - fullLines)
-                            _firstVisibleLine = _content.length - fullLines;
-                        if (_firstVisibleLine < 0)
-                            _firstVisibleLine = 0;
-                        measureVisibleText();
-                        updateScrollBars();
-                        invalidate();
-                    }
-                }
-                return true;
-            case ScrollLineDownSingle:
-                {
-                    int fullLines = _clientRect.height / _lineHeight;
-                    if (_firstVisibleLine + fullLines < _content.length) {
-                        _firstVisibleLine += 1;
                         if (_firstVisibleLine > _content.length - fullLines)
                             _firstVisibleLine = _content.length - fullLines;
                         if (_firstVisibleLine < 0)
