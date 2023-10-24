@@ -1413,6 +1413,7 @@ public:
     /// request redraw
     void invalidate() {
         _needDraw = true;
+        window.update();
     }
 
     /// helper function for implement measure() when widget's content dimensions are known
@@ -1810,6 +1811,11 @@ class WidgetGroup : Widget {
     }
 
     protected WidgetList _children;
+
+    override @property bool needDraw()
+    {
+        return _children.asArray.any!(x => x.needDraw) || _needDraw;
+    }
 
     /// returns number of children of this widget
     @property override int childCount() const { return _children.count; }
