@@ -1413,7 +1413,8 @@ public:
     /// request redraw
     void invalidate() {
         _needDraw = true;
-        window.update();
+        if(window !is null)
+            window.update();
     }
 
     /// helper function for implement measure() when widget's content dimensions are known
