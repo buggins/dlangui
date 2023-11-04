@@ -360,6 +360,7 @@ class EditFrame : AppFrame
     /// create app body widget
     override protected Widget createBody()
     {
+        string currentWidget;
 
         DockHost dockHost = new DockHost();
 
@@ -400,13 +401,15 @@ class EditFrame : AppFrame
             origSla.add(sla.items[i]);
         }
 
+        StringListAdapter origProps = new StringListAdapter();
+
         auto leftPanel = new VerticalLayout();
         leftPanel.layoutHeight = FILL_PARENT;
 
         widgetsList.minHeight = 800;
         propList.minHeight = 600;
 
-        auto searchBox = new EditLine().text("...").backgroundColor(0xffffff).minHeight(25);
+        auto searchBox = new EditLine().text("").backgroundColor(0xffffff).minHeight(25);
         searchBox.keyEvent = delegate(Widget w, KeyEvent e) {
             string[] arr;
 
@@ -424,9 +427,32 @@ class EditFrame : AppFrame
             return false;
         };
 
+        auto searchBoxProps = new EditLine().text("").backgroundColor(0xffffff).minHeight(25);
+        searchBoxProps.keyEvent = delegate(Widget w, KeyEvent e) {
+            if (currentWidget in propListsAdapters)
+            {
+                string[] arr;
+
+                foreach (s; origProps.getItems)
+                    arr ~= s;
+
+                arr = arr.filter!(x => x.toLower.canFind(searchBoxProps.text.toLower)).array;
+
+                StringListAdapter sla = new StringListAdapter();
+
+                foreach (string k; arr)
+                    sla.add(k);
+
+                propList.adapter = sla;
+            }
+            return false;
+        };
+
         leftPanel.addChild(searchBox);
         leftPanel.addChild(new TextWidget().text("Widgets").backgroundColor(0xdddddd).minHeight(25));
         leftPanel.addChild(widgetsList);
+
+        leftPanel.addChild(searchBoxProps);
         leftPanel.addChild(new TextWidget().text("Widget properties")
                 .backgroundColor(0xdddddd).minHeight(50));
         leftPanel.addChild(propList);
@@ -472,7 +498,9 @@ class EditFrame : AppFrame
             return true;
         };
         widgetsList.itemClick = delegate(Widget source, int itemIndex) {
-            propList.adapter = propListsAdapters[to!string(widgetsList.selectedItem)];
+            currentWidget = to!string(widgetsList.selectedItem);
+            origProps = propListsAdapters[currentWidget];
+            propList.adapter = origProps;
             return true;
         };
         widgetsList.onItemDoubleClick = delegate(Widget source, int itemIndex) {
