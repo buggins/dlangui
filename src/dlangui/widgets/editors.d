@@ -2133,7 +2133,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         //if (event.keyCode == KeyCode.RETURN && !readOnly && !_content.multiline) {
         //    return true;
         //}
-        return true;
+        return false;
     }
 
     /// Handle Ctrl + Left mouse click on text
