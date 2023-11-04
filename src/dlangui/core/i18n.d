@@ -441,7 +441,7 @@ class UIStringTranslator {
             return s;
         if (fallbackValue.length > 0)
             return fallbackValue;
-        return "UNTRANSLATED: "d ~ toUTF32(id);
+        return toUTF32(id);
     }
 }
 
