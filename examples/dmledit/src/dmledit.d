@@ -478,10 +478,6 @@ class EditFrame : AppFrame
                 {
                     updatePreview();
                 }
-                else
-                {
-                    Log.d(e);
-                }
             }
 
             return false;
