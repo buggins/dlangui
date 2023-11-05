@@ -468,6 +468,25 @@ class EditFrame : AppFrame
         _editor = new DMLSourceEdit();
         _editor.text = SAMPLE_SOURCE_CODE;
 
+        _editor.keyEvent = delegate(Widget w, KeyEvent e) {
+            if (e.action == KeyAction.KeyUp)
+            {
+                if ((e.keyCode == KeyCode.DEL)
+                    || (e.flags == KeyFlag.LControl && e.keyCode == KeyCode.KEY_S)
+                    || (e.flags == KeyFlag.LControl && e.keyCode == KeyCode.KEY_V)
+                    || (e.flags == KeyFlag.LControl && e.keyCode == KeyCode.KEY_Z))
+                {
+                    updatePreview();
+                }
+                else
+                {
+                    Log.d(e);
+                }
+            }
+
+            return false;
+        };
+
         auto editorDockWin = new DockWindow("editor");
         editorDockWin.layoutWidth = makePercentSize(50);
         editorDockWin.bodyWidget = _editor;
