@@ -421,7 +421,7 @@ class EditFrame : AppFrame
             sla.clear();
 
             foreach (string k; arr)
-                sla.add(k);
+                sla.add(UIString.fromRaw(k));
 
             widgetsList.adapter = sla;
             return false;
@@ -441,7 +441,7 @@ class EditFrame : AppFrame
                 StringListAdapter sla = new StringListAdapter();
 
                 foreach (string k; arr)
-                    sla.add(k);
+                    sla.add(UIString.fromRaw(k));
 
                 propList.adapter = sla;
             }
