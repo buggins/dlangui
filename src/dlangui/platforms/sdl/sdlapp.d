@@ -1605,9 +1605,12 @@ version (Windows) {
     }
 }
 
+SDLSupport sdlVer;
+
+
 /// try to get screen resolution and update SCREEN_DPI; returns true if SCREEN_DPI is changed (when custom override DPI value is not set) 
 bool sdlUpdateScreenDpi(int displayIndex = 0) {
-    if (SDL_GetDisplayDPI is null) {
+    if (sdlVer < SDLSupport.v2_0_4) {
         Log.w("SDL_GetDisplayDPI is not found: cannot detect screen DPI");
         return false;
     }
@@ -1654,7 +1657,7 @@ int sdlmain(string[] args) {
         import std.exception;
         //DerelictSDL2.missingSymbolCallback = &missingSymFunc;
         // Load the SDL 2 library.
-        auto sdlVer = loadSDL();
+        sdlVer = loadSDL();
         enforce(sdlVer != SDLSupport.noLibrary && sdlVer != SDLSupport.badLibrary, "bindbc-sdl unable to find SDL2 library");
         sdlCheckMissingSymFunc(loader.errors);
     } catch (Exception e) {
