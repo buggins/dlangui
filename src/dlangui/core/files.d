@@ -502,7 +502,7 @@ RootEntry[] getBookmarkPaths() nothrow
     return res;
 }
 
-/// returns true if directory is root directory (e.g. / or C:\)
+/// returns true if directory is root directory (e.g. / or C:\\)
 bool isRoot(in string path) pure nothrow {
     string root = rootName(path);
     if (path.equal(root))
