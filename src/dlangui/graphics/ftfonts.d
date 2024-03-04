@@ -201,10 +201,10 @@ class FreeTypeFontFile {
 
 
     /// find glyph index for character
-    FT_UInt getCharIndex(dchar code, dchar def_char = 0) {
+    uint getCharIndex(dchar code, dchar def_char = 0) {
         if ( code=='\t' )
             code = ' ';
-        FT_UInt ch_glyph_index = FT_Get_Char_Index(_face, code);
+        uint ch_glyph_index = FT_Get_Char_Index(_face, code);
         if (ch_glyph_index == 0) {
             dchar replacement = getReplacementChar(code);
             if (replacement) {
@@ -313,7 +313,7 @@ class FreeTypeFontFile {
         _face = null;
     }
 
-    int getKerningOffset(FT_UInt prevCharIndex, FT_UInt nextCharIndex) {
+    int getKerningOffset(uint prevCharIndex, uint nextCharIndex) {
         const FT_KERNING_DEFAULT = 0;
         FT_Vector delta;
         int error = FT_Get_Kerning( _face,          /* handle to face object */
@@ -372,7 +372,7 @@ class FreeTypeFont : Font {
     }
 
     /// find glyph index for character
-    bool findGlyph(dchar code, dchar def_char, ref FT_UInt index, ref FreeTypeFontFile file) {
+    bool findGlyph(dchar code, dchar def_char, ref uint index, ref FreeTypeFontFile file) {
         foreach(FreeTypeFontFile f; _files) {
             index = f.getCharIndex(code, def_char);
             if (index != 0) {
@@ -392,11 +392,11 @@ class FreeTypeFont : Font {
     override int getKerningOffset(dchar prevChar, dchar currentChar) {
         if (!_allowKerning || !prevChar || !currentChar)
             return 0;
-        FT_UInt index1;
+        uint index1;
         FreeTypeFontFile file1;
         if (!findGlyph(prevChar, 0, index1, file1))
             return 0;
-        FT_UInt index2;
+        uint index2;
         FreeTypeFontFile file2;
         if (!findGlyph(currentChar, 0, index2, file2))
             return 0;
@@ -418,7 +418,7 @@ class FreeTypeFont : Font {
         if (found !is null)
             return found;
         //Log.v("Glyph ", ch, " is not found in cache, getting from font");
-        FT_UInt index;
+        uint index;
         FreeTypeFontFile file;
         if (!findGlyph(ch, 0, index, file)) {
             if (!findGlyph(ch, '?', index, file))

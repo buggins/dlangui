@@ -59,7 +59,7 @@
             "libs-windows": ["opengl32"],
             "dependencies": {
                 "bindbc-opengl": "~>1.1.0",
-                "bindbc-freetype": "~>1.1.1",
+                "bindbc-freetype": "~>1.2.2",
                 "bindbc-sdl": "~>1.4.5"
             },
             "copyFiles-windows-x86_64": [
@@ -81,7 +81,7 @@
             "libs-windows": ["opengl32"],
             "dependencies": {
                 "bindbc-opengl": "~>1.1.0",
-                "bindbc-freetype": "~>1.1.1"
+                "bindbc-freetype": "~>1.2.2"
             }
         },
         {
@@ -92,7 +92,7 @@
             "libs-windows": ["opengl32"],
             "dependencies": {
                 "bindbc-opengl": "~>1.1.0",
-                "bindbc-freetype": "~>1.1.1",
+                "bindbc-freetype": "~>1.2.2",
                 "bindbc-sdl": "~>1.4.5",
                 "icontheme": "~>1.2.3"
             }
@@ -103,7 +103,7 @@
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "bindbc-opengl": "~>1.1.0",
-                "bindbc-freetype": "~>1.1.1",
+                "bindbc-freetype": "~>1.2.2",
                 "bindbc-sdl": "~>1.4.5",
                 "icontheme": "~>1.2.3"
             },
@@ -123,7 +123,7 @@
             "libs-posix": ["GLX"],
             "dependencies": {
                 "bindbc-opengl": "~>1.1.0",
-                "bindbc-freetype": "~>1.1.1",
+                "bindbc-freetype": "~>1.2.2",
                 "x11": "~>1.0.21",
                 "icontheme": "~>1.2.3",
                 "glx-d": "~>1.1.0"
@@ -135,7 +135,7 @@
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "bindbc-opengl": "~>1.1.0",
-                "bindbc-freetype": "~>1.1.1",
+                "bindbc-freetype": "~>1.2.2",
                 "dsfml": "~>2.1.0",
                 "icontheme": "~>1.2.3"
             },
