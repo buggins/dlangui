@@ -131,6 +131,8 @@ res/hdpi/hdpi_switch_off.png
 res/hdpi/hdpi_switch_off_disabled.png
 res/hdpi/hdpi_switch_on.png
 res/hdpi/hdpi_switch_on_disabled.png
+res/hdpi/hdpi_scrollbar_indicator_horizontal.png
+res/hdpi/hdpi_scrollbar_indicator_vertical.png
 res/mdpi/applications-internet.png
 res/mdpi/arrow_right_down_black.png
 res/mdpi/arrow_right_down_black_dark.png
