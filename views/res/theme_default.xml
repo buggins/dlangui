@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default"
-        fontSize="10pt"
+OB        fontSize="10pt"
         fontFace="Helvetica Neue,Verdana,Arial,DejaVu Sans,Liberation Sans,Helvetica,Roboto,Droid Sans"
         fontFamily="SansSerif"
         >
@@ -178,8 +178,12 @@
         >
     </style>
     <style id="TAB_DOWN_BUTTON_DARK"
-        padding="5,1,1,1"
+        padding="2pt,1pt,2pt,1pt"
         backgroundImageId="tab_btn_dark_down"
+        />
+    <style id="TAB_DOWN_BUTTON"
+        padding="2pt,1pt,2pt,1pt"
+        backgroundImageId="tab_btn_down"
         />
     <style id="TAB_UP_DARK"
         backgroundImageId="dock_window_caption_background"
@@ -187,7 +191,7 @@
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
-        padding="5,1,1,1"
+        padding="2pt,1pt,2pt,1pt"
         backgroundImageId="tab_btn_dark_up"
         >
         <length id="overlap" value="2"/>
@@ -215,6 +219,7 @@
         <state state_hovered="true" textColor="#0000C0"/>
     </style>
     <style id="TAB_UP_BUTTON"
+        padding="2pt,1pt,2pt,1pt"
         backgroundImageId="tab_btn_up"
         />
     <style id="TAB_HOST"
@@ -232,49 +237,49 @@
 	layoutWeight="0"
         />
     <style id="MAIN_MENU_ITEM"
-        padding="4,2,4,2"
+        padding="3pt,2pt,3pt,2pt"
         backgroundImageId="main_menu_item_background"
         textFlags="Parent"
         />
     <style id="MENU_ITEM"
         backgroundImageId="menu_item_background"
-        padding="4pt,2pt,4pt,2pt"
+        padding="3pt,2pt,3pt,2pt"
         >
     </style>
     <style id="MENU_SEPARATOR"
         backgroundImageId="menu_separator"
-        padding="4pt,2pt,4pt,2pt"
+        padding="3pt,2pt,3pt,2pt"
         >
     </style>
     <style id="MENU_ICON"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         align="Left|VCenter"
         >
         <state state_enabled="false" alpha="160"/>
     </style>
     <style id="MENU_LABEL"
-        margins="4,2,4,2"
+        margins="2pt,1pt,2pt,1pt"
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
         <state state_enabled="false" textColor="#80404040"/>
     </style>
     <style id="MAIN_MENU_LABEL"
-        margins="4,2,4,2"
+        margins="2pt,1pt,2pt,1pt"
         align="Left|VCenter"
         textFlags="Parent"
         >
         <state state_enabled="false" textColor="#80404040"/>
     </style>
     <style id="MENU_ACCEL"
-        margins="4,2,4,2"
+        margins="2pt,1pt,2pt,1pt"
         align="Left|VCenter"
         >
         <state state_enabled="false" textColor="#80404040"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
         backgroundImageId="btn_background_transparent"
-        padding="4,2,4,2"
+        padding="2pt,1pt,2pt,1pt"
         />
     <style id="POPUP_MENU"
         backgroundImageId="popup_menu_background_normal"
@@ -285,18 +290,18 @@
 
     <style id="COMBO_BOX"
         backgroundImageId="combobox_background"
-        padding="2,2,2,2"
-        margins="2,2,2,2"
+        padding="2pt,2pt,2pt,2pt"
+        margins="2pt,2pt,2pt,2pt"
         minWidth="40"
         />
     <style id="COMBO_BOX_BODY"
-        padding="2,2,2,2"
+        padding="2pt,2pt,2pt,2pt"
         minWidth="40"
         align="Left|VCenter"
 	focusRectColors="#000"
         />
     <style id="COMBO_BOX_BUTTON"
-        padding="2,2,2,2"
+        padding="2pt,2pt,2pt,2pt"
         backgroundImageId="btn_background_transparent"
         align="Center"
         />
