@@ -20,8 +20,8 @@ res/btn_radio.xml
 res/btn_radio_dark.xml
 res/btn_radio_background.xml
 res/btn_radio_background_dark.xml
-res/close.png
-res/close_dark.png
+res/mdpi/close.png
+res/mdpi/close_dark.png
 res/combobox_background.xml
 res/combobox_background_dark.xml
 res/editbox_background.xml
@@ -74,6 +74,8 @@ res/main_menu_item_background_normal.9.png
 res/main_menu_item_background_normal_dark.9.png
 res/main_menu_item_background_selected.9.png
 res/main_menu_item_background_selected_dark.9.png
+res/hdpi/hdpi_close.png
+res/hdpi/hdpi_close_dark.png
 res/hdpi/hdpi_applications-internet.png
 res/hdpi/hdpi_arrow_right_down_black.png
 res/hdpi/hdpi_arrow_right_down_black_dark.png
