@@ -1618,8 +1618,11 @@ bool sdlUpdateScreenDpi(int displayIndex = 0) {
     if (numDisplays < displayIndex + 1)
         return false;
     float hdpi = 0;
-    if (SDL_GetDisplayDPI(displayIndex, null, &hdpi, null))
+    float ddpi = 0;
+    float vdpi = 0;
+    if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi))
         return false;
+    Log.d("SDL_GetDisplayDPI(", displayIndex, ") : ddpi=", ddpi, " hdpi=", hdpi, " vdpi=", vdpi);
     int idpi = cast(int)hdpi;
     if (idpi < 32 || idpi > 2000)
         return false;
@@ -1690,9 +1693,10 @@ int sdlmain(string[] args) {
 
     Platform.setInstance(sdl);
 
+    sdlUpdateScreenDpi(0);
+
     currentTheme = createDefaultTheme();
 
-    sdlUpdateScreenDpi(0);
 
     Platform.instance.uiTheme = "theme_default";
 

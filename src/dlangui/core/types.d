@@ -348,7 +348,7 @@ private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
     return PRIVATE_SCREEN_DPI_OVERRIDE ? PRIVATE_SCREEN_DPI_OVERRIDE : PRIVATE_SCREEN_DPI;
 }
 
-/// get screen DPI detection override value, if non 0 - this value is used instead of DPI detected by platform, if 0, value detected by platform will be used)
+/// get screen DPI detection override value, if non 0 - this value is used instead of DPI detected by platform, if 0, value detected by platform will be used
 @property int overrideScreenDPI() {
     return PRIVATE_SCREEN_DPI_OVERRIDE;
 }

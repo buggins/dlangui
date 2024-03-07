@@ -52,13 +52,13 @@ struct Accelerator {
         version (OSX) {
             static if (true) {
                 if (keyFlags & KeyFlag.Control)
-                    buf ~= "Ctrl+";
+                    buf ~= "⌃ "; //"Ctrl+";
                 if (keyFlags & KeyFlag.Shift)
-                    buf ~= "Shift+";
+                    buf ~= "⇧ "; //"Shift+";
                 if (keyFlags & KeyFlag.Option)
-                    buf ~= "Opt+";
+                    buf ~= "⌥ "; //"Opt+";
                 if (keyFlags & KeyFlag.Command)
-                    buf ~= "Cmd+";
+                    buf ~= "⌘ "; //"Cmd+";
             } else {
                 if (keyFlags & KeyFlag.Control)
                     buf ~= "⌃";
