@@ -40,12 +40,14 @@ import dminer.core.chunk;
 mixin APP_ENTRY_POINT;
 
 /// entry point for dlangui based application
-extern (C) int UIAppMain(string[] args) {
+extern (C) int UIAppMain(string[] args)
+{
     // embed resources listed in views/resources.list into executable
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
     //embeddedResourceList.dumpEmbeddedResources();
 
-    debug {
+    debug
+    {
         testPlanes();
     }
 
@@ -62,17 +64,22 @@ extern (C) int UIAppMain(string[] args) {
     return Platform.instance.enterMessageLoop();
 }
 
-class ChunkVisitCounter : ChunkVisitor {
+class ChunkVisitCounter : ChunkVisitor
+{
     int count;
-    bool visit(World world, SmallChunk * chunk) {
+    bool visit(World world, SmallChunk* chunk)
+    {
         count++;
         return true;
     }
 }
 
-class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
+class MinerDrawable : MaterialDrawableObject, ChunkVisitor
+{
 
     import dlangui.graphics.scene.node;
+    import core.sys.linux.input_event_codes;
+
     private World _world;
     private ChunkDiamondVisitor _chunkVisitor;
     private VisibilityCheckIterator _chunkIterator;
@@ -83,17 +90,27 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
     private vec3 _camForwardVector;
     private bool _wireframe;
 
-    @property bool wireframe() { return _wireframe; }
-    @property void wireframe(bool flgWireframe) { _wireframe = flgWireframe; }
+    @property bool wireframe()
+    {
+        return _wireframe;
+    }
 
-    this(World world, Material material, Camera cam) {
+    @property void wireframe(bool flgWireframe)
+    {
+        _wireframe = flgWireframe;
+    }
+
+    this(World world, Material material, Camera cam)
+    {
         super(material);
         _world = world;
         _cam = cam;
     }
+
     int _skippedCount;
     int _drawnCount;
-    override void draw(Node3d node, bool wireframe) {
+    override void draw(Node3d node, bool wireframe)
+    {
         /// override it
         _node = node;
         //Log.d("drawing Miner scene");
@@ -109,7 +126,8 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
         camVector.x = cast(int)(_camForwardVector.x * 256);
         camVector.y = cast(int)(_camForwardVector.y * 256);
         camVector.z = cast(int)(_camForwardVector.z * 256);
-        version (TEST_VISITOR_PERFORMANCE) {
+        version (TEST_VISITOR_PERFORMANCE)
+        {
             ChunkVisitCounter countVisitor = new ChunkVisitCounter();
             _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
             _chunkIterator.visitVisibleChunks(countVisitor, camVector);
@@ -118,15 +136,20 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
             _chunkIterator.visitVisibleChunks(this, camVector);
             long duration = currentTimeMillis() - ts;
             Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount, " duration(noDraw)=", durationNoDraw);
-        } else {
+        }
+        else
+        {
             _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
             _chunkIterator.visitVisibleChunks(this, camVector);
             long duration = currentTimeMillis() - ts;
             Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount);
         }
     }
-    bool visit(World world, SmallChunk * chunk) {
-        if (chunk) {
+
+    bool visit(World world, SmallChunk* chunk)
+    {
+        if (chunk)
+        {
             Vector3d p = chunk.position;
             vec3 chunkPos = vec3(p.x + 4, p.y + 4, p.z + 4);
             float camDist = (_camPosition - chunkPos).length;
@@ -137,12 +160,14 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
                 threshold = 0.2;
             //Log.d("visit() chunkPos ", chunkPos, " chunkDir ", chunkDirection, " camDir ", " dot ", dot, " threshold ", threshold);
 
-            if (dot < threshold) { // cos(45)
+            if (dot < threshold)
+            { // cos(45)
                 _skippedCount++;
                 return false;
             }
             Mesh mesh = chunk.getMesh(world);
-            if (mesh) {
+            if (mesh)
+            {
                 _material.bind(_node, mesh, lights(_node));
                 _material.drawMesh(mesh, _wireframe);
                 _material.unbind();
@@ -154,13 +179,16 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
     }
 }
 
-class UiWidget : VerticalLayout { //, CellVisitor
-    this() {
+class UiWidget : VerticalLayout
+{ //, CellVisitor
+    this()
+    {
         super("OpenGLView");
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
         alignment = Align.Center;
-        try {
+        try
+        {
             parseML(q{
                 {
                   margins: 0
@@ -182,7 +210,9 @@ class UiWidget : VerticalLayout { //, CellVisitor
                   }
                 }
             }, "", this);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Log.e("Failed to parse dml", e);
         }
         // assign OpenGL drawable to child widget background
@@ -195,14 +225,17 @@ class UiWidget : VerticalLayout { //, CellVisitor
 
         _scene.activeCamera = _cam;
 
-        static if (true) {
+        static if (true)
+        {
             _scene.skyBox.setFaceTexture(SkyBox.Face.Right, "skybox_night_right1");
             _scene.skyBox.setFaceTexture(SkyBox.Face.Left, "skybox_night_left2");
             _scene.skyBox.setFaceTexture(SkyBox.Face.Top, "skybox_night_top3");
             _scene.skyBox.setFaceTexture(SkyBox.Face.Bottom, "skybox_night_bottom4");
             _scene.skyBox.setFaceTexture(SkyBox.Face.Front, "skybox_night_front5");
             _scene.skyBox.setFaceTexture(SkyBox.Face.Back, "skybox_night_back6");
-        } else {
+        }
+        else
+        {
             _scene.skyBox.setFaceTexture(SkyBox.Face.Right, "debug_right");
             _scene.skyBox.setFaceTexture(SkyBox.Face.Left, "debug_left");
             _scene.skyBox.setFaceTexture(SkyBox.Face.Top, "debug_top");
@@ -221,20 +254,20 @@ class UiWidget : VerticalLayout { //, CellVisitor
         dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
 
-
         int x0 = 0;
         int y0 = 0;
         int z0 = 0;
 
-
-        _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+        _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType
+                .COLOR, VertexElementType.TEXCOORD0));
         _world = new World();
 
         initWorldTerrain(_world);
 
         int cy0 = 3;
         for (int y = CHUNK_DY - 1; y > 0; y--)
-            if (!_world.canPass(Vector3d(0, y, 0))) {
+            if (!_world.canPass(Vector3d(0, y, 0)))
+            {
                 cy0 = y;
                 break;
             }
@@ -245,7 +278,6 @@ class UiWidget : VerticalLayout { //, CellVisitor
         _world.setCell(5, cy0 + 5, -7, BlockId.face_test);
         _world.setCell(3, cy0 + 5, 13, BlockId.face_test);
 
-
         //_world.makeCastleWall(Vector3d(25, cy0 - 5, 12), Vector3d(1, 0, 0), 12, 30, 4, BlockId.brick);
         _world.makeCastle(Vector3d(0, cy0, 60), 30, 12);
 
@@ -254,7 +286,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
 
         Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
         //Material minerMaterial = new Material(EffectId("colored.vert", "colored.frag", null), "blocks");
-        minerMaterial.ambientColor = vec3(0.25,0.25,0.25);
+        minerMaterial.ambientColor = vec3(0.25, 0.25, 0.25);
         minerMaterial.textureLinear = false;
         minerMaterial.fogParams = new FogParams(vec4(0.01, 0.01, 0.01, 1), 12, 80);
         //minerMaterial.specular = 10;
@@ -265,7 +297,6 @@ class UiWidget : VerticalLayout { //, CellVisitor
         //_minerDrawable.wireframe = true;
         _scene.addChild(minerNode);
 
-
         focusable = true;
     }
 
@@ -274,11 +305,14 @@ class UiWidget : VerticalLayout { //, CellVisitor
     int lastMouseX;
     int lastMouseY;
     /// process key event, return true if event is processed.
-    override bool onMouseEvent(MouseEvent event) {
-        if (event.action == MouseAction.ButtonDown) {
+    override bool onMouseEvent(MouseEvent event)
+    {
+        if (event.action == MouseAction.ButtonDown && false)
+        {
             lastMouseX = event.x;
             lastMouseY = event.y;
-            if (event.button == MouseButton.Left && false) {
+            if (event.button == MouseButton.Left)
+            {
                 int x = event.x;
                 int y = event.y;
                 int xindex = 0;
@@ -298,43 +332,47 @@ class UiWidget : VerticalLayout { //, CellVisitor
                      3  4  5
                      6  7  8
                 */
-                switch(index) {
-                    default:
-                    case 1:
-                    case 4:
-                        //_world.camPosition.forward(1);
-                        //updateCamPosition();
-                        startMoveAnimation(_world.camPosition.direction.forward);
-                        break;
-                    case 0:
-                    case 3:
-                        _world.camPosition.turnLeft();
-                        updateCamPosition();
-                        break;
-                    case 2:
-                    case 5:
-                        _world.camPosition.turnRight();
-                        updateCamPosition();
-                        break;
-                    case 7:
-                        //_world.camPosition.backward(1);
-                        //updateCamPosition();
-                        startMoveAnimation(-_world.camPosition.direction.forward);
-                        break;
-                    case 6:
-                        //_world.camPosition.moveLeft();
-                        //updateCamPosition();
-                        startMoveAnimation(_world.camPosition.direction.left);
-                        break;
-                    case 8:
-                        //_world.camPosition.moveRight();
-                        //updateCamPosition();
-                        startMoveAnimation(_world.camPosition.direction.right);
-                        break;
+                switch (index)
+                {
+                default:
+                case 1:
+                case 4:
+                    //_world.camPosition.forward(1);
+                    //updateCamPosition();
+                    startMoveAnimation(_world.camPosition.direction.forward);
+                    break;
+                case 0:
+                case 3:
+                    _world.camPosition.turnLeft();
+                    updateCamPosition();
+                    break;
+                case 2:
+                case 5:
+                    _world.camPosition.turnRight();
+                    updateCamPosition();
+                    break;
+                case 7:
+                    //_world.camPosition.backward(1);
+                    //updateCamPosition();
+                    startMoveAnimation(-_world.camPosition.direction.forward);
+                    break;
+                case 6:
+                    //_world.camPosition.moveLeft();
+                    //updateCamPosition();
+                    startMoveAnimation(_world.camPosition.direction.left);
+                    break;
+                case 8:
+                    //_world.camPosition.moveRight();
+                    //updateCamPosition();
+                    startMoveAnimation(_world.camPosition.direction.right);
+                    break;
                 }
             }
-        } else if (event.action == MouseAction.Move) {
-            if (event.lbutton.isDown) {
+        }
+        else if (event.action == MouseAction.Move)
+        {
+            if (event.lbutton.isDown)
+            {
                 int deltaX = event.x - lastMouseX;
                 int deltaY = event.y - lastMouseY;
                 int maxshift = width > 100 ? width : 100;
@@ -355,69 +393,82 @@ class UiWidget : VerticalLayout { //, CellVisitor
                     newAngleY = 65;
                 setYAngle(newAngleY, true);
             }
-        } else if (event.action == MouseAction.ButtonUp || event.action == MouseAction.Cancel) {
+        }
+        else if (event.action == MouseAction.ButtonUp || event.action == MouseAction.Cancel)
+        {
             stopMoveAnimation();
         }
         return true;
     }
 
     /// process key event, return true if event is processed.
-    override bool onKeyEvent(KeyEvent event) {
-        if (event.action == KeyAction.KeyDown) {
-            switch(event.keyCode) with(KeyCode) {
-                case F1:
-                    _minerDrawable.wireframe = !_minerDrawable.wireframe;
-                    return true;
-                case KEY_W:
-                case UP:
-                    _world.camPosition.forward(1);
-                    updateCamPosition();
-                    return true;
-                case DOWN:
-                case KEY_S:
-                    _world.camPosition.backward(1);
-                    updateCamPosition();
-                    return true;
-                case KEY_A:
-                case LEFT:
-                    _world.camPosition.turnLeft();
-                    updateCamPosition();
-                    return true;
-                case KEY_D:
-                case RIGHT:
-                    _world.camPosition.turnRight();
-                    updateCamPosition();
-                    return true;
-                case HOME:
-                case KEY_E:
-                    _world.camPosition.moveUp();
-                    updateCamPosition();
-                    return true;
-                case END:
-                case KEY_Q:
-                    _world.camPosition.moveDown();
-                    updateCamPosition();
-                    return true;
-                case KEY_Z:
-                    _world.camPosition.moveLeft();
-                    updateCamPosition();
-                    return true;
-                case KEY_C:
-                    _world.camPosition.moveRight();
-                    updateCamPosition();
-                    return true;
-                case KEY_F:
-                    flying = !flying;
-                    if (!flying)
-                        _world.camPosition.pos.y = CHUNK_DY - 3;
-                    updateCamPosition();
-                    return true;
-                case KEY_U:
-                    enableMeshUpdate = !enableMeshUpdate;
-                    updateCamPosition();
-                    return true;
-                default:
-                    return false;
+    override bool onKeyEvent(KeyEvent event)
+    {
+        if (event.action == KeyAction.KeyDown)
+        {
+            switch (event.keyCode) with (KeyCode)
+            {
+            case F1:
+                _minerDrawable.wireframe = !_minerDrawable.wireframe;
+                return true;
+            case KEY_W:
+            case UP:
+                _world.camPosition.forward(1);
+                updateCamPosition();
+                return true;
+            case DOWN:
+            case KEY_S:
+                _world.camPosition.backward(1);
+                updateCamPosition();
+                return true;
+            case KEY_A:
+            case LEFT:
+                _world.camPosition.turnLeft();
+                updateCamPosition();
+                return true;
+            case KEY_D:
+            case RIGHT:
+                _world.camPosition.turnRight();
+                updateCamPosition();
+                return true;
+            case HOME:
+            case KEY_E:
+                _world.camPosition.moveUp();
+                updateCamPosition();
+                return true;
+            case END:
+            case KEY_Q:
+                _world.camPosition.moveDown();
+                updateCamPosition();
+                return true;
+            case KEY_Z:
+                _world.camPosition.moveLeft();
+                updateCamPosition();
+                return true;
+            case KEY_C:
+                _world.camPosition.moveRight();
+                updateCamPosition();
+                return true;
+            case KEY_F:
+                flying = !flying;
+                if (!flying)
+                    _world.camPosition.pos.y = CHUNK_DY - 3;
+                updateCamPosition();
+                return true;
+            case KEY_U:
+                enableMeshUpdate = !enableMeshUpdate;
+                updateCamPosition();
+                return true;
+
+            case KEY_PERIOD:
+                int cx = _world.camPosition.pos.x;
+                int cy = _world.camPosition.pos.y;
+                int cz = _world.camPosition.pos.z;
+
+                _world.setCell(cx+1, cy, cz+1, BlockId.clay);
+                return true;
+            default:
+                return false;
             }
         }
         return false;
@@ -434,28 +485,34 @@ class UiWidget : VerticalLayout { //, CellVisitor
     bool enableMeshUpdate = true;
     Vector3d _moveAnimationDirection;
 
-    void animateMoving() {
-        if (_moveAnimationDirection != Vector3d(0,0,0)) {
+    void animateMoving()
+    {
+        if (_moveAnimationDirection != Vector3d(0, 0, 0))
+        {
             Vector3d animPos = _world.camPosition.pos + _moveAnimationDirection;
             vec3 p = vec3(animPos.x + 0.5f, animPos.y + 0.5f, animPos.z + 0.5f);
-            if ((_animatingPosition - p).length < 2) {
+            if ((_animatingPosition - p).length < 2)
+            {
                 _world.camPosition.pos += _moveAnimationDirection;
                 updateCamPosition(true);
             }
         }
     }
 
-    void updateCamPosition(bool animateIt = true) {
+    void updateCamPosition(bool animateIt = true)
+    {
         import std.string;
         import std.conv : to;
         import std.utf : toUTF32;
         import std.format;
 
-        if (!flying) {
+        if (!flying)
+        {
             animateMoving();
-            while(_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
+            while (_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
                 _world.camPosition.pos += Vector3d(0, -1, 0);
-            if(!_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0))) {
+            if (!_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
+            {
                 if (_world.canPass(_world.camPosition.pos + Vector3d(0, 1, 0)))
                     _world.camPosition.pos += Vector3d(0, 1, 0);
                 else if (_world.canPass(_world.camPosition.pos + Vector3d(1, 0, 0)))
@@ -466,7 +523,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
                     _world.camPosition.pos += Vector3d(0, 0, 1);
                 else if (_world.canPass(_world.camPosition.pos + Vector3d(0, 0, -1)))
                     _world.camPosition.pos += Vector3d(0, 0, -1);
-                while(_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
+                while (_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
                     _world.camPosition.pos += Vector3d(0, -1, 0);
             }
         }
@@ -477,28 +534,33 @@ class UiWidget : VerticalLayout { //, CellVisitor
         updatePositionMessage();
     }
 
-    void updatePositionMessage() {
+    void updatePositionMessage()
+    {
         import std.string : format;
+
         Widget w = childById("lblPosition");
         string dir = _world.camPosition.direction.dir.to!string;
-        dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s  [F1] wireframe: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y,
-                           _fps,
-                           dir,
-                           flying,
-                           enableMeshUpdate,
-                           _minerDrawable ? _minerDrawable.wireframe : false
-                           ).toUTF32;
+        dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s  [F1] wireframe: %s", _world.camPosition.pos.x, _world
+                .camPosition.pos.z, _world.camPosition.pos.y,
+            _fps,
+            dir,
+            flying,
+            enableMeshUpdate,
+            _minerDrawable ? _minerDrawable.wireframe : false
+        ).toUTF32;
         w.text = s;
     }
 
     int _fps = 0;
 
-    void startMoveAnimation(Vector3d direction) {
+    void startMoveAnimation(Vector3d direction)
+    {
         _moveAnimationDirection = direction;
         updateCamPosition();
     }
 
-    void stopMoveAnimation() {
+    void stopMoveAnimation()
+    {
         _moveAnimationDirection = Vector3d(0, 0, 0);
         updateCamPosition();
     }
@@ -524,91 +586,121 @@ class UiWidget : VerticalLayout { //, CellVisitor
     float _animatingAngle;
     float _animatingYAngle;
 
-    void setPos(vec3 newPos, bool animateIt = false) {
-        if (animateIt) {
+    void setPos(vec3 newPos, bool animateIt = false)
+    {
+        if (animateIt)
+        {
             _position = newPos;
-        } else {
+        }
+        else
+        {
             _animatingPosition = newPos;
             _position = newPos;
         }
     }
 
-    void setAngle(float newAngle, bool animateIt = false) {
-        if (animateIt) {
+    void setAngle(float newAngle, bool animateIt = false)
+    {
+        if (animateIt)
+        {
             _angle = newAngle;
-        } else {
+        }
+        else
+        {
             _animatingAngle = newAngle;
             _angle = newAngle;
         }
     }
 
-    void setYAngle(float newAngle, bool animateIt = false) {
-        if (animateIt) {
+    void setYAngle(float newAngle, bool animateIt = false)
+    {
+        if (animateIt)
+        {
             _yAngle = newAngle;
-        } else {
+        }
+        else
+        {
             _animatingYAngle = newAngle;
             _yAngle = newAngle;
         }
     }
 
     /// returns true is widget is being animated - need to call animate() and redraw
-    @property override bool animating() { return true; }
+    @property override bool animating()
+    {
+        return true;
+    }
     /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
-    override void animate(long interval) {
+    override void animate(long interval)
+    {
         //Log.d("animating");
-        if (interval > 0) {
+        if (interval > 0)
+        {
             int newfps = cast(int)(10000000.0 / interval);
-            if (newfps < _fps - 3 || newfps > _fps + 3) {
+            if (newfps < _fps - 3 || newfps > _fps + 3)
+            {
                 _fps = newfps;
                 updatePositionMessage();
             }
         }
         animateMoving();
-        if (_animatingAngle != _angle) {
+        if (_animatingAngle != _angle)
+        {
             float delta = _angle - _animatingAngle;
             if (delta > 180)
                 delta -= 360;
             else if (delta < -180)
                 delta += 360;
             float dist = delta < 0 ? -delta : delta;
-            if (dist < 5) {
+            if (dist < 5)
+            {
                 _animatingAngle = _angle;
-            } else {
+            }
+            else
+            {
                 float speed = 360 / 2;
                 float step = speed * interval / 10000000.0f;
                 //Log.d("Rotate animation delta=", delta, " dist=", dist, " elapsed=", interval, " step=", step);
                 if (step > dist)
                     step = dist;
-                delta = delta * (step /dist);
+                delta = delta * (step / dist);
                 _animatingAngle += delta;
             }
         }
-        if (_animatingYAngle != _yAngle) {
+        if (_animatingYAngle != _yAngle)
+        {
             float delta = _yAngle - _animatingYAngle;
             if (delta > 180)
                 delta -= 360;
             else if (delta < -180)
                 delta += 360;
             float dist = delta < 0 ? -delta : delta;
-            if (dist < 5) {
+            if (dist < 5)
+            {
                 _animatingYAngle = _yAngle;
-            } else {
+            }
+            else
+            {
                 float speed = 360 / 2;
                 float step = speed * interval / 10000000.0f;
                 //Log.d("Rotate animation delta=", delta, " dist=", dist, " elapsed=", interval, " step=", step);
                 if (step > dist)
                     step = dist;
-                delta = delta * (step /dist);
+                delta = delta * (step / dist);
                 _animatingYAngle += delta;
             }
         }
-        if (_animatingPosition != _position) {
+        if (_animatingPosition != _position)
+        {
             vec3 delta = _position - _animatingPosition;
             float dist = delta.length;
-            if (dist < 0.01) {
+            if (dist < 0.01)
+            {
                 _animatingPosition = _position;
                 // done
-            } else {
+            }
+            else
+            {
                 float speed = 8;
                 if (dist > 2)
                     speed = (dist - 2) * 3 + speed;
@@ -622,21 +714,21 @@ class UiWidget : VerticalLayout { //, CellVisitor
         }
         invalidate();
     }
+
     float angle = 0;
 
     Scene3d _scene;
     Camera _cam;
     Mesh _minerMesh;
 
-
     /// this is OpenGLDrawableDelegate implementation
-    private void doDraw(Rect windowRect, Rect rc) {
+    private void doDraw(Rect windowRect, Rect rc)
+    {
         _cam.setPerspective(rc.width, rc.height, 45.0f, 0.3, MAX_VIEW_DISTANCE);
         _cam.setIdentity();
         _cam.translate(_animatingPosition);
         _cam.rotateY(_animatingAngle);
         _cam.rotateX(_yAngle);
-
 
         dirLightNode.setIdentity();
         dirLightNode.translate(_animatingPosition);
@@ -655,7 +747,8 @@ class UiWidget : VerticalLayout { //, CellVisitor
         checkgl!glDisable(GL_CULL_FACE);
     }
 
-    ~this() {
+    ~this()
+    {
         destroy(_scene);
         destroy(_world);
     }
