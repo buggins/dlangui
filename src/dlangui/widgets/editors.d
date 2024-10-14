@@ -415,7 +415,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     /// Characters at which content is split for word wrap mode
-    dchar[] splitChars = [' ', '-', '\t'];
+    immutable dchar[] splitChars = [' ', '-', '\t'];
 
     /// Divides up a string for word wrapping, sets info in _span
     dstring[] wrapLine(dstring str, int lineNumber) {
@@ -465,7 +465,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     /// Divide (and conquer) text into words
-    dstring[] explode(dstring str, dchar[] splitChars)
+    dstring[] explode(dstring str, const(dchar)[] splitChars)
     {
         dstring[] parts;
         int startIndex = 0;

@@ -101,7 +101,7 @@ class ParserException : Exception {
 /// simple tokenizer for DlangUI ML
 class Tokenizer {
 
-    protected string[] _singleLineCommentPrefixes = ["//"];
+    protected string[] _singleLineCommentPrefixes;
     protected LineStream  _lines;
     protected dchar[] _lineText;
     protected ushort _line;
