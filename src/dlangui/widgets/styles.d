@@ -1674,10 +1674,6 @@ bool loadTheme(Theme theme, XmlDocument doc, int level = 0) {
     foreach(styleitem; doc.root.childNodes) {
         if (styleitem.tagName.equal("style")) {
             // load <style>
-            if(styleitem.children.length > 0)
-            {
-                styleitem.innerHTML(styleitem.children[0].nodeValue, true); // HACK by adr
-            }
             string styleid = attrValue(styleitem, "id");
             string styleparent = attrValue(styleitem, "parent");
             if (styleid.length) {
