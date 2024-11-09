@@ -1358,7 +1358,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                         if (event.action == MouseAction.Move && event.noModifiers && itemWidget.hasTooltip) {
                             itemWidget.scheduleTooltip(200);
                         }
-                        //itemWidget.onMouseEvent(event);
+                        itemWidget.onMouseEvent(event);
                         itemWidget.parent = oldParent;
                     }
                 }
