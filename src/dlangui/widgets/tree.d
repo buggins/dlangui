@@ -279,7 +279,7 @@ class TreeItem {
     /// returns number of children of this widget
     @property int childCount() { return _children.count; }
     /// returns child by index
-    TreeItem child(int index) { return _children.get(index); }
+    TreeItem child(int index) { return _children.tryGet(index); }
     /// adds child, returns added item
     TreeItem addChild(TreeItem item, int index = -1) {
         TreeItem res = _children.insert(item, index).parent(this).level(_level + 1);

@@ -1821,7 +1821,7 @@ class WidgetGroup : Widget {
     /// returns number of children of this widget
     @property override int childCount() const { return _children.count; }
     /// returns child by index
-    override inout(Widget) child(int index) inout { return _children.get(index); }
+    override inout(Widget) child(int index) inout { return _children.tryGet(index); }
     /// adds child, returns added item
     override Widget addChild(Widget item) { return _children.add(item).parent(this); }
     /// inserts child at given index, returns inserted item

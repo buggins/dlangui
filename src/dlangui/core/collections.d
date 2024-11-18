@@ -42,7 +42,7 @@ module dlangui.core.collections;
 
 import std.algorithm;
 
-/** 
+/**
     Array based collection of items.
 
     Retains item order when during add/remove operations.
@@ -62,10 +62,10 @@ struct Collection(T, bool ownItems = false) {
     @property void size(size_t newSize) {
         if (_len > newSize)
             length = newSize; // shrink
-        _items.length = newSize; 
+        _items.length = newSize;
     }
     /// returns number of items in collection
-    @property void length(size_t newSize) { 
+    @property void length(size_t newSize) {
         if (newSize < _len) {
             // shrink
             static if (is(T == class) || is(T == struct)) {
@@ -247,6 +247,17 @@ struct ObjectList(T) {
     inout(T) get(int index) @safe inout {
         assert(index >= 0 && index < _count, "child index out of range");
         return _list[index];
+    }
+    /// get item by index. Returns null if item not found
+    inout(T) tryGet(int index) @safe inout nothrow {
+        try {
+            if (index < 0 || index >= _count) {
+                return null;
+            }
+            return _list[index];
+        } catch (Exception e) {
+            return null;
+        }
     }
     /// get item by index
     T opIndex(int index) @safe {
