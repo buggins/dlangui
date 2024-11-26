@@ -249,15 +249,11 @@ struct ObjectList(T) {
         return _list[index];
     }
     /// get item by index. Returns null if item not found
-    inout(T) tryGet(int index) @safe inout nothrow {
-        try {
-            if (index < 0 || index >= _count) {
-                return null;
-            }
-            return _list[index];
-        } catch (Exception e) {
+    inout(T) tryGet(int index) @safe inout {
+        if (index < 0 || index >= _count) {
             return null;
         }
+        return _list[index];
     }
     /// get item by index
     T opIndex(int index) @safe {
