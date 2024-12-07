@@ -1349,7 +1349,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             itemrc.right += rc.left - scrollOffset.x;
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
-            if (itemrc.isPointInside(Point(event.x, event.y))) {
+            auto point = Point(event.x, event.y);
+            if (itemrc.isPointInside(point)) {
                 if (_adapter && _adapter.wantMouseEvents) {
                     auto itemWidget = _adapter.itemWidget(i);
                     if (itemWidget) {
@@ -1357,6 +1358,12 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                         itemWidget.parent = this;
                         if (event.action == MouseAction.Move && event.noModifiers && itemWidget.hasTooltip) {
                             itemWidget.scheduleTooltip(200);
+                        }
+                        foreach (j; 0 .. itemWidget.childCount) {
+                            auto child = itemWidget.child(j);
+                            if (child.isPointInside(point)) {
+                                child.onMouseEvent(event);
+                            }
                         }
                         itemWidget.onMouseEvent(event);
                         itemWidget.parent = oldParent;
