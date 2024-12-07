@@ -572,7 +572,7 @@ interface OnItemClickHandler {
 }
 
 
-/** List widget - shows content as hori*/
+/** List widget - shows content as horizontal or vertical list */
 class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
     /** Handle selection change. */
