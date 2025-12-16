@@ -2004,6 +2004,7 @@ extern(C) int DLANGUImain(string[] args)
     X11Platform x11platform = new X11Platform();
 
     Platform.setInstance(x11platform);
+    Platform.instance.uiTheme = "theme_default";
 
     int res = 0;
 
