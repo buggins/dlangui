@@ -10,10 +10,7 @@ extern (C) int UIAppMain(string[] args) {
     // load theme from file "theme_default.xml"
     //Platform.instance.uiTheme = "theme_default";
 
-    // create window
-    Log.d("Creating window");
     Window window = Platform.instance.createWindow("DlangUI example - HelloWorld", null);
-    Log.d("Window created");
 
     // create some widget to show in window
     //window.mainWidget = (new Button()).text("Hello, world!"d).margins(Rect(20,20,20,20));
