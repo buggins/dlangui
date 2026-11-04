@@ -613,6 +613,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     protected int _hoverItemIndex;
     /// item with Selected state, -1 if no such item
     protected int _selectedItemIndex;
+    /// item whose widget received the last forwarded mouse event (adapters with wantMouseEvents), -1 if no such item
+    protected int _mouseItemIndex = -1;
 
     /// when true, mouse hover selects underlying item
     protected bool _selectOnHover;
@@ -1312,11 +1314,37 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         //return false;
     }
 
+    /// Track which item widget is under the mouse pointer.
+    ///
+    /// Item widgets of adapters with wantMouseEvents are not children of this widget, so Window
+    /// does not send them Leave events. When the pointer moves to another item or leaves the list,
+    /// send Leave to the previous item widget and its children, so that e.g. their Hovered state is reset.
+    protected void updateMouseItem(int index, MouseEvent event) {
+        if (_mouseItemIndex == index)
+            return;
+        int prevIndex = _mouseItemIndex;
+        _mouseItemIndex = index;
+        if (prevIndex < 0 || prevIndex >= itemCount || !_adapter || !_adapter.wantMouseEvents)
+            return;
+        Widget itemWidget = _adapter.itemWidget(prevIndex);
+        if (!itemWidget)
+            return;
+        MouseEvent leaveEvent = new MouseEvent(event);
+        leaveEvent.changeAction(MouseAction.Leave);
+        Widget oldParent = itemWidget.parent;
+        itemWidget.parent = this;
+        foreach (j; 0 .. itemWidget.childCount)
+            itemWidget.child(j).onMouseEvent(leaveEvent);
+        itemWidget.onMouseEvent(leaveEvent);
+        itemWidget.parent = oldParent;
+    }
+
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
         super.onMouseEvent(event);
         if (event.action == MouseAction.Leave || event.action == MouseAction.Cancel) {
+            updateMouseItem(-1, event);
             setHoverItem(-1);
             return true;
         }
@@ -1352,6 +1380,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             auto point = Point(event.x, event.y);
             if (itemrc.isPointInside(point)) {
                 if (_adapter && _adapter.wantMouseEvents) {
+                    updateMouseItem(i, event);
                     auto itemWidget = _adapter.itemWidget(i);
                     if (itemWidget) {
                         Widget oldParent = itemWidget.parent;
@@ -1393,6 +1422,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                 return true;
             }
         }
+        // pointer is inside the list, but not over any item
+        updateMouseItem(-1, event);
         return true;
     }
     /// returns true if item is child of this widget (when deepSearch == true - returns true if item is this widget or one of children inside children tree).
