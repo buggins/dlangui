@@ -488,6 +488,12 @@ class Window : CustomEventTarget {
         updateWindowOrContentSize();
     }
 
+    /// keep current position of window scrollbar after its range or page size is changed (e.g. on window resize, #632),
+    /// moving it only if it is out of the new range
+    private static void keepScrollPositionInRange(ScrollBar scrollBar) {
+        scrollBar.position = max(0, min(scrollBar.position, scrollBar.maxValue - scrollBar.pageSize));
+    }
+
     /// update current content size based on windowOrContentResizeMode flag, usually used when window is resized
     void updateWindowOrContentSize() {
         final switch (_windowOrContentResizeMode) {
@@ -508,6 +514,7 @@ class Window : CustomEventTarget {
                     _currentContentWidth = _minContentWidth;
                     if (!_hScrollBar) {
                         _hScrollBar = new ScrollBar(null,Orientation.Horizontal);
+                        _hScrollBar.position = 0; // AbstractSlider default position is not 0
                         _hScrollBar.scrollEvent = delegate bool (AbstractSlider source, ScrollEvent event) {
                             if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased)
                                 requestLayout();
@@ -533,7 +540,7 @@ class Window : CustomEventTarget {
                     else
                         _hScrollBar.setRange(0, _minContentWidth);
                     _hScrollBar.pageSize(_windowRect.right);
-                    _hScrollBar.position(0);
+                    keepScrollPositionInRange(_hScrollBar);
                 }
                 else {
                     if (_hScrollBar) {
@@ -548,6 +555,7 @@ class Window : CustomEventTarget {
                     _currentContentHeight = _minContentHeight;
                     if (!_vScrollBar) {
                         _vScrollBar = new ScrollBar(null,Orientation.Vertical);
+                        _vScrollBar.position = 0; // AbstractSlider default position is not 0
                         _vScrollBar.scrollEvent = delegate bool (AbstractSlider source, ScrollEvent event) {
                             if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased)
                                 requestLayout();
@@ -573,7 +581,7 @@ class Window : CustomEventTarget {
                     else
                         _vScrollBar.setRange(0, _minContentHeight);
                     _vScrollBar.pageSize(windowRect().bottom);
-                    _vScrollBar.position(0);
+                    keepScrollPositionInRange(_vScrollBar);
 
                     if (!_hScrollBar)
                         _currentContentWidth = _windowRect.right - _vScrollBar.measuredWidth;
