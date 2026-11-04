@@ -32,6 +32,12 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
 
+      - name: 'Unittest build of a dependent app'
+        run: |
+          # Links an application against dlangui.lib without WinMain (see #710)
+          cd examples/helloworld
+          dub test
+
       - name: 'Build & Test'
         run: |
           # Build and run tests, as defined by `unittest` configuration
