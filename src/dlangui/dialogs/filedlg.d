@@ -973,7 +973,7 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
     }
     protected void initialize(string path) {
         _path = path;
-        _children.clear();
+        removeItems();
         string itemPath = path;
         for (;;) {
             FilePathPanelItem item = new FilePathPanelItem(itemPath);
@@ -984,6 +984,25 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
             }
             itemPath = parentDir(itemPath);
         }
+    }
+    /// Remove current path items.
+    ///
+    /// initialize() is usually called from a click handler of one of the current items
+    /// (FilePathPanelItem.onTextClick), while that item is still handling the mouse event.
+    /// Destroying the items immediately crashes on double click (#702), so when the panel
+    /// is attached to a window, the items are detached now and destroyed later.
+    private void removeItems() {
+        Window w = window;
+        if (!w) {
+            _children.clear();
+            return;
+        }
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            item.parent = null;
+            w.queueWidgetDestroy(item);
+        }
+        _children.clear(false);
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
