@@ -19,7 +19,7 @@
 
     "libs-linux": ["z"],
 
-    "libs-windows": ["ole32"],
+    "libs-windows": ["ole32", "gdi32", "user32"],
 
     "stringImportPaths": [
         "views"
