@@ -67,6 +67,10 @@ extern(C) void registerStandardWidgets() {
 
     mixin(registerWidgetMetadataClass!ProgressBarWidget); // dlangui.widgets.progressbar
 
+    import dlangui.widgets.processoutput;
+
+    mixin(registerWidgetMetadataClass!ProcessOutputWidget); // dlangui.widgets.processoutput
+
     import dlangui.widgets.menu;
 
     mixin(registerWidgetMetadataClass!MainMenu); //dlangui.widgets.menu
@@ -117,3 +121,8 @@ extern(C) void registerStandardWidgets() {
     */
 }
 
+unittest {
+    import dlangui.widgets.metadata;
+    registerStandardWidgets();
+    assert(findWidgetMetadata("ProcessOutputWidget") !is null, "ProcessOutputWidget is not registered for DML");
+}
