@@ -40,3 +40,8 @@ jobs:
           dub test
           cd examples/example1
           dub build -b=release
+
+      - name: 'Build console configuration'
+        run: |
+          cd examples/example1
+          dub build -b=release -c console
