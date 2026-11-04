@@ -806,6 +806,18 @@ class X11Window : DWindow {
         return res;
     }
 
+    /// convert keyboard modifiers of X11 event state to MouseFlag bits
+    ushort convertMouseModifierFlags(uint state) {
+        ushort res = 0;
+        if (state & ShiftMask)
+            res |= MouseFlag.Shift;
+        if (state & ControlMask)
+            res |= MouseFlag.Control;
+        if (state & Mod1Mask)
+            res |= MouseFlag.Alt;
+        return res;
+    }
+
     MouseButton convertMouseButton(uint button) {
         if (button == Button1)
             return MouseButton.Left;
@@ -818,39 +830,23 @@ class X11Window : DWindow {
 
     short lastx;
     short lasty;
-    uint _keyFlags;
 
     void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
         MouseEvent event = null;
         ushort lastFlags;
 
+        // Take keyboard modifiers from the event state, which the X server reports for the moment
+        // of the event, rather than from the last key event: key releases may be missed (#582).
+        ushort modifierFlags = convertMouseModifierFlags(state);
         if (action == MouseAction.Wheel) {
             // handle wheel
             short wheelDelta = cast(short)y;
-            if (_keyFlags & KeyFlag.Shift)
-                lastFlags |= MouseFlag.Shift;
-            else
-                lastFlags &= ~MouseFlag.Shift;
-            if (_keyFlags & KeyFlag.Control)
-                lastFlags |= MouseFlag.Control;
-            else
-                lastFlags &= ~MouseFlag.Control;
-            if (_keyFlags & KeyFlag.Alt)
-                lastFlags |= MouseFlag.Alt;
-            else
-                lastFlags &= ~MouseFlag.Alt;
+            lastFlags = modifierFlags;
             if (wheelDelta)
                 event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
         } else {
             MouseButton btn = convertMouseButton(button);
-            lastFlags = convertMouseFlags(state, btn, action == MouseAction.ButtonDown);
-
-            if (_keyFlags & KeyFlag.Shift)
-                lastFlags |= MouseFlag.Shift;
-            if (_keyFlags & KeyFlag.Control)
-                lastFlags |= MouseFlag.Control;
-            if (_keyFlags & KeyFlag.Alt)
-                lastFlags |= MouseFlag.Alt;
+            lastFlags = convertMouseFlags(state, btn, action == MouseAction.ButtonDown) | modifierFlags;
             lastx = cast(short)x;
             lasty = cast(short)y;
             event = new MouseEvent(action, btn, lastFlags, lastx, lasty);
@@ -1039,6 +1035,7 @@ class X11Window : DWindow {
             case XK_space:
                 return KeyCode.SPACE;
             case XK_Tab:
+            case XK_ISO_Left_Tab: // Shift+Tab
                 return KeyCode.TAB;
             case XK_Return:
             case XK_KP_Enter:
@@ -1111,7 +1108,7 @@ class X11Window : DWindow {
             res |= KeyFlag.Control;
         if (flags & ShiftMask)
             res |= KeyFlag.Shift;
-        if (flags & LockMask)
+        if (flags & Mod1Mask)
             res |= KeyFlag.Alt;
 //        if (flags & KMOD_RCTRL)
 //            res |= KeyFlag.RControl | KeyFlag.Control;
@@ -1176,7 +1173,6 @@ class X11Window : DWindow {
 		    	flagsConverted &= ~flags;
 		}
         Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " flags=0x", format("%08x", flagsConverted));
-        _keyFlags = flagsConverted;
 
         debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flagsConverted));
         bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flagsConverted));
@@ -1534,7 +1530,7 @@ class X11Platform : Platform {
                 X11Window w = findWindow(event.xbutton.window);
                 if (w) {
                     if (event.xbutton.button == 4 || event.xbutton.button == 5) {
-                        w.processMouseEvent(MouseAction.Wheel, 0, 0, 0, event.xbutton.button == 4 ? 1 : -1);
+                        w.processMouseEvent(MouseAction.Wheel, 0, event.xbutton.state, 0, event.xbutton.button == 4 ? 1 : -1);
                     } else {
                         w.processMouseEvent(MouseAction.ButtonDown, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
                     }
