@@ -300,7 +300,10 @@ extern (C) int UIAppMain(string[] args)
     tabs.addTab(new TreeExample("TREE"), "Tree"d);
     tabs.addTab(new ChartsExample("charts"), "Charts"d);
     tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
-    tabs.addTab(new CanvasExample("canvas"), UIString.fromId("TAB_CANVAS"));
+    static if (BACKEND_GUI)
+    {
+        tabs.addTab(new CanvasExample("canvas"), UIString.fromId("TAB_CANVAS"));
+    }
     tabs.addTab(new IconsExample("icons"), "Icons"d);
 
     static if (BACKEND_GUI && ENABLE_OPENGL)

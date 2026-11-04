@@ -1,11 +1,12 @@
 module widgets.opengl;
 
-import bindbc.opengl;
 import dlangui;
-import dlangui.graphics.glsupport;
-import dlangui.graphics.gldrawbuf;
 
 static if(ENABLE_OPENGL):
+
+import bindbc.opengl;
+import dlangui.graphics.glsupport;
+import dlangui.graphics.gldrawbuf;
 
 class OpenGLExample : VerticalLayout {
     this() {
