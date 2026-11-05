@@ -151,14 +151,15 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler, CellSelect
         if (visibility == Visibility.Gone) {
             return;
         }
-        _measuredWidth = parentWidth;
-        _measuredHeight = parentHeight;
         foreach(view; _views)
             view.measure(parentWidth, parentHeight);
         foreach(sb; _scrollbars)
             sb.measure(parentWidth, parentHeight);
         _editControl.measure(parentWidth, parentHeight);
         _tabs.measure(parentWidth, parentHeight);
+        // Report own minimum size, not the parent size: parentWidth/parentHeight may be SIZE_UNSPECIFIED (#658).
+        // The widget fills the space it gets in layout().
+        measuredContent(parentWidth, parentHeight, 0, _editControl.measuredHeight + _tabs.measuredHeight);
     }
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
