@@ -101,6 +101,20 @@ private __gshared
     Atom   atom_DLANGUI_CLOSE_WINDOW_EVENT;
     Atom   atom_DLANGUI_CLIPBOARD_BUFFER;
     Atom   atom_DLANGUI_REDRAW_EVENT;
+    Atom   atom_DLANGUI_XDND_BUFFER;
+
+    // XDND (drag and drop) protocol
+    Atom   atom_XdndAware;
+    Atom   atom_XdndEnter;
+    Atom   atom_XdndPosition;
+    Atom   atom_XdndStatus;
+    Atom   atom_XdndLeave;
+    Atom   atom_XdndDrop;
+    Atom   atom_XdndFinished;
+    Atom   atom_XdndSelection;
+    Atom   atom_XdndTypeList;
+    Atom   atom_XdndActionCopy;
+    Atom   atom_TEXT_URI_LIST;
 }
 
 static void setupX11Atoms()
@@ -128,6 +142,19 @@ static void setupX11Atoms()
     atom_DLANGUI_CLOSE_WINDOW_EVENT = XInternAtom(x11display, "DLANGUI_CLOSE_WINDOW_EVENT", False);
     atom_DLANGUI_CLIPBOARD_BUFFER = XInternAtom(x11display, "DLANGUI_CLIPBOARD_BUFFER", False);
     atom_DLANGUI_REDRAW_EVENT = XInternAtom(x11display, "DLANGUI_REDRAW_EVENT", False);
+    atom_DLANGUI_XDND_BUFFER = XInternAtom(x11display, "DLANGUI_XDND_BUFFER", False);
+
+    atom_XdndAware = XInternAtom(x11display, "XdndAware", False);
+    atom_XdndEnter = XInternAtom(x11display, "XdndEnter", False);
+    atom_XdndPosition = XInternAtom(x11display, "XdndPosition", False);
+    atom_XdndStatus = XInternAtom(x11display, "XdndStatus", False);
+    atom_XdndLeave = XInternAtom(x11display, "XdndLeave", False);
+    atom_XdndDrop = XInternAtom(x11display, "XdndDrop", False);
+    atom_XdndFinished = XInternAtom(x11display, "XdndFinished", False);
+    atom_XdndSelection = XInternAtom(x11display, "XdndSelection", False);
+    atom_XdndTypeList = XInternAtom(x11display, "XdndTypeList", False);
+    atom_XdndActionCopy = XInternAtom(x11display, "XdndActionCopy", False);
+    atom_TEXT_URI_LIST = XInternAtom(x11display, "text/uri-list", False);
 }
 
 // Cursor font constants
@@ -1248,6 +1275,142 @@ class X11Window : DWindow {
     }
 
     /// post event to handle in UI thread (this method can be used from background thread)
+    // ---------------------------------------------------------------------------------
+    // Files dropped from other applications: XDND protocol, https://freedesktop.org/wiki/Specifications/XDND/ (#705)
+
+    /// XDND protocol version supported
+    enum XDND_VERSION = 5;
+    /// source window of current drag operation
+    private XWindow _xdndSource;
+    /// XDND protocol version used by source of current drag operation
+    private int _xdndVersion;
+    /// true if source of current drag operation offers text/uri-list
+    private bool _xdndHasUriList;
+
+    /// set handler for files dropped to app window
+    override @property DWindow onFilesDropped(void delegate(string[]) handler) {
+        super.onFilesDropped(handler);
+        // advertise XDND support only when dropped files are handled (like DragAcceptFiles in Win32 backend)
+        if (handler) {
+            Atom xdndVersion = XDND_VERSION;
+            XChangeProperty(x11display, _win, atom_XdndAware, XA_ATOM, 32, PropModeReplace, cast(ubyte*)&xdndVersion, 1);
+        } else {
+            XDeleteProperty(x11display, _win, atom_XdndAware);
+        }
+        XFlush(x11display);
+        return this;
+    }
+
+    /// true if current drag operation can be accepted
+    private @property bool xdndAcceptable() {
+        return _onFilesDropped !is null && _xdndSource != 0 && _xdndHasUriList;
+    }
+
+    private void sendXdndMessage(Atom messageType, long l1, long l2, long l3, long l4) {
+        XEvent ev;
+        ev.xclient.type = ClientMessage;
+        ev.xclient.display = x11display;
+        ev.xclient.window = _xdndSource;
+        ev.xclient.message_type = messageType;
+        ev.xclient.format = 32;
+        ev.xclient.data.l[0] = cast(long)_win;
+        ev.xclient.data.l[1] = l1;
+        ev.xclient.data.l[2] = l2;
+        ev.xclient.data.l[3] = l3;
+        ev.xclient.data.l[4] = l4;
+        XSendEvent(x11display, _xdndSource, False, NoEventMask, &ev);
+        XFlush(x11display);
+    }
+
+    /// XdndEnter: drag operation entered the window
+    void handleXdndEnter(ref XClientMessageEvent msg) {
+        _xdndSource = cast(XWindow)msg.data.l[0];
+        _xdndVersion = cast(int)((msg.data.l[1] >> 24) & 0xFF);
+        _xdndHasUriList = false;
+        if (msg.data.l[1] & 1) {
+            // more than 3 data types: full list is in XdndTypeList property of source window
+            Atom actualType;
+            int actualFormat;
+            c_ulong count, bytesAfter;
+            ubyte* data;
+            if (XGetWindowProperty(x11display, _xdndSource, atom_XdndTypeList, 0, 1024, False, XA_ATOM,
+                    &actualType, &actualFormat, &count, &bytesAfter, &data) == 0 && data) {
+                foreach (t; (cast(Atom*)data)[0 .. count])
+                    if (t == atom_TEXT_URI_LIST)
+                        _xdndHasUriList = true;
+                XFree(data);
+            }
+        } else {
+            foreach (i; 2 .. 5)
+                if (cast(Atom)msg.data.l[i] == atom_TEXT_URI_LIST)
+                    _xdndHasUriList = true;
+        }
+        debug(x11) Log.d("XdndEnter: source=", _xdndSource, " version=", _xdndVersion, " hasUriList=", _xdndHasUriList);
+    }
+
+    /// XdndPosition: pointer moved over the window, reply whether drop will be accepted
+    void handleXdndPosition(ref XClientMessageEvent msg) {
+        if (cast(XWindow)msg.data.l[0] != _xdndSource)
+            return;
+        bool accept = xdndAcceptable;
+        // empty rectangle: source should send XdndPosition on any pointer move
+        sendXdndMessage(atom_XdndStatus, accept ? 1 : 0, 0, 0, accept ? cast(long)atom_XdndActionCopy : None);
+    }
+
+    /// XdndLeave: drag operation left the window or was cancelled
+    void handleXdndLeave(ref XClientMessageEvent msg) {
+        if (cast(XWindow)msg.data.l[0] != _xdndSource)
+            return;
+        _xdndSource = 0;
+        _xdndHasUriList = false;
+    }
+
+    /// XdndDrop: request dropped data; files are delivered when SelectionNotify arrives
+    void handleXdndDrop(ref XClientMessageEvent msg) {
+        if (cast(XWindow)msg.data.l[0] != _xdndSource)
+            return;
+        if (!xdndAcceptable) {
+            finishXdnd(false);
+            return;
+        }
+        Time time = _xdndVersion >= 1 ? cast(Time)msg.data.l[2] : CurrentTime;
+        XConvertSelection(x11display, atom_XdndSelection, atom_TEXT_URI_LIST, atom_DLANGUI_XDND_BUFFER, _win, time);
+        XFlush(x11display);
+    }
+
+    /// SelectionNotify for XdndSelection: dropped data (text/uri-list) is available
+    void handleXdndSelection(ref XSelectionEvent ev) {
+        if (!_xdndSource)
+            return;
+        string[] files;
+        if (ev.property != None) {
+            Atom actualType;
+            int actualFormat;
+            c_ulong length, bytesAfter;
+            ubyte* data;
+            if (XGetWindowProperty(x11display, _win, atom_DLANGUI_XDND_BUFFER, 0, int.max / 4, True, AnyPropertyType,
+                    &actualType, &actualFormat, &length, &bytesAfter, &data) == 0 && data) {
+                if (actualFormat == 8)
+                    files = parseFileUriList((cast(char*)data)[0 .. length]);
+                XFree(data);
+            }
+        }
+        debug(x11) Log.d("XDND: dropped files ", files);
+        finishXdnd(files.length > 0);
+        if (files.length) {
+            handleDroppedFiles(files);
+            update();
+        }
+    }
+
+    /// send XdndFinished to source and reset drag operation state
+    private void finishXdnd(bool accepted) {
+        if (_xdndVersion >= 2)
+            sendXdndMessage(atom_XdndFinished, accepted ? 1 : 0, accepted ? cast(long)atom_XdndActionCopy : None, 0, 0);
+        _xdndSource = 0;
+        _xdndHasUriList = false;
+    }
+
     override void postEvent(CustomEvent event) {
         super.postEvent(event);
         XEvent ev;
@@ -1658,7 +1821,10 @@ class X11Platform : Platform {
                 debug(x11) Log.d("X11: SelectionNotify event");
                 X11Window w = findWindow(event.xselection.requestor);
                 if (w) {
-                    waitingForSelection = false;
+                    if (event.xselection.selection == atom_XdndSelection)
+                        w.handleXdndSelection(event.xselection);
+                    else
+                        waitingForSelection = false;
                 }
                 break;
             case ClientMessage:
@@ -1682,6 +1848,14 @@ class X11Platform : Platform {
                     } else if (event.xclient.message_type == atom_DLANGUI_CLOSE_WINDOW_EVENT) {
                         _windowMap.remove(w._win);
                         destroy(w);
+                    } else if (event.xclient.message_type == atom_XdndEnter) {
+                        w.handleXdndEnter(event.xclient);
+                    } else if (event.xclient.message_type == atom_XdndPosition) {
+                        w.handleXdndPosition(event.xclient);
+                    } else if (event.xclient.message_type == atom_XdndLeave) {
+                        w.handleXdndLeave(event.xclient);
+                    } else if (event.xclient.message_type == atom_XdndDrop) {
+                        w.handleXdndDrop(event.xclient);
                     }
                 } else {
                     Log.e("Window not found");

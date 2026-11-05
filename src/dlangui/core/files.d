@@ -825,3 +825,85 @@ string findExecutablePath(string executableName) {
     }
     return null;
 }
+
+/**
+Parse `text/uri-list` (RFC 2483) data, as used by drag and drop (e.g. XDND on X11).
+
+Returns: local file paths of `file:` URIs, percent-decoded.
+Empty lines, comments (lines starting with `#`) and URIs with other schemes are skipped.
+Accepted forms: `file:///path`, `file://localhost/path`, `file://host/path` (host is ignored), `file:/path`.
+*/
+string[] parseFileUriList(const(char)[] uriList) {
+    import std.algorithm : startsWith;
+    import std.string : lineSplitter, strip, indexOf;
+    import std.uni : toLower;
+    string[] res;
+    foreach (line; uriList.lineSplitter) {
+        auto uri = line.strip;
+        if (uri.length == 0 || uri[0] == '#')
+            continue;
+        if (uri.length < 5 || uri[0 .. 5].toLower != "file:")
+            continue;
+        auto rest = uri[5 .. $];
+        if (rest.startsWith("//")) {
+            // authority (host) part: up to the next '/'
+            auto slash = rest[2 .. $].indexOf('/');
+            if (slash < 0)
+                continue;
+            rest = rest[2 + slash .. $];
+        }
+        if (!rest.startsWith("/"))
+            continue;
+        string path = percentDecode(rest);
+        if (path.length)
+            res ~= path;
+    }
+    return res;
+}
+
+/// decode %XX escapes; invalid escapes are kept as is
+private string percentDecode(const(char)[] s) {
+    static int hexValue(char c) {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+        return -1;
+    }
+    char[] res;
+    res.reserve(s.length);
+    for (size_t i = 0; i < s.length; i++) {
+        if (s[i] == '%' && i + 2 < s.length) {
+            int hi = hexValue(s[i + 1]);
+            int lo = hexValue(s[i + 2]);
+            if (hi >= 0 && lo >= 0) {
+                res ~= cast(char)(hi * 16 + lo);
+                i += 2;
+                continue;
+            }
+        }
+        res ~= s[i];
+    }
+    return cast(string)res;
+}
+
+///
+unittest {
+    assert(parseFileUriList("") == []);
+    assert(parseFileUriList("file:///home/user/a.txt") == ["/home/user/a.txt"]);
+    // CRLF separated list, as required by RFC 2483, with percent-encoded characters
+    assert(parseFileUriList("file:///tmp/a%20b.txt\r\nfile:///tmp/%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82.txt\r\n")
+           == ["/tmp/a b.txt", "/tmp/привет.txt"]);
+    // LF only, comments, empty lines, other schemes
+    assert(parseFileUriList("# comment\n\nhttp://example.com/x\nfile:///x/y\n  \nsmb://server/share\n") == ["/x/y"]);
+    // host forms
+    assert(parseFileUriList("file://localhost/etc/hosts") == ["/etc/hosts"]);
+    assert(parseFileUriList("file://myhost/data/f") == ["/data/f"]);
+    assert(parseFileUriList("FILE:///upper/case") == ["/upper/case"]);
+    assert(parseFileUriList("file:/single/slash") == ["/single/slash"]);
+    // malformed
+    assert(parseFileUriList("file://hostonly") == []);
+    assert(parseFileUriList("file:relative/path") == []);
+    // invalid escapes are kept
+    assert(parseFileUriList("file:///a%zzb%2") == ["/a%zzb%2"]);
+    assert(parseFileUriList("file:///100%25") == ["/100%"]);
+}
