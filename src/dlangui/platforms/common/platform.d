@@ -481,6 +481,17 @@ class Window : CustomEventTarget {
 
     /// Sets the minimal content size and adjust window or content should be called from window show
     void adjustWindowOrContentSize(int minContentWidth, int minContentHeight) {
+        // A measured size of SIZE_UNSPECIFIED or more is not a real size: usually some widget reports
+        // the parent size it got from measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED) as its own size.
+        // Treat it as "no minimum", instead of creating window scrollbars for a ~1.6e9 px content (#658).
+        if (minContentWidth >= SIZE_UNSPECIFIED) {
+            Log.w("Window main widget measured width is unspecified (some widget reports parent size as its own?), ignoring it");
+            minContentWidth = 0;
+        }
+        if (minContentHeight >= SIZE_UNSPECIFIED) {
+            Log.w("Window main widget measured height is unspecified (some widget reports parent size as its own?), ignoring it");
+            minContentHeight = 0;
+        }
         _minContentWidth = minContentWidth;
         _minContentHeight = minContentHeight;
         if (_windowOrContentResizeMode == WindowOrContentResizeMode.resizeWindow || flags & WindowFlag.ExpandSize)
