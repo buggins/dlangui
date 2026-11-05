@@ -1608,8 +1608,29 @@ version (Windows) {
 SDLSupport sdlVer;
 
 
+/// Xft.dpi of X11 desktop: -1 if not detected yet, 0 if not available
+private __gshared int _xftDpi = -1;
+
 /// try to get screen resolution and update SCREEN_DPI; returns true if SCREEN_DPI is changed (when custom override DPI value is not set) 
 bool sdlUpdateScreenDpi(int displayIndex = 0) {
+    // On X11 desktops, prefer DPI configured by the desktop (Xft.dpi) over physical DPI of the monitor (#706)
+    if (_xftDpi < 0) {
+        import dlangui.platforms.common.xftdpi : detectXftDpi;
+        _xftDpi = detectXftDpi();
+        if (_xftDpi)
+            Log.i("sdlUpdateScreenDpi: Xft.dpi=", _xftDpi);
+    }
+    if (_xftDpi > 0) {
+        int oldDpi = systemScreenDPI;
+        SCREEN_DPI = _xftDpi;
+        if (overrideScreenDPI != 0)
+            Log.i("sdlUpdateScreenDpi: systemScreenDPI is overrided = ", overrideScreenDPI);
+        if (systemScreenDPI != oldDpi) {
+            Log.i("sdlUpdateScreenDpi: systemScreenDPI is changed from ", oldDpi, " to ", systemScreenDPI, " (Xft.dpi)");
+            return (overrideScreenDPI == 0);
+        }
+        return false;
+    }
     if (sdlVer < SDLSupport.v2_0_4) {
         Log.w("SDL_GetDisplayDPI is not found: cannot detect screen DPI");
         return false;
