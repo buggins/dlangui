@@ -1184,6 +1184,47 @@ class SDLPlatform : Platform {
         return null;
     }
 
+    /// files of current drop operation, collected from SDL_DROPFILE events
+    private string[] _droppedFiles;
+
+    /// handle SDL_DROPFILE event: SDL sends one event per dropped file (#705)
+    private void handleDropFileEvent(ref SDL_Event event) {
+        if (event.drop.file) {
+            _droppedFiles ~= fromStringz(event.drop.file).idup;
+            SDL_free(event.drop.file);
+        }
+        // SDL queues all files of one drop at once: deliver them together after the last one
+        SDL_Event next;
+        if (SDL_PeepEvents(&next, 1, SDL_PEEKEVENT, SDL_DROPFILE, SDL_DROPFILE) > 0)
+            return;
+        string[] files = _droppedFiles;
+        _droppedFiles = null;
+        if (!files.length)
+            return;
+        SDLWindow w = dropTargetWindow();
+        if (!w) {
+            Log.w("SDL_DROPFILE: cannot determine target window, ignoring dropped files ", files);
+            return;
+        }
+        w.handleDroppedFiles(files);
+        w.update();
+    }
+
+    /// Window to deliver dropped files to.
+    /// SDL 2.0.4 API (used by dlangui) does not tell the window of SDL_DROPFILE event,
+    /// so use the window with keyboard focus, or with mouse focus, or the only window.
+    private SDLWindow dropTargetWindow() {
+        if (SDL_Window* win = SDL_GetKeyboardFocus())
+            if (SDLWindow w = getWindow(SDL_GetWindowID(win)))
+                return w;
+        if (SDL_Window* win = SDL_GetMouseFocus())
+            if (SDLWindow w = getWindow(SDL_GetWindowID(win)))
+                return w;
+        if (_windowMap.length == 1)
+            return _windowMap.values[0];
+        return null;
+    }
+
     /// close window
     override void closeWindow(Window w) {
         SDLWindow window = cast(SDLWindow)w;
@@ -1453,6 +1494,9 @@ class SDLPlatform : Platform {
                             debug(DebugSDL) Log.d("SDL_MOUSEWHEEL x=", event.wheel.x, " y=", event.wheel.y);
                             w.processMouseEvent(MouseAction.Wheel, 0, 0, event.wheel.x, event.wheel.y);
                         }
+                        break;
+                    case SDL_DROPFILE:
+                        handleDropFileEvent(event);
                         break;
                     default:
                         // not supported event
