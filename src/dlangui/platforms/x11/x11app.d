@@ -1907,6 +1907,21 @@ class TimerThread : Thread {
 }
 
 
+/// set screen DPI from Xft.dpi desktop setting, if available (#706); otherwise keep default DPI
+private void x11UpdateScreenDpi() {
+    import dlangui.platforms.common.xftdpi : parseXftDpi;
+    char* resources = XResourceManagerString(x11display);
+    int xftDpi = resources ? parseXftDpi(fromStringz(resources)) : 0;
+    if (xftDpi) {
+        SCREEN_DPI = xftDpi;
+        Log.i("X11: screen DPI from Xft.dpi=", xftDpi, ", using ", systemScreenDPI);
+    } else {
+        Log.i("X11: Xft.dpi is not set, using default screen DPI ", systemScreenDPI);
+    }
+    if (overrideScreenDPI != 0)
+        Log.i("X11: screen DPI is overridden: ", overrideScreenDPI);
+}
+
 extern(C) int DLANGUImain(string[] args)
 {
     initLogs();
@@ -1934,6 +1949,7 @@ extern(C) int DLANGUImain(string[] args)
         Log.e("Cannot open X11 display");
         return 1;
     }
+    x11UpdateScreenDpi();
     x11display2 = XOpenDisplay(null);
     if (!x11display2) {
         Log.e("Cannot open secondary connection for X11 display");
