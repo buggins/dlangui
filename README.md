@@ -113,21 +113,27 @@ dub.json:
 Linux builds (DUB)
 ------------------
 
-* Uses SDL2 as a backend.
+* Uses SDL2 as a backend (or native X11 with `x11` configuration).
 * Uses FreeType for font rendering.
 * Uses FontConfig to get list of available fonts.
 * OpenGL can be optionally used for better drawing performance.
 
-        libsdl2, libfreetype, libfontconfig
+SDL2, FreeType, FontConfig and OpenGL are loaded at runtime, so only their runtime (binary) packages are needed.
+To build, besides a D compiler and DUB, the zlib development package is needed
+(DlangUI links with zlib; Linux distribution builds of LDC and GDC use system zlib).
 
-E.g. in Ubuntu, you can use following command to enable SDL2 backend builds:
+| Distribution | Build | Runtime |
+|---|---|---|
+| Debian, Ubuntu | `zlib1g-dev` | `libsdl2-2.0-0 libfreetype6 libfontconfig1 libgl1` |
+| Fedora | `zlib-devel` | `SDL2 freetype fontconfig mesa-libGL` |
+| Arch, Manjaro | `zlib` | `sdl2 freetype2 fontconfig libglvnd` |
+
+E.g. in Ubuntu:
 ```sh
-sudo apt-get install libsdl2-dev
+sudo apt-get install zlib1g-dev libsdl2-2.0-0 libfreetype6 libfontconfig1 libgl1
 ```
-In runtime, .so for following libraries are being loaded (binary packages required):
-```
-freetype, opengl, fontconfig
-```
+The `x11` configuration links libX11 and GLX at build time, so it additionally needs their development packages
+(`libx11-dev libgl-dev` on Debian/Ubuntu, `libX11-devel libglvnd-devel` on Fedora).
 
 Build and run on Linux using DUB:
 ```sh

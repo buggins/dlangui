@@ -591,6 +591,15 @@ class FreeTypeFontManager : FontManager {
             import std.format;
             Log.v("bindbc-freetype: Loading FreeType library");
             auto ftVer = loadFreeType();
+            version (OSX) {
+            } else version (Posix) {
+                // bindbc-freetype tries only "libfreetype.so", which is installed only by FreeType development
+                // packages (e.g. libfreetype-dev); runtime packages (e.g. libfreetype6) provide libfreetype.so.6 (#685)
+                if (ftVer == FTSupport.noLibrary) {
+                    Log.v("bindbc-freetype: libfreetype.so not found, trying libfreetype.so.6");
+                    ftVer = loadFreeType("libfreetype.so.6");
+                }
+            }
             enforce(ftVer != FTSupport.badLibrary && ftVer != FTSupport.noLibrary, format!"bindbc-freetype unable to find suitable library, %s minimum required"(ftSupport));
             ftCheckMissingSymFunc(loader.errors);
             Log.v("bindbc-freetype: Loaded");
