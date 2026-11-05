@@ -224,6 +224,9 @@ enum GridActions : int {
 }
 
 /// Adapter for custom drawing of some cells in grid widgets
+///
+/// Methods are called for header cells too: they have negative indices
+/// (row < 0 for column header rows, col < 0 for row header columns).
 interface CustomGridCellAdapter {
     /// return true for custom drawn cell
     bool isCustomCell(int col, int row);
@@ -1989,6 +1992,9 @@ class StringGridWidget : StringGridWidgetBase {
 
     /// draw cell content
     protected override void drawHeaderCell(DrawBuf buf, Rect rc, int col, int row) {
+        if (_customCellAdapter && _customCellAdapter.isCustomCell(col, row)) {
+            return _customCellAdapter.drawCell(buf, rc, col, row);
+        }
         if (BACKEND_GUI)
             rc.shrink(2, 1);
         else
