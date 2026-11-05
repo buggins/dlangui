@@ -746,6 +746,12 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
     /// item list is changed
     override void onAdapterChange(ListAdapter source) {
+        // forget selected / hovered item if it does not exist anymore (e.g. list is cleared and refilled, #718);
+        // otherwise next selection or hover change would reset state of non-existing item
+        if (_selectedItemIndex >= itemCount)
+            _selectedItemIndex = -1;
+        if (_hoverItemIndex >= itemCount)
+            _hoverItemIndex = -1;
         requestLayout();
     }
 
@@ -1523,15 +1529,8 @@ class StringListWidget : ListWidget {
         if (event.action == KeyAction.Text) {
             if ( !_stopWatch.running) { _stopWatch.start; }
 
-            version(DigitalMars) {
-                auto timePassed = _stopWatch.peek; //.to!("seconds", float)(); // dtop is std.datetime.to
-
-                if (timePassed > dur!"msecs"(500)) _searchString = ""d;
-            } else {
-                auto timePassed = (cast(float)_stopWatch.peek.total!"msecs")/1000.0f;
-
-                if (timePassed > 0.5) _searchString = ""d; // TODO_GRIM: make everything look-alike
-            }
+            if (_stopWatch.peek > dur!"msecs"(500))
+                _searchString = ""d;
             _searchString ~= to!dchar(event.text.toUTF8);
             _stopWatch.reset;
 
