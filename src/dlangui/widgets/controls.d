@@ -464,7 +464,13 @@ class ImageTextButton : HorizontalLayout {
 
 }
 
-/// button - url
+/**
+    Button looking like URL link: dispatches ACTION_OPEN_URL with url as action.stringParam when clicked.
+
+    If the action is not handled by the application, the window opens url in external browser
+    (Platform.openURL). To handle it differently (e.g. to check URL first), handle StandardAction.OpenUrl
+    in handleAction() / onAction of the button or one of its parents, or assign a click handler.
+*/
 class UrlImageTextButton : ImageTextButton {
     this(string ID, dstring labelText, string url, string icon = "applications-internet") {
         super(ID, icon, labelText);
