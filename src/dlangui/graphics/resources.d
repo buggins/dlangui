@@ -229,6 +229,47 @@ EmbeddedResource[] embedResourcesFromList(string resourceList)() {
 }
 
 
+/// all images and drawables referenced from standard resource XML files (themes, state drawables) exist (#668)
+unittest {
+    import std.algorithm : endsWith, startsWith;
+    import std.path : baseName;
+    import std.regex : matchAll, regex;
+    import std.string : splitLines, strip;
+    enum string[] files = splitLines(import("standard_resources.list"));
+    // resource id = file name without directory, extension and hdpi_ prefix
+    bool[string] ids;
+    foreach (f; files) {
+        string name = baseName(f.strip);
+        foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".xml", ".tim"])
+            if (name.endsWith(ext)) {
+                name = name[0 .. $ - ext.length];
+                break;
+            }
+        if (name.startsWith("hdpi_"))
+            name = name[5 .. $];
+        ids[name] = true;
+    }
+    auto refRegex = regex(`(?:android:drawable|backgroundImageId)="([^"]*)"|<drawable\b[^>]*\bvalue="([^"]*)"`);
+    string[] missing;
+    static foreach (f; files) {
+        static if (f.endsWith(".xml")) {{
+            foreach (m; matchAll(import(f), refRegex)) {
+                string id = m[1].length ? m[1] : m[2];
+                if (id.startsWith("@drawable/")) // Android style reference
+                    id = id[10 .. $];
+                // skip @null, colors, inline drawable definitions and other non-resource values
+                if (!id.length || id[0] == '@' || id[0] == '#' || id[0] == '{' || (id[0] >= '0' && id[0] <= '9'))
+                    continue;
+                if (id.endsWith(".tiled")) // drawable option, see DrawableCache.get()
+                    id = id[0 .. $ - 6];
+                if (id !in ids)
+                    missing ~= f ~ ": " ~ id;
+            }
+        }}
+    }
+    assert(!missing.length, "missing resources referenced from standard resources: " ~ (){ string s; foreach (m; missing) s ~= "\n  " ~ m; return s; }());
+}
+
 void embedStandardDlangUIResources() {
     version (EmbedStandardResources) {
         embeddedResourceList.addResources(embedResourcesFromList!("standard_resources.list")());

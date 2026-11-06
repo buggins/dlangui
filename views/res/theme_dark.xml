@@ -144,7 +144,12 @@
     <style id="TAB_UP"
         backgroundImageId="tab_up_background_theme_dark"
         >
-        <state state_selected="true" backgroundImageId="tab_up_backgrond_selected_dark"/>
+        <state state_selected="true" backgroundImageId="tab_up_background_selected_dark"/>
+    </style>
+    <style id="TAB_DOWN"
+        backgroundImageId="tab_down_background_theme_dark"
+        >
+        <state state_selected="true" backgroundImageId="tab_down_background_selected_dark"/>
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#C0C0C0"
@@ -156,6 +161,9 @@
     </style>
     <style id="TAB_UP_BUTTON"
         backgroundImageId="tab_btn_up_dark"
+        />
+    <style id="TAB_DOWN_BUTTON"
+        backgroundImageId="tab_btn_down_dark"
         />
     <style id="TAB_HOST"
         backgroundColor="#101010"

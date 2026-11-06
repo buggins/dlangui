@@ -21,8 +21,12 @@
         android:drawable="@drawable/btn_default_small_normal_disable" />
     <item android:state_pressed="true" 
         android:drawable="@drawable/btn_default_small_pressed" />
+    <item android:state_focused="true" android:state_enabled="true" android:state_hovered="true"
+        android:drawable="@drawable/btn_default_small_normal_hover" />
     <item android:state_focused="true" android:state_enabled="true"
-        android:drawable="@drawable/btn_default_small_selected" />
+        android:drawable="@drawable/btn_default_small_normal" />
+    <item android:state_enabled="true" android:state_hovered="true"
+        android:drawable="@drawable/btn_default_small_normal_hover" />
     <item android:state_enabled="true"
         android:drawable="@drawable/btn_default_small_normal" />
     <item android:state_focused="true"
