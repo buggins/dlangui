@@ -1557,6 +1557,8 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     Platform.setInstance(w32platform);
 
     DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
+    // max distance between presses of a double click: half of the system double click rectangle (#633)
+    DOUBLE_CLICK_DISTANCE = systemDoubleClickDistance();
 
     Log.v("Initializing font manager");
     if (!initFontManager()) {
@@ -1618,6 +1620,8 @@ int myWinMainProfile(string[] args)
     Platform.setInstance(w32platform);
 
     DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
+    // max distance between presses of a double click: half of the system double click rectangle (#633)
+    DOUBLE_CLICK_DISTANCE = systemDoubleClickDistance();
 
     Log.v("Initializing font manager");
     if (!initFontManager()) {
@@ -1881,3 +1885,11 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 // end of version(Windows)
 //===========================================
 
+
+/// max distance in pixels between presses of a double click, from Windows settings: half of the double click rectangle
+int systemDoubleClickDistance() {
+    int cx = GetSystemMetrics(SM_CXDOUBLECLK);
+    int cy = GetSystemMetrics(SM_CYDOUBLECLK);
+    int d = (cx > cy ? cx : cy) / 2;
+    return d > 0 ? d : 1;
+}

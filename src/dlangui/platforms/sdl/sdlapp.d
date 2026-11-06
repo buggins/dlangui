@@ -1719,6 +1719,10 @@ int sdlmain(string[] args) {
 
     version (Windows) {
         DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
+        // max distance between presses of a double click: half of the system double click rectangle (#633)
+        int cx = GetSystemMetrics(SM_CXDOUBLECLK), cy = GetSystemMetrics(SM_CYDOUBLECLK);
+        int dist = (cx > cy ? cx : cy) / 2;
+        DOUBLE_CLICK_DISTANCE = dist > 0 ? dist : 1;
     }
 
     try {
