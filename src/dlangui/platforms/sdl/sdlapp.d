@@ -343,11 +343,53 @@ class SDLWindow : Window {
         version (Windows) {
             // DPI already calculated
         } else {
-            // scale DPI
-            if (w > width && h > height && width > 0 && height > 0)
-                SCREEN_DPI = 96 * w / width;
+            updateScreenDpi(width, height, w, h);
         }
         onResize(std.algorithm.max(width, w), std.algorithm.max(height, h));
+    }
+
+    version (Windows) {
+    } else {
+        /// index of the display the window is on, -1 if not known yet
+        private int _displayIndex = -1;
+        /// DPI of that display without HiDPI scaling (Xft.dpi, SDL_GetDisplayDPI or 96)
+        private int _displayDpi = 96;
+
+        /// update SCREEN_DPI for the display the window is on and its HiDPI scale (#101);
+        /// returns true if SCREEN_DPI is changed
+        bool updateScreenDpi() {
+            int w = 0;
+            int h = 0;
+            int drawableW = 0;
+            int drawableH = 0;
+            SDL_GetWindowSize(_win, &w, &h);
+            SDL_GL_GetDrawableSize(_win, &drawableW, &drawableH);
+            return updateScreenDpi(w, h, drawableW, drawableH);
+        }
+
+        /// ditto
+        bool updateScreenDpi(int width, int height, int drawableW, int drawableH) {
+            int displayIndex = SDL_GetWindowDisplayIndex(_win);
+            if (displayIndex >= 0 && displayIndex != _displayIndex) {
+                // window moved to another display
+                _displayIndex = displayIndex;
+                int dpi = sdlDetectScreenDpi(displayIndex);
+                _displayDpi = dpi ? dpi : 96;
+            }
+            int dpi = _displayDpi;
+            // HiDPI scaling (e.g. macOS Retina): drawable is bigger than the window
+            if (drawableW > width && drawableH > height && width > 0 && height > 0)
+                dpi = 96 * drawableW / width;
+            int oldDpi = SCREEN_DPI;
+            SCREEN_DPI = dpi;
+            if (SCREEN_DPI == oldDpi)
+                return false;
+            Log.i("SCREEN_DPI is changed from ", oldDpi, " to ", SCREEN_DPI);
+            // reload fonts and images cached for the old DPI
+            _platform.onThemeChanged();
+            _platform.requestLayout();
+            return true;
+        }
     }
 
     @property uint windowId() {
@@ -1275,14 +1317,16 @@ class SDLPlatform : Platform {
         }
         SDLWindow res = new SDLWindow(this, windowCaption, parent, flags, newwidth, newheight);
         _windowMap[res.windowId] = res;
-        if (sdlUpdateScreenDpi() || oldDPI != SCREEN_DPI) {
-            version(Windows) {
+        version(Windows) {
+            if (sdlUpdateScreenDpi() || oldDPI != SCREEN_DPI) {
                 newwidth = pointsToPixels(width);
                 newheight = pointsToPixels(height);
                 if (newwidth != width || newheight != height)
                     SDL_SetWindowSize(res._win, newwidth, newheight);
+                onThemeChanged();
             }
-            onThemeChanged();
+        } else {
+            // SDLWindow updates SCREEN_DPI for the display it is on and handles the change
         }
         return res;
     }
@@ -1384,6 +1428,12 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_MOVED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED - ", w.windowCaption);
                                 w.handleWindowStateChange(WindowState.unspecified, Rect(event.window.data1, event.window.data2, w.windowRect().right, w.windowRect().bottom));
+                                version (Windows) {
+                                } else {
+                                    // the window may be on another display now
+                                    if (w.updateScreenDpi())
+                                        w.redraw();
+                                }
                                 if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 break;
@@ -1655,41 +1705,40 @@ SDLSupport sdlVer;
 /// Xft.dpi of X11 desktop: -1 if not detected yet, 0 if not available
 private __gshared int _xftDpi = -1;
 
-/// try to get screen resolution and update SCREEN_DPI; returns true if SCREEN_DPI is changed (when custom override DPI value is not set) 
-bool sdlUpdateScreenDpi(int displayIndex = 0) {
+/// detect DPI of the display: Xft.dpi on X11 desktops, otherwise SDL_GetDisplayDPI; returns 0 if not detected
+int sdlDetectScreenDpi(int displayIndex = 0) {
     // On X11 desktops, prefer DPI configured by the desktop (Xft.dpi) over physical DPI of the monitor (#706)
     if (_xftDpi < 0) {
         import dlangui.platforms.common.xftdpi : detectXftDpi;
         _xftDpi = detectXftDpi();
         if (_xftDpi)
-            Log.i("sdlUpdateScreenDpi: Xft.dpi=", _xftDpi);
+            Log.i("sdlDetectScreenDpi: Xft.dpi=", _xftDpi);
     }
-    if (_xftDpi > 0) {
-        int oldDpi = systemScreenDPI;
-        SCREEN_DPI = _xftDpi;
-        if (overrideScreenDPI != 0)
-            Log.i("sdlUpdateScreenDpi: systemScreenDPI is overrided = ", overrideScreenDPI);
-        if (systemScreenDPI != oldDpi) {
-            Log.i("sdlUpdateScreenDpi: systemScreenDPI is changed from ", oldDpi, " to ", systemScreenDPI, " (Xft.dpi)");
-            return (overrideScreenDPI == 0);
-        }
-        return false;
-    }
+    if (_xftDpi > 0)
+        return _xftDpi;
     if (sdlVer < SDLSupport.v2_0_4) {
         Log.w("SDL_GetDisplayDPI is not found: cannot detect screen DPI");
-        return false;
+        return 0;
     }
     int numDisplays = SDL_GetNumVideoDisplays();
     if (numDisplays < displayIndex + 1)
-        return false;
+        return 0;
     float hdpi = 0;
     float ddpi = 0;
     float vdpi = 0;
     if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi))
-        return false;
+        return 0;
     Log.d("SDL_GetDisplayDPI(", displayIndex, ") : ddpi=", ddpi, " hdpi=", hdpi, " vdpi=", vdpi);
     int idpi = cast(int)hdpi;
     if (idpi < 32 || idpi > 2000)
+        return 0;
+    return idpi;
+}
+
+/// try to get screen resolution and update SCREEN_DPI; returns true if SCREEN_DPI is changed (when custom override DPI value is not set) 
+bool sdlUpdateScreenDpi(int displayIndex = 0) {
+    int idpi = sdlDetectScreenDpi(displayIndex);
+    if (!idpi)
         return false;
     Log.i("sdlUpdateScreenDpi: systemScreenDPI=", idpi);
     if (overrideScreenDPI != 0)
