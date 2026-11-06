@@ -338,7 +338,10 @@ res/tab_btn_up_selected.9.png
 res/tab_btn_up_selected_dark.9.png
 res/tab_more.png
 res/tab_more_dark.png
+res/tab_down_background.9.png
 res/tab_down_background_dark.xml
+res/tab_down_background_selected.9.png
+res/tab_down_background_selected_dark.9.png
 res/tab_down_background_theme_dark.xml
 res/tab_up_background.9.png
 res/tab_up_background_dark.xml

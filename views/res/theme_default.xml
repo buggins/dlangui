@@ -208,6 +208,12 @@
         >
         <state state_selected="true" backgroundImageId="tab_up_background_selected"/>
     </style>
+    <style id="TAB_DOWN"
+        backgroundImageId="tab_down_background"
+        layoutWidth="FILL_PARENT"
+        >
+        <state state_selected="true" backgroundImageId="tab_down_background_selected"/>
+    </style>
     <style id="TAB_UP_BUTTON_TEXT"
         padding="3pt,1pt,3pt,1pt"
         textColor="#000000"

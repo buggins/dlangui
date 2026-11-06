@@ -85,6 +85,8 @@ immutable string STYLE_TAB_WIDGET = "TAB_WIDGET";
 immutable string STYLE_TAB_UP = "TAB_UP";
 /// standard style id for button of Tab with Up alignment
 immutable string STYLE_TAB_UP_BUTTON = "TAB_UP_BUTTON";
+/// standard style id for tab control when tabs are located below the content
+immutable string STYLE_TAB_DOWN = "TAB_DOWN";
 /// standard style id for button of tab control when tabs are located below the content
 immutable string STYLE_TAB_DOWN_BUTTON = "TAB_DOWN_BUTTON";
 /// standard style id for button of Tab with Up alignment
