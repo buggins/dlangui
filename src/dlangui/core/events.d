@@ -765,6 +765,8 @@ ushort mouseButtonToFlag(MouseButton btn) {
 
 /// double click max interval, milliseconds; may be changed by platform
 __gshared long DOUBLE_CLICK_THRESHOLD_MS = 400;
+/// max distance in pixels (horizontally and vertically) between presses of a double or triple click (#633)
+__gshared int DOUBLE_CLICK_DISTANCE = 5;
 
 /// Mouse button state details for MouseEvent
 struct ButtonDetails {
@@ -808,6 +810,9 @@ struct ButtonDetails {
         static import std.datetime;
         //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
         long oldDownTs = _downTs;
+        // presses far from the previous one start a new click sequence (#633)
+        bool near = (x - _downX <= DOUBLE_CLICK_DISTANCE && _downX - x <= DOUBLE_CLICK_DISTANCE
+                     && y - _downY <= DOUBLE_CLICK_DISTANCE && _downY - y <= DOUBLE_CLICK_DISTANCE);
         _downX = x;
         _downY = y;
         _downFlags = flags;
@@ -816,8 +821,8 @@ struct ButtonDetails {
         long downIntervalMs = (_downTs - oldDownTs) / 10000;
         long prevDownIntervalMs = (_downTs - _prevDownTs) / 10000;
         //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs, " downInterval=", downIntervalMs);
-        _tripleClick = (prevDownIntervalMs && prevDownIntervalMs < DOUBLE_CLICK_THRESHOLD_MS * 2);
-        _doubleClick = !_tripleClick && (oldDownTs && downIntervalMs < DOUBLE_CLICK_THRESHOLD_MS);
+        _tripleClick = near && (prevDownIntervalMs && prevDownIntervalMs < DOUBLE_CLICK_THRESHOLD_MS * 2);
+        _doubleClick = !_tripleClick && near && (oldDownTs && downIntervalMs < DOUBLE_CLICK_THRESHOLD_MS);
         _prevDownTs = _doubleClick ? oldDownTs : 0;
     }
     /// update for button up
@@ -846,6 +851,41 @@ struct ButtonDetails {
     @property short downY() { return _downY; }
     /// bit set of mouse flags saved on button down
     @property ushort downFlags() { return _downFlags; }
+}
+
+unittest {
+    import core.thread : Thread;
+    import core.time : msecs;
+    // presses a few ms apart, like real clicks (the triple click check needs a non-zero interval)
+    void press(ref ButtonDetails bd, short x, short y) {
+        Thread.sleep(2.msecs);
+        bd.down(x, y, 0);
+    }
+    // double click: second press soon after the first one, at (nearly) the same position
+    ButtonDetails b;
+    press(b, 10, 10); b.up(10, 10, 0);
+    assert(!b.doubleClick && !b.tripleClick);
+    press(b, 12, 9);
+    assert(b.doubleClick && !b.tripleClick);
+    b.up(12, 9, 0);
+    press(b, 11, 11);
+    assert(b.tripleClick && !b.doubleClick);
+
+    // second press far from the first one is a new single click (#633)
+    ButtonDetails far;
+    press(far, 10, 10); far.up(10, 10, 0);
+    press(far, 60, 10);
+    assert(!far.doubleClick && !far.tripleClick);
+    far.up(60, 10, 0);
+    press(far, 61, 11);   // ...and can start a new double click there
+    assert(far.doubleClick);
+
+    // third press far away is neither a triple nor a double click
+    ButtonDetails t;
+    press(t, 10, 10); t.up(10, 10, 0);
+    press(t, 10, 10); t.up(10, 10, 0);
+    press(t, 10, 40);
+    assert(!t.tripleClick && !t.doubleClick);
 }
 
 /**
