@@ -678,6 +678,9 @@ class MenuWidgetBase : ListWidget {
     override bool onTimer(ulong id) {
         if (id == _submenuOpenTimer) {
             _submenuOpenTimer = 0;
+            // open submenu only if its item is still selected (#445)
+            if (_submenuOpenItemIndex != _selectedItemIndex)
+                return false;
             MenuItemWidget itemWidget = _submenuOpenItemIndex >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(_submenuOpenItemIndex) : null;
             if (itemWidget !is null) {
                 if (itemWidget.item.isSubmenu()) {
@@ -709,6 +712,8 @@ class MenuWidgetBase : ListWidget {
         }
         if (index >= 0)
             setFocus();
+        // selection moved: forget pending delayed opening of a submenu of previously selected item (#445)
+        cancelOpenSubmenu();
         bool popupWasOpen = false;
         if (prevWidget !is null) {
             if (_openedPopup !is null) {
