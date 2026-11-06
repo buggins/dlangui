@@ -52,6 +52,11 @@ class ButtonsExample : VerticalLayout
         buttons12.addChild((new ImageTextButton(FILE_OPEN_ACTION)).enabled(false));
         addChild(buttons12);
 
+        WidgetGroup buttons13 = new HorizontalLayout();
+        buttons13.addChild(new TextWidget(null, "UrlImageTextButton (opens URL in browser): "d));
+        buttons13.addChild(new UrlImageTextButton("btnUrl", "DlangUI on GitHub"d, "https://github.com/buggins/dlangui"));
+        addChild(buttons13);
+
         addChild(new VSpacer());
         addChild(new TextWidget(null, "CheckBoxes in HorizontalLayout"d));
         WidgetGroup buttons2 = new HorizontalLayout();

@@ -1299,8 +1299,16 @@ class Window : CustomEventTarget {
                 return true;
             focus = focus.parent;
         }
-        if (_mainWidget)
-            return _mainWidget.handleAction(action);
+        if (_mainWidget && _mainWidget.handleAction(action))
+            return true;
+        return handleDefaultAction(action);
+    }
+
+    /// default handling of standard actions not handled by widgets (called by dispatchAction):
+    /// StandardAction.OpenUrl opens URL from action.stringParam in external browser (#651)
+    protected bool handleDefaultAction(const Action action) {
+        if (action.id == StandardAction.OpenUrl && action.stringParam.length)
+            return platform.openURL(action.stringParam);
         return false;
     }
 
