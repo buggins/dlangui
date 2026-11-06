@@ -164,6 +164,8 @@ res/mdpi/btn_default_small_normal_disable.9.png
 res/mdpi/btn_default_small_normal_disable_dark.9.png
 res/mdpi/btn_default_small_normal_disable_focused.9.png
 res/mdpi/btn_default_small_normal_disable_focused_dark.9.png
+res/mdpi/btn_default_small_normal_hover.9.png
+res/mdpi/btn_default_small_normal_hover_dark.9.png
 res/mdpi/btn_default_small_pressed.9.png
 res/mdpi/btn_default_small_pressed_dark.9.png
 res/mdpi/btn_default_small_selected.9.png
@@ -312,6 +314,14 @@ res/tab_btn_dark_down.xml
 res/tab_btn_dark_down_dark.xml
 res/tab_btn_dark_up.xml
 res/tab_btn_dark_up_dark.xml
+res/tab_btn_down.xml
+res/tab_btn_down_dark.xml
+res/tab_btn_down_hover.9.png
+res/tab_btn_down_hover_dark.9.png
+res/tab_btn_down_normal.9.png
+res/tab_btn_down_normal_dark.9.png
+res/tab_btn_down_selected.9.png
+res/tab_btn_down_selected_dark.9.png
 res/tab_btn_normal.9.png
 res/tab_btn_normal_dark.9.png
 res/tab_btn_up.xml
