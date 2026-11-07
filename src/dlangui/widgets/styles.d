@@ -321,6 +321,8 @@ protected:
     string _parentId;
     uint _stateMask;
     uint _stateValue;
+    /// true for state substyle copied from parent style by updateStatesFromParent()
+    bool _copiedState;
     ubyte _align = Align.TopLeft;
     ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
     FontFamily _fontFamily = FontFamily.Unspecified;
@@ -960,10 +962,55 @@ public:
         if (stateValue == State.Normal)
             return this;
         foreach(item; _substates) {
-            if ((item._stateMask == stateMask) && (item._stateValue == stateValue))
+            if ((item._stateMask == stateMask) && (item._stateValue == stateValue)) {
+                // caller may modify it: keep it in updateStatesFromParent()
+                item._copiedState = false;
                 return item;
+            }
         }
         return createState(stateMask, stateValue);
+    }
+
+    /**
+        For widget's own style (see Theme.modifyStyle): replace state substyles copied from the parent style
+        with copies of the parent's current ones, e.g. after theme change or parent style id change (#729).
+
+        State substyles created or obtained with getOrCreateState() by application are kept.
+        If parent is null, parentStyle is used.
+    */
+    void updateStatesFromParent(Style parent = null) {
+        if (parent is null)
+            parent = parentStyle;
+        Style[] old = _substates;
+        _substates = null;
+        bool[] used = new bool[old.length];
+        if (parent !is null && parent !is this) {
+            foreach(item; parent._substates) {
+                // state substyle of application instead of copy of parent's one
+                Style own = null;
+                foreach(i, s; old) {
+                    if (!used[i] && !s._copiedState && s._stateMask == item._stateMask && s._stateValue == item._stateValue) {
+                        own = s;
+                        used[i] = true;
+                        break;
+                    }
+                }
+                if (own is null) {
+                    own = item.clone();
+                    own._parentStyle = this;
+                    own._copiedState = true;
+                }
+                _substates ~= own;
+            }
+        }
+        foreach(i, s; old) {
+            if (used[i])
+                continue;
+            if (s._copiedState)
+                destroy(s);
+            else
+                _substates ~= s; // state substyle created by application
+        }
     }
 
     /// find substyle based on widget state (e.g. focused, pressed, ...)
@@ -1049,13 +1096,8 @@ class Theme : Style {
         style._textColor = COLOR_UNSPECIFIED; // inherit
         style._textFlags = TEXT_FLAGS_UNSPECIFIED; // inherit
         Style parent = get(id);
-        if (parent) {
-            foreach(item; parent._substates) {
-                Style substate = item.clone();
-                substate._parentStyle = style;
-                style._substates ~= substate;
-            }
-        }
+        if (parent)
+            style.updateStatesFromParent(parent);
         return style;
     }
 
@@ -1790,4 +1832,54 @@ unittest {
     assert(sanitizeBorderProperty("   #aaa, 2  ") == "#aaa,2");
     assert(sanitizeBorderProperty("   #aaa, 2, 2, 2, 4") == "#aaa,2,2,2,4");
     assert(sanitizeBorderProperty("   #a aa  ,  2   4  ") == "#a aa,2 4");
+}
+
+/// widget's own style: state substyles follow theme switch and parent style id change (#729)
+unittest {
+    Theme savedTheme = _currentTheme;
+    scope(exit) _currentTheme = savedTheme;
+
+    Theme makeTheme(uint disabledColor, uint hoveredColor) {
+        Theme t = new Theme("test");
+        Style button = t.createSubstyle("BTN");
+        button.textColor = 0x000000;
+        button.createState(State.Enabled, 0).textColor = disabledColor;
+        button.createState(State.Enabled | State.Hovered, State.Enabled | State.Hovered).textColor = hoveredColor;
+        Style text = t.createSubstyle("TXT");
+        text.createState(State.Enabled, 0).textColor = 0xA0000000;
+        return t;
+    }
+    enum uint DISABLED = State.WindowFocused;
+    enum uint HOVERED = State.Enabled | State.Hovered | State.WindowFocused;
+    enum uint PRESSED = State.Enabled | State.Pressed | State.WindowFocused;
+
+    Theme light = makeTheme(0x80000000, 0x006080);
+    Theme dark = makeTheme(0x60FFFFFF, 0xE0E080);
+    _currentTheme = light;
+    Style own = light.modifyStyle("BTN");
+    scope(exit) {
+        destroy(own);
+        destroy(light);
+        destroy(dark);
+    }
+    own.textColor = 0x0000C0;
+    own.getOrCreateState(State.Pressed, State.Pressed).textColor = 0x00FF00; // state added by application
+    assert(own.forState(DISABLED).textColor == 0x80000000);
+    assert(own.forState(HOVERED).textColor == 0x006080);
+    assert(own.forState(PRESSED).textColor == 0x00FF00);
+
+    // theme switch: states come from the new theme, own values are kept
+    _currentTheme = dark;
+    own.updateStatesFromParent();
+    assert(own.textColor == 0x0000C0);
+    assert(own.forState(DISABLED).textColor == 0x60FFFFFF);
+    assert(own.forState(HOVERED).textColor == 0xE0E080);
+    assert(own.forState(PRESSED).textColor == 0x00FF00);
+
+    // parent style id change: states of the new parent
+    own.parentStyleId = "TXT";
+    own.updateStatesFromParent();
+    assert(own.forState(DISABLED).textColor == 0xA0000000);
+    assert(own.forState(HOVERED).textColor == 0x0000C0); // no hovered state in TXT: own normal color
+    assert(own.forState(PRESSED).textColor == 0x00FF00);
 }

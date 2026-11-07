@@ -281,6 +281,7 @@ public:
         for (int i = 0; i < childCount; i++)
             child(i).onThemeChanged();
         if (_ownStyle) {
+            _ownStyle.updateStatesFromParent();
             _ownStyle.onThemeChanged();
         }
         if (_cachedStyle) {
@@ -354,8 +355,10 @@ public:
     /// set widget style id
     @property Widget styleId(string id) {
         _styleId = id;
-        if (_ownStyle)
+        if (_ownStyle) {
             _ownStyle.parentStyleId = id;
+            _ownStyle.updateStatesFromParent();
+        }
         _cachedStyle = currentTheme.get(id);
         return this;
     }
