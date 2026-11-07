@@ -13,6 +13,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
@@ -20,17 +21,31 @@ jobs:
         dc:
           - dmd-latest
           - ldc-latest
+        include:
+          # minimum supported frontend (README: DMD frontend 2.100.2 or newer)
+          - os: ubuntu-latest
+            dc: dmd-2.100.2
+          - os: ubuntu-latest
+            dc: ldc-1.30.0
+          - os: windows-latest
+            dc: dmd-2.100.2
+          # LDC packaged by Ubuntu 24.04 (frontend 2.106)
+          - os: ubuntu-latest
+            dc: ldc-1.36.0
+          # macOS (arm64; DMD doesn't support arm64)
+          - os: macos-latest
+            dc: ldc-latest
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Setup D compiler
-        uses: dlang-community/setup-dlang@v1
+        uses: dlang-community/setup-dlang@v2
         with:
           compiler: ${{ matrix.dc }}
 
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: 'Unittest build of a dependent app'
         run: |
