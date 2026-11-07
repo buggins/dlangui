@@ -1732,6 +1732,10 @@ class X11Platform : Platform {
                 Log.d("X11: LeaveNotify event");
                 X11Window w = findWindow(event.xcrossing.window);
                 if (w) {
+                    // While a mouse button is pressed, the X server keeps sending pointer events to this window
+                    // (implicit grab) until the button is released; a Leave would cancel dragging (#635).
+                    if (event.xcrossing.state & (Button1Mask | Button2Mask | Button3Mask))
+                        break;
                     w.processMouseEvent(MouseAction.Leave, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
                 } else {
                     Log.e("Window not found");
