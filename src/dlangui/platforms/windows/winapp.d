@@ -1065,19 +1065,33 @@ class Win32Window : Window {
         } else if (action == MouseAction.ButtonUp) {
             pbuttonDetails.up(x, y, cast(ushort)flags);
         }
-        if (((message == WM_MOUSELEAVE) || (x < 0 || y < 0 || x >= _dx || y >= _dy)) && _mouseTracking) {
-            if (!isMouseCaptured() || (!_lbutton.isDown && !_rbutton.isDown && !_mbutton.isDown)) {
+        // Capture the mouse only while a button is pressed, to get mouse events when dragging outside the window.
+        // Capturing it on hover redirected mouse input of other windows of this thread, e.g. of a child window
+        // lying over this one (#431). Mouse leave is detected with TrackMouseEvent instead.
+        bool anyButtonDown = _lbutton.isDown || _rbutton.isDown || _mbutton.isDown;
+        if (message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN || message == WM_MBUTTONDOWN) {
+            debug(DebugMouseEvents) Log.d("Win32Window.onMouse setting capture");
+            SetCapture(_hwnd);
+        } else if (!anyButtonDown && GetCapture() == _hwnd) {
+            debug(DebugMouseEvents) Log.d("Win32Window.onMouse releasing capture");
+            ReleaseCapture();
+        }
+        if (message == WM_MOUSELEAVE) {
+            _mouseTracking = false; // TrackMouseEvent tracking is over, action is Leave
+        } else if ((x < 0 || y < 0 || x >= _dx || y >= _dy) && _mouseTracking) {
+            if (!isMouseCaptured() || !anyButtonDown) {
                 action = MouseAction.Leave;
-                debug(DebugMouseEvents) Log.d("Win32Window.onMouse releasing capture");
                 _mouseTracking = false;
-                ReleaseCapture();
             }
         }
         if (message != WM_MOUSELEAVE && !_mouseTracking) {
             if (x >=0 && y >= 0 && x < _dx && y < _dy) {
-                debug(DebugMouseEvents) Log.d("Win32Window.onMouse Setting capture");
-                _mouseTracking = true;
-                SetCapture(_hwnd);
+                debug(DebugMouseEvents) Log.d("Win32Window.onMouse tracking mouse leave");
+                TRACKMOUSEEVENT tme;
+                tme.cbSize = TRACKMOUSEEVENT.sizeof;
+                tme.dwFlags = TME_LEAVE;
+                tme.hwndTrack = _hwnd;
+                _mouseTracking = TrackMouseEvent(&tme) != 0;
             }
         }
         MouseEvent event = new MouseEvent(action, button, cast(ushort)flags, x, y, wheelDelta);
