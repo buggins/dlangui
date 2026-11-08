@@ -1460,6 +1460,15 @@ class X11Platform : Platform {
     private X11Window[XWindow] _windowMap;
     private char* _classname;
 
+    ~this() {
+        // Destroy windows the application left open while the X display is still open.
+        // Otherwise GC finalizers destroy them after XCloseDisplay, and X11Window's destructor
+        // calls XFreeGC/XDestroyWindow on the freed Display (heap corruption, crash on exit).
+        foreach (w; _windowMap.values)
+            destroy(w);
+        _windowMap = null;
+    }
+
     /**
      * create window
      * Args:
