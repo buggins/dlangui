@@ -805,6 +805,16 @@ class EditableContent {
         _lines.length = 0;
     }
 
+    /// content must have at least one (possibly empty) line, like after `text = ""`
+    protected void ensureLineExists() {
+        if (_lines.length)
+            return;
+        _lines.length = 1;
+        _tokenProps.length = 1;
+        clearTokenProps(0, 1);
+        clearEditMarks();
+    }
+
 
     /// returns line count
     @property int length() { return cast(int)_lines.length; }
@@ -1437,11 +1447,13 @@ class EditableContent {
             }
             if (lines.errorCode != 0) {
                 clear();
+                ensureLineExists();
                 Log.e("Error ", lines.errorCode, " ", lines.errorMessage, " -- at line ", lines.errorLine, " position ", lines.errorPos);
                 notifyContentReplaced();
                 return false;
             }
-            // EOF
+            // EOF; an empty file has no lines, but content needs at least one
+            ensureLineExists();
             _format = lines.textFormat;
             _undoBuffer.clear();
             debug(FileFormats)Log.d("loaded file:", filename, " format detected:", _format);
@@ -1450,6 +1462,7 @@ class EditableContent {
         } catch (Exception e) {
             Log.e("Exception while trying to read file ", fname, " ", e.toString);
             clear();
+            ensureLineExists();
             notifyContentReplaced();
             return false;
         }
@@ -1461,6 +1474,7 @@ class EditableContent {
         clear();
         if (!filename.exists || !filename.isFile) {
             Log.e("Editable.load: File not found ", filename);
+            ensureLineExists();
             return false;
         }
         try {
@@ -1472,10 +1486,12 @@ class EditableContent {
         } catch (ErrnoException e) {
             Log.e("Editable.load: Exception while trying to read file ", filename, " ", e.toString);
             clear();
+            ensureLineExists();
             return false;
         } catch (Exception e) {
             Log.e("Editable.load: Exception while trying to read file ", filename, " ", e.toString);
             clear();
+            ensureLineExists();
             return false;
         }
     }
@@ -1735,3 +1751,25 @@ struct LineIcons {
     }
 }
 
+/// loading an empty file gives one empty line, and editing it works (#756)
+unittest {
+    import std.file : write, remove, tempDir;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    string fn = buildPath(tempDir, "dlangui-empty-file-test-" ~ to!string(thisProcessID) ~ ".txt");
+    write(fn, "");
+    scope(exit) remove(fn);
+    auto content = new EditableContent(true);
+    assert(content.load(fn));
+    assert(content.length == 1);
+    assert(content.text == ""d);
+    auto op = new EditOperation(EditAction.Replace, TextRange(TextPosition(0, 0), TextPosition(0, 0)), ["x"d]);
+    assert(content.performOperation(op, null));
+    assert(content.length == 1);
+    assert(content.text == "x"d);
+    // failed load also leaves one empty line
+    auto content2 = new EditableContent(true);
+    assert(!content2.load(fn ~ ".does-not-exist"));
+    assert(content2.length == 1);
+}
