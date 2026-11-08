@@ -53,6 +53,13 @@ struct DockSpace {
     @property int space() { return _space; }
     protected int _minSpace;
     protected int _maxSpace;
+    protected int _initialPercent = 20;
+    /// initial size in percent of the host width (left/right) or height (top/bottom), clamped to 10..40%;
+    /// setting it resets the current size, so the new initial size is used on the next layout
+    @property void initialPercent(int percent) {
+        _initialPercent = percent;
+        _space = 0;
+    }
     ResizerWidget initialize(DockHost host, DockAlignment a) {
         _host = host;
         _alignment = a;
@@ -86,14 +93,15 @@ struct DockSpace {
         _minSpace = baseSize * 1 / 10;
         _maxSpace = baseSize * 4 / 10;
         if (_docks.length) {
-            if (_space < _minSpace) {
-                if (_space == 0)
-                    _space = _minSpace + (_maxSpace - _minSpace) * 1 / 3;
-                else
+            // the host may be laid out before it has a size: don't initialize the space from that,
+            // or the real initial size is never applied (the space would only be clamped to the minimum)
+            if (baseSize > 0) {
+                if (_space <= 0)
+                    _space = baseSize * _initialPercent / 100;
+                if (_space < _minSpace)
                     _space = _minSpace;
-            }
-            if (_space > _maxSpace) {
-                _space = _maxSpace;
+                if (_space > _maxSpace)
+                    _space = _maxSpace;
             }
             _resizer.visibility = Visibility.Visible;
         } else {
@@ -217,6 +225,18 @@ class DockHost : WidgetGroupDefaultDrawing {
         addChild(_rightSpace.initialize(this, DockAlignment.Right));
     }
 
+    /// set initial size of a dock area in percent of the host width (left/right) or height (top/bottom);
+    /// default is 20%, the value is clamped to 10..40%. Call before the host is shown.
+    void setInitialSpace(DockAlignment alignment, int percent) {
+        final switch (alignment) with(DockAlignment) {
+            case Top: _topSpace.initialPercent = percent; break;
+            case Bottom: _bottomSpace.initialPercent = percent; break;
+            case Left: _leftSpace.initialPercent = percent; break;
+            case Right: _rightSpace.initialPercent = percent; break;
+        }
+        requestLayout();
+    }
+
     protected DockWindow[] getDockedWindowList(DockAlignment alignType) {
         DockWindow[] list;
         for (int i = 0; i < _children.count; i++) {
@@ -336,4 +356,37 @@ class DockWindow : WindowFrame {
     //protected Widget createBodyWidget() {
     //    return new Widget("DOCK_WINDOW_BODY");
     //}
+}
+
+/// initial dock space: not taken from a layout without size, default 20%, settable, clamped to 10..40% (#762)
+unittest {
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme, Theme;
+    Theme savedTheme = currentTheme;
+    if (!currentTheme)
+        currentTheme = createDefaultTheme();
+    scope(exit) currentTheme = savedTheme;
+    DockSpace space;
+    auto resizer = space.initialize(null, DockAlignment.Left); // left: based on host width
+    scope(exit) destroy(resizer);
+    DockWindow[] oneDock = [null];
+    // first layout before the host has a size: space stays uninitialized
+    space.beforeLayout(Rect(0, 0, -4, -4), oneDock);
+    assert(space.space == 0);
+    // real size: default initial size 20%
+    space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
+    assert(space.space == 200);
+    // size is kept on later layouts
+    space.beforeLayout(Rect(0, 0, 1200, 800), oneDock);
+    assert(space.space == 200);
+    // custom initial size
+    space.initialPercent = 25;
+    space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
+    assert(space.space == 250);
+    // clamped to 40%
+    space.initialPercent = 60;
+    space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
+    assert(space.space == 400);
+    // no docked windows: no space
+    space.beforeLayout(Rect(0, 0, 1000, 800), null);
+    assert(space.space == 0);
 }
