@@ -40,7 +40,7 @@ extern (C) int UIAppMain(string[] args) {
 
     window.mainWidget = new GameWidget();
 
-    window.windowIcon = drawableCache.getImage("dtetris-logo1");
+    static if (BACKEND_GUI) window.windowIcon = drawableCache.getImage("dtetris-logo1");
 
     window.show();
 

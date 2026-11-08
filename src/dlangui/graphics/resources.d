@@ -213,7 +213,7 @@ EmbeddedResource[] embedResources(string[] resourceNames)() {
 
     static if (resourceNames.length == 0)
         return [];
-    static if (resourceNames.length == 1)
+    else static if (resourceNames.length == 1)
         return embedResource!(resourceNames[0])();
     else
         return embedResources!(resourceNames[0 .. $/2])() ~ embedResources!(resourceNames[$/2 .. $])();
