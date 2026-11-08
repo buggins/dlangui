@@ -47,6 +47,25 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v7
 
+      # Cache DUB packages so that jobs keep working when code.dlang.org downloads fail (#741):
+      # dub warns and uses the cached packages. The key includes the compiler (each comes with its
+      # own dub, and dub versions differ in package layout) and the month (dependency ranges pick
+      # up new versions; an existing cache entry is never updated).
+      - name: Get month for DUB cache key
+        id: month
+        shell: bash
+        run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache DUB packages
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.dub/packages
+            ~/AppData/Local/dub/packages
+          key: dub-${{ runner.os }}-${{ matrix.dc }}-${{ hashFiles('**/dub.json') }}-${{ steps.month.outputs.month }}
+          restore-keys: |
+            dub-${{ runner.os }}-${{ matrix.dc }}-
+
       - name: 'Unittest build of a dependent app'
         run: |
           # Links an application against dlangui.lib without WinMain (see #710)
