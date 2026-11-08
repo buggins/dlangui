@@ -3488,7 +3488,7 @@ class EditBox : EditWidgetBase {
                     TextRange r = TextRange(TextPosition(i, cast(int)start), TextPosition(i, cast(int)(start + pattern.length)));
                     res ~= r;
                 }
-                start += _textToHighlight.length;
+                start += pattern.length;
             }
         }
         return res;
@@ -4376,26 +4376,36 @@ class FindPanel : HorizontalLayout {
     }
 
     int replaceAll() {
-        int count = 0;
-        for(int i = 0; ; i++) {
-            debug Log.d("replaceAll - calling replaceOne, iteration ", i);
-            if (!replaceOne())
-                break;
-            count++;
-            TextPosition initialPosition = _editor.caretPos;
-            debug Log.d("replaceAll - position is ", initialPosition);
-            if (!findNext(_backDirection))
-                break;
-            TextPosition newPosition = _editor.caretPos;
-            debug Log.d("replaceAll - next position is ", newPosition);
-            if (_backDirection && newPosition >= initialPosition)
-                break;
-            if (!_backDirection && newPosition <= initialPosition)
-                break;
+        dstring currentText = _edFind.text;
+        dstring newText = _edReplace.text;
+        debug Log.d("replaceAll text=", currentText, " newText=", newText);
+        if (!currentText.length)
+            return 0;
+        uint flags = makeSearchFlags;
+        _editor.setTextToHighlight(currentText, flags);
+        // all matches in the whole text (or in the selection), collected up front and replaced from the last
+        // to the first, so that earlier positions stay valid; before, it started at the caret and stopped
+        // when the search wrapped around, missing the matches before the caret
+        TextRange[] all = _editor.findAll(currentText, flags);
+        if (flags & TextSearchFlag.SelectionOnly) {
+            TextRange sel = _editor.selectionRange;
+            TextRange[] inSelection;
+            foreach (r; all)
+                if (r.start >= sel.start && r.end <= sel.end)
+                    inSelection ~= r;
+            all = inSelection;
         }
-        debug Log.d("replaceAll - done, replace count = ", count);
-        _editor.ensureCaretVisible();
-        return count;
+        foreach_reverse (r; all) {
+            _editor.selectionRange = r;
+            _editor.replaceSelectionText(newText);
+        }
+        if (all.length) {
+            TextPosition first = all[0].start;
+            _editor.selectionRange = TextRange(first, TextPosition(first.line, first.pos + cast(int)newText.length));
+            _editor.ensureCaretVisible();
+        }
+        debug Log.d("replaceAll - done, replace count = ", all.length);
+        return cast(int)all.length;
     }
 
     void updateHighlight() {
