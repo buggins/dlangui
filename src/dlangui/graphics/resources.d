@@ -102,6 +102,7 @@ import dlangui.graphics.drawbuf;
 import std.file;
 import std.algorithm;
 import arsd.dom;
+import std.string : strip; // arsd.dom (since 12.0) has its own `strip`
 import std.conv;
 import std.string;
 import std.path;

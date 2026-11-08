@@ -26,6 +26,7 @@ module dlangui.widgets.styles;
 import dlangui.core.config;
 
 import arsd.dom;
+import std.string : strip; // arsd.dom (since 12.0) has its own `strip`
 import std.string;
 import std.algorithm;
 
