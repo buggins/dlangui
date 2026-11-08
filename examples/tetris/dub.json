@@ -17,7 +17,30 @@
         "dlangui": {"path": "../../"}
     },
 
-    "subConfigurations": {
-        "dlangui": "minimal"
-    }
+    "configurations": [
+        {
+            "name": "default",
+            "subConfigurations": {
+                "dlangui": "minimal"
+            }
+        },
+        {
+            "name": "console",
+            "subConfigurations": {
+                "dlangui": "console"
+            }
+        },
+        {
+            "name": "sdl",
+            "subConfigurations": {
+                "dlangui": "sdl"
+            }
+        },
+        {
+            "name": "x11",
+            "subConfigurations": {
+                "dlangui": "x11"
+            }
+        }
+    ]
 }

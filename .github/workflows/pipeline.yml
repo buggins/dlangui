@@ -59,10 +59,26 @@ jobs:
           # In this mode, `mainSourceFile` is excluded and `version (unittest)` are included
           # See https://dub.pm/package-format-json.html#configurations
           dub test
-          cd examples/example1
-          dub build -b=release
 
-      - name: 'Build console configuration'
+      - name: 'Build examples'
+        shell: bash
         run: |
-          cd examples/example1
-          dub build -b=release -c console
+          # default configuration: Win32 backend on Windows, SDL elsewhere
+          for example in example1 dmledit tetris; do
+            dub build -b=release --root=examples/$example
+          done
+
+      - name: 'Build examples: console configuration'
+        shell: bash
+        run: |
+          for example in example1 dmledit tetris; do
+            dub build -b=release -c console --root=examples/$example
+          done
+
+      - name: 'Build examples: SDL configuration'
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          for example in example1 dmledit tetris; do
+            dub build -b=release -c sdl --root=examples/$example
+          done

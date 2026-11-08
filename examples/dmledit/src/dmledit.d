@@ -458,7 +458,7 @@ extern (C) int UIAppMain(string[] args) {
     Window window = Platform.instance.createWindow("DlangUI ML editor"d, null, WindowFlag.Resizable, 700, 470);
 
     // create some widget to show in window
-    window.windowIcon = drawableCache.getImage("dlangui-logo1");
+    static if (BACKEND_GUI) window.windowIcon = drawableCache.getImage("dlangui-logo1");
 
     // create some widget to show in window
     window.mainWidget = new EditFrame();
