@@ -1,16 +1,14 @@
 {
-	"name": "editlinelist",
-	"authors": [
-		"http://lemming.life"
-	],
-	"description": "example of an edit line list in dlangui",
-	"license": "Boost",
+    "name": "editlinelist",
+    "authors": [
+        "http://lemming.life"
+    ],
+    "description": "example of an edit line list in dlangui",
+    "license": "Boost",
 
-	"targetPath": "bin",
+    "targetPath": "bin",
     "targetType": "executable",
     "targetName": "editlinelist",
-
-    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
 
     "versions": ["ForceLogs"],
 
@@ -19,7 +17,7 @@
     },
     "configurations" : [
         {
-            "name" : "default",
+            "name" : "default"
         },
         {
             "name" : "console",
