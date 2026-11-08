@@ -71,8 +71,8 @@ struct Figure {
 /// All shapes
 __gshared const Figure[7] FIGURES;
 
-// workaround for dmd 2.0.67 - move initialization to static this
-__gshared static this() {
+// workaround for dmd 2.0.67 - move initialization to a module constructor
+shared static this() {
     FIGURES = [
         // FIGURE1 ===========================================
         //   ##     ####

@@ -58,11 +58,11 @@ class SpreadSheetView : StringGridWidget {
         for (int i = 0; i < 26; i++) {
             dchar[1] t;
             t[0] = cast(dchar)('A' + i);
-            setColTitle(i, t.dup);
+            setColTitle(i, UIString.fromRaw(t.idup));
         }
         for (int i = 0; i < 50; i++) {
             dstring label = to!dstring(i + 1);
-            setRowTitle(i, label);
+            setRowTitle(i, UIString.fromRaw(label));
         }
     }
 }
