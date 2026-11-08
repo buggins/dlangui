@@ -118,6 +118,7 @@ class ConsolePlatform : Platform {
     * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
     */
     override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
+        setDefaultLanguageAndThemeIfNecessary();
         ConsoleWindow res = new ConsoleWindow(this, windowCaption, parent, flags);
         _windowList ~= res;
         return res;

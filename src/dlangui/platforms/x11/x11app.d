@@ -1472,6 +1472,7 @@ class X11Platform : Platform {
      * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
      */
     override DWindow createWindow(dstring windowCaption, DWindow parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
+        setDefaultLanguageAndThemeIfNecessary();
         int newwidth = width;
         int newheight = height;
         X11Window window = new X11Window(this, windowCaption, parent, flags, newwidth, newheight);
