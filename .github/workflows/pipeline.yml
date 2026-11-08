@@ -101,3 +101,18 @@ jobs:
           for example in example1 dmledit tetris; do
             dub build -b=release -c sdl --root=examples/$example
           done
+
+      - name: 'Install X11 development libraries'
+        if: runner.os == 'Linux'
+        run: |
+          # the x11 configuration links -lX11 and -lGLX
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends libx11-dev libglx-dev
+
+      - name: 'Build examples: X11 configuration'
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          for example in example1 dmledit tetris; do
+            dub build -b=release -c x11 --root=examples/$example
+          done
