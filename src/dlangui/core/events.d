@@ -262,6 +262,10 @@ const ACTION_STATE_CHECKED = ActionState(true, true, true);
 static bool matchKeyFlags(uint eventFlags, uint requestedFlags) {
     if (eventFlags == requestedFlags)
         return true;
+    // basic modifiers must match exactly: Ctrl+S must not fire for Ctrl+Shift+S, Tab not for Alt+Tab
+    enum basicModifiers = KeyFlag.Control | KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Menu;
+    if ((eventFlags & basicModifiers) != (requestedFlags & basicModifiers))
+        return false;
     if ((requestedFlags & KeyFlag.RControl) == KeyFlag.RControl && (eventFlags & KeyFlag.RControl) != KeyFlag.RControl)
         return false;
     if ((requestedFlags & KeyFlag.LControl) == KeyFlag.LControl && (eventFlags & KeyFlag.LControl) != KeyFlag.LControl)
@@ -287,6 +291,25 @@ static bool matchKeyFlags(uint eventFlags, uint requestedFlags) {
     if ((requestedFlags & KeyFlag.Menu) == KeyFlag.Menu && (eventFlags & KeyFlag.Menu) != KeyFlag.Menu)
         return false;
     return true;
+}
+
+unittest {
+    // exact match
+    assert(matchKeyFlags(KeyFlag.Control, KeyFlag.Control));
+    assert(matchKeyFlags(0, 0));
+    // left/right specific event flags match a generic request
+    assert(matchKeyFlags(KeyFlag.LControl, KeyFlag.Control));
+    assert(matchKeyFlags(KeyFlag.RControl | KeyFlag.LShift, KeyFlag.Control | KeyFlag.Shift));
+    // a specific request needs that side
+    assert(!matchKeyFlags(KeyFlag.RControl, KeyFlag.LControl));
+    // extra modifiers don't match
+    assert(!matchKeyFlags(KeyFlag.Control | KeyFlag.Shift, KeyFlag.Control));
+    assert(!matchKeyFlags(KeyFlag.LControl | KeyFlag.LShift, KeyFlag.Control));
+    assert(!matchKeyFlags(KeyFlag.Alt, 0));
+    assert(!matchKeyFlags(KeyFlag.Control | KeyFlag.Alt, KeyFlag.Control));
+    // missing modifiers don't match
+    assert(!matchKeyFlags(KeyFlag.Control, KeyFlag.Control | KeyFlag.Shift));
+    assert(!matchKeyFlags(0, KeyFlag.Control));
 }
 
 /**
