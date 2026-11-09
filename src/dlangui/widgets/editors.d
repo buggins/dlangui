@@ -298,11 +298,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
     protected uint _leftPaneBackgroundColor3 = 0xF8F8F8;
     protected uint _leftPaneLineNumberColor = 0x4060D0;
-    protected uint _leftPaneLineNumberColorEdited = 0xC0C000;
-    protected uint _leftPaneLineNumberColorSaved = 0x00C000;
+    protected uint _leftPaneLineNumberColorEdited = 0x8A5A00;
+    protected uint _leftPaneLineNumberColorSaved = 0x1A6E1A;
     protected uint _leftPaneLineNumberColorCurrentLine = 0xFFFFFFFF;
     protected uint _leftPaneLineNumberBackgroundColorCurrentLine = 0xC08080FF;
     protected uint _leftPaneLineNumberBackgroundColor = 0xF4F4F4;
+    protected uint _leftPaneMarkColorChanged = 0xFFD040;
+    protected uint _leftPaneMarkColorSaved = 0x20C020;
     protected uint _colorIconBreakpoint = 0xFF0000;
     protected uint _colorIconBookmark = 0x0000FF;
     protected uint _colorIconError = 0x80FF0000;
@@ -650,10 +652,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             EditStateMark m = content.editMark(line);
             if (m == EditStateMark.changed) {
                 // modified, not saved
-                buf.fillRect(rc, 0xFFD040);
+                buf.fillRect(rc, _leftPaneMarkColorChanged);
             } else if (m == EditStateMark.saved) {
                 // modified, saved
-                buf.fillRect(rc, 0x20C020);
+                buf.fillRect(rc, _leftPaneMarkColorSaved);
             }
         }
     }
@@ -1337,11 +1339,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _leftPaneBackgroundColor2 = style.customColor("editor_left_pane_background2");
         _leftPaneBackgroundColor3 = style.customColor("editor_left_pane_background3");
         _leftPaneLineNumberColor = style.customColor("editor_left_pane_line_number_text");
-        _leftPaneLineNumberColorEdited = style.customColor("editor_left_pane_line_number_text_edited", 0xC0C000);
-        _leftPaneLineNumberColorSaved = style.customColor("editor_left_pane_line_number_text_saved", 0x00C000);
+        _leftPaneLineNumberColorEdited = style.customColor("editor_left_pane_line_number_text_edited", 0x8A5A00);
+        _leftPaneLineNumberColorSaved = style.customColor("editor_left_pane_line_number_text_saved", 0x1A6E1A);
         _leftPaneLineNumberColorCurrentLine = style.customColor("editor_left_pane_line_number_text_current_line", 0xFFFFFFFF);
         _leftPaneLineNumberBackgroundColorCurrentLine = style.customColor("editor_left_pane_line_number_background_current_line", 0xC08080FF);
         _leftPaneLineNumberBackgroundColor = style.customColor("editor_left_pane_line_number_background");
+        _leftPaneMarkColorChanged = style.customColor("editor_left_pane_mark_changed", 0xFFD040);
+        _leftPaneMarkColorSaved = style.customColor("editor_left_pane_mark_saved", 0x20C020);
         _colorIconBreakpoint = style.customColor("editor_left_pane_line_icon_color_breakpoint", 0xFF0000);
         _colorIconBookmark = style.customColor("editor_left_pane_line_icon_color_bookmark", 0x0000FF);
         _colorIconError = style.customColor("editor_left_pane_line_icon_color_error", 0x80FF0000);
