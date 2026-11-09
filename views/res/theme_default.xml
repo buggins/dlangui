@@ -184,7 +184,7 @@
         >
     </style>
     <style id="TAB_DOWN_BUTTON_DARK"
-        padding="2pt,1pt,2pt,1pt"
+        padding="5pt,2pt,5pt,2pt"
         backgroundImageId="tab_btn_dark_down"
         />
     <style id="TAB_DOWN_BUTTON"
@@ -197,7 +197,7 @@
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
-        padding="2pt,1pt,2pt,1pt"
+        padding="5pt,2pt,5pt,2pt"
         backgroundImageId="tab_btn_dark_up"
         >
         <length id="overlap" value="2"/>
