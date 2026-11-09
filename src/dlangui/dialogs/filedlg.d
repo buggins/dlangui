@@ -1277,6 +1277,20 @@ class FileNameEditLine : HorizontalLayout {
     @property bool readOnly() { return _edFileName.readOnly; }
     @property void readOnly(bool f) { _edFileName.readOnly = f; }
 
+    override void layout(Rect rc) {
+        super.layout(rc);
+        if (visibility == Visibility.Gone)
+            return;
+        // the edit line frame is inset by its margins, the "..." button has none:
+        // give the button the same top and bottom as the edit line frame
+        Rect ed = _edFileName.pos;
+        Rect m = _edFileName.margins;
+        Rect btnRc = _btn.pos;
+        btnRc.top = ed.top + m.top;
+        btnRc.bottom = ed.bottom - m.bottom;
+        if (btnRc.bottom > btnRc.top && btnRc != _btn.pos)
+            _btn.layout(btnRc);
+    }
 }
 
 class DirEditLine : FileNameEditLine {
