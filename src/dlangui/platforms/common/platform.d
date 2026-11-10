@@ -89,6 +89,40 @@ enum ShowPosition {
     parentWindowCenter
 }
 
+/**
+ * Limits an outer window rectangle to an area of the screen, e.g. the work area of a monitor (the screen
+ * without the taskbar): shrinks the rectangle if it is bigger than the area, then moves it inside (#806).
+ * An empty area leaves the rectangle as it is.
+ */
+Rect fitWindowRectIntoArea(Rect rc, Rect area) {
+    import std.algorithm : min, max;
+    if (area.empty)
+        return rc;
+    int w = min(rc.width, area.width);
+    int h = min(rc.height, area.height);
+    int x = max(area.left, min(rc.left, area.right - w));
+    int y = max(area.top, min(rc.top, area.bottom - h));
+    return Rect(x, y, x + w, y + h);
+}
+
+unittest {
+    Rect work = Rect(0, 0, 1920, 1152); // 1920x1200 screen, 48 px taskbar at the bottom
+    // fits: unchanged
+    assert(fitWindowRectIntoArea(Rect(100, 50, 1100, 850), work) == Rect(100, 50, 1100, 850));
+    // too tall: shrunk to the area height and moved up
+    assert(fitWindowRectIntoArea(Rect(26, 26, 1826, 1486), work) == Rect(26, 0, 1826, 1152));
+    // sticks out at the right and the bottom: moved inside, size kept
+    assert(fitWindowRectIntoArea(Rect(1500, 1000, 2100, 1400), work) == Rect(1320, 752, 1920, 1152));
+    // left of the area (e.g. a restored position from a monitor that is gone): moved inside
+    assert(fitWindowRectIntoArea(Rect(-2000, 100, -1400, 500), work) == Rect(0, 100, 600, 500));
+    // area not at the origin (second monitor)
+    assert(fitWindowRectIntoArea(Rect(1900, -50, 2500, 350), Rect(1920, 0, 3840, 1040)) == Rect(1920, 0, 2520, 400));
+    // bigger than the area in both directions: becomes the area
+    assert(fitWindowRectIntoArea(Rect(-10, -10, 5000, 5000), work) == work);
+    // empty area: unchanged
+    assert(fitWindowRectIntoArea(Rect(-10, -10, 5000, 5000), Rect()) == Rect(-10, -10, 5000, 5000));
+}
+
 /// Dialog display modes - used to configure dialogs should be showed as a popup or window
 enum DialogDisplayMode : ulong {
     /// show all types of dialogs in windows

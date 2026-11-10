@@ -408,10 +408,11 @@ class Win32Window : Window {
         HWND parenthwnd = _w32parent ? _w32parent._hwnd : null;
         _dx = width;
         _dy = height;
+        // default size is 600x400 at 96 DPI, scaled like a size given in points (#806)
         if (!_dx)
-            _dx = 600;
+            _dx = 600 * SCREEN_DPI / 96;
         if (!_dy)
-            _dy = 400;
+            _dy = 400 * SCREEN_DPI / 96;
         _platform = platform;
         _caption = windowCaption;
         _windowState = WindowState.hidden;
@@ -576,6 +577,38 @@ class Win32Window : Window {
         return res;
     }
 
+    /// Limits an outer window rectangle (screen coordinates) to the work area of the monitor it is on
+    /// (the screen without the taskbar): shrinks it if it is bigger, then moves it inside (#806).
+    protected void fitIntoWorkArea(ref int x, ref int y, ref int w, ref int h) {
+        RECT rc = RECT(x, y, x + w, y + h);
+        HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitor_info;
+        monitor_info.cbSize = monitor_info.sizeof;
+        if (!hMonitor || !GetMonitorInfo(hMonitor, &monitor_info))
+            return;
+        RECT work = monitor_info.rcWork;
+        Rect res = fitWindowRectIntoArea(Rect(x, y, x + w, y + h), Rect(work.left, work.top, work.right, work.bottom));
+        x = res.left;
+        y = res.top;
+        w = res.width;
+        h = res.height;
+    }
+
+    /// Moves and shrinks the window, if needed, to keep it inside the work area of its monitor (#806).
+    protected void fitWindowIntoWorkArea() {
+        if (!_hwnd || IsZoomed(_hwnd) || IsIconic(_hwnd) || (_flags & WindowFlag.Fullscreen))
+            return;
+        RECT rc;
+        if (!GetWindowRect(_hwnd, &rc))
+            return;
+        int x = rc.left, y = rc.top, w = rc.right - rc.left, h = rc.bottom - rc.top;
+        fitIntoWorkArea(x, y, w, h);
+        if (x != rc.left || y != rc.top || w != rc.right - rc.left || h != rc.bottom - rc.top) {
+            Log.d("Window ", Rect(rc.left, rc.top, rc.right, rc.bottom), " doesn't fit into the screen work area, changed to ", Rect(x, y, x + w, y + h));
+            SetWindowPos(_hwnd, NULL, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+    }
+
     protected bool _destroying;
     ~this() {
         debug Log.d("Window destructor");
@@ -682,6 +715,7 @@ class Win32Window : Window {
         }
 
         adjustPositionDuringShow();
+        fitWindowIntoWorkArea();
 
         if (_flags & WindowFlag.Fullscreen) {
             Rect rc = getScreenDimensions();
@@ -792,26 +826,33 @@ class Win32Window : Window {
             UINT flags = SWP_NOOWNERZORDER | SWP_NOZORDER;
             if (!activate)
                 flags |= SWP_NOACTIVATE;
-            if (newWindowRect.top == int.min || newWindowRect.left == int.min) {
-                // no position specified
-                if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
-                    // change size only
-                    SetWindowPos(_hwnd, NULL, 0, 0, newWindowRect.right + 2 * GetSystemMetrics(SM_CXDLGFRAME), newWindowRect.bottom + GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME), flags | SWP_NOMOVE);
-                    rectChanged = true;
-                    res = true;
-                }
-            } else {
-                if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
-                    // change size and position
-                    SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, newWindowRect.right + 2 * GetSystemMetrics(SM_CXDLGFRAME), newWindowRect.bottom + GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME), flags);
-                    rectChanged = true;
-                    res = true;
-                } else {
-                    // change position only
-                    SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, 0, 0, flags | SWP_NOSIZE);
-                    rectChanged = true;
-                    res = true;
-                }
+            bool positionSet = newWindowRect.top != int.min && newWindowRect.left != int.min;
+            bool sizeSet = newWindowRect.bottom != int.min && newWindowRect.right != int.min;
+            if (positionSet || sizeSet) {
+                // the size is the client size; the outer size adds the frame and the caption
+                // of this window's style (dialog frame metrics are too thin for a resizable window,
+                // and a restored window got smaller on every start)
+                RECT frame = RECT(0, 0, 0, 0);
+                AdjustWindowRectEx(&frame, cast(DWORD)GetWindowLongW(_hwnd, GWL_STYLE), FALSE, cast(DWORD)GetWindowLongW(_hwnd, GWL_EXSTYLE));
+                int frameWidth = frame.right - frame.left;
+                int frameHeight = frame.bottom - frame.top;
+                RECT current;
+                GetWindowRect(_hwnd, &current);
+                int x = positionSet ? newWindowRect.left : current.left;
+                int y = positionSet ? newWindowRect.top : current.top;
+                int w = sizeSet ? newWindowRect.right + frameWidth : current.right - current.left;
+                int h = sizeSet ? newWindowRect.bottom + frameHeight : current.bottom - current.top;
+                // keep the window on the screen: e.g. a restored position from a monitor that is gone,
+                // or a size measured from content bigger than the screen (#806)
+                fitIntoWorkArea(x, y, w, h);
+                if (x == current.left && y == current.top)
+                    flags |= SWP_NOMOVE;
+                if (!sizeSet && w == current.right - current.left && h == current.bottom - current.top)
+                    flags |= SWP_NOSIZE;
+                SetWindowPos(_hwnd, NULL, x, y, w, h, flags);
+                newWindowRect = Rect(x, y, sizeSet ? w - frameWidth : int.min, sizeSet ? h - frameHeight : int.min);
+                rectChanged = true;
+                res = true;
             }
         }
 
