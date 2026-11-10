@@ -2488,6 +2488,9 @@ class EditLine : EditWidgetBase {
                 }
             }
         }
+        // Escape goes to the parents, e.g. a dialog cancels or a find panel closes, as with focus on other widgets
+        if (event.keyCode == KeyCode.ESCAPE)
+            return false;
         return true;
     }
 
@@ -4201,9 +4204,15 @@ class EditBox : EditWidgetBase {
 
     protected ulong _messageShowCounter;
 
-    /// Escape dismisses the most recently shown message bar with dismissOnEscape set (one per key press)
+    /// Escape closes the find panel if it's open, else dismisses the most recently shown message bar
+    /// with dismissOnEscape set (one per key press)
     override bool onKeyEvent(KeyEvent event) {
         if (event.keyCode == KeyCode.ESCAPE && !(event.flags & (KeyFlag.Control | KeyFlag.Alt | KeyFlag.Shift | KeyFlag.Menu))) {
+            if (_findPanel && _findPanel.visibility == Visibility.Visible) {
+                if (event.action == KeyAction.KeyDown)
+                    _findPanel.close();
+                return true;
+            }
             EditorMessageBar target;
             foreach (ref p; _panels) {
                 EditorMessageBar bar = cast(EditorMessageBar)p.widget;
