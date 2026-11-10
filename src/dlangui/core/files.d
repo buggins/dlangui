@@ -132,6 +132,79 @@ version(OSX) {} else version(Posix)
         return false;
     }
 
+    /**
+     * Returns true if a mount point should be listed as a place for the user to browse (file dialog places),
+     * roughly as GTK file choosers do.
+     *
+     * Listed: mounts under /media and /run/media, direct children of /mnt (e.g. /mnt/c on WSL), mounts in the
+     * home directory, network file systems, and custom top-level mounts (e.g. /data).
+     * Skipped: system directories (/usr, /var, /snap, /boot, /run, /opt, ...), system file system types
+     * (squashfs, snap fuse, overlay, autofs, ...), and special file systems.
+     * Whether the mount point is a directory is checked by the caller.
+     */
+    package bool isUserMount(const(char)[] dir, const(char)[] type, const(char)[] home)
+    {
+        import std.algorithm : canFind, startsWith, count;
+        if (dir == "/" || isSpecialFileSystem(dir, type))
+            return false;
+        static immutable string[] systemTypes = [
+            "squashfs", "fuse.snapfuse", "overlay", "autofs", "devtmpfs", "devpts", "proc", "sysfs", "securityfs",
+            "cgroup", "cgroup2", "pstore", "bpf", "debugfs", "tracefs", "configfs", "fusectl", "mqueue",
+            "hugetlbfs", "binfmt_misc", "efivarfs", "nsfs", "ramfs", "selinuxfs", "nullfs", "devfs", "fdescfs",
+            "procfs", "linprocfs", "linsysfs", "fuse.gvfsd-fuse", "fuse.portal", "fuse.lxcfs",
+        ];
+        if (systemTypes.canFind(type))
+            return false;
+        bool under(const(char)[] prefix) { return dir.startsWith(prefix) && dir.length > prefix.length; }
+        // depth: number of path components ("/mnt/c" -> 2)
+        size_t depth = dir.count('/') - (dir.length > 1 && dir[$ - 1] == '/' ? 1 : 0);
+        if (under("/media/") || under("/run/media/"))
+            return true;
+        if (under("/mnt/"))
+            return depth == 2; // /mnt/c, but not /mnt/wslg/distro
+        if (home.length > 1 && home[0] == '/' && under(home[$ - 1] == '/' ? home : home ~ "/"))
+            return true;
+        static immutable string[] systemDirs = [
+            "/bin", "/boot", "/dev", "/etc", "/home", "/lib", "/lib32", "/lib64", "/libx32", "/lost+found",
+            "/media", "/mnt", "/opt", "/proc", "/root", "/run", "/sbin", "/snap", "/srv", "/sys", "/tmp",
+            "/usr", "/var", "/compat", "/rescue",
+        ];
+        foreach (sd; systemDirs)
+            if (dir == sd || dir.startsWith(sd ~ "/"))
+                return false;
+        static immutable string[] networkTypes = [
+            "nfs", "nfs4", "cifs", "smb3", "smbfs", "davfs", "fuse.sshfs", "fuse.rclone",
+        ];
+        if (networkTypes.canFind(type))
+            return true;
+        return depth == 1; // custom top-level mount, e.g. /data
+    }
+
+    unittest {
+        enum home = "/home/user";
+        assert(isUserMount("/media/user/USB", "vfat", home));
+        assert(isUserMount("/run/media/user/DISK", "ext4", home));
+        assert(isUserMount("/mnt/c", "9p", home));
+        assert(isUserMount("/mnt/data", "ext4", home));
+        assert(isUserMount("/home/user/remote", "fuse.sshfs", home));
+        assert(isUserMount("/data", "ext4", home));
+        assert(isUserMount("/shares/projects", "nfs4", home));
+        assert(!isUserMount("/", "ext4", home));
+        assert(!isUserMount("/home", "ext4", home));
+        assert(!isUserMount("/boot/efi", "vfat", home));
+        assert(!isUserMount("/snap", "ext4", home));
+        assert(!isUserMount("/snap/core20/2922", "squashfs", home));
+        assert(!isUserMount("/snap/clion/525", "fuse.snapfuse", home));
+        assert(!isUserMount("/var/lib/docker", "ext4", home));
+        assert(!isUserMount("/usr/lib/wsl/drivers", "9p", home));
+        assert(!isUserMount("/usr/lib/modules/6.6.87.2-microsoft-standard-WSL2", "overlay", home));
+        assert(!isUserMount("/mnt/wslg/distro", "ext4", home));
+        assert(!isUserMount("/mnt/wslg", "tmpfs", home));
+        assert(!isUserMount("/run/user/1000/gvfs", "fuse.gvfsd-fuse", home));
+        assert(!isUserMount("/opt/data", "ext4", home));
+        assert(!isUserMount("/proc/sys/fs/binfmt_misc", "binfmt_misc", home));
+    }
+
     private string getDeviceLabelFallback(in char[] type, in char[] fsName, in char[] mountDir)
     {
         import std.format : format;
@@ -250,6 +323,22 @@ private:
     version (Posix) {
         res ~= RootEntry(RootEntryType.ROOT, "/", "File System"d);
     }
+    version(OSX) {} else version(Posix) {
+        string home = homePath;
+        // mount point exists and is a directory (bind mounts of single files are skipped)
+        bool isDirectory(const(char)[] path) {
+            import std.exception : collectException;
+            bool d;
+            return collectException(std.file.isDir(path), d) is null && d;
+        }
+        // the same mount point mounted twice
+        bool seen(const(char)[] path) {
+            foreach (ref e; res)
+                if (e.path == path)
+                    return true;
+            return false;
+        }
+    }
     version(Android) {
         // do nothing
     } else version(linux) {
@@ -267,11 +356,9 @@ private:
                 auto mountDir = fromStringz(ent.mnt_dir);
                 auto type = fromStringz(ent.mnt_type);
 
-                if (mountDir == "/" || //root is already added
-                    isSpecialFileSystem(mountDir, type)) //don't list special file systems
-                {
+                // only places a user would browse; root is already added
+                if (!isUserMount(mountDir, type, home) || !isDirectory(mountDir) || seen(mountDir))
                     continue;
-                }
 
                 string label;
                 enum byLabel = "/dev/disk/by-label";
@@ -314,9 +401,8 @@ private:
                 auto fsName = fromStringz(buf.f_mntfromname.ptr);
                 auto mountDir = fromStringz(buf.f_mntonname.ptr);
 
-                if (mountDir == "/" || isSpecialFileSystem(mountDir, type)) {
+                if (!isUserMount(mountDir, type, home) || !isDirectory(mountDir) || seen(mountDir))
                     continue;
-                }
 
                 string label = getDeviceLabelFallback(type, fsName, mountDir);
                 res ~= RootEntry(getDeviceRootEntryType(type), mountDir.idup, label.toUTF32);

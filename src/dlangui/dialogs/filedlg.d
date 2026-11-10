@@ -558,11 +558,17 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             btn.orientation = Orientation.Vertical;
             btn.styleId = STYLE_TRANSPARENT_BUTTON_BACKGROUND;
             btn.focusable = false;
-            btn.tooltipText = root.path.toUTF32;
+            // the label may be truncated: show it in the tooltip too, unless it's just the folder name
+            dstring tooltip = root.path.toUTF32;
+            if (root.label != baseName(root.path).toUTF32)
+                tooltip = root.label ~ " \u2014 "d ~ tooltip;
+            btn.tooltipText = tooltip;
+            btn.ellipsize = TextEllipsis.End; // long labels don't widen the pane
             adapter.add(btn);
         }
         res.ownAdapter = adapter;
         res.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT).layoutWeight(0);
+        res.maxWidth(WIDGET_STYLE_CONSOLE ? 16 : 100.pointsToPixels);
         res.itemClick = delegate(Widget source, int itemIndex) {
             openDirectory(_roots[itemIndex].path, null);
             res.selectItem(-1);
