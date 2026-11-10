@@ -182,6 +182,18 @@ immutable string STYLE_TAB_DOWN_BUTTON_DARK_TEXT = "TAB_DOWN_BUTTON_DARK_TEXT";
 
 /// standard style id for tooltip popup
 immutable string STYLE_TOOLTIP = "TOOLTIP";
+/// standard style id for EditBox message bars (EditorMessageBar), one per message kind
+immutable string STYLE_EDIT_MESSAGE_BAR_INFO = "EDIT_MESSAGE_BAR_INFO";
+/// ditto
+immutable string STYLE_EDIT_MESSAGE_BAR_WARNING = "EDIT_MESSAGE_BAR_WARNING";
+/// ditto
+immutable string STYLE_EDIT_MESSAGE_BAR_ERROR = "EDIT_MESSAGE_BAR_ERROR";
+/// standard style id for the icon of EditorMessageBar
+immutable string STYLE_EDIT_MESSAGE_BAR_ICON = "EDIT_MESSAGE_BAR_ICON";
+/// standard style id for the text of EditorMessageBar
+immutable string STYLE_EDIT_MESSAGE_BAR_TEXT = "EDIT_MESSAGE_BAR_TEXT";
+/// standard style id for the buttons of EditorMessageBar
+immutable string STYLE_EDIT_MESSAGE_BAR_BUTTON = "EDIT_MESSAGE_BAR_BUTTON";
 
 
 /// standard style id for toolbars layout
@@ -1359,6 +1371,11 @@ Theme createDefaultTheme() {
         Style editBox = res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
             .setPadding(0,0,0,0).setMargins(0,0,0,0).minWidth(30).minHeight(8).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
             .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(1);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundColor(0x000080).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_WARNING).backgroundColor(0x808000).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ERROR).backgroundColor(0x800000).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_TEXT).textColor(0xFFFFFF).alignment(Align.Left | Align.VCenter).setMargins(0,0,1,0);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_BUTTON).backgroundColor(0x808080).textColor(0xFFFFFF).alignment(Align.Center).setPadding(1,0,1,0).setMargins(1,0,0,0);
     } else {
         res.fontSize = 15; // TODO: choose based on DPI
         Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
@@ -1444,6 +1461,12 @@ Theme createDefaultTheme() {
         Style editBox = res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
             .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
             .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundImageId("#border,#90CAF9,0,1px,0,1px,#E3F2FD").setPadding(5,2,2,2).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_WARNING).backgroundImageId("#border,#FFD54F,0,1px,0,1px,#FFF8E1").setPadding(5,2,2,2).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ERROR).backgroundImageId("#border,#EF9A9A,0,1px,0,1px,#FFEBEE").setPadding(5,2,2,2).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ICON).alignment(Align.Left | Align.VCenter).setMargins(0,0,5,0);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_TEXT).textColor(0x202020).alignment(Align.Left | Align.VCenter).setMargins(0,0,5,0);
+        res.get(STYLE_BUTTON).createSubstyle(STYLE_EDIT_MESSAGE_BAR_BUTTON).setMargins(2,1,2,1);
     }
 
     return res;

@@ -115,8 +115,11 @@ res/hdpi/hdpi_btn_radio_on_pressed.png
 res/hdpi/hdpi_btn_radio_on_pressed_dark.png
 res/hdpi/hdpi_dialog-cancel.png
 res/hdpi/hdpi_dialog-close.png
+res/hdpi/hdpi_dialog-error.png
+res/hdpi/hdpi_dialog-information.png
 res/hdpi/hdpi_dialog-ok-apply.png
 res/hdpi/hdpi_dialog-ok.png
+res/hdpi/hdpi_dialog-warning.png
 res/hdpi/hdpi_folder.png
 res/hdpi/hdpi_text-plain.png
 res/hdpi/hdpi_scrollbar_btn_down.png
@@ -197,8 +200,11 @@ res/mdpi/btn_radio_on_pressed_dark.png
 res/mdpi/computer.png
 res/mdpi/dialog-cancel.png
 res/mdpi/dialog-close.png
+res/mdpi/dialog-error.png
+res/mdpi/dialog-information.png
 res/mdpi/dialog-ok.png
 res/mdpi/dialog-ok-apply.png
+res/mdpi/dialog-warning.png
 res/mdpi/dlangui-logo1.png
 res/mdpi/drive-harddisk.png
 res/mdpi/drive-optical.png

@@ -581,5 +581,32 @@
         <color id="chart_segment_tag_color" value="#C0C0C0"/>
    </style>
 
+    <style id="EDIT_MESSAGE_BAR_INFO"
+        backgroundImageId="#border,#90CAF9,0,1px,0,1px,#E3F2FD"
+        padding="4pt,2pt,2pt,2pt"
+        layoutWidth="FILL_PARENT"
+        />
+    <style id="EDIT_MESSAGE_BAR_WARNING"
+        backgroundImageId="#border,#FFD54F,0,1px,0,1px,#FFF8E1"
+        padding="4pt,2pt,2pt,2pt"
+        layoutWidth="FILL_PARENT"
+        />
+    <style id="EDIT_MESSAGE_BAR_ERROR"
+        backgroundImageId="#border,#EF9A9A,0,1px,0,1px,#FFEBEE"
+        padding="4pt,2pt,2pt,2pt"
+        layoutWidth="FILL_PARENT"
+        />
+    <style id="EDIT_MESSAGE_BAR_ICON"
+        align="Left|VCenter"
+        margins="0,0,4pt,0"
+        />
+    <style id="EDIT_MESSAGE_BAR_TEXT"
+        align="Left|VCenter"
+        textColor="#202020"
+        margins="0,0,4pt,0"
+        />
+    <style id="EDIT_MESSAGE_BAR_BUTTON" parent="BUTTON"
+        margins="2pt,1pt,2pt,1pt"
+        />
 </theme>
 

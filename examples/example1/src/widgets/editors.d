@@ -45,6 +45,50 @@ Widget createEditorSettingsControl(EditWidgetBase editor) {
     return res;
 }
 
+/// buttons to show message bars (EditBox.showMessage) in the editor
+Widget createMessageBarsControl(EditBox editor) {
+    HorizontalLayout res = new HorizontalLayout("MessageBarsControl");
+    res.addChild(new TextWidget(null, "Message bars: "d));
+    TextWidget status = new TextWidget("MESSAGE_BAR_STATUS", ""d);
+    enum ACTION_RELOAD = 30001, ACTION_KEEP = 30002;
+    Button add(dstring label, void delegate() handler) {
+        Button btn = new Button(null, label);
+        btn.click = delegate(Widget w) { handler(); return true; };
+        res.addChild(btn);
+        return btn;
+    }
+    add("Info"d, () {
+        editor.showMessage("info", "The file is opened read-only. (Escape dismisses this message.)"d, EditorMessageKind.Info, [ACTION_IGNORE])
+            .dismissOnEscape = true;
+    });
+    add("Warning"d, () {
+        editor.showMessage("changed", "The file was changed on disk. It has unsaved changes in the editor."d, EditorMessageKind.Warning,
+            [new Action(ACTION_RELOAD, "Reload"d), new Action(ACTION_KEEP, "Keep mine"d)]);
+    });
+    add("Error, long text"d, () {
+        editor.showMessage("error", "The file cannot be saved: permission denied. The quick brown fox jumps over the lazy dog. "d
+            ~ "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. "d
+            ~ "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog."d,
+            EditorMessageKind.Error, [ACTION_RETRY], EditorPanelPosition.Top, true);
+    });
+    add("Bottom"d, () {
+        editor.showMessage("bottom", "A message below the text, with a close button."d, EditorMessageKind.Info, null,
+            EditorPanelPosition.Bottom, true);
+    });
+    add("Hide all"d, () {
+        foreach (id; ["info", "changed", "error", "bottom"])
+            editor.hideMessage(id);
+    });
+    editor.messageAction = delegate(EditBox source, string messageId, const Action action) {
+        status.text = "clicked: "d ~ toUTF32(messageId) ~ " / "d ~ action.label;
+        if (action.id == ACTION_RELOAD || action.id == ACTION_KEEP || action.id == StandardAction.Retry)
+            source.hideMessage(messageId);
+        return true;
+    };
+    res.addChild(status);
+    return res;
+}
+
 class EditorsExample : VerticalLayout
 {
     this(string ID)
@@ -63,6 +107,7 @@ class EditorsExample : VerticalLayout
     SourceEdit editBox = new SourceEdit("editbox1");
     editBox.text = UIString.fromRaw(testCode);
     addChild(createEditorSettingsControl(editBox));
+    addChild(createMessageBarsControl(editBox));
     addChild(editBox);
 
     addChild(new TextWidget(null, "EditBox: additional view for the same content (split view testing)"d));
