@@ -58,7 +58,8 @@ Widget createMessageBarsControl(EditBox editor) {
         return btn;
     }
     add("Info"d, () {
-        editor.showMessage("info", "The file is opened read-only."d, EditorMessageKind.Info, [ACTION_IGNORE]);
+        editor.showMessage("info", "The file is opened read-only. (Escape dismisses this message.)"d, EditorMessageKind.Info, [ACTION_IGNORE])
+            .dismissOnEscape = true;
     });
     add("Warning"d, () {
         editor.showMessage("changed", "The file was changed on disk. It has unsaved changes in the editor."d, EditorMessageKind.Warning,

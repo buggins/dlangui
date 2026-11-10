@@ -40,7 +40,7 @@ import std.algorithm;
 import std.conv : to;
 import std.typecons : Yes, No;
 import dlangui.core.streams;
-import dlangui.core.stdaction : StandardAction, ACTION_CLOSE;
+import dlangui.core.stdaction : StandardAction, ACTION_CLOSE, ACTION_IGNORE;
 
 /// Modified state change listener
 interface ModifiedStateListener {
@@ -4155,7 +4155,7 @@ class EditBox : EditWidgetBase {
      * messageAction, then, if not handled, are dispatched as usual actions (so an application can handle them
      * in handleAction); action.stringParam is the message id. Buttons for StandardAction.Ignore (e.g.
      * ACTION_IGNORE) and StandardAction.Close, and the close button, hide the message; other buttons don't,
-     * call hideMessage when done.
+     * call hideMessage when done. Set dismissOnEscape on the result to let Escape dismiss the message.
      *
      * Params:
      *      id = message id, to replace or hide it later
@@ -4169,6 +4169,7 @@ class EditBox : EditWidgetBase {
             const(Action)[] actions = null, EditorPanelPosition position = EditorPanelPosition.Top, bool closeButton = false) {
         EditorMessageBar bar = new EditorMessageBar(id, message, kind, actions, closeButton);
         bar._editor = this;
+        bar._shownOrder = ++_messageShowCounter;
         // replace a message with the same id at the same place
         foreach (i, ref p; _panels) {
             EditorMessageBar old = cast(EditorMessageBar)p.widget;
@@ -4196,6 +4197,27 @@ class EditBox : EditWidgetBase {
                 return;
             }
         }
+    }
+
+    protected ulong _messageShowCounter;
+
+    /// Escape dismisses the most recently shown message bar with dismissOnEscape set (one per key press)
+    override bool onKeyEvent(KeyEvent event) {
+        if (event.keyCode == KeyCode.ESCAPE && !(event.flags & (KeyFlag.Control | KeyFlag.Alt | KeyFlag.Shift | KeyFlag.Menu))) {
+            EditorMessageBar target;
+            foreach (ref p; _panels) {
+                EditorMessageBar bar = cast(EditorMessageBar)p.widget;
+                if (bar && bar.dismissOnEscape && bar.visibility == Visibility.Visible
+                        && (!target || bar._shownOrder > target._shownOrder))
+                    target = bar;
+            }
+            if (target) {
+                if (event.action == KeyAction.KeyDown)
+                    target.onButton(ACTION_IGNORE); // reported to messageAction as Ignore, then hidden
+                return true;
+            }
+        }
+        return super.onKeyEvent(event);
     }
 
     /// returns a message shown with showMessage, or null
@@ -4611,6 +4633,8 @@ class FindPanel : HorizontalLayout {
  */
 class EditorMessageBar : HorizontalLayout {
     protected EditBox _editor;
+    protected ulong _shownOrder;
+    protected bool _dismissOnEscape;
     protected EditorMessageKind _kind;
     protected ImageWidget _icon;
     protected TextWidget _text;
@@ -4673,6 +4697,15 @@ class EditorMessageBar : HorizontalLayout {
 
     /// message kind
     @property EditorMessageKind kind() { return _kind; }
+
+    /**
+     * When true, Escape pressed in the editor dismisses this message (the most recently shown one first),
+     * reported to EditBox.messageAction as ACTION_IGNORE. Off by default: leave it off for messages
+     * which need a decision.
+     */
+    @property bool dismissOnEscape() { return _dismissOnEscape; }
+    /// ditto
+    @property EditorMessageBar dismissOnEscape(bool flag) { _dismissOnEscape = flag; return this; }
 
     /// message text
     @property dstring message() { return _text.text; }
