@@ -120,6 +120,13 @@ res/hdpi/hdpi_dialog-information.png
 res/hdpi/hdpi_dialog-ok-apply.png
 res/hdpi/hdpi_dialog-ok.png
 res/hdpi/hdpi_dialog-warning.png
+res/hdpi/hdpi_emblem-added.png
+res/hdpi/hdpi_emblem-error.png
+res/hdpi/hdpi_emblem-important.png
+res/hdpi/hdpi_emblem-modified.png
+res/hdpi/hdpi_emblem-removed.png
+res/hdpi/hdpi_emblem-unknown.png
+res/hdpi/hdpi_emblem-warning.png
 res/hdpi/hdpi_folder.png
 res/hdpi/hdpi_text-plain.png
 res/hdpi/hdpi_scrollbar_btn_down.png
@@ -217,6 +224,13 @@ res/mdpi/editbox_background_focus.9.png
 res/mdpi/editbox_background_focus_dark.9.png
 res/mdpi/editbox_background_normal.9.png
 res/mdpi/editbox_background_normal_dark.9.png
+res/mdpi/emblem-added.png
+res/mdpi/emblem-error.png
+res/mdpi/emblem-important.png
+res/mdpi/emblem-modified.png
+res/mdpi/emblem-removed.png
+res/mdpi/emblem-unknown.png
+res/mdpi/emblem-warning.png
 res/mdpi/find_case_sensitive.png
 res/mdpi/find_whole_words.png
 res/mdpi/folder-blue.png

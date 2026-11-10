@@ -1296,6 +1296,71 @@ class CombinedDrawable : Drawable {
 
 alias DrawableRef = Ref!Drawable;
 
+/// corner of a drawable where OverlayDrawable places an overlay (emblem)
+enum OverlayCorner : ubyte {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+}
+
+/**
+ * Draws a base drawable, then small overlays (emblems) in its corners, e.g. marks on file icons.
+ *
+ * Size and padding are those of the base drawable. Overlays are drawn at their own size (images are not
+ * rescaled, so provide them in the wanted size, e.g. 9 px for 16 px icons, and hdpi variants);
+ * an overlay bigger than half of the base is scaled down to half.
+ */
+class OverlayDrawable : Drawable {
+    protected DrawableRef _base;
+    protected DrawableRef[] _overlays;
+    protected OverlayCorner[] _corners;
+
+    this(DrawableRef base) {
+        _base = base;
+    }
+
+    /// add an overlay in the given corner (drawn after the ones added before)
+    OverlayDrawable add(DrawableRef overlay, OverlayCorner corner) {
+        if (!overlay.isNull) {
+            _overlays ~= overlay;
+            _corners ~= corner;
+        }
+        return this;
+    }
+
+    /// number of overlays
+    @property size_t overlayCount() { return _overlays.length; }
+
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        if (!_base.isNull)
+            _base.drawTo(buf, rc, state, tilex0, tiley0);
+        foreach (i, ref o; _overlays) {
+            int w = o.width;
+            int h = o.height;
+            int maxw = (rc.width + 1) / 2;
+            int maxh = (rc.height + 1) / 2;
+            if (w > maxw || h > maxh) {
+                // keep aspect ratio
+                if (w * maxh > h * maxw) {
+                    h = w > 0 ? h * maxw / w : maxh;
+                    w = maxw;
+                } else {
+                    w = h > 0 ? w * maxh / h : maxw;
+                    h = maxh;
+                }
+            }
+            int x = (_corners[i] == OverlayCorner.TopLeft || _corners[i] == OverlayCorner.BottomLeft) ? rc.left : rc.right - w;
+            int y = (_corners[i] == OverlayCorner.TopLeft || _corners[i] == OverlayCorner.TopRight) ? rc.top : rc.bottom - h;
+            o.drawTo(buf, Rect(x, y, x + w, y + h), state);
+        }
+    }
+
+    override @property int width() { return _base.isNull ? 0 : _base.width; }
+    override @property int height() { return _base.isNull ? 0 : _base.height; }
+    override @property Rect padding() { return _base.isNull ? Rect(0, 0, 0, 0) : _base.padding; }
+}
+
 
 
 

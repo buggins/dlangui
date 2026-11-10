@@ -79,10 +79,67 @@ import std.conv;
 import std.algorithm;
 
 // tree widget item data container
+/**
+ * Definition of a tree item mark: an overlay icon (emblem) drawn in a corner of the item icon when the item
+ * has the mark flag set (see TreeItem.marks, TreeItems.markDefs).
+ */
+struct TreeItemMark {
+    /// single bit; meaning defined by the application
+    uint flag;
+    /// overlay icon resource id, e.g. "emblem-modified"
+    string drawableId;
+    /// corner of the item icon
+    OverlayCorner corner = OverlayCorner.BottomRight;
+    /// if several set marks use the same corner, the one with the highest priority is drawn
+    int priority;
+    /// shown in the item tooltip when the mark is set (optional)
+    dstring tooltip;
+    /// console mode: shown after the item text instead of the icon (optional)
+    dchar consoleChar;
+}
+
+/// marks to draw for the given flags: per corner the set mark with the highest priority, in corner order
+TreeItemMark[] visibleTreeItemMarks(uint marks, const(TreeItemMark)[] defs) {
+    TreeItemMark[4] best;
+    bool[4] found;
+    foreach (ref d; defs) {
+        if (!(marks & d.flag))
+            continue;
+        size_t c = d.corner;
+        if (!found[c] || d.priority > best[c].priority) {
+            best[c] = d;
+            found[c] = true;
+        }
+    }
+    TreeItemMark[] res;
+    foreach (c; 0 .. 4)
+        if (found[c])
+            res ~= best[c];
+    return res;
+}
+
+unittest {
+    enum Modified = 1, Error = 2, Warning = 4, GitModified = 8;
+    TreeItemMark[] defs = [
+        TreeItemMark(Modified, "emblem-modified", OverlayCorner.TopRight),
+        TreeItemMark(Error, "emblem-error", OverlayCorner.BottomLeft, 10, "errors"d),
+        TreeItemMark(Warning, "emblem-warning", OverlayCorner.BottomLeft, 5, "warnings"d),
+        TreeItemMark(GitModified, "emblem-important", OverlayCorner.BottomRight),
+    ];
+    assert(visibleTreeItemMarks(0, defs).length == 0);
+    auto v = visibleTreeItemMarks(Warning | Error | Modified, defs);
+    assert(v.length == 2);
+    assert(v[0].flag == Modified); // TopRight
+    assert(v[1].flag == Error); // BottomLeft: error beats warning
+    v = visibleTreeItemMarks(Warning | GitModified, defs);
+    assert(v.length == 2 && v[0].flag == Warning && v[1].flag == GitModified);
+}
+
 class TreeItem {
     protected TreeItem _parent;
     protected string _id;
     protected string _iconRes;
+    protected uint _marks;
     protected int _level;
     protected UIString _text;
     protected ObjectList!TreeItem _children;
@@ -153,7 +210,36 @@ class TreeItem {
     @property string id() { return _id; }
     @property TreeItem id(string id) { _id = id; return this; }
     @property string iconRes() { return _iconRes; }
-    @property TreeItem iconRes(string res) { _iconRes = res; return this; }
+    @property TreeItem iconRes(string res) {
+        if (_iconRes != res) {
+            _iconRes = res;
+            onItemChanged(true);
+        }
+        return this;
+    }
+
+    /// bit set of marks (see TreeItems.markDefs); 0 = no marks
+    @property uint marks() { return _marks; }
+    /// ditto; updates only this item's widget
+    @property TreeItem marks(uint flags) {
+        if (_marks != flags) {
+            _marks = flags;
+            onItemChanged(false);
+        }
+        return this;
+    }
+    /// set or clear a mark flag
+    TreeItem setMark(uint flag, bool on = true) {
+        return marks(on ? (_marks | flag) : (_marks & ~flag));
+    }
+    /// returns true if all bits of flag are set
+    bool hasMark(uint flag) { return (_marks & flag) == flag && flag != 0; }
+
+    /// notify the tree widget that this item's text, icon or marks changed
+    protected void onItemChanged(bool sizeChanged) {
+        if (auto r = root)
+            r.onItemChange(this, sizeChanged);
+    }
     @property int level() { return _level; }
     @property protected TreeItem level(int level) {
         _level = level;
@@ -225,16 +311,19 @@ class TreeItem {
     /// set text to show
     @property TreeItem text(dstring s) {
         _text = s;
+        onItemChanged(true);
         return this;
     }
     /// set text to show
     @property TreeItem text(UIString s) {
         _text = s;
+        onItemChanged(true);
         return this;
     }
     /// set text resource ID to show
     @property TreeItem textResource(string s) {
         _text = s;
+        onItemChanged(true);
         return this;
     }
 
@@ -391,12 +480,34 @@ interface OnTreeSelectionChangeListener {
     void onTreeItemSelected(TreeItems source, TreeItem selectedItem, bool activated);
 }
 
+/// text, icon or marks of a single item changed (sizeChanged: text or icon, may need relayout)
+interface OnTreeItemChangeListener {
+    void onTreeItemChange(TreeItems source, TreeItem item, bool sizeChanged);
+}
+
 class TreeItems : TreeItem {
     // signal handler OnTreeContentChangeListener
     Listener!OnTreeContentChangeListener contentListener;
     Listener!OnTreeStateChangeListener stateListener;
     Listener!OnTreeSelectionChangeListener selectionListener;
     Listener!OnTreeExpandedStateListener expandListener;
+    Listener!OnTreeItemChangeListener itemChangeListener;
+
+    protected TreeItemMark[] _markDefs;
+    /// definitions of item marks: overlay icons drawn on item icons for set TreeItem.marks flags
+    @property const(TreeItemMark)[] markDefs() { return _markDefs; }
+    /// ditto
+    @property TreeItems markDefs(TreeItemMark[] defs) {
+        _markDefs = defs;
+        onUpdate(this); // recreate item widgets
+        return this;
+    }
+
+    /// called by items when text, icon or marks change
+    void onItemChange(TreeItem item, bool sizeChanged) {
+        if (itemChangeListener.assigned)
+            itemChangeListener(this, item, sizeChanged);
+    }
 
     protected bool _noCollapseForSingleTopLevelItem;
     @property bool noCollapseForSingleTopLevelItem() { return _noCollapseForSingleTopLevelItem; }
@@ -658,13 +769,12 @@ class TreeItemWidget : HorizontalLayout {
         _body.styleId = STYLE_TREE_ITEM_BODY;
         _body.setState(State.Parent);
         if (_item.iconRes.length > 0) {
-            _icon = new ImageWidget("icon", _item.iconRes);
-            _icon.styleId = STYLE_TREE_ITEM_ICON;
-            _icon.setState(State.Parent);
-            _icon.padding(Rect(0, 0, BACKEND_GUI ? 5 : 0, 0));
+            _icon = createIconWidget();
             _body.addChild(_icon);
+            updateIcon();
         }
-        _label = new TextWidget("label", _item.text);
+        _label = new TextWidget("label", labelText);
+        scope(exit) updateTooltip();
         _label.styleId = STYLE_TREE_ITEM_LABEL;
         _label.setState(State.Parent);
         _body.addChild(_label);
@@ -713,6 +823,105 @@ class TreeItemWidget : HorizontalLayout {
         return super.onMouseEvent(event);
     }
 
+    protected ImageWidget createIconWidget() {
+        ImageWidget icon = new ImageWidget("icon", _item.iconRes);
+        icon.styleId = STYLE_TREE_ITEM_ICON;
+        icon.setState(State.Parent);
+        icon.padding(Rect(0, 0, BACKEND_GUI ? 5 : 0, 0));
+        return icon;
+    }
+
+    /// marks to show for the item (empty if none)
+    protected TreeItemMark[] visibleMarks() {
+        if (!_item.marks)
+            return null;
+        TreeItems r = _item.root;
+        return r ? visibleTreeItemMarks(_item.marks, r.markDefs) : null;
+    }
+
+    /// item text; in console mode followed by the characters of set marks
+    protected dstring labelText() {
+        dstring txt = _item.text;
+        static if (!BACKEND_GUI) {
+            dchar[] chars;
+            foreach (m; visibleMarks())
+                if (m.consoleChar)
+                    chars ~= m.consoleChar;
+            if (chars.length)
+                txt = txt ~ " "d ~ chars.idup;
+        }
+        return txt;
+    }
+
+    protected string _shownIconRes;
+
+    /// set the icon drawable: plain icon, or icon with mark overlays (no relayout: the size stays the same)
+    protected void updateIcon() {
+        if (!_icon)
+            return;
+        _shownIconRes = _item.iconRes;
+        TreeItemMark[] marks = visibleMarks();
+        static if (BACKEND_GUI) {
+            if (marks.length) {
+                DrawableRef base = drawableCache.get(_item.iconRes);
+                OverlayDrawable d = new OverlayDrawable(base);
+                foreach (m; marks)
+                    d.add(drawableCache.get(m.drawableId), m.corner);
+                _icon.drawable = DrawableRef(d);
+                return;
+            }
+        }
+        _icon.drawable(_item.iconRes); // no-op if the same id is already shown
+    }
+
+    /// update text, icon and marks from the item; returns true if the size may have changed
+    bool updateFromItem() {
+        bool sizeChanged = false;
+        if (_item.iconRes.length && !_icon) {
+            _icon = createIconWidget();
+            _body.insertChild(_icon, 0);
+            sizeChanged = true;
+        } else if (!_item.iconRes.length && _icon) {
+            _body.removeChild(_icon);
+            destroy(_icon);
+            _icon = null;
+            sizeChanged = true;
+        }
+        if (_icon && _shownIconRes != _item.iconRes)
+            sizeChanged = true;
+        updateIcon();
+        dstring txt = labelText;
+        if (_label.text != txt) {
+            _label.text = txt;
+            sizeChanged = true;
+        }
+        updateTooltip();
+        return sizeChanged;
+    }
+
+    /// tooltip: tooltips of the set marks
+    protected dstring marksTooltip() {
+        if (!_item.marks)
+            return null;
+        TreeItems r = _item.root;
+        if (!r)
+            return null;
+        dstring res;
+        foreach (ref d; r.markDefs) {
+            if ((_item.marks & d.flag) && d.tooltip.length)
+                res ~= (res.length ? ", "d : ""d) ~ d.tooltip;
+        }
+        return res;
+    }
+
+    /// set the marks tooltip on the item parts (they track hover, so mouse moves don't reach this widget)
+    protected void updateTooltip() {
+        dstring tip = marksTooltip;
+        foreach (Widget w; [cast(Widget)this, _body, _icon, _label])
+            if (w)
+                w.tooltipText = tip;
+    }
+
     void updateWidget() {
         if (_expander) {
             _expander.drawable = _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow";
@@ -735,7 +944,7 @@ class TreeItemWidget : HorizontalLayout {
 
 
 /// Abstract tree widget
-class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener, OnTreeSelectionChangeListener, OnTreeExpandedStateListener, OnKeyHandler {
+class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener, OnTreeSelectionChangeListener, OnTreeExpandedStateListener, OnTreeItemChangeListener, OnKeyHandler {
 
     protected TreeItems _tree;
 
@@ -779,6 +988,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         _tree.stateListener = this;
         _tree.selectionListener = this;
         _tree.expandListener = this;
+        _tree.itemChangeListener = this;
 
         _needUpdateWidgets = true;
         _needUpdateWidgetStates = true;
@@ -912,6 +1122,22 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         _needUpdateWidgetStates = true;
         requestLayout();
         //updateScrollBars();
+    }
+
+    /// a single item's text, icon or marks changed: update only its widget
+    override void onTreeItemChange(TreeItems source, TreeItem item, bool sizeChanged) {
+        if (_needUpdateWidgets)
+            return; // widgets will be recreated anyway
+        for (int i = 0; i < _contentWidget.childCount; i++) {
+            TreeItemWidget w = cast(TreeItemWidget)_contentWidget.child(i);
+            if (w && w.item is item) {
+                if (w.updateFromItem() || sizeChanged)
+                    requestLayout();
+                else
+                    w.invalidate();
+                return;
+            }
+        }
     }
 
     override void onTreeExpandedStateChange(TreeItems source, TreeItem item) {
