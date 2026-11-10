@@ -227,6 +227,8 @@ enum ubyte FONT_STYLE_ITALIC = 0x01;
 enum uint TEXT_FLAGS_UNSPECIFIED = uint.max;
 /// use text flags from parent widget
 enum uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
+/// ellipsize is not set in style, use parent's
+enum ubyte ELLIPSIZE_UNSPECIFIED = 0xFF;
 /// to take layout weight from parent
 enum int WEIGHT_UNSPECIFIED = -1;
 
@@ -347,6 +349,7 @@ protected:
     int _layoutHeight = SIZE_UNSPECIFIED;
     int _layoutWeight = WEIGHT_UNSPECIFIED;
     int _maxLines = SIZE_UNSPECIFIED;
+    ubyte _ellipsize = ELLIPSIZE_UNSPECIFIED;
 
     uint[] _focusRectColors;
 
@@ -603,6 +606,14 @@ public:
             return parentStyle.maxLines;
     }
 
+    /// where to truncate text which doesn't fit, with an ellipsis
+    @property TextEllipsis ellipsize() const {
+        if (_ellipsize != ELLIPSIZE_UNSPECIFIED)
+            return cast(TextEllipsis)_ellipsize;
+        else
+            return parentStyle.ellipsize;
+    }
+
     /// text flags
     @property uint textFlags() const {
         if (_textFlags != TEXT_FLAGS_UNSPECIFIED)
@@ -791,6 +802,11 @@ public:
         return this;
     }
 
+    @property Style ellipsize(TextEllipsis mode) {
+        _ellipsize = mode;
+        return this;
+    }
+
     @property Style alpha(uint alpha) {
         _alpha = alpha;
         return this;
@@ -949,6 +965,7 @@ public:
         res._layoutHeight = _layoutHeight;
         res._layoutWeight = _layoutWeight;
         res._maxLines = _maxLines;
+        res._ellipsize = _ellipsize;
 
         res._focusRectColors = _focusRectColors.dup;
 
@@ -1054,6 +1071,7 @@ class Theme : Style {
         _backgroundColor = COLOR_TRANSPARENT; // transparent
         _textColor = 0x000000; // black
         _maxLines = 1;
+        _ellipsize = TextEllipsis.None;
         _align = Align.TopLeft;
         _fontSize = 9 | SIZE_IN_POINTS_FLAG; // TODO: from settings or screen properties / DPI
         _fontStyle = FONT_STYLE_NORMAL;
@@ -1476,6 +1494,26 @@ uint[] decodeFocusRectColors(string s) {
     return res;
 }
 
+/// decode TextEllipsis value from theme or DML: none, start, middle, end (case insensitive)
+TextEllipsis decodeTextEllipsis(string s) {
+    switch (s.strip.toLower) {
+        case "start": return TextEllipsis.Start;
+        case "middle": return TextEllipsis.Middle;
+        case "end": return TextEllipsis.End;
+        case "none": return TextEllipsis.None;
+        default:
+            Log.e("Unknown ellipsize value: ", s);
+            return TextEllipsis.None;
+    }
+}
+
+unittest {
+    assert(decodeTextEllipsis("end") == TextEllipsis.End);
+    assert(decodeTextEllipsis("Middle") == TextEllipsis.Middle);
+    assert(decodeTextEllipsis(" START ") == TextEllipsis.Start);
+    assert(decodeTextEllipsis("none") == TextEllipsis.None);
+}
+
 /// parses string like "Left|VCenter" to bit set of Align flags
 ubyte decodeAlignment(string s) {
     ubyte res = 0;
@@ -1635,6 +1673,8 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
         style.maxHeight = decodeDimension(elem.attrs["maxHeight"]);
     if ("maxLines" in elem.attributes)
         style.maxLines = decodeDimension(elem.attrs["maxLines"]);
+    if ("ellipsize" in elem.attributes)
+        style.ellipsize = decodeTextEllipsis(elem.attrs["ellipsize"]);
     if ("fontFace" in elem.attributes)
         style.fontFace = elem.attrs["fontFace"];
     if ("fontFamily" in elem.attributes)
