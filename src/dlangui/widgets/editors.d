@@ -4672,14 +4672,8 @@ class EditorMessageBar : HorizontalLayout {
         addChild(_text);
         // buttons, vertically centered (a child of a horizontal layout gets the whole height)
         HorizontalLayout buttons = new HorizontalLayout("buttons");
-        foreach (a; actions) {
-            Button btn = new Button(a);
-            btn.styleId = STYLE_EDIT_MESSAGE_BAR_BUTTON;
-            btn.focusable = false; // keep the focus in the editor
-            const Action action = a;
-            btn.click = delegate(Widget w) { return onButton(action); };
-            buttons.addChild(btn);
-        }
+        foreach (a; actions)
+            buttons.addChild(createButton(a));
         if (closeButton) {
             static if (BACKEND_GUI) {
                 ImageButton btn = new ImageButton("close", "close");
@@ -4702,6 +4696,15 @@ class EditorMessageBar : HorizontalLayout {
         } else {
             destroy(buttons);
         }
+    }
+
+    /// creates a button for an action (in its own function: delegates created in a loop would share the loop variable)
+    protected Button createButton(const Action action) {
+        Button btn = new Button(action);
+        btn.styleId = STYLE_EDIT_MESSAGE_BAR_BUTTON;
+        btn.focusable = false; // keep the focus in the editor
+        btn.click = delegate(Widget w) { return onButton(action); };
+        return btn;
     }
 
     /// message kind
