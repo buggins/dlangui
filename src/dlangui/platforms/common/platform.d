@@ -528,7 +528,13 @@ class Window : CustomEventTarget {
         }
         _minContentWidth = minContentWidth;
         _minContentHeight = minContentHeight;
-        if (_windowOrContentResizeMode == WindowOrContentResizeMode.resizeWindow || flags & WindowFlag.ExpandSize)
+        // A window the user can't resize grows to its content, as with ExpandSize: window scrollbars would be
+        // the only way to see the rest of it (#807). Backends keep it inside the screen; if it still doesn't fit,
+        // the scrollbars are created below.
+        bool expand = _windowOrContentResizeMode == WindowOrContentResizeMode.resizeWindow
+            || (flags & WindowFlag.ExpandSize)
+            || !(flags & (WindowFlag.Resizable | WindowFlag.Fullscreen));
+        if (expand)
             resizeWindow(Point(max(_windowRect.right, minContentWidth), max(_windowRect.bottom, minContentHeight)));
         updateWindowOrContentSize();
     }
@@ -1607,8 +1613,21 @@ class Window : CustomEventTarget {
                 if (!res)
                         res = dispatchMouseEvent(modal, event, cursorIsSet);
             }
+            if (!res && !modal && event.action == MouseAction.Wheel)
+                res = scrollWindowByWheel(event);
         }
         return res || processed || _mainWidget.needDraw;
+    }
+
+    /// Scrolls the window content with the window scrollbars (WindowOrContentResizeMode.scrollWindow) by a mouse
+    /// wheel event no widget has handled (#807): vertically, or horizontally with Shift or without a vertical scrollbar.
+    protected bool scrollWindowByWheel(MouseEvent event) {
+        ScrollBar bar = _vScrollBar;
+        if (_hScrollBar && (!bar || (event.flags & MouseFlag.Shift)))
+            bar = _hScrollBar;
+        if (!bar)
+            return false;
+        return bar.onMouseEvent(event);
     }
 
     /// calls update actions recursively
