@@ -1265,7 +1265,7 @@ Theme createDefaultTheme() {
     Theme res = new Theme("default");
     //res.fontSize(14);
     version (Windows) {
-        res.fontFace = "Verdana";
+        res.fontFace = "Segoe UI,Verdana";
     }
     //res.fontFace = "Arial Narrow";
     static if (WIDGET_STYLE_CONSOLE) {
