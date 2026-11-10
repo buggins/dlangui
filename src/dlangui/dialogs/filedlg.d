@@ -57,6 +57,12 @@ enum FileDialogFlag : uint {
     SelectDirectory = 0x400,
     /// show Create Directory button
     EnableCreateDirectory = 0x800,
+    /// don't show standard user folders (Desktop, Documents, Downloads, ...) in the places pane
+    HideSpecialFolders = 0x1000,
+    /// don't show bookmarks (GTK bookmarks, Windows Links folder) in the places pane
+    HideBookmarks = 0x2000,
+    /// don't show the file system root, drives and mounts in the places pane
+    HideDrives = 0x4000,
     /// flags for Open dialog
     Open = FileMustExist | EnableCreateDirectory,
     /// flags for Save dialog
@@ -106,6 +112,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected Action _action;
 
     protected RootEntry[] _roots;
+    protected bool _placesSet;
     protected FileFilterEntry[] _filters;
     protected int _filterIndex;
     protected string _path;
@@ -721,12 +728,62 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return null;
     }
 
+    /**
+     * Entries of the places pane on the left.
+     *
+     * By default (see createDefaultPlaces): home, standard user folders, bookmarks, then the file system root
+     * and drives / mounts, depending on the Hide* flags. Change it (remove, reorder, add entries) before
+     * the dialog is shown.
+     */
+    @property RootEntry[] places() {
+        if (!_placesSet)
+            places = createDefaultPlaces();
+        return _roots;
+    }
+    /// ditto
+    @property FileDialog places(RootEntry[] entries) {
+        _roots = entries;
+        _placesSet = true;
+        return this;
+    }
+
+    /// creates the default list of places; override to change it
+    protected RootEntry[] createDefaultPlaces() {
+        RootEntry[] res;
+        void add(RootEntry[] entries) {
+            foreach (e; entries) {
+                bool dup = false;
+                foreach (ref r; res)
+                    if (r.path == e.path)
+                        dup = true;
+                if (!dup)
+                    res ~= e;
+            }
+        }
+        RootEntry[] roots = getRootPaths();
+        RootEntry[] drives;
+        foreach (r; roots) {
+            if (r.type == RootEntryType.HOME)
+                add([r]);
+            else
+                drives ~= r;
+        }
+        if (!(_flags & FileDialogFlag.HideSpecialFolders))
+            add(getSpecialFolderPaths());
+        if (!(_flags & FileDialogFlag.HideBookmarks))
+            add(getBookmarkPaths());
+        if (!(_flags & FileDialogFlag.HideDrives))
+            add(drives);
+        return res;
+    }
+
     /// override to implement creation of dialog controls
     override void initialize() {
         // remember filename specified by user, file grid initialization can change it
         string defaultFilename = _filename;
 
-        _roots = getRootPaths() ~ getBookmarkPaths();
+        if (!_placesSet)
+            places = createDefaultPlaces();
 
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(WIDGET_STYLE_CONSOLE ? 50 : 600);
         //minHeight = 400;

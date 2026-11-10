@@ -48,6 +48,18 @@ enum RootEntryType : uint {
     SDCARD,
     /// custom bookmark
     BOOKMARK,
+    /// standard user folder: desktop
+    DESKTOP,
+    /// standard user folder: documents
+    DOCUMENTS,
+    /// standard user folder: downloads
+    DOWNLOADS,
+    /// standard user folder: music
+    MUSIC,
+    /// standard user folder: pictures
+    PICTURES,
+    /// standard user folder: videos
+    VIDEOS,
 }
 
 /// Filesystem root entry item
@@ -88,7 +100,19 @@ struct RootEntry {
             case SDCARD:
                 return "media-flash-sd-mmc";
             case REMOVABLE:
-                return "device-removable-media";
+                return "drive-removable-media";
+            case DESKTOP:
+                return "user-desktop";
+            case DOCUMENTS:
+                return "folder-documents";
+            case DOWNLOADS:
+                return "folder-download";
+            case MUSIC:
+                return "folder-music";
+            case PICTURES:
+                return "folder-pictures";
+            case VIDEOS:
+                return "folder-videos";
             default:
                 return "folder-blue";
         }
@@ -321,7 +345,8 @@ private:
     RootEntry[] res;
     res ~= RootEntry(RootEntryType.HOME, homePath);
     version (Posix) {
-        res ~= RootEntry(RootEntryType.ROOT, "/", "File System"d);
+        import dlangui.core.i18n : UIString;
+        res ~= RootEntry(RootEntryType.ROOT, "/", UIString.fromId("FILE_SYSTEM", "File System"d).value);
     }
     version(OSX) {} else version(Posix) {
         string home = homePath;
@@ -584,6 +609,211 @@ RootEntry[] getBookmarkPaths() nothrow
         } catch(Exception e) {
 
         }
+    }
+    return res;
+}
+
+/// Standard user folders
+enum SpecialFolder {
+    Desktop,
+    Documents,
+    Downloads,
+    Music,
+    Pictures,
+    Videos,
+}
+
+version (Windows) {
+private:
+    // from KnownFolders.h
+    enum KNOWNFOLDERID FOLDERID_Desktop   = {0xB4BFCC3A, 0xDB2C, 0x424C, [0xB0,0x29,0x7F,0xE9,0x9A,0x87,0xC6,0x41]};
+    enum KNOWNFOLDERID FOLDERID_Documents = {0xFDD39AD0, 0x238F, 0x46AF, [0xAD,0xB4,0x6C,0x85,0x48,0x03,0x69,0xC7]};
+    enum KNOWNFOLDERID FOLDERID_Downloads = {0x374DE290, 0x123F, 0x4565, [0x91,0x64,0x39,0xC4,0x92,0x5E,0x46,0x7B]};
+    enum KNOWNFOLDERID FOLDERID_Music     = {0x4BD8D571, 0x6D19, 0x48D3, [0xBE,0x97,0x42,0x22,0x20,0x08,0x0E,0x43]};
+    enum KNOWNFOLDERID FOLDERID_Pictures  = {0x33E28130, 0x4E1E, 0x4676, [0x83,0x5A,0x98,0x39,0x5C,0x3B,0xC3,0xBB]};
+    enum KNOWNFOLDERID FOLDERID_Videos    = {0x18989B1D, 0x99B5, 0x455B, [0x84,0x1C,0xAB,0x7C,0x74,0xE4,0xDD,0xFC]};
+
+    /// path of a Windows known folder, or null
+    string knownFolderPath(const KNOWNFOLDERID id) nothrow {
+        import core.stdc.wchar_ : wcslen;
+        try {
+            auto shell = LoadLibraryA("Shell32");
+            if (!shell)
+                return null;
+            scope(exit) FreeLibrary(shell);
+            auto ptrSHGetKnownFolderPath = cast(typeof(&_dummy_SHGetKnownFolderPath))GetProcAddress(shell, "SHGetKnownFolderPath");
+            if (!ptrSHGetKnownFolderPath)
+                return null;
+            wchar* pathZ;
+            KNOWNFOLDERID guid = id;
+            if (ptrSHGetKnownFolderPath(&guid, 0, null, &pathZ) != S_OK)
+                return null;
+            scope(exit) CoTaskMemFree(pathZ);
+            return pathZ[0 .. wcslen(pathZ)].toUTF8;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+}
+
+/**
+ * Parses the content of an XDG user-dirs.dirs file (lines like `XDG_DOCUMENTS_DIR="$HOME/Documents"`).
+ *
+ * Returns: map from key without prefix and suffix (e.g. "DOCUMENTS") to absolute path;
+ * folders set to the home directory (meaning "disabled") are not included.
+ */
+string[string] parseXdgUserDirs(string content, string home) {
+    import std.string : lineSplitter, strip, startsWith, endsWith;
+    string[string] res;
+    while (home.length > 1 && home[$ - 1] == '/')
+        home = home[0 .. $ - 1];
+    foreach (rawLine; content.lineSplitter) {
+        string line = rawLine.strip;
+        if (!line.length || line[0] == '#')
+            continue;
+        auto eq = line.findSplit("=");
+        string key = eq[0].strip;
+        string value = eq[2].strip;
+        if (!eq[1].length || !key.startsWith("XDG_") || !key.endsWith("_DIR") || value.length < 2 || value[0] != '"')
+            continue;
+        // quoted value, backslash escapes
+        string v;
+        bool closed = false;
+        for (size_t i = 1; i < value.length; i++) {
+            char ch = value[i];
+            if (ch == '\\' && i + 1 < value.length) {
+                v ~= value[++i];
+            } else if (ch == '"') {
+                closed = true;
+                break;
+            } else {
+                v ~= ch;
+            }
+        }
+        if (!closed)
+            continue;
+        string path;
+        if (v.startsWith("$HOME")) {
+            string rest = v[5 .. $];
+            if (rest.length && rest[0] != '/')
+                continue; // e.g. "$HOMEX"
+            while (rest.length && rest[$ - 1] == '/')
+                rest = rest[0 .. $ - 1];
+            if (!rest.length)
+                continue; // the home directory itself: disabled
+            path = home ~ rest;
+        } else if (v.startsWith("/")) {
+            path = v;
+            while (path.length > 1 && path[$ - 1] == '/')
+                path = path[0 .. $ - 1];
+            if (path == home)
+                continue;
+        } else {
+            continue;
+        }
+        res[key[4 .. $ - 4]] = path;
+    }
+    return res;
+}
+
+unittest {
+    string content = `# This file is written by xdg-user-dirs-update
+XDG_DESKTOP_DIR="$HOME/Desktop"
+XDG_DOWNLOAD_DIR="$HOME/Загрузки"
+XDG_TEMPLATES_DIR="$HOME/"
+XDG_PUBLICSHARE_DIR="$HOME"
+XDG_DOCUMENTS_DIR="/data/docs/"
+XDG_MUSIC_DIR = "$HOME/My \"Music\""
+XDG_PICTURES_DIR=$HOME/Pictures
+XDG_VIDEOS_DIR="/home/user"
+NOT_XDG="$HOME/x"
+`;
+    auto dirs = parseXdgUserDirs(content, "/home/user/");
+    assert(dirs["DESKTOP"] == "/home/user/Desktop");
+    assert(dirs["DOWNLOAD"] == "/home/user/Загрузки");
+    assert(dirs["DOCUMENTS"] == "/data/docs");
+    assert(dirs["MUSIC"] == `/home/user/My "Music"`);
+    assert("TEMPLATES" !in dirs); // home: disabled
+    assert("PUBLICSHARE" !in dirs);
+    assert("PICTURES" !in dirs); // not quoted
+    assert("VIDEOS" !in dirs); // home: disabled
+    assert(dirs.length == 4);
+}
+
+/// Returns the path of a standard user folder, or null if it isn't defined or doesn't exist
+string getSpecialFolderPath(SpecialFolder folder) {
+    string path;
+    version (Windows) {
+        final switch (folder) {
+            case SpecialFolder.Desktop: path = knownFolderPath(FOLDERID_Desktop); break;
+            case SpecialFolder.Documents: path = knownFolderPath(FOLDERID_Documents); break;
+            case SpecialFolder.Downloads: path = knownFolderPath(FOLDERID_Downloads); break;
+            case SpecialFolder.Music: path = knownFolderPath(FOLDERID_Music); break;
+            case SpecialFolder.Pictures: path = knownFolderPath(FOLDERID_Pictures); break;
+            case SpecialFolder.Videos: path = knownFolderPath(FOLDERID_Videos); break;
+        }
+    } else version (OSX) {
+        // always these folders in the home directory (Finder only localizes their display names)
+        static immutable string[] names = ["Desktop", "Documents", "Downloads", "Music", "Pictures", "Movies"];
+        path = buildPath(homePath, names[folder]);
+    } else version (Android) {
+        // not supported
+    } else version (Posix) {
+        // XDG user directories
+        static immutable string[] keys = ["DESKTOP", "DOCUMENTS", "DOWNLOAD", "MUSIC", "PICTURES", "VIDEOS"];
+        static immutable string[] defaults = ["Desktop", "Documents", "Downloads", "Music", "Pictures", "Videos"];
+        string home = homePath;
+        string configHome = environment.get("XDG_CONFIG_HOME");
+        if (!configHome.length)
+            configHome = buildPath(home, ".config");
+        string dirsFile = buildPath(configHome, "user-dirs.dirs");
+        string content;
+        try {
+            if (exists(dirsFile))
+                content = readText(dirsFile);
+        } catch (Exception e) {
+            Log.w("Cannot read ", dirsFile, ": ", e.msg);
+        }
+        if (content.length) {
+            auto dirs = parseXdgUserDirs(content, home);
+            if (auto p = keys[folder] in dirs)
+                path = *p;
+        } else {
+            path = buildPath(home, defaults[folder]); // no user-dirs.dirs: common default names
+        }
+    }
+    if (!path.length)
+        return null;
+    try {
+        if (!exists(path) || !isDir(path))
+            return null;
+    } catch (Exception e) {
+        return null;
+    }
+    return path;
+}
+
+/// Returns entries for the standard user folders which exist, in the given order, without duplicates
+RootEntry[] getSpecialFolderPaths(const SpecialFolder[] folders = [SpecialFolder.Desktop, SpecialFolder.Documents,
+        SpecialFolder.Downloads, SpecialFolder.Music, SpecialFolder.Pictures, SpecialFolder.Videos]) {
+    import dlangui.core.i18n : UIString;
+    static immutable string[] labelIds = ["FOLDER_DESKTOP", "FOLDER_DOCUMENTS", "FOLDER_DOWNLOADS", "FOLDER_MUSIC", "FOLDER_PICTURES", "FOLDER_VIDEOS"];
+    static immutable dstring[] fallbacks = ["Desktop"d, "Documents"d, "Downloads"d, "Music"d, "Pictures"d, "Videos"d];
+    static immutable RootEntryType[] types = [RootEntryType.DESKTOP, RootEntryType.DOCUMENTS, RootEntryType.DOWNLOADS,
+        RootEntryType.MUSIC, RootEntryType.PICTURES, RootEntryType.VIDEOS];
+    RootEntry[] res;
+    string home = homePath;
+    foreach (folder; folders) {
+        string path = getSpecialFolderPath(folder);
+        if (!path.length || path == home)
+            continue;
+        bool dup = false;
+        foreach (ref e; res)
+            if (e.path == path)
+                dup = true;
+        if (dup)
+            continue;
+        res ~= RootEntry(types[folder], path, UIString.fromId(labelIds[folder], fallbacks[folder]).value);
     }
     return res;
 }
