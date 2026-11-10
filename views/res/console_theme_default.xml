@@ -85,6 +85,7 @@
     </style>
     <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
         textColor="#0000C0"
+        align="Left|VCenter"
         >
         <state state_enabled="false" textColor="#60C0C0FF"/>
         <state state_enabled="true" state_hovered="true" textColor="#8080FF" textFlags="Underline"/>
