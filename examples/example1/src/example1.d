@@ -298,6 +298,7 @@ extern (C) int UIAppMain(string[] args)
     tabs.addTab(new GridExample("GRID_CONTENT"), "Grid"d);
     tabs.addTab(new ScrollExample("SCROLL1"), "Scroll"d);
     tabs.addTab(new TreeExample("TREE"), "Tree"d);
+    tabs.addTab(new TextExample("TEXT"), "Text"d);
     tabs.addTab(new ChartsExample("charts"), "Charts"d);
     tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
     static if (BACKEND_GUI)

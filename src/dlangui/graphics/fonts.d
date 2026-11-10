@@ -126,6 +126,306 @@ static if (ENABLE_OPENGL) {
 /// constant for measureText maxWidth paramenter - to tell that all characters of text string should be measured.
 enum int MAX_WIDTH_UNSPECIFIED = int.max;
 
+/// Where to truncate text which doesn't fit, replacing the removed part with an ellipsis (as android:ellipsize)
+enum TextEllipsis : ubyte {
+    /// no truncation (text is clipped)
+    None,
+    /// "…end of text"
+    Start,
+    /// "start…end"
+    Middle,
+    /// "start of text…"
+    End,
+}
+
+/// Part of text to replace with an ellipsis: text[start .. end]; when truncated is false, text is shown as is
+struct EllipsisCut {
+    /// index of the first removed character
+    size_t start;
+    /// index after the last removed character
+    size_t end;
+    /// true if text is truncated (an ellipsis is inserted at start; end may be equal to start, e.g. for forced ellipsis)
+    bool truncated;
+}
+
+/**
+ * Custom rule to choose the part of text to replace with an ellipsis.
+ *
+ * Params:
+ *      text = the whole text
+ *      widths = accumulated widths as returned by Font.measureText: widths[i] is the width of text[0 .. i + 1]
+ *      availWidth = width available for the result, including the ellipsis
+ *      ellipsisWidth = width of the ellipsis
+ */
+alias EllipsisCutFinder = EllipsisCut delegate(const dchar[] text, const int[] widths, int availWidth, int ellipsisWidth);
+
+/// Options for text truncation with an ellipsis
+struct EllipsisOptions {
+    /// where to cut
+    TextEllipsis mode = TextEllipsis.End;
+    /**
+     * Preferred cut points; empty to cut between any characters.
+     *
+     * The text before the ellipsis is cut after a separator, the text after the ellipsis starts with a separator,
+     * e.g. "/\\" for file paths ("/home/user/…/src/app.d") or " " for words.
+     */
+    dstring separators;
+    /// for Middle: share of the available width, in percent, given to the text after the ellipsis
+    int endShare = 50;
+    /// maximum width, in percent of the available width, to give up to cut at a separator; beyond it, cut between characters
+    int separatorTolerance = 30;
+    /// custom rule (replaces the built-in ones when set)
+    EllipsisCutFinder cutFinder;
+
+    /// cut at word boundaries (spaces)
+    static EllipsisOptions words(TextEllipsis mode = TextEllipsis.End) {
+        EllipsisOptions res;
+        res.mode = mode;
+        res.separators = " \t"d;
+        return res;
+    }
+    /// file path: keep the beginning and the end (file name), cut whole path components in the middle
+    static EllipsisOptions path() {
+        EllipsisOptions res;
+        res.mode = TextEllipsis.Middle;
+        res.separators = "/\\"d;
+        res.endShare = 60;
+        res.separatorTolerance = 40;
+        return res;
+    }
+}
+
+/**
+ * Find the part of text to replace with an ellipsis so that the result fits availWidth.
+ *
+ * Uses accumulated widths from a single Font.measureText call; O(N).
+ *
+ * Params:
+ *      text = text to truncate
+ *      widths = accumulated widths: widths[i] is the width of text[0 .. i + 1] (at least text.length items)
+ *      availWidth = width available for the result, including the ellipsis
+ *      ellipsisWidth = width of the ellipsis
+ *      opts = where and how to cut
+ *      forceEllipsis = for End mode: add the ellipsis even if text fits (e.g. the last visible line of a longer text)
+ * Returns: the part to replace; result.truncated is false if text fits as is
+ */
+EllipsisCut findEllipsisCut(const dchar[] text, const int[] widths, int availWidth, int ellipsisWidth, EllipsisOptions opts, bool forceEllipsis = false) {
+    immutable size_t n = text.length;
+    assert(widths.length >= n);
+    // width of text[0 .. k]
+    int startWidth(size_t k) { return k == 0 ? 0 : widths[k - 1]; }
+    immutable int total = startWidth(n);
+    TextEllipsis mode = opts.mode;
+    if (forceEllipsis && mode == TextEllipsis.None)
+        mode = TextEllipsis.End;
+    if (mode == TextEllipsis.None)
+        return EllipsisCut(n, n, false);
+    if (total <= availWidth && !forceEllipsis)
+        return EllipsisCut(n, n, false);
+    if (opts.cutFinder)
+        return opts.cutFinder(text, widths[0 .. n], availWidth, ellipsisWidth);
+    if (forceEllipsis)
+        mode = TextEllipsis.End;
+    immutable int avail = availWidth - ellipsisWidth;
+    if (avail <= 0)
+        return EllipsisCut(0, n, true); // only the ellipsis
+    if (forceEllipsis && total <= avail)
+        return EllipsisCut(n, n, true); // whole text + ellipsis
+
+    bool isSeparator(dchar ch) {
+        foreach (s; opts.separators)
+            if (s == ch)
+                return true;
+        return false;
+    }
+    // text before the ellipsis may end after a separator
+    bool isStartBoundary(size_t k) { return k > 0 && isSeparator(text[k - 1]); }
+    // text after the ellipsis may start with a separator
+    bool isEndBoundary(size_t k) { return k < n && isSeparator(text[k]); }
+    immutable bool useSeparators = opts.separators.length > 0;
+    immutable int tolerance = cast(int)(cast(long)avail * opts.separatorTolerance / 100);
+
+    // longest start text[0 .. k], k <= limit, with width <= w
+    size_t fitStart(int w, size_t limit) {
+        size_t lo = 0, hi = limit;
+        while (lo < hi) {
+            size_t mid = (lo + hi + 1) / 2;
+            if (startWidth(mid) <= w)
+                lo = mid;
+            else
+                hi = mid - 1;
+        }
+        return lo;
+    }
+    // longest end text[k .. n], k >= limit, with width <= w
+    size_t fitEnd(int w, size_t limit) {
+        size_t lo = limit, hi = n;
+        while (lo < hi) {
+            size_t mid = (lo + hi) / 2;
+            if (total - startWidth(mid) <= w)
+                hi = mid;
+            else
+                lo = mid + 1;
+        }
+        return lo;
+    }
+    // nearest start boundary <= k losing at most tolerance, or size_t.max
+    size_t startBoundary(size_t k) {
+        for (size_t j = k; j > 0 && startWidth(k) - startWidth(j) <= tolerance; j--)
+            if (isStartBoundary(j))
+                return j;
+        return size_t.max;
+    }
+    // nearest end boundary >= k losing at most tolerance, or size_t.max
+    size_t endBoundary(size_t k) {
+        for (size_t j = k; j < n && startWidth(j) - startWidth(k) <= tolerance; j++)
+            if (isEndBoundary(j))
+                return j;
+        return size_t.max;
+    }
+
+    final switch (mode) {
+        case TextEllipsis.None:
+            assert(false);
+        case TextEllipsis.End: {
+            size_t a = fitStart(avail, n);
+            if (useSeparators) {
+                size_t sb = startBoundary(a);
+                if (sb != size_t.max)
+                    a = sb;
+            }
+            return EllipsisCut(a, n, true);
+        }
+        case TextEllipsis.Start: {
+            size_t b = fitEnd(avail, 0);
+            if (useSeparators) {
+                size_t eb = endBoundary(b);
+                if (eb != size_t.max)
+                    b = eb;
+            }
+            return EllipsisCut(0, b, true);
+        }
+        case TextEllipsis.Middle: {
+            int share = opts.endShare < 0 ? 0 : (opts.endShare > 100 ? 100 : opts.endShare);
+            int endBudget = cast(int)(cast(long)avail * share / 100);
+            // char level: end part by its share, start part takes the rest, then the end part takes what is left
+            size_t b = fitEnd(endBudget, 0);
+            size_t a = fitStart(avail - (total - startWidth(b)), b);
+            b = fitEnd(avail - startWidth(a), a);
+            if (useSeparators) {
+                // both sides at separators: among pairs within tolerance of the char level split,
+                // keep the most text (ties: the longer end); two pointers, O(N)
+                immutable int startTarget = startWidth(a);
+                immutable int endTarget = total - startWidth(b);
+                size_t bestA = size_t.max, bestB = n;
+                int bestKept = -1, bestEnd = -1;
+                size_t bp = 0;
+                for (size_t ai = 1; ai <= n; ai++) {
+                    if (!isStartBoundary(ai))
+                        continue;
+                    immutable int sw = startWidth(ai);
+                    if (sw < startTarget - tolerance)
+                        continue;
+                    if (sw > startTarget + tolerance || sw > avail)
+                        break;
+                    if (bp < ai)
+                        bp = ai;
+                    // first end boundary that fits next to this start and isn't too long
+                    while (bp < n && !(isEndBoundary(bp) && total - startWidth(bp) <= avail - sw
+                                       && total - startWidth(bp) <= endTarget + tolerance))
+                        bp++;
+                    if (bp >= n)
+                        break;
+                    immutable int ew = total - startWidth(bp);
+                    if (ew < endTarget - tolerance)
+                        break; // a longer start only makes the end shorter
+                    if (sw + ew > bestKept || (sw + ew == bestKept && ew > bestEnd)) {
+                        bestKept = sw + ew;
+                        bestEnd = ew;
+                        bestA = ai;
+                        bestB = bp;
+                    }
+                }
+                size_t sa = startBoundary(a);
+                size_t sb = endBoundary(b);
+                if (bestA != size_t.max) {
+                    a = bestA;
+                    b = bestB;
+                } else if (sa != size_t.max) {
+                    a = sa;
+                    b = fitEnd(avail - startWidth(a), a);
+                } else if (sb != size_t.max) {
+                    b = sb;
+                    a = fitStart(avail - (total - startWidth(b)), b);
+                }
+            }
+            return EllipsisCut(a, b, true);
+        }
+    }
+}
+
+unittest {
+    // fixed width 10 per character; ellipsis width 10
+    int[] w(dstring s) {
+        int[] res;
+        foreach (i; 0 .. s.length)
+            res ~= cast(int)(i + 1) * 10;
+        return res;
+    }
+    dstring apply(dstring s, EllipsisCut c) {
+        return c.truncated ? s[0 .. c.start] ~ "…"d ~ s[c.end .. $] : s;
+    }
+    EllipsisOptions opts;
+    dstring s = "abcdefghij"d; // width 100
+    // fits
+    opts.mode = TextEllipsis.End;
+    assert(!findEllipsisCut(s, w(s), 100, 10, opts).truncated);
+    opts.mode = TextEllipsis.None;
+    assert(!findEllipsisCut(s, w(s), 50, 10, opts).truncated);
+    // char level
+    opts.mode = TextEllipsis.End;
+    assert(apply(s, findEllipsisCut(s, w(s), 55, 10, opts)) == "abcd…"d);
+    opts.mode = TextEllipsis.Start;
+    assert(apply(s, findEllipsisCut(s, w(s), 55, 10, opts)) == "…ghij"d);
+    opts.mode = TextEllipsis.Middle;
+    assert(apply(s, findEllipsisCut(s, w(s), 50, 10, opts)) == "ab…ij"d);
+    assert(apply(s, findEllipsisCut(s, w(s), 60, 10, opts)) == "abc…ij"d);
+    opts.endShare = 100;
+    assert(apply(s, findEllipsisCut(s, w(s), 50, 10, opts)) == "…ghij"d);
+    opts.endShare = 0;
+    assert(apply(s, findEllipsisCut(s, w(s), 50, 10, opts)) == "abcd…"d);
+    // too narrow even for the ellipsis
+    opts = EllipsisOptions.init;
+    assert(apply(s, findEllipsisCut(s, w(s), 5, 10, opts)) == "…"d);
+    // forced ellipsis
+    assert(apply(s, findEllipsisCut(s, w(s), 200, 10, opts, true)) == "abcdefghij…"d);
+    assert(apply(s, findEllipsisCut(s, w(s), 100, 10, opts, true)) == "abcdefghi…"d);
+    // words: cut after a space when within tolerance
+    dstring t = "hello brave new world"d; // width 210
+    opts = EllipsisOptions.words();
+    assert(apply(t, findEllipsisCut(t, w(t), 150, 10, opts)) == "hello brave …"d); // trailing space is trimmed by Font.ellipsize
+    opts.separatorTolerance = 0;
+    assert(apply(t, findEllipsisCut(t, w(t), 150, 10, opts)) == "hello brave ne…"d);
+    opts = EllipsisOptions.words(TextEllipsis.Start);
+    assert(apply(t, findEllipsisCut(t, w(t), 150, 10, opts)) == "… new world"d);
+    // path
+    dstring p = "/home/user/projects/app/src/main.d"d;
+    opts = EllipsisOptions.path();
+    assert(apply(p, findEllipsisCut(p, w(p), 250, 10, opts)) == "/home/user/…/src/main.d"d);
+    assert(apply(p, findEllipsisCut(p, w(p), 200, 10, opts)) == "/home/user/…/main.d"d);
+    assert(apply(p, findEllipsisCut(p, w(p), 150, 10, opts)) == "/home/…/main.d"d);
+    // file name alone is too long: falls back to a cut between characters
+    dstring q = "/a/verylongfilename_without_separators.d"d;
+    auto cq = findEllipsisCut(q, w(q), 150, 10, opts);
+    assert(cq.truncated && apply(q, cq).length == 15);
+    // custom rule
+    opts = EllipsisOptions.init;
+    opts.cutFinder = delegate(const dchar[] text, const int[] widths, int availWidth, int ellipsisWidth) {
+        return EllipsisCut(1, text.length - 1, true);
+    };
+    assert(apply(s, findEllipsisCut(s, w(s), 50, 10, opts)) == "a…j"d);
+}
+
 /** Instance of font with specific size, weight, face, etc.
  *
  * Allows to measure text string and draw it on DrawBuf
@@ -340,6 +640,84 @@ class Font : RefCountedObject {
         return Point(font._textSizeBuffer[charsMeasured - 1], font.height);
     }
 
+    protected dstring _ellipsisText;
+    protected int _ellipsisWidth = -1;
+    protected int[] _ellipsisWidthsBuffer;
+
+    /// ellipsis string used by ellipsize(): "…", or "..." if the font has no glyph for U+2026
+    @property dstring ellipsisText() {
+        if (!_ellipsisText.length)
+            _ellipsisText = getCharGlyph('…', true) !is null ? "…"d : "..."d;
+        return _ellipsisText;
+    }
+
+    /// width of ellipsisText, in pixels
+    @property int ellipsisWidth() {
+        if (_ellipsisWidth < 0) {
+            dstring e = ellipsisText;
+            int n = measureText(e, _ellipsisWidthsBuffer);
+            _ellipsisWidth = n > 0 ? _ellipsisWidthsBuffer[n - 1] : 0;
+        }
+        return _ellipsisWidth;
+    }
+
+    /**
+     * Truncate single line text to fit maxWidth, replacing the removed part with an ellipsis (see EllipsisOptions).
+     *
+     * Measures the text once and finds the cut with findEllipsisCut (O(N)). Returns text itself (no allocation) if it fits.
+     *
+     * Params:
+     *      text = text to truncate (single line)
+     *      maxWidth = available width in pixels
+     *      opts = where and how to cut
+     *      tabSize = tabulation size, in number of spaces
+     *      textFlags = TextFlag bit set (hot key '&' prefixes are not counted, and are not left right before the ellipsis)
+     *      forceEllipsis = add the ellipsis at the end even if text fits (e.g. last visible line of a longer text)
+     *      resultWidthPtr = if not null, receives the width of the result
+     */
+    dstring ellipsize(dstring text, int maxWidth, EllipsisOptions opts, int tabSize = 4, uint textFlags = 0, bool forceEllipsis = false, int* resultWidthPtr = null) {
+        int resultWidthDummy;
+        int* resultWidth = resultWidthPtr ? resultWidthPtr : &resultWidthDummy;
+        int measure(const dchar[] s) {
+            if (_textSizeBuffer.length < s.length + 1)
+                _textSizeBuffer.length = s.length + 1;
+            int n = measureText(s, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, 0, textFlags);
+            return n > 0 ? _textSizeBuffer[n - 1] : 0;
+        }
+        *resultWidth = measure(text);
+        if (opts.mode == TextEllipsis.None && !forceEllipsis)
+            return text;
+        if (*resultWidth <= maxWidth && !forceEllipsis)
+            return text;
+        immutable bool hotKeys = (textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
+        dstring e = ellipsisText;
+        EllipsisCut cut = findEllipsisCut(text, _textSizeBuffer, maxWidth, ellipsisWidth, opts, forceEllipsis);
+        if (!cut.truncated)
+            return text;
+        size_t s = cut.start, en = cut.end;
+        // build the result; adjust if it's still too wide (kerning next to the ellipsis, tabs moved by a cut)
+        for (int attempt = 0; ; attempt++) {
+            size_t ps = s, pe = en;
+            while (ps > 0 && (text[ps - 1] == ' ' || text[ps - 1] == '\t'))
+                ps--;
+            if (hotKeys && ps > 0 && text[ps - 1] == '&')
+                ps--; // don't underline the ellipsis
+            while (pe < text.length && (text[pe] == ' ' || text[pe] == '\t'))
+                pe++;
+            dstring res = text[0 .. ps] ~ e ~ text[pe .. $];
+            *resultWidth = measure(res);
+            if (*resultWidth <= maxWidth || attempt >= 16 || (s == 0 && en >= text.length))
+                return res;
+            // remove one more character: from the end of the start part, or from the start of the end part
+            if (s > 0 && (opts.mode != TextEllipsis.Start || en >= text.length))
+                s--;
+            else if (en < text.length)
+                en++;
+            else
+                s--;
+        }
+    }
+
     /*****************************************************************************************
      * Draw text string to buffer.
      *
@@ -520,14 +898,18 @@ struct SimpleTextFormatter {
     int _tabSize;
     int _tabOffset;
     uint _textFlags;
+    /// true if the last format() call cut the text by maxLines
+    bool _truncated;
     /// split text into lines and measure it; returns size in pixels
-    Point format(const dchar[] text, FontRef fnt, int maxLines = 0, int maxWidth = 0, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+    /// (ellipsis: if not None and text is cut by maxLines, the last line ends with an ellipsis, cut at a word boundary if possible)
+    Point format(const dchar[] text, FontRef fnt, int maxLines = 0, int maxWidth = 0, int tabSize = 4, int tabOffset = 0, uint textFlags = 0, TextEllipsis ellipsis = TextEllipsis.None) {
         _tabSize = tabSize;
         _tabOffset = tabOffset;
         _textFlags = textFlags;
         Point sz;
         _lines.length = 0;
         _linesWidths.length = 0;
+        _truncated = false;
         int lineHeight = fnt.height;
         if (text.length == 0) {
             sz.y = lineHeight;
@@ -537,6 +919,8 @@ struct SimpleTextFormatter {
         int charsMeasured = fnt.measureText(text, widths, MAX_WIDTH_UNSPECIFIED, _tabSize, _tabOffset, _textFlags);
         int lineStart = 0;
         int lineStartX = 0;
+        int lastLineStart = 0; // start of the last added line
+        bool truncated = false; // text is cut by maxLines
         int lastWordEnd = 0;
         int lastWordEndX = 0;
         dchar prevChar = 0;
@@ -552,12 +936,15 @@ struct SimpleTextFormatter {
                     sz.x = lineWidth;
                 _lines ~= line;
                 _linesWidths ~= lineWidth;
+                lastLineStart = lineStart;
                 if (i == charsMeasured) // end of text reached
                     break;
 
                 // check max lines constraint
-                if (maxLines && _lines.length >= maxLines) // max lines reached
+                if (maxLines && _lines.length >= maxLines) { // max lines reached
+                    truncated = i + 1 < charsMeasured;
                     break;
+                }
 
                 lineStart = i + 1;
                 lineStartX = widths[i];
@@ -590,10 +977,17 @@ struct SimpleTextFormatter {
                         sz.x = lineWidth;
                     _lines ~= line;
                     _linesWidths ~= lineWidth;
+                    lastLineStart = lineStart;
 
                     // check max lines constraint
-                    if (maxLines && _lines.length >= maxLines) // max lines reached
+                    if (maxLines && _lines.length >= maxLines) { // max lines reached
+                        foreach (j; lineEnd .. charsMeasured)
+                            if (text[j] != ' ' && text[j] != '\t' && text[j] != '\n') {
+                                truncated = true;
+                                break;
+                            }
                         break;
+                    }
 
                     // find next line start
                     lineStart = lineEnd;
@@ -605,6 +999,22 @@ struct SimpleTextFormatter {
                 }
             }
             prevChar = ch;
+        }
+        _truncated = truncated;
+        if (truncated && ellipsis != TextEllipsis.None && _lines.length) {
+            // last line: as much of its paragraph as fits, then the ellipsis
+            size_t paraEnd = lastLineStart;
+            while (paraEnd < charsMeasured && text[paraEnd] != '\n')
+                paraEnd++;
+            int avail = (maxWidth > 0 && maxWidth != MAX_WIDTH_UNSPECIFIED) ? maxWidth : MAX_WIDTH_UNSPECIFIED;
+            int w;
+            _lines[$ - 1] = fnt.ellipsize(cast(dstring)text[lastLineStart .. paraEnd], avail, EllipsisOptions.words(TextEllipsis.End),
+                                          _tabSize, _textFlags, true, &w);
+            _linesWidths[$ - 1] = w;
+            sz.x = 0;
+            foreach (lw; _linesWidths)
+                if (sz.x < lw)
+                    sz.x = lw;
         }
         _maxLineWidth = sz.x;
         return sz;

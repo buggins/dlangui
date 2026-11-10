@@ -13,4 +13,5 @@ public import widgets.misc;
 public import widgets.opengl;
 public import widgets.scroll;
 public import widgets.table;
+public import widgets.text;
 public import widgets.tree;

@@ -123,7 +123,82 @@ class TextWidget : Widget {
         return this;
     }
 
-    private CalcSaver!(Font, dstring, uint, uint, int) _measureSaver;
+    private CalcSaver!(Font, dstring, uint, uint, int, TextEllipsis) _measureSaver;
+
+    protected EllipsisOptions _ellipsisOptions;
+    /**
+     * Options for text truncation (separators, share of the end part, custom rule).
+     *
+     * The mode is taken from the ellipsize style property; setting options also sets ellipsize to options.mode.
+     * E.g. `label.ellipsisOptions = EllipsisOptions.path();` for file paths.
+     */
+    @property EllipsisOptions ellipsisOptions() {
+        EllipsisOptions res = _ellipsisOptions;
+        res.mode = ellipsize;
+        return res;
+    }
+    /// ditto
+    @property TextWidget ellipsisOptions(EllipsisOptions opts) {
+        _ellipsisOptions = opts;
+        _ellipsisCacheText = null;
+        ellipsize = opts.mode;
+        return this;
+    }
+
+    protected bool _fullTextTooltip;
+    /// when true, a truncated (ellipsized or clipped) text is shown in full as a tooltip
+    @property bool fullTextTooltip() { return _fullTextTooltip; }
+    /// ditto
+    @property TextWidget fullTextTooltip(bool flag) { _fullTextTooltip = flag; return this; }
+
+    /// true if the text didn't fit when last drawn (ellipsized, cut by maxLines, or clipped)
+    @property bool isTextTruncated() { return _textTruncated; }
+    protected bool _textTruncated;
+
+    override @property bool hasTooltip() {
+        return super.hasTooltip || (_fullTextTooltip && _textTruncated && text.length);
+    }
+
+    override Widget createTooltip(int mouseX, int mouseY, ref uint alignment, ref int x, ref int y) {
+        if (super.hasTooltip)
+            return super.createTooltip(mouseX, mouseY, alignment, x, y);
+        if (_fullTextTooltip && _textTruncated && text.length) {
+            Widget res = new TextWidget("tooltip", text);
+            res.styleId = STYLE_TOOLTIP;
+            if (textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
+                res.textFlags = TextFlag.HotKeys; // hide '&' of hot keys, without underline
+            return res;
+        }
+        return null;
+    }
+
+    // last single line ellipsis result, to avoid recalculation on each redraw
+    protected dstring _ellipsisCacheText;
+    protected int _ellipsisCacheWidth;
+    protected Font _ellipsisCacheFont;
+    protected uint _ellipsisCacheFlags;
+    protected TextEllipsis _ellipsisCacheMode;
+    protected dstring _ellipsisCacheResult;
+    protected int _ellipsisCacheResultWidth;
+
+    /// returns text truncated to fit width (single line), using ellipsize mode and ellipsisOptions
+    protected dstring ellipsizedText(Font font, int width, uint flags, out int resultWidth) {
+        dstring txt = text;
+        TextEllipsis mode = ellipsize;
+        if (_ellipsisCacheText == txt && _ellipsisCacheWidth == width && _ellipsisCacheFont is font
+                && _ellipsisCacheFlags == flags && _ellipsisCacheMode == mode && txt !is null) {
+            resultWidth = _ellipsisCacheResultWidth;
+            return _ellipsisCacheResult;
+        }
+        _ellipsisCacheResult = font.ellipsize(txt, width, ellipsisOptions, 4, flags, false, &_ellipsisCacheResultWidth);
+        _ellipsisCacheText = txt;
+        _ellipsisCacheWidth = width;
+        _ellipsisCacheFont = font;
+        _ellipsisCacheFlags = flags;
+        _ellipsisCacheMode = mode;
+        resultWidth = _ellipsisCacheResultWidth;
+        return _ellipsisCacheResult;
+    }
 
     override void measure(int parentWidth, int parentHeight) {
         FontRef font = font();
@@ -139,12 +214,15 @@ class TextWidget : Widget {
         uint flags = textFlags;
 
         // optimization: do not measure if nothing changed
-        if (_measureSaver.check(font.get, text, w, flags, maxLines) || _needLayout) {
+        TextEllipsis ell = ellipsize;
+        if (_measureSaver.check(font.get, text, w, flags, maxLines, ell) || _needLayout) {
             Point sz;
             if (maxLines == 1) {
+                // preferred size is the whole text; it's truncated when drawn into a narrower rectangle
                 sz = font.textSize(text, w, 4, 0, flags);
             } else {
-                sz = font.measureMultilineText(text, maxLines, w, 4, 0, flags);
+                SimpleTextFormatter fmt;
+                sz = fmt.format(text, font, maxLines, w, 4, 0, flags, ell);
             }
             // it's not very correct, but in such simple widget it doesn't make issues
             measuredContent(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED, sz.x, sz.y);
@@ -162,13 +240,22 @@ class TextWidget : Widget {
         applyPadding(rc);
 
         FontRef font = font();
+        uint flags = textFlags;
         if (maxLines == 1) {
-            Point sz = font.textSize(text);
+            dstring txt = text;
+            Point sz = font.textSize(txt, MAX_WIDTH_UNSPECIFIED, 4, 0, flags);
+            _textTruncated = sz.x > rc.width;
+            if (_textTruncated && ellipsize != TextEllipsis.None) {
+                int w;
+                txt = ellipsizedText(font.get, rc.width, flags, w);
+                sz.x = w;
+            }
             applyAlign(rc, sz);
-            font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
+            font.drawText(buf, rc.left, rc.top, txt, textColor, 4, 0, flags);
         } else {
             SimpleTextFormatter fmt;
-            Point sz = fmt.format(text, font, maxLines, rc.width, 4, 0, textFlags);
+            Point sz = fmt.format(text, font, maxLines, rc.width, 4, 0, flags, ellipsize);
+            _textTruncated = fmt._truncated || sz.x > rc.width;
             applyAlign(rc, sz);
             // TODO: apply align to alignment lines
             fmt.draw(buf, rc.left, rc.top, font, textColor);
@@ -385,6 +472,12 @@ class ImageTextButton : HorizontalLayout {
     override @property uint textFlags() { return _label.textFlags(); }
     /// set text flags (bit set of TextFlag enum values)
     override @property Widget textFlags(uint value) { _label.textFlags(value); return this; }
+    /// where to truncate the label text which doesn't fit, with an ellipsis
+    override @property TextEllipsis ellipsize() const { return _label.ellipsize; }
+    /// ditto
+    override @property Widget ellipsize(TextEllipsis mode) { _label.ellipsize(mode); return this; }
+    /// label widget (e.g. to set ellipsisOptions or fullTextTooltip)
+    @property TextWidget label() { return _label; }
     /// returns font face
     override @property string fontFace() const { return _label.fontFace(); }
     /// set font face for widget - override one from style

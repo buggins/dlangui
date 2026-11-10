@@ -515,6 +515,15 @@ public:
             invalidate();
         return this;
     }
+    /// where to truncate text which doesn't fit, replacing the removed part with an ellipsis (TextEllipsis.None: clip)
+    @property TextEllipsis ellipsize() const { return stateStyle.ellipsize; }
+    /// ditto
+    @property Widget ellipsize(TextEllipsis mode) {
+        ownStyle.ellipsize = mode;
+        requestLayout();
+        return this;
+    }
+
     /// returns font face
     @property string fontFace() const { return stateStyle.fontFace; }
     /// set font face for widget - override one from style
@@ -1707,6 +1716,10 @@ public:
         }
         if (name.equal("tooltipText")) {
             tooltipText = UIString.fromId(value);
+            return true;
+        }
+        if (name.equal("ellipsize")) {
+            ellipsize = decodeTextEllipsis(value);
             return true;
         }
         return false;
