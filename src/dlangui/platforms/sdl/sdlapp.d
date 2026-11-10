@@ -246,10 +246,11 @@ class SDLWindow : Window {
     }
 
     bool create(uint flags) {
+        // default size is 600x400 at 96 DPI (#806)
         if (!_dx)
-            _dx = 600;
+            _dx = 600 * SCREEN_DPI / 96;
         if (!_dy)
-            _dy = 400;
+            _dy = 400 * SCREEN_DPI / 96;
         _flags = flags;
         SDL_WindowFlags windowFlags = SDL_WINDOW_HIDDEN;
         if (flags & WindowFlag.Resizable)
