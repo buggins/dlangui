@@ -40,6 +40,7 @@ import std.algorithm;
 import std.conv : to;
 import std.typecons : Yes, No;
 import dlangui.core.streams;
+import dlangui.core.stdaction : StandardAction, ACTION_CLOSE;
 
 /// Modified state change listener
 interface ModifiedStateListener {
@@ -2277,6 +2278,27 @@ interface EnterKeyHandler {
     bool onEnterKey(EditWidgetBase editor);
 }
 
+/// where EditBox places a panel (FindPanel, EditorMessageBar, or an application widget)
+enum EditorPanelPosition {
+    /// above the text
+    Top,
+    /// below the text
+    Bottom,
+}
+
+/// kind of an EditorMessageBar: selects icon and colors
+enum EditorMessageKind {
+    Info,
+    Warning,
+    Error,
+}
+
+/// handles clicks on EditorMessageBar buttons; messageId is the id passed to EditBox.showMessage
+interface EditorMessageActionHandler {
+    /// return true if handled; otherwise the action is dispatched as usual (except Ignore and Close)
+    bool onEditorMessageAction(EditBox source, string messageId, const Action action);
+}
+
 /// single line editor
 class EditLine : EditWidgetBase {
 
@@ -2743,15 +2765,28 @@ class EditBox : EditWidgetBase {
 
         if (rc != _pos)
             _contentChanged = true;
+        // panels: top ones downward from the top edge, bottom ones upward from the bottom edge, in order of adding
         Rect contentRc = rc;
-        int findPanelHeight;
-        if (_findPanel && _findPanel.visibility != Visibility.Gone) {
-            _findPanel.measure(rc.width, rc.height);
-            findPanelHeight = _findPanel.measuredHeight;
-            _findPanel.layout(Rect(rc.left, rc.bottom - findPanelHeight, rc.right, rc.bottom));
-            contentRc.bottom -= findPanelHeight;
+        scope(success) {
+            // the text area changes when panels are shown or hidden, even if the editor rectangle stays
+            _lastPanelsContentRect = contentRc;
+        }
+        foreach (ref p; _panels) {
+            if (p.widget.visibility == Visibility.Gone)
+                continue;
+            p.widget.measure(rc.width, rc.height);
+            int h = p.widget.measuredHeight;
+            if (p.position == EditorPanelPosition.Top) {
+                p.widget.layout(Rect(rc.left, contentRc.top, rc.right, contentRc.top + h));
+                contentRc.top += h;
+            } else {
+                p.widget.layout(Rect(rc.left, contentRc.bottom - h, rc.right, contentRc.bottom));
+                contentRc.bottom -= h;
+            }
         }
 
+        if (contentRc != _lastPanelsContentRect)
+            _contentChanged = true;
         super.layout(contentRc);
         if (_contentChanged) {
             measureVisibleText();
@@ -3384,12 +3419,12 @@ class EditBox : EditWidgetBase {
 
         updateFontProps();
         updateMaxLineWidth();
-        int findPanelHeight;
-        if (_findPanel) {
-            _findPanel.measure(parentWidth, parentHeight);
-            findPanelHeight = _findPanel.measuredHeight;
+        foreach (ref p; _panels) {
+            if (p.widget.visibility == Visibility.Gone)
+                continue;
+            p.widget.measure(parentWidth, parentHeight);
             if (parentHeight != SIZE_UNSPECIFIED)
-                parentHeight -= findPanelHeight;
+                parentHeight -= p.widget.measuredHeight;
         }
 
         super.measure(parentWidth, parentHeight);
@@ -4022,7 +4057,7 @@ class EditBox : EditWidgetBase {
         dstring txt = selectionText(true);
         if (!_findPanel) {
             _findPanel = new FindPanel(this, selectionOnly, replaceMode, txt);
-            addChild(_findPanel);
+            addPanel(_findPanel, EditorPanelPosition.Bottom);
             res = true;
         } else {
             if (_findPanel.visibility != Visibility.Visible) {
@@ -4045,10 +4080,8 @@ class EditBox : EditWidgetBase {
             if (hideOnly) {
                 _findPanel.visibility = Visibility.Gone;
             } else {
-                removeChild(_findPanel);
-                destroy(_findPanel);
+                removePanel(_findPanel);
                 _findPanel = null;
-                requestLayout();
             }
         }
     }
@@ -4058,9 +4091,143 @@ class EditBox : EditWidgetBase {
         if (visibility != Visibility.Visible)
             return;
         super.onDraw(buf);
-        if (_findPanel && _findPanel.visibility == Visibility.Visible) {
-            _findPanel.onDraw(buf);
+        foreach (ref p; _panels)
+            if (p.widget.visibility == Visibility.Visible)
+                p.widget.onDraw(buf);
+    }
+
+    protected Rect _lastPanelsContentRect;
+
+    protected static struct EditorPanel {
+        Widget widget;
+        EditorPanelPosition position;
+    }
+    protected EditorPanel[] _panels;
+
+    /**
+     * Add a panel above or below the text (like the find / replace panel); the panel becomes a child of the editor.
+     *
+     * Top panels are stacked downward from the top edge, bottom panels upward from the bottom edge, in order
+     * of adding. Panels with visibility Gone take no space.
+     */
+    void addPanel(Widget panel, EditorPanelPosition position = EditorPanelPosition.Bottom) {
+        foreach (ref p; _panels) {
+            if (p.widget is panel) {
+                p.position = position;
+                requestLayout();
+                return;
+            }
         }
+        _panels ~= EditorPanel(panel, position);
+        addChild(panel);
+        requestLayout();
+    }
+
+    /// remove a panel added with addPanel; destroys it unless destroyPanel is false
+    void removePanel(Widget panel, bool destroyPanel = true) {
+        foreach (i, ref p; _panels) {
+            if (p.widget is panel) {
+                _panels = _panels[0 .. i] ~ _panels[i + 1 .. $];
+                removeChild(panel);
+                if (destroyPanel)
+                    destroy(panel);
+                requestLayout();
+                return;
+            }
+        }
+    }
+
+    /// panels added with addPanel, in order of adding
+    @property Widget[] panels() {
+        Widget[] res;
+        foreach (ref p; _panels)
+            res ~= p.widget;
+        return res;
+    }
+
+    /// called when a button of a message bar is clicked; action.stringParam is the message id
+    Signal!EditorMessageActionHandler messageAction;
+
+    /**
+     * Show a message bar above (default) or below the text, with optional action buttons.
+     *
+     * A message with the same id is replaced. The bar doesn't take the keyboard focus. Button clicks go to
+     * messageAction, then, if not handled, are dispatched as usual actions (so an application can handle them
+     * in handleAction); action.stringParam is the message id. Buttons for StandardAction.Ignore (e.g.
+     * ACTION_IGNORE) and StandardAction.Close, and the close button, hide the message; other buttons don't,
+     * call hideMessage when done.
+     *
+     * Params:
+     *      id = message id, to replace or hide it later
+     *      message = text; up to 3 lines, longer text ends with an ellipsis and is shown in full as a tooltip
+     *      kind = info, warning or error: icon and colors
+     *      actions = buttons, in this order
+     *      position = above or below the text
+     *      closeButton = show a close (x) button
+     */
+    EditorMessageBar showMessage(string id, dstring message, EditorMessageKind kind = EditorMessageKind.Info,
+            const(Action)[] actions = null, EditorPanelPosition position = EditorPanelPosition.Top, bool closeButton = false) {
+        EditorMessageBar bar = new EditorMessageBar(id, message, kind, actions, closeButton);
+        bar._editor = this;
+        // replace a message with the same id at the same place
+        foreach (i, ref p; _panels) {
+            EditorMessageBar old = cast(EditorMessageBar)p.widget;
+            if (old && old.id == id) {
+                p.widget = bar;
+                p.position = position;
+                addChild(bar);
+                discardPanelLater(old);
+                requestLayout();
+                return bar;
+            }
+        }
+        addPanel(bar, position);
+        return bar;
+    }
+
+    /// hide and remove a message shown with showMessage (safe to call from its own button handler)
+    void hideMessage(string id) {
+        foreach (i, ref p; _panels) {
+            EditorMessageBar bar = cast(EditorMessageBar)p.widget;
+            if (bar && bar.id == id) {
+                _panels = _panels[0 .. i] ~ _panels[i + 1 .. $];
+                discardPanelLater(bar);
+                requestLayout();
+                return;
+            }
+        }
+    }
+
+    /// returns a message shown with showMessage, or null
+    EditorMessageBar findMessage(string id) {
+        foreach (ref p; _panels) {
+            EditorMessageBar bar = cast(EditorMessageBar)p.widget;
+            if (bar && bar.id == id)
+                return bar;
+        }
+        return null;
+    }
+
+    /// remove a widget which is no longer in _panels now, destroy it later
+    /// (it may be in the middle of handling its own mouse event; the editor may be destroyed before that)
+    protected void discardPanelLater(Widget w) {
+        Window wnd = window;
+        removeChild(w);
+        if (wnd)
+            wnd.executeInUiThread(delegate() { destroy(w); });
+        else
+            destroy(w);
+    }
+
+    /// handles a message bar button click: messageAction, then usual action dispatching
+    protected bool onMessageAction(EditorMessageBar bar, const Action action) {
+        bool dismiss = action.id == StandardAction.Ignore || action.id == StandardAction.Close;
+        bool handled = messageAction.assigned && messageAction(this, bar.id, action);
+        if (!handled && !dismiss)
+            handled = dispatchAction(action);
+        if (dismiss)
+            hideMessage(bar.id); // Ignore and Close are never dispatched further (Close could close a tab or window)
+        return handled || dismiss;
     }
 }
 
@@ -4435,6 +4602,124 @@ class FindPanel : HorizontalLayout {
             return true;
         }
         return false;
+    }
+}
+
+/**
+ * Message bar shown above or below the text of an EditBox (see EditBox.showMessage):
+ * kind icon, message text (up to 3 lines), action buttons, optional close button.
+ */
+class EditorMessageBar : HorizontalLayout {
+    protected EditBox _editor;
+    protected EditorMessageKind _kind;
+    protected ImageWidget _icon;
+    protected TextWidget _text;
+
+    this(string id, dstring message, EditorMessageKind kind = EditorMessageKind.Info, const(Action)[] actions = null, bool closeButton = false) {
+        super(id);
+        _kind = kind;
+        final switch (kind) {
+            case EditorMessageKind.Info: styleId = STYLE_EDIT_MESSAGE_BAR_INFO; break;
+            case EditorMessageKind.Warning: styleId = STYLE_EDIT_MESSAGE_BAR_WARNING; break;
+            case EditorMessageKind.Error: styleId = STYLE_EDIT_MESSAGE_BAR_ERROR; break;
+        }
+        layoutWidth = FILL_PARENT;
+        static if (BACKEND_GUI) {
+            string iconId = kind == EditorMessageKind.Error ? "dialog-error" : (kind == EditorMessageKind.Warning ? "dialog-warning" : "dialog-information");
+            _icon = new ImageWidget("icon", iconId);
+            _icon.styleId = STYLE_EDIT_MESSAGE_BAR_ICON;
+            addChild(_icon);
+        }
+        _text = new MultilineTextWidget("text", message);
+        _text.styleId = STYLE_EDIT_MESSAGE_BAR_TEXT;
+        _text.layoutWidth = FILL_PARENT;
+        _text.maxLines = 3;
+        _text.ellipsize = TextEllipsis.End;
+        _text.fullTextTooltip = true;
+        addChild(_text);
+        // buttons, vertically centered (a child of a horizontal layout gets the whole height)
+        HorizontalLayout buttons = new HorizontalLayout("buttons");
+        foreach (a; actions) {
+            Button btn = new Button(a);
+            btn.styleId = STYLE_EDIT_MESSAGE_BAR_BUTTON;
+            btn.focusable = false; // keep the focus in the editor
+            const Action action = a;
+            btn.click = delegate(Widget w) { return onButton(action); };
+            buttons.addChild(btn);
+        }
+        if (closeButton) {
+            static if (BACKEND_GUI) {
+                ImageButton btn = new ImageButton("close", "close");
+                btn.styleId = STYLE_BUTTON_TRANSPARENT;
+            } else {
+                Button btn = new Button("close", "x"d);
+                btn.styleId = STYLE_EDIT_MESSAGE_BAR_BUTTON;
+            }
+            btn.focusable = false;
+            btn.tooltipText = UIString.fromId("ACTION_CLOSE", "Close"d);
+            btn.click = delegate(Widget w) { return onButton(ACTION_CLOSE); };
+            buttons.addChild(btn);
+        }
+        if (buttons.childCount) {
+            VerticalLayout column = new VerticalLayout();
+            column.addChild(new VSpacer().minHeight(0)); // no extra height
+            column.addChild(buttons);
+            column.addChild(new VSpacer().minHeight(0));
+            addChild(column);
+        } else {
+            destroy(buttons);
+        }
+    }
+
+    /// message kind
+    @property EditorMessageKind kind() { return _kind; }
+
+    /// message text
+    @property dstring message() { return _text.text; }
+    /// ditto (can be changed while the bar is shown)
+    @property EditorMessageBar message(dstring text) {
+        _text.text = text;
+        requestLayout();
+        return this;
+    }
+
+    /// editor showing this message (null if not shown with EditBox.showMessage)
+    @property EditBox editor() { return _editor; }
+
+    /// measure: the text wraps in the width left after the icon and the buttons (LinearLayout measures
+    /// each child with the whole width, which would give too few lines and a too low bar)
+    override void measure(int parentWidth, int parentHeight) {
+        super.measure(parentWidth, parentHeight);
+        if (parentWidth == SIZE_UNSPECIFIED || visibility == Visibility.Gone)
+            return;
+        Rect m = margins;
+        Rect p = padding;
+        int avail = parentWidth - m.left - m.right - p.left - p.right;
+        int others = 0;
+        int height = 0;
+        for (int i = 0; i < childCount; i++) {
+            Widget w = child(i);
+            if (w is _text || w.visibility == Visibility.Gone)
+                continue;
+            others += w.measuredWidth;
+            if (height < w.measuredHeight)
+                height = w.measuredHeight;
+        }
+        int textWidth = avail - others;
+        if (textWidth < 10)
+            textWidth = 10;
+        _text.measure(textWidth, parentHeight);
+        if (height < _text.measuredHeight)
+            height = _text.measuredHeight;
+        measuredContent(parentWidth, parentHeight, others + _text.measuredWidth, height);
+    }
+
+    protected bool onButton(const Action a) {
+        Action action = a.clone();
+        action.stringParam = id;
+        if (_editor)
+            return _editor.onMessageAction(this, action);
+        return dispatchAction(action);
     }
 }
 

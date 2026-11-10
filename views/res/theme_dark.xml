@@ -340,5 +340,17 @@
         <color id="chart_segment_tag_color" value="#505255"/>
    </style>
 
+    <style id="EDIT_MESSAGE_BAR_INFO"
+        backgroundImageId="#border,#3D6E99,0,1px,0,1px,#1E3A52"
+        />
+    <style id="EDIT_MESSAGE_BAR_WARNING"
+        backgroundImageId="#border,#8A7530,0,1px,0,1px,#4A3F1C"
+        />
+    <style id="EDIT_MESSAGE_BAR_ERROR"
+        backgroundImageId="#border,#8E3E44,0,1px,0,1px,#4E2427"
+        />
+    <style id="EDIT_MESSAGE_BAR_TEXT"
+        textColor="#E0E0E0"
+        />
 </theme>
 

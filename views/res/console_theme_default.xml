@@ -590,5 +590,35 @@
         <drawable id="scrollbar_indicator_vertical" value="{'■' #000000 bc #FFFF00}"/>
         <drawable id="scrollbar_indicator_horizontal" value="{'■' #000000 bc #FFFF00}"/>
     </style>
+    <style id="EDIT_MESSAGE_BAR_INFO"
+        backgroundColor="#000080"
+        padding="1,0,0,0"
+        layoutWidth="FILL_PARENT"
+        />
+    <style id="EDIT_MESSAGE_BAR_WARNING"
+        backgroundColor="#808000"
+        padding="1,0,0,0"
+        layoutWidth="FILL_PARENT"
+        />
+    <style id="EDIT_MESSAGE_BAR_ERROR"
+        backgroundColor="#800000"
+        padding="1,0,0,0"
+        layoutWidth="FILL_PARENT"
+        />
+    <style id="EDIT_MESSAGE_BAR_TEXT"
+        align="Left|VCenter"
+        textColor="#FFFFFF"
+        margins="0,0,1,0"
+        />
+    <style id="EDIT_MESSAGE_BAR_BUTTON"
+        backgroundColor="#808080"
+        textColor="#FFFFFF"
+        align="Center"
+        padding="1,0,1,0"
+        margins="1,0,0,0"
+        >
+        <state state_hovered="true" backgroundColor="#C0C0C0" textColor="#000000"/>
+        <state state_pressed="true" backgroundColor="#FFFFFF" textColor="#000000"/>
+    </style>
 </theme>
 
