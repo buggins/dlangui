@@ -82,6 +82,7 @@ extern(C) void registerStandardWidgets() {
     import dlangui.widgets.tabs;
 
     mixin(registerWidgetMetadataClass!TabWidget); // dlangui.widgets.tabs
+    mixin(registerWidgetMetadataClass!TabPage);
 
     import dlangui.dialogs.filedlg;
 
@@ -110,7 +111,7 @@ extern(C) void registerStandardWidgets() {
     VerticalLayout, HorizontalLayout, TableLayout, FrameLayout, // dlangui.widgets.layouts
     MainMenu, //dlangui.widgets.menu
     TreeWidget, // dlangui.widgets.tree
-    TabWidget, // dlangui.widgets.tabs
+    TabWidget, TabPage, // dlangui.widgets.tabs
     ));
 
 

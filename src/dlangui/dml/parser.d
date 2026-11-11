@@ -438,9 +438,8 @@ class MLParser {
     protected void parseWidgetProperties(Widget w) {
         if (_token.type != TokenType.curlyOpen) // {
             error("{ is expected");
+        Widget parentWidget = _currentWidget;
         _treeStack.pushBack(w);
-        if (_currentWidget)
-            _currentWidget.addChild(w);
         _currentWidget = w;
         nextToken(); // skip {
         skipWhitespaceAndEols();
@@ -456,6 +455,9 @@ class MLParser {
         skipWhitespaceAndEols();
         _treeStack.popBack();
         _currentWidget = _treeStack.peekBack();
+        // added to its parent when complete, so that the parent can use its properties (e.g. TabWidget: tab id and title, #569)
+        if (parentWidget)
+            parentWidget.addChild(w);
     }
 
     protected Widget parse() {
@@ -479,6 +481,12 @@ class MLParser {
             return _context;
         } catch (Exception e) {
             Log.e("exception while parsing ML", e);
+            // widgets being parsed are not added to their parents yet
+            while (_treeStack.length > 0) {
+                Widget w = _treeStack.popBack();
+                if (w !is _context)
+                    destroy(w);
+            }
             if (_context && _ownContext)
                 destroy(_context);
             _context = null;

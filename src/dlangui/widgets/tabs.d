@@ -30,6 +30,7 @@ import dlangui.widgets.menu;
 import dlangui.widgets.popup;
 
 import std.algorithm;
+import std.conv : to;
 
 /// current tab is changed handler
 interface TabHandler {
@@ -889,6 +890,55 @@ class TabHost : FrameLayout, TabHandler {
 
 
 
+/**
+    Page of TabWidget declared in DML: a vertical layout with a tab title (`text`) and an optional tab icon (`iconId`).
+
+    ---
+    TabWidget {
+        TabPage { id: general; text: "General"; TextWidget { text: "General settings" } }
+        TabPage { id: advanced; text: TAB_ADVANCED; iconId: "dialog-information"; ... }   // title from translation resource
+    }
+    ---
+*/
+class TabPage : VerticalLayout {
+    protected UIString _text;
+    protected string _iconId;
+
+    this() {
+        this(null);
+    }
+    this(string ID) {
+        super(ID);
+    }
+    this(string ID, UIString title, string iconId = null) {
+        super(ID);
+        _text = title;
+        _iconId = iconId;
+    }
+
+    /// tab title
+    override @property dstring text() const { return _text.value; }
+    /// tab title as UIString (raw value or translation resource id)
+    @property UIString textUIString() const { return _text; }
+    /// set tab title (raw value)
+    override @property Widget text(dstring s) { _text = UIString.fromRaw(s); return this; }
+    /// set tab title
+    override @property Widget text(UIString s) { _text = s; return this; }
+
+    /// tab icon resource id
+    @property string iconId() const { return _iconId; }
+    /// set tab icon resource id
+    @property TabPage iconId(string id) { _iconId = id; return this; }
+
+    override bool setStringProperty(string name, string value) {
+        if (name.equal("iconId")) {
+            _iconId = value;
+            return true;
+        }
+        return super.setStringProperty(name, value);
+    }
+}
+
 /// compound widget - contains from TabControl widget (tabs header) and TabHost (content pages)
 class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     protected TabControl _tabControl;
@@ -944,6 +994,42 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     TabWidget addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
         _tabHost.addTab(widget, label, iconId, enableCloseButton, tooltipText);
         return this;
+    }
+
+    /// add new tab by id and label UIString
+    TabWidget addTab(Widget widget, UIString label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
+        _tabHost.addTab(widget, label, iconId, enableCloseButton, tooltipText);
+        return this;
+    }
+
+    /**
+        A child added to TabWidget (e.g. declared inside it in DML) becomes a new tab page.
+
+        The tab title is the `text` of a TabPage (its `iconId` is the tab icon), or the `text` or id of another widget.
+        A child without id gets id "tab1", "tab2", ...
+    */
+    override Widget addChild(Widget item) {
+        if (_tabHost is null || item is _tabControl || item is _tabHost)
+            return super.addChild(item); // own parts, from constructor
+        if (!item.id.length) {
+            for (int i = _tabControl.tabCount + 1; ; i++) {
+                string tabId = "tab" ~ to!string(i);
+                if (_tabControl.tabIndex(tabId) < 0) {
+                    item.id = tabId;
+                    break;
+                }
+            }
+        }
+        if (TabPage page = cast(TabPage)item) {
+            UIString title = page.textUIString;
+            if (title.empty)
+                title = UIString.fromRaw(to!dstring(item.id));
+            addTab(item, title, page.iconId);
+        } else {
+            dstring title = item.text;
+            addTab(item, title.length ? title : to!dstring(item.id));
+        }
+        return item;
     }
 
     /// remove tab by id
