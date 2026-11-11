@@ -2,7 +2,7 @@
 <theme 
     id="theme_custom" 
     parent="theme_default"
-    fontSize="12px"
+    fontSize="9pt"
     >
     <style id="TAB_SHEET_DOWN"
         backgroundImageId="tab_sheet_down_background"
@@ -13,7 +13,7 @@
     <style id="TAB_SHEET_DOWN_BUTTON_TEXT"
         textColor="#000000"
         align="Center"
-        fontSize="12px"
+        fontSize="9pt"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
@@ -23,6 +23,6 @@
     <style id="TAB_SHEET_DOWN_BUTTON"
         backgroundImageId="tab_sheet_down"
         >
-        <length id="overlap" value="10"/>
+        <length id="overlap" value="8pt"/>
     </style>
 </theme>

@@ -269,7 +269,7 @@
         textColor="#E0E0E0"
         />
     <style id="DOCK_WINDOW_BODY"
-        padding="3,3,3,3"
+        padding="2pt,2pt,2pt,2pt"
         />
 
     <style id="TOOLBAR_HOST"
