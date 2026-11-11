@@ -21,6 +21,7 @@ public import dlangui.core.config;
 static if (BACKEND_SDL):
 
 import core.runtime;
+import core.time : MonoTime, seconds;
 import std.conv;
 import std.string;
 import std.utf : toUTF32, toUTF16z;
@@ -399,6 +400,58 @@ class SDLWindow : Window {
         return 0;
     }
 
+    private bool _shown;
+    // #820: correction of a position set by the application
+    private bool _positionCheckPending;
+    private Point _positionWanted;
+    private Point _positionRequested;
+    private int _positionCorrections;
+    private Point _positionCorrected; // the position that caused the last correction
+    private MonoTime _positionCheckDeadline;
+
+    private static bool isX11VideoDriver() {
+        import core.stdc.string : strcmp;
+        const(char)* driver = SDL_GetCurrentVideoDriver();
+        return driver !is null && strcmp(driver, "x11") == 0;
+    }
+
+    /// A position set by the application (restoreWindowState, moveWindow, centering on the parent) is meant
+    /// for the client area, but X11 window managers place the frame there, and SDL can compensate for the
+    /// frame only once it knows the frame size, and only as well as the window manager reports it: restored
+    /// windows moved by the frame size on every restart (#820). For a short time after the window is shown
+    /// or moved, adjust the requested position by the observed error until the client area is where it was
+    /// wanted. Windows and macOS place the client area as asked.
+    protected void startPositionCheck(Point pos) {
+        if (!isX11VideoDriver())
+            return;
+        _positionCheckPending = true;
+        _positionWanted = _positionRequested = pos;
+        _positionCorrections = 0;
+        if (_shown)
+            _positionCheckDeadline = MonoTime.currTime + 2.seconds;
+    }
+
+    /// ditto
+    protected void checkPosition(int x, int y) {
+        import std.math : abs;
+        if (!_positionCheckPending || !_shown)
+            return;
+        int dx = x - _positionWanted.x;
+        int dy = y - _positionWanted.y;
+        if ((dx == 0 && dy == 0) || _positionCorrections >= 3 || MonoTime.currTime > _positionCheckDeadline) {
+            _positionCheckPending = false;
+            return;
+        }
+        if (abs(dx) > 100 || abs(dy) > 100)
+            return; // not placed yet (some window managers map the window off-screen first)
+        if (_positionCorrections > 0 && Point(x, y) == _positionCorrected)
+            return; // an event from before the last correction took effect
+        _positionCorrections++;
+        _positionCorrected = Point(x, y);
+        _positionRequested = Point(_positionRequested.x - dx, _positionRequested.y - dy);
+        SDL_SetWindowPosition(_win, _positionRequested.x, _positionRequested.y);
+    }
+
     override void show() {
         Log.d("SDLWindow.show() - ", windowCaption);
         if (!_mainWidget) {
@@ -416,6 +469,11 @@ class SDLWindow : Window {
         adjustPositionDuringShow();
 
         SDL_ShowWindow(_win);
+        if (!_shown) {
+            _shown = true;
+            if (_positionCheckPending)
+                _positionCheckDeadline = MonoTime.currTime + 2.seconds;
+        }
         if (_mainWidget)
             _mainWidget.setFocus();
         fixSize();
@@ -494,6 +552,7 @@ class SDLWindow : Window {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
+                startPositionCheck(Point(newWindowRect.left, newWindowRect.top));
                 rectChanged = true;
                 res = true;
             }
@@ -1429,6 +1488,7 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_MOVED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED - ", w.windowCaption);
                                 w.handleWindowStateChange(WindowState.unspecified, Rect(event.window.data1, event.window.data2, w.windowRect().right, w.windowRect().bottom));
+                                w.checkPosition(event.window.data1, event.window.data2);
                                 version (Windows) {
                                 } else {
                                     // the window may be on another display now
