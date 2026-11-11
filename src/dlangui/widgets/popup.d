@@ -29,16 +29,48 @@ import dlangui.platforms.common.platform;
 enum PopupAlign : uint {
     /// center popup around anchor widget center
     Center = 1,
-    /// place popup below anchor widget close to lower bound
+    /// place popup below anchor widget (above it, when there is more space above)
     Below = 2,
-    /// place popup below anchor widget close to lower bound
-    Above = 16,
-    /// place popup below anchor widget close to right bound (when no space enough, align near left bound)
+    /// place popup above anchor widget (below it, when there is more space below)
+    Above = 32,
+    /// place popup to the right of anchor widget (to the left, when there is more space on the left)
     Right = 4,
     /// align to specified point
     Point = 8,
     /// if popup content size is less than anchor's size, increase it to anchor size
     FitAnchorSize = 16,
+}
+
+/**
+    Position of a popup of `size` placed beside the anchor range `lo .. hi` along one axis, within `areaLo .. areaHi`:
+    after the anchor (starting at `hi`) or, if `before` is true, before it (ending at `lo`).
+    When the preferred side doesn't have enough space, the other side is used if the popup fits there,
+    or if it has more space; the caller then moves the popup into the area.
+*/
+int placeBeside(int lo, int hi, int size, int areaLo, int areaHi, bool before) {
+    int spaceAfter = areaHi - hi;
+    int spaceBefore = lo - areaLo;
+    bool useBefore = before;
+    if (before && spaceBefore < size && spaceAfter > spaceBefore)
+        useBefore = false;
+    else if (!before && spaceAfter < size && spaceBefore > spaceAfter)
+        useBefore = true;
+    return useBefore ? lo - size : hi;
+}
+
+unittest {
+    // fits after the anchor
+    assert(placeBeside(100, 200, 50, 0, 400, false) == 200);
+    // doesn't fit after: before the anchor (submenu on the left of the parent menu)
+    assert(placeBeside(300, 380, 50, 0, 400, false) == 250);
+    // fits in neither side: the side with more space
+    assert(placeBeside(150, 250, 200, 0, 400, false) == 250);
+    assert(placeBeside(250, 300, 200, 0, 400, false) == 50);
+    // preferred before (above), not enough space: after (below)
+    assert(placeBeside(20, 40, 100, 0, 400, true) == 40);
+    assert(placeBeside(200, 220, 100, 0, 400, true) == 100);
+    // point anchor
+    assert(placeBeside(390, 390, 100, 0, 400, false) == 290);
 }
 
 struct PopupAnchor {
@@ -132,29 +164,27 @@ class PopupWidget : LinearLayout {
                 // center around center of anchor widget
                 r.left -= w / 2;
                 r.top -= h / 2;
-            } else if (anchor.alignment & PopupAlign.Below) {
-            } else if (anchor.alignment & PopupAlign.Above) {
-                r.top -= h;
-            } else if (anchor.alignment & PopupAlign.Right) {
+            } else {
+                // below (default) or above the point; to the right of it, or to the left when it doesn't fit
+                r.top = placeBeside(anchor.y, anchor.y, h, rc.top, rc.bottom, (anchor.alignment & PopupAlign.Above) != 0);
+                r.left = placeBeside(anchor.x, anchor.x, w, rc.left, rc.right, false);
             }
         } else {
+            if (anchor.alignment & PopupAlign.FitAnchorSize)
+                if (w < anchorrc.width)
+                    w = anchorrc.width;
             if (anchor.alignment & PopupAlign.Center) {
                 // center around center of anchor widget
                 r.left = anchorrc.middlex - w / 2;
                 r.top = anchorrc.middley - h / 2;
-            } else if (anchor.alignment & PopupAlign.Below) {
+            } else if (anchor.alignment & (PopupAlign.Below | PopupAlign.Above)) {
                 r.left = anchorrc.left;
-                r.top = anchorrc.bottom;
-            } else if (anchor.alignment & PopupAlign.Above) {
-                r.left = anchorrc.left;
-                r.top = anchorrc.top - h;
+                r.top = placeBeside(anchorrc.top, anchorrc.bottom, h, rc.top, rc.bottom, (anchor.alignment & PopupAlign.Below) == 0);
             } else if (anchor.alignment & PopupAlign.Right) {
-                r.left = anchorrc.right;
+                // e.g. submenu: on the left of the parent menu when it doesn't fit on the right (#227)
+                r.left = placeBeside(anchorrc.left, anchorrc.right, w, rc.left, rc.right, false);
                 r.top = anchorrc.top;
             }
-            if (anchor.alignment & PopupAlign.FitAnchorSize)
-                if (w < anchorrc.width)
-                    w = anchorrc.width;
         }
         r.right = r.left + w;
         r.bottom = r.top + h;
