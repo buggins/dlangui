@@ -553,11 +553,13 @@ class FreeTypeFontManager : FontManager {
         foreach(size_t index, FontFileItem item; _fontFiles) {
             int score = 0;
             int bestFaceMatch = 0;
+            bool exactFaceMatch = false;
             if (faces && face.length) {
                 foreach(i; 0 .. faces.length) {
                     string f = faces[i].strip;
                     if (f.icmp(item.def.face) == 0) {
-                        score += 3000 - i;
+                        score += 3000 - cast(int)i;
+                        exactFaceMatch = true;
                         break;
                     }
                     int match = faceMatch(f, item.def.face);
@@ -565,7 +567,10 @@ class FreeTypeFontManager : FontManager {
                         bestFaceMatch = match;
                 }
             }
-            score += bestFaceMatch;
+            // the earliest requested face that is registered wins; aliases and standard face
+            // priorities only choose among faces that were not requested (#827)
+            if (!exactFaceMatch)
+                score += bestFaceMatch;
             if (family == item.def.family)
                 score += 1000; // family match
             if (italic == item.def.italic)
