@@ -414,6 +414,12 @@ class SDLWindow : Window {
     /// manager reports it): the window moved by the frame size on every restart (#820). For a short time
     /// after showing, adjust the requested position by the observed error until the client area is where
     /// it was wanted.
+    private static bool isX11VideoDriver() {
+        import core.stdc.string : strcmp;
+        const(char)* driver = SDL_GetCurrentVideoDriver();
+        return driver !is null && strcmp(driver, "x11") == 0;
+    }
+
     protected void checkPositionAfterShow(int x, int y) {
         import std.math : abs;
         if (!_positionCheckPending)
@@ -531,7 +537,8 @@ class SDLWindow : Window {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
-                if (!_shown) {
+                // only the X11 video driver needs the check; Windows and macOS place the client area as asked
+                if (!_shown && isX11VideoDriver()) {
                     _positionCheckPending = true;
                     _positionWanted = _positionRequested = Point(newWindowRect.left, newWindowRect.top);
                     _positionCorrections = 0;
