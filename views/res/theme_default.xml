@@ -67,8 +67,7 @@
     </style>
     <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
         textColor="#0000C0"
-        align="Left|VCenter"
-        margins="2pt,2pt,2pt,2pt"
+        textFlags="None"
         >
         <state state_enabled="false" textColor="#60C0C0FF"/>
         <state state_enabled="true" state_hovered="true" textColor="#8080FF" textFlags="Underline"/>
@@ -93,7 +92,8 @@
         margins="2,2,2,2"
         />
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
-        align="Left|VCenter"
+        margins="0"
+        textFlags="None"
 	focusRectColors="#000"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
@@ -108,7 +108,6 @@
         margins="2,2,2,2"
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
-        align="Left|VCenter"
 	focusRectColors="#000"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>

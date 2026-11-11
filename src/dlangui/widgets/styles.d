@@ -583,14 +583,14 @@ public:
     /// padding
     @property const(Rect) padding() const {
         if (_stateMask || _padding.left == SIZE_UNSPECIFIED)
-            return toPixels(parentStyle._padding);
+            return parentStyle.padding;
         return toPixels(_padding);
     }
 
     /// margins
     @property const(Rect) margins() const {
         if (_stateMask || _margins.left == SIZE_UNSPECIFIED)
-            return toPixels(parentStyle._margins);
+            return parentStyle.margins;
         return toPixels(_margins);
     }
 
@@ -1126,6 +1126,7 @@ class Theme : Style {
         style._margins.left = SIZE_UNSPECIFIED; // inherit
         style._textColor = COLOR_UNSPECIFIED; // inherit
         style._textFlags = TEXT_FLAGS_UNSPECIFIED; // inherit
+        style._alpha = COLOR_UNSPECIFIED; // inherit
         Style parent = get(id);
         if (parent)
             style.updateStatesFromParent(parent);
@@ -1205,6 +1206,13 @@ class Theme : Style {
         if (id !is null)
             _byId[id] = style;
         style._parentStyle = this; // as initial value, use theme as parent
+        // properties not set in the new style are taken from its parent style (#814);
+        // the theme itself is the root, with concrete default values
+        style._align = Align.Unspecified;
+        style._padding.left = SIZE_UNSPECIFIED;
+        style._margins.left = SIZE_UNSPECIFIED;
+        style._textFlags = TEXT_FLAGS_UNSPECIFIED;
+        style._alpha = COLOR_UNSPECIFIED;
         return style;
     }
 
@@ -1586,6 +1594,8 @@ uint decodeTextFlags(string s) {
                     res |= TextFlag.UnderlineHotKeysWhenAltPressed;
                 else if (item.equal("Underline"))
                     res |= TextFlag.Underline;
+                else if (item.equal("None"))
+                    res = 0;
                 else if (item.equal("Unspecified"))
                     res = TEXT_FLAGS_UNSPECIFIED;
                 else if (item.equal("Parent"))
@@ -1946,4 +1956,53 @@ unittest {
     assert(own.forState(DISABLED).textColor == 0xA0000000);
     assert(own.forState(HOVERED).textColor == 0x0000C0); // no hovered state in TXT: own normal color
     assert(own.forState(PRESSED).textColor == 0x00FF00);
+}
+
+/// theme styles inherit properties not set in them from their parent= style, recursively (#814)
+unittest {
+    Theme savedTheme = _currentTheme;
+    scope(exit) _currentTheme = savedTheme;
+    Theme t = new Theme("test");
+    _currentTheme = t;
+    scope(exit) destroy(t);
+    loadTheme(t, new XmlDocument(q{<?xml version="1.0" encoding="utf-8"?>
+        <theme id="test">
+            <style id="BASE" align="Center" margins="1,2,3,4" padding="5" textFlags="UnderlineHotKeys" alpha="16"/>
+            <style id="CHILD" parent="BASE" textColor="#102030"/>
+            <style id="GRANDCHILD" parent="CHILD" align="Right|VCenter" textFlags="None"/>
+            <style id="PLAIN" margins="7"/>
+        </theme>}));
+    Style child = t.get("CHILD");
+    assert(child.alignment == Align.Center);
+    assert(child.margins == Rect(1, 2, 3, 4));
+    assert(child.padding == Rect(5, 5, 5, 5));
+    assert(child.textFlags == TextFlag.UnderlineHotKeys);
+    assert(child.alpha == 16);
+    Style grandChild = t.get("GRANDCHILD");
+    assert(grandChild.alignment == (Align.Right | Align.VCenter));
+    assert(grandChild.margins == Rect(1, 2, 3, 4));
+    assert(grandChild.padding == Rect(5, 5, 5, 5));
+    assert(grandChild.textFlags == 0);
+    assert(grandChild.alpha == 16);
+    assert(grandChild.textColor == 0x102030);
+    // without parent=, the theme's defaults
+    Style plain = t.get("PLAIN");
+    assert(plain.alignment == Align.TopLeft);
+    assert(plain.margins == Rect(7, 7, 7, 7));
+    assert(plain.padding == Rect(0, 0, 0, 0));
+    assert(plain.textFlags == 0);
+    assert(plain.alpha == 0);
+    // a derived theme redefining a style keeps the values it doesn't set
+    loadTheme(t, new XmlDocument(q{<?xml version="1.0" encoding="utf-8"?>
+        <theme id="test2">
+            <style id="PLAIN" textColor="#405060"/>
+        </theme>}));
+    assert(plain.margins == Rect(7, 7, 7, 7));
+    assert(plain.textColor == 0x405060);
+    // widget's own style: inherits through the whole chain too
+    Style own = t.modifyStyle("GRANDCHILD");
+    scope(exit) destroy(own);
+    assert(own.margins == Rect(1, 2, 3, 4));
+    assert(own.padding == Rect(5, 5, 5, 5));
+    assert(own.alpha == 16);
 }
