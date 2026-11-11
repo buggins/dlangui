@@ -488,7 +488,7 @@ public:
     /// get custom length attribute
     uint customLength(string id, uint defLength = 0) const {
         if (id in _customLength)
-            return _customLength[id];
+            return toPixels(_customLength[id]); // the value may be in points (#795)
         return parentStyle ? parentStyle.customLength(id, defLength) : currentTheme.customLength(id, defLength);
     }
 

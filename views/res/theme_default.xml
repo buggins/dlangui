@@ -73,23 +73,23 @@
         <state state_enabled="true" state_hovered="true" textColor="#8080FF" textFlags="Underline"/>
     </style>
     <style id="BUTTON_IMAGE"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         align="Center"
         />
     <style id="SWITCH"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         align="Center"
         backgroundImageId="switch"
         />
     <style id="CHECKBOX"
         backgroundImageId="@null"
-        margins="2,2,2,2"
-        padding="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
+        padding="2pt,2pt,2pt,2pt"
 	focusRectColors="@null"
         />
     <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
         align="Center"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         />
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
         margins="0"
@@ -100,12 +100,12 @@
         <state state_enabled="false" textColor="#909090"/>
     </style>
     <style id="RADIOBUTTON" parent="CHECKBOX"
-        margins="2,2,2,2"
-        padding="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
+        padding="2pt,2pt,2pt,2pt"
         />
     <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
         align="Center"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
 	focusRectColors="#000"
@@ -114,15 +114,15 @@
         <state state_enabled="false" textColor="#909090"/>
     </style>
     <style id="TEXT"
-        margins="2,2,2,2"
-        padding="1,1,1,1"
+        margins="2pt,2pt,2pt,2pt"
+        padding="1pt,1pt,1pt,1pt"
         align="Left|VCenter"
         >
         <state state_enabled="false" textColor="#A0000000"/>
     </style>
     <style id="MULTILINE_TEXT"
-        margins="2,2,2,2"
-        padding="1,1,1,1"
+        margins="2pt,2pt,2pt,2pt"
+        padding="1pt,1pt,1pt,1pt"
         align="Left|VCenter"
         maxLines="0"
         >
@@ -131,12 +131,12 @@
     <style id="HSPACER"
         layoutWidth="FILL_PARENT"
         layoutWeight="100"
-        minWidth="5"
+        minWidth="4pt"
         />
     <style id="VSPACER"
         layoutHeight="FILL_PARENT"
         layoutWeight="100"
-        minHeight="5"
+        minHeight="4pt"
         />
     <style id="BUTTON_NOMARGINS"
         backgroundImageId="btn_background"
@@ -201,7 +201,7 @@
         padding="5pt,2pt,5pt,2pt"
         backgroundImageId="tab_btn_dark_up"
         >
-        <length id="overlap" value="2"/>
+        <length id="overlap" value="2pt"/>
     </style>
     <style id="TAB_UP_BUTTON_DARK_TEXT"
         textColor="#000000"
@@ -306,11 +306,11 @@
         backgroundImageId="combobox_background"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
-        minWidth="40"
+        minWidth="30pt"
         />
     <style id="COMBO_BOX_BODY"
         padding="2pt,2pt,2pt,2pt"
-        minWidth="40"
+        minWidth="30pt"
         align="Left|VCenter"
 	focusRectColors="#000"
         />
@@ -324,15 +324,15 @@
         backgroundImageId="editbox_background"
         padding="3pt,3pt,3pt,3pt"
         margins="1pt,1pt,1pt,1pt"
-        minWidth="40"
+        minWidth="30pt"
         />
     <style id="EDIT_BOX"
         fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
         backgroundImageId="editbox_background"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
-        minWidth="100"
-        minHeight="60"
+        minWidth="75pt"
+        minHeight="45pt"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
@@ -343,8 +343,8 @@
         backgroundImageId="editbox_background"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
-        minWidth="100"
-        minHeight="60"
+        minWidth="75pt"
+        minHeight="45pt"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
@@ -360,8 +360,8 @@
         backgroundColor="#FFFFFF"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
-        minWidth="100"
-        minHeight="60"
+        minWidth="75pt"
+        minHeight="45pt"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
@@ -369,8 +369,8 @@
         backgroundImageId="editbox_background"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
-        minWidth="100"
-        minHeight="60"
+        minWidth="75pt"
+        minHeight="45pt"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
@@ -378,8 +378,8 @@
         backgroundImageId="editbox_background"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
-        minWidth="100"
-        minHeight="60"
+        minWidth="75pt"
+        minHeight="45pt"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
@@ -407,7 +407,7 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         />
     <style id="FLOATING_WINDOW"
         backgroundImageId="popup_window_background"
@@ -432,7 +432,7 @@
     <style id="DOCK_WINDOW_BODY"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        padding="3,3,3,3"
+        padding="2pt,2pt,2pt,2pt"
         />
 
     <style id="TOOLBAR_HOST"
@@ -476,8 +476,8 @@
         />
 
     <style id="TREE_ITEM"
-        minWidth="100"
-        minHeight="14"
+        minWidth="75pt"
+        minHeight="11pt"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         >

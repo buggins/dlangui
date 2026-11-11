@@ -2,12 +2,12 @@
 <theme 
     id="theme_custom1" 
     parent="theme_default"
-    fontSize="24"
+    fontSize="18pt"
     >
     <style id="BUTTON"
         backgroundImageId="btn_default_small"
         align="Center"
-        margins="5,5,5,5"
+        margins="4pt,4pt,4pt,4pt"
         />
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_default_small_transparent"
@@ -21,18 +21,18 @@
         align="Center"
         />
     <style id="TEXT"
-        margins="2,2,2,2"
-        padding="1,1,1,1"
+        margins="2pt,2pt,2pt,2pt"
+        padding="1pt,1pt,1pt,1pt"
         />
     <style id="HSPACER"
         layoutWidth="FILL_PARENT"
         layoutWeight="100"
-        minWidth="5"
+        minWidth="4pt"
         />
     <style id="VSPACER"
         layoutHeight="FILL_PARENT"
         layoutWeight="100"
-        minHeight="5"
+        minHeight="4pt"
         />
     <style id="BUTTON_NOMARGINS"
         backgroundImageId="btn_default_small"
@@ -67,7 +67,7 @@
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#000000"
-        fontSize="16"
+        fontSize="12pt"
         align="Center"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
@@ -84,7 +84,7 @@
         backgroundColor="#F0F0F0"
         />
     <style id="TAB_WIDGET"
-        padding="3,3,3,3"
+        padding="2pt,2pt,2pt,2pt"
         backgroundColor="#EEEEEE"
         />
     <style id="MAIN_MENU"
@@ -92,13 +92,13 @@
         backgroundColor="#404040"
         />
     <style id="MAIN_MENU_ITEM"
-        padding="4,2,4,2"
+        padding="3pt,2pt,3pt,2pt"
         backgroundImageId="main_menu_item_background"
 	textColor="#E0E0E0"
         textFlags="Parent"
         />
     <style id="MENU_ITEM"
-        padding="4,2,4,2"
+        padding="3pt,2pt,3pt,2pt"
         >
         <state state_focused="true" backgroundColor="#40C0C000"/>
         <state state_pressed="true" backgroundColor="#4080C000"/>
@@ -106,34 +106,34 @@
         <state state_hovered="true" backgroundColor="#C0FFFF00"/>
     </style>
     <style id="MENU_ICON"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         align="Left|VCenter"
         >
         <state state_enabled="false" alpha="160"/>
     </style>
     <style id="MENU_LABEL"
-        margins="4,2,4,2"
+        margins="3pt,2pt,3pt,2pt"
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
         <state state_enabled="false" textColor="#80404040"/>
     </style>
     <style id="MAIN_MENU_LABEL"
-        margins="4,2,4,2"
+        margins="3pt,2pt,3pt,2pt"
         align="Left|VCenter"
         textFlags="Parent"
         >
         <state state_enabled="false" textColor="#80404040"/>
     </style>
     <style id="MENU_ACCEL"
-        margins="4,2,4,2"
+        margins="3pt,2pt,3pt,2pt"
         align="Left|VCenter"
         >
         <state state_enabled="false" textColor="#80404040"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
         backgroundImageId="transparent_button_background"
-        padding="4,2,4,2"
+        padding="3pt,2pt,3pt,2pt"
         />
     <style id="POPUP_MENU"
         backgroundImageId="popup_menu_background_normal"
@@ -143,24 +143,24 @@
         />
     <style id="EDIT_LINE"
         backgroundImageId="editbox_background"
-        padding="5,6,5,6"
-        margins="2,2,2,2"
-        minWidth="40"
+        padding="4pt,5pt,4pt,5pt"
+        margins="2pt,2pt,2pt,2pt"
+        minWidth="30pt"
         fontFace="Arial"
         fontFamily="SansSerif"
-        fontSize="20"
+        fontSize="15pt"
         />
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background"
-        padding="5,6,5,6"
-        margins="2,2,2,2"
-        minWidth="100"
-        minHeight="60"
+        padding="4pt,5pt,4pt,5pt"
+        margins="2pt,2pt,2pt,2pt"
+        minWidth="75pt"
+        minHeight="45pt"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         fontFace="Courier New"
         fontFamily="MonoSpace"
-        fontSize="20"
+        fontSize="15pt"
         />
 
 </theme>
