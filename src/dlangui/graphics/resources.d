@@ -234,13 +234,14 @@ EmbeddedResource[] embedResourcesFromList(string resourceList)() {
 }
 
 
-/// all images and drawables referenced from standard resource XML files (themes, state drawables) exist (#668)
-unittest {
+/// references from the XML files (themes, state drawables) of a resource list to images and drawables
+/// that are not in that list
+private string[] missingResourceReferences(string resourceList)() {
     import std.algorithm : endsWith, startsWith;
     import std.path : baseName;
     import std.regex : matchAll, regex;
     import std.string : splitLines, strip;
-    enum string[] files = splitLines(import("standard_resources.list"));
+    enum string[] files = splitLines(import(resourceList));
     // resource id = file name without directory, extension and hdpi_ prefix
     bool[string] ids;
     foreach (f; files) {
@@ -272,7 +273,16 @@ unittest {
             }
         }}
     }
-    assert(!missing.length, "missing resources referenced from standard resources: " ~ (){ string s; foreach (m; missing) s ~= "\n  " ~ m; return s; }());
+    return missing;
+}
+
+/// all images and drawables referenced from standard resource XML files (themes, state drawables) exist,
+/// in the GUI (#668) and in the console resource lists (#728)
+unittest {
+    static foreach (list; ["standard_resources.list", "console_standard_resources.list"]) {{
+        string[] missing = missingResourceReferences!list();
+        assert(!missing.length, "missing resources referenced from " ~ list ~ ": " ~ (){ string s; foreach (m; missing) s ~= "\n  " ~ m; return s; }());
+    }}
 }
 
 void embedStandardDlangUIResources() {
