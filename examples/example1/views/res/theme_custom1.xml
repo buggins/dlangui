@@ -49,6 +49,7 @@
         align="Center"
         />
     <style id="SCROLLBAR_BUTTON" parent="BUTTON"
+        margins="0"
         />
     <style id="SLIDER"
         />
