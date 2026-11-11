@@ -284,11 +284,14 @@ class X11Window : DWindow {
     X11Window _parent;
 
     int _cachedWidth, _cachedHeight;
-    // #820: a position set before the window is mapped, to check after mapping
     private bool _mapped;
+    // #820: correction of a position set by the application
     private bool _positionCheckPending;
-    private Point _positionBeforeMap;
-    private MonoTime _mapTime;
+    private Point _positionWanted;
+    private Point _positionRequested;
+    private int _positionCorrections;
+    private Point _positionCorrected; // the position that caused the last correction
+    private MonoTime _positionCheckDeadline;
 
     static if (ENABLE_OPENGL) {
         GLXContext _glc;
@@ -498,28 +501,38 @@ class X11Window : DWindow {
         return Point(x, y);
     }
 
-    /// Called on configure events after the window is mapped. A position set before mapping
-    /// (restoreWindowState, centering on the parent) is meant for the client area, but window managers
-    /// place the frame there: the window moved by the frame size on every restart (#820). When the window
-    /// is first placed near the requested position, move it back by the frame offset.
-    protected void checkPositionAfterMap(Point pos) {
+    /// A position set by the application (restoreWindowState, moveWindow, centering on the parent) is meant
+    /// for the client area, but window managers place the frame there: restored windows moved by the frame
+    /// size on every restart (#820). For a short time after the window is mapped or moved, adjust the
+    /// requested position by the observed error until the client area is where it was wanted.
+    protected void startPositionCheck(Point pos) {
+        _positionCheckPending = true;
+        _positionWanted = _positionRequested = pos;
+        _positionCorrections = 0;
+        if (_mapped)
+            _positionCheckDeadline = MonoTime.currTime + 2.seconds;
+    }
+
+    /// ditto; called on configure events of a mapped window
+    protected void checkPosition(Point pos) {
         import std.math : abs;
-        if (!_positionCheckPending)
+        if (!_positionCheckPending || !_mapped)
             return;
-        if (MonoTime.currTime - _mapTime > 2.seconds) {
-            // not placed near the requested position (the window manager chose another one): give up
+        int dx = pos.x - _positionWanted.x;
+        int dy = pos.y - _positionWanted.y;
+        if ((dx == 0 && dy == 0) || _positionCorrections >= 3 || MonoTime.currTime > _positionCheckDeadline) {
             _positionCheckPending = false;
             return;
         }
-        int dx = pos.x - _positionBeforeMap.x;
-        int dy = pos.y - _positionBeforeMap.y;
         if (abs(dx) > 100 || abs(dy) > 100)
             return; // not placed yet (some window managers map the window off-screen first)
-        _positionCheckPending = false;
-        if (dx || dy) {
-            XMoveWindow(x11display, _win, _positionBeforeMap.x - dx, _positionBeforeMap.y - dy);
-            XFlush(x11display);
-        }
+        if (_positionCorrections > 0 && pos == _positionCorrected)
+            return; // an event from before the last correction took effect
+        _positionCorrections++;
+        _positionCorrected = pos;
+        _positionRequested = Point(_positionRequested.x - dx, _positionRequested.y - dy);
+        XMoveWindow(x11display, _win, _positionRequested.x, _positionRequested.y);
+        XFlush(x11display);
     }
 
     /// show window
@@ -635,10 +648,7 @@ class X11Window : DWindow {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 XMoveWindow(x11display, _win, newWindowRect.left, newWindowRect.top);
-                if (!_mapped) {
-                    _positionCheckPending = true;
-                    _positionBeforeMap = Point(newWindowRect.left, newWindowRect.top);
-                }
+                startPositionCheck(Point(newWindowRect.left, newWindowRect.top));
                 rectChanged = true;
                 result = true;
             }
@@ -1616,8 +1626,9 @@ class X11Platform : Platform {
                     Point pos = event.xconfigure.send_event ? Point(event.xconfigure.x, event.xconfigure.y)
                         : w.clientPositionOnScreen();
                     w.handleWindowStateChange(WindowState.unspecified, Rect(pos.x, pos.y, event.xconfigure.width, event.xconfigure.height));
-                    if (w._mapped)
-                        w.checkPositionAfterMap(pos);
+                    // the actual position: window managers can send synthetic events for positions not reached yet
+                    if (w._positionCheckPending && w._mapped)
+                        w.checkPosition(w.clientPositionOnScreen());
                 } else {
                     Log.e("ConfigureNotify: Window not found");
                 }
@@ -1666,7 +1677,8 @@ class X11Platform : Platform {
                 if (w) {
                     if (!w._mapped) {
                         w._mapped = true;
-                        w._mapTime = MonoTime.currTime;
+                        if (w._positionCheckPending)
+                            w._positionCheckDeadline = MonoTime.currTime + 2.seconds;
                     }
                     w.handleWindowStateChange(WindowState.normal);
                 }
