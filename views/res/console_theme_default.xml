@@ -164,7 +164,7 @@
         minHeight="1"
         />
     <style id="BUTTON_NOMARGINS"
-        backgroundImageId="btn_background"
+        backgroundImageId="@null"
         align="Center"
         />
 
@@ -205,6 +205,7 @@
         <state state_selected="true" textColor="#FFFFFF"/>
         <state state_hovered="true" textColor="#808000"/>
     </style>
+    <style id="TAB_DOWN_BUTTON_DARK_TEXT" parent="TAB_UP_BUTTON_DARK_TEXT"/>
 
     <style id="TAB_DOWN_DARK" parent="TAB_UP_DARK"
         >
@@ -291,7 +292,7 @@
         <state state_enabled="false" textColor="#C0C0C0"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
-        backgroundImageId="btn_background_transparent"
+        backgroundImageId="@null"
         padding="0,0,0,0"
         />
     <style id="POPUP_MENU"
@@ -321,7 +322,7 @@
         />
     <style id="COMBO_BOX_BUTTON"
         padding="0,0,0,0"
-        backgroundImageId="btn_background_transparent"
+        backgroundImageId="@null"
         align="Center"
         />
 
