@@ -21,6 +21,7 @@ public import dlangui.core.config;
 static if (BACKEND_SDL):
 
 import core.runtime;
+import core.time : MonoTime, seconds;
 import std.conv;
 import std.string;
 import std.utf : toUTF32, toUTF16z;
@@ -399,6 +400,37 @@ class SDLWindow : Window {
         return 0;
     }
 
+    private bool _shown;
+    // #820: a position set before the window was shown, corrected after showing
+    private bool _positionCheckPending;
+    private Point _positionWanted;
+    private Point _positionRequested;
+    private int _positionCorrections;
+    private MonoTime _positionCheckDeadline;
+
+    /// A position set before the window was shown (restoreWindowState, centering on the parent) is meant
+    /// for the client area, but window managers place the frame there when the window is mapped, and SDL
+    /// can compensate for the frame only once it knows the frame size (and only as well as the window
+    /// manager reports it): the window moved by the frame size on every restart (#820). For a short time
+    /// after showing, adjust the requested position by the observed error until the client area is where
+    /// it was wanted.
+    protected void checkPositionAfterShow(int x, int y) {
+        import std.math : abs;
+        if (!_positionCheckPending)
+            return;
+        int dx = x - _positionWanted.x;
+        int dy = y - _positionWanted.y;
+        if ((dx == 0 && dy == 0) || _positionCorrections >= 3 || MonoTime.currTime > _positionCheckDeadline) {
+            _positionCheckPending = false;
+            return;
+        }
+        if (abs(dx) > 100 || abs(dy) > 100)
+            return; // not placed yet (some window managers map the window off-screen first)
+        _positionCorrections++;
+        _positionRequested = Point(_positionRequested.x - dx, _positionRequested.y - dy);
+        SDL_SetWindowPosition(_win, _positionRequested.x, _positionRequested.y);
+    }
+
     override void show() {
         Log.d("SDLWindow.show() - ", windowCaption);
         if (!_mainWidget) {
@@ -416,6 +448,11 @@ class SDLWindow : Window {
         adjustPositionDuringShow();
 
         SDL_ShowWindow(_win);
+        if (!_shown) {
+            _shown = true;
+            if (_positionCheckPending)
+                _positionCheckDeadline = MonoTime.currTime + 2.seconds;
+        }
         if (_mainWidget)
             _mainWidget.setFocus();
         fixSize();
@@ -494,6 +531,11 @@ class SDLWindow : Window {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
+                if (!_shown) {
+                    _positionCheckPending = true;
+                    _positionWanted = _positionRequested = Point(newWindowRect.left, newWindowRect.top);
+                    _positionCorrections = 0;
+                }
                 rectChanged = true;
                 res = true;
             }
@@ -1429,6 +1471,7 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_MOVED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED - ", w.windowCaption);
                                 w.handleWindowStateChange(WindowState.unspecified, Rect(event.window.data1, event.window.data2, w.windowRect().right, w.windowRect().bottom));
+                                w.checkPositionAfterShow(event.window.data1, event.window.data2);
                                 version (Windows) {
                                 } else {
                                     // the window may be on another display now

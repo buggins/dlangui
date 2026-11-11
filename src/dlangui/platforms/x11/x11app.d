@@ -7,6 +7,7 @@ import dlangui.core.logger;
 import dlangui.core.events;
 import dlangui.core.files;
 import dlangui.core.types : toUTF8;
+import core.time : MonoTime, seconds;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
 import dlangui.graphics.ftfonts;
@@ -283,6 +284,11 @@ class X11Window : DWindow {
     X11Window _parent;
 
     int _cachedWidth, _cachedHeight;
+    // #820: a position set before the window is mapped, to check after mapping
+    private bool _mapped;
+    private bool _positionCheckPending;
+    private Point _positionBeforeMap;
+    private MonoTime _mapTime;
 
     static if (ENABLE_OPENGL) {
         GLXContext _glc;
@@ -484,6 +490,38 @@ class X11Window : DWindow {
         return false;
     }
 
+    /// position of the client area's top-left corner on the screen
+    protected Point clientPositionOnScreen() {
+        int x, y;
+        XWindow child;
+        XTranslateCoordinates(x11display, _win, DefaultRootWindow(x11display), 0, 0, &x, &y, &child);
+        return Point(x, y);
+    }
+
+    /// Called on configure events after the window is mapped. A position set before mapping
+    /// (restoreWindowState, centering on the parent) is meant for the client area, but window managers
+    /// place the frame there: the window moved by the frame size on every restart (#820). When the window
+    /// is first placed near the requested position, move it back by the frame offset.
+    protected void checkPositionAfterMap(Point pos) {
+        import std.math : abs;
+        if (!_positionCheckPending)
+            return;
+        if (MonoTime.currTime - _mapTime > 2.seconds) {
+            // not placed near the requested position (the window manager chose another one): give up
+            _positionCheckPending = false;
+            return;
+        }
+        int dx = pos.x - _positionBeforeMap.x;
+        int dy = pos.y - _positionBeforeMap.y;
+        if (abs(dx) > 100 || abs(dy) > 100)
+            return; // not placed yet (some window managers map the window off-screen first)
+        _positionCheckPending = false;
+        if (dx || dy) {
+            XMoveWindow(x11display, _win, _positionBeforeMap.x - dx, _positionBeforeMap.y - dy);
+            XFlush(x11display);
+        }
+    }
+
     /// show window
     override void show() {
         Log.d("X11Window.show");
@@ -597,6 +635,10 @@ class X11Window : DWindow {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 XMoveWindow(x11display, _win, newWindowRect.left, newWindowRect.top);
+                if (!_mapped) {
+                    _positionCheckPending = true;
+                    _positionBeforeMap = Point(newWindowRect.left, newWindowRect.top);
+                }
                 rectChanged = true;
                 result = true;
             }
@@ -1569,7 +1611,13 @@ class X11Platform : Platform {
                 if (w) {
                     w._cachedWidth = event.xconfigure.width;
                     w._cachedHeight = event.xconfigure.height;
-                    w.handleWindowStateChange(WindowState.unspecified, Rect(event.xconfigure.x, event.xconfigure.y, event.xconfigure.width, event.xconfigure.height));
+                    // synthetic events from the window manager carry screen coordinates; real ones,
+                    // coordinates relative to the parent, which is the frame for a reparented window
+                    Point pos = event.xconfigure.send_event ? Point(event.xconfigure.x, event.xconfigure.y)
+                        : w.clientPositionOnScreen();
+                    w.handleWindowStateChange(WindowState.unspecified, Rect(pos.x, pos.y, event.xconfigure.width, event.xconfigure.height));
+                    if (w._mapped)
+                        w.checkPositionAfterMap(pos);
                 } else {
                     Log.e("ConfigureNotify: Window not found");
                 }
@@ -1616,6 +1664,10 @@ class X11Platform : Platform {
             case MapNotify:
                 X11Window w = findWindow(event.xmap.window);
                 if (w) {
+                    if (!w._mapped) {
+                        w._mapped = true;
+                        w._mapTime = MonoTime.currTime;
+                    }
                     w.handleWindowStateChange(WindowState.normal);
                 }
                 break;
