@@ -1920,6 +1920,9 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     return 0; // prevent closing
                 }
                 Log.d("WM_CLOSE: closing window ");
+                // DefWindowProc destroys the window, hiding it first: keep the last real state and rectangle
+                // for onClose, which is called later from the destructor and may save them (#830)
+                window._destroying = true;
                 //destroy(window);
             }
             // default handler inside DefWindowProc will close window
