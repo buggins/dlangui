@@ -131,3 +131,160 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
     }
     return buf;
 }
+
+/// Smoothly resample rectangle srcRect of src to a new dstdx x dstdy image (#794):
+/// area averaging when downscaling, bilinear interpolation when upscaling; colors are blended with
+/// premultiplied alpha, so transparent pixels don't darken the edges.
+ColorDrawBuf resampleImage(ColorDrawBuf src, Rect srcRect, int dstdx, int dstdy) {
+    import std.algorithm : min, max, clamp;
+    import std.math : floor, ceil, lround;
+    static struct Taps {
+        int first;
+        float[] weights;
+    }
+    // source pixels and weights for each destination pixel along one axis
+    static Taps[] makeTaps(int srcLen, int dstLen) {
+        Taps[] res = new Taps[dstLen];
+        double scale = cast(double)dstLen / srcLen;
+        foreach (d; 0 .. dstLen) {
+            if (scale < 1) {
+                // the source interval covered by the destination pixel
+                double s0 = d / scale;
+                double s1 = (d + 1) / scale;
+                int i0 = cast(int)floor(s0);
+                int i1 = min(cast(int)ceil(s1), srcLen);
+                res[d].first = i0;
+                res[d].weights = new float[i1 - i0];
+                foreach (i; i0 .. i1)
+                    res[d].weights[i - i0] = cast(float)((min(s1, i + 1.0) - max(s0, cast(double)i)) * scale);
+            } else {
+                double s = (d + 0.5) / scale - 0.5;
+                int i0 = cast(int)floor(s);
+                float f = cast(float)(s - i0);
+                int a = clamp(i0, 0, srcLen - 1);
+                int b = clamp(i0 + 1, 0, srcLen - 1);
+                res[d].first = a;
+                res[d].weights = a == b ? [1.0f] : [1 - f, f];
+            }
+        }
+        return res;
+    }
+    int sw = srcRect.width;
+    int sh = srcRect.height;
+    if (sw <= 0 || sh <= 0 || dstdx <= 0 || dstdy <= 0)
+        return null;
+    Taps[] xtaps = makeTaps(sw, dstdx);
+    Taps[] ytaps = makeTaps(sh, dstdy);
+    // premultiplied source: opacity, red, green, blue (DlangUI alpha is inverted: 0 is opaque)
+    float[] pre = new float[sw * sh * 4];
+    foreach (y; 0 .. sh) {
+        uint * line = src.scanLine(srcRect.top + y) + srcRect.left;
+        foreach (x; 0 .. sw) {
+            uint c = line[x];
+            float o = (255 - (c >> 24)) / 255.0f;
+            float * p = pre.ptr + (y * sw + x) * 4;
+            p[0] = o;
+            p[1] = ((c >> 16) & 255) * o;
+            p[2] = ((c >> 8) & 255) * o;
+            p[3] = (c & 255) * o;
+        }
+    }
+    // horizontal pass
+    float[] hor = new float[dstdx * sh * 4];
+    foreach (y; 0 .. sh) {
+        foreach (x; 0 .. dstdx) {
+            float[4] acc = 0;
+            foreach (k, w; xtaps[x].weights) {
+                float * p = pre.ptr + (y * sw + xtaps[x].first + cast(int)k) * 4;
+                acc[] += p[0 .. 4] * w;
+            }
+            hor[(y * dstdx + x) * 4 .. (y * dstdx + x) * 4 + 4] = acc[];
+        }
+    }
+    // vertical pass
+    ColorDrawBuf res = new ColorDrawBuf(dstdx, dstdy);
+    foreach (y; 0 .. dstdy) {
+        uint * line = res.scanLine(y);
+        foreach (x; 0 .. dstdx) {
+            float[4] acc = 0;
+            foreach (k, w; ytaps[y].weights) {
+                float * p = hor.ptr + ((ytaps[y].first + cast(int)k) * dstdx + x) * 4;
+                acc[] += p[0 .. 4] * w;
+            }
+            int o = cast(int)lround(acc[0] * 255);
+            if (o <= 0) {
+                line[x] = 0xFF000000; // fully transparent
+                continue;
+            }
+            if (o > 255)
+                o = 255;
+            float inv = 1.0f / acc[0];
+            uint r = cast(uint)clamp(lround(acc[1] * inv), 0, 255);
+            uint g = cast(uint)clamp(lround(acc[2] * inv), 0, 255);
+            uint b = cast(uint)clamp(lround(acc[3] * inv), 0, 255);
+            line[x] = ((255 - o) << 24) | (r << 16) | (g << 8) | b;
+        }
+    }
+    return res;
+}
+
+/// Scale an image by the factor (#794); a nine-patch image is scaled without its 1-pixel marker border,
+/// which is added back as transparent pixels, and its frame and padding are scaled by the same factor.
+ColorDrawBuf scaleImage(ColorDrawBuf src, double scale) {
+    import std.algorithm : max, min;
+    import std.math : lround;
+    if (src is null)
+        return null;
+    int scaled(int v) { return cast(int)lround(v * scale); }
+    if (!src.hasNinePatch)
+        return resampleImage(src, Rect(0, 0, src.width, src.height), max(1, scaled(src.width)), max(1, scaled(src.height)));
+    int cw = max(1, scaled(src.width - 2));
+    int ch = max(1, scaled(src.height - 2));
+    ColorDrawBuf content = resampleImage(src, Rect(1, 1, src.width - 1, src.height - 1), cw, ch);
+    scope(exit) destroy(content);
+    ColorDrawBuf res = new ColorDrawBuf(cw + 2, ch + 2);
+    res.fill(0xFF000000); // transparent border: no nine-patch markers to detect again
+    foreach (y; 0 .. ch)
+        res.scanLine(y + 1)[1 .. cw + 1] = content.scanLine(y)[0 .. cw];
+    const NinePatch * p = src.ninePatch;
+    NinePatch * np = new NinePatch();
+    np.frame = Rect(scaled(p.frame.left), scaled(p.frame.top), scaled(p.frame.right), scaled(p.frame.bottom));
+    np.padding = Rect(scaled(p.padding.left), scaled(p.padding.top), scaled(p.padding.right), scaled(p.padding.bottom));
+    // keep at least one stretchable pixel
+    np.frame.right = min(np.frame.right, max(0, cw - 1 - np.frame.left));
+    np.frame.bottom = min(np.frame.bottom, max(0, ch - 1 - np.frame.top));
+    res.ninePatch = np;
+    return res;
+}
+
+unittest {
+    // a 4x2 image, left half opaque red, right half fully transparent
+    ColorDrawBuf src = new ColorDrawBuf(4, 2);
+    foreach (y; 0 .. 2) {
+        uint * line = src.scanLine(y);
+        line[0] = line[1] = 0x00FF0000;
+        line[2] = line[3] = 0xFF000000;
+    }
+    // downscale 2x: the area average of red and transparent stays red with half opacity
+    ColorDrawBuf half = resampleImage(src, Rect(0, 0, 4, 2), 2, 1);
+    assert(half.width == 2 && half.height == 1);
+    assert(half.scanLine(0)[0] == 0x00FF0000);
+    assert(half.scanLine(0)[1] == 0xFF000000);
+    ColorDrawBuf mixed = resampleImage(src, Rect(1, 0, 3, 2), 1, 1);
+    uint c = mixed.scanLine(0)[0];
+    assert((c & 0xFFFFFF) == 0xFF0000, "premultiplied: no dark fringe"); // color stays pure red
+    assert((c >> 24) >= 126 && (c >> 24) <= 128); // half opacity
+    // upscale keeps the size and the corner colors
+    ColorDrawBuf dbl = resampleImage(src, Rect(0, 0, 4, 2), 8, 4);
+    assert(dbl.width == 8 && dbl.height == 4);
+    assert(dbl.scanLine(0)[0] == 0x00FF0000 && dbl.scanLine(3)[7] == 0xFF000000);
+    // nine-patch: frame and padding are scaled, the border stays transparent
+    ColorDrawBuf np = new ColorDrawBuf(12, 12);
+    np.fill(0x00808080);
+    np.ninePatch = new NinePatch(Rect(2, 2, 2, 2), Rect(4, 2, 4, 2));
+    ColorDrawBuf np15 = scaleImage(np, 1.5);
+    assert(np15.width == 17 && np15.height == 17); // 10 * 1.5 + 2
+    assert(np15.ninePatch.frame == Rect(3, 3, 3, 3));
+    assert(np15.ninePatch.padding == Rect(6, 3, 6, 3));
+    assert(np15.scanLine(0)[0] == 0xFF000000 && np15.scanLine(8)[8] == 0x00808080);
+}

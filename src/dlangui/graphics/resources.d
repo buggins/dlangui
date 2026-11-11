@@ -136,7 +136,7 @@ struct EmbeddedResourceList {
     /// find by exact file name
     EmbeddedResource * find(string name) {
         // search backwards to allow overriding standard resources (which are added first)
-        if (SCREEN_DPI > 110 && (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"))) {
+        if (preferHdpiImages && (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"))) {
             // HIGH DPI resources are in /hdpi/ directory and started with hdpi_ prefix
             string prefixedName = "hdpi_" ~ name;
             for (int i = cast(int)list.length - 1; i >= 0; i--)
@@ -176,6 +176,42 @@ struct EmbeddedResourceList {
 }
 
 __gshared EmbeddedResourceList embeddedResourceList;
+
+/// screen DPI an image variant is made for (#794): images from hdpi (`hdpi_` prefix or `hdpi` directory)
+/// are 2x, 192 DPI; all others are 1x, 96 DPI
+int imageVariantDpi(string filename) {
+    import std.path : baseName;
+    string name = baseName(filename);
+    if (name.startsWith("hdpi_") || filename.canFind("/hdpi/") || filename.canFind("\\hdpi\\"))
+        return 192;
+    return 96;
+}
+
+/// true if hdpi (2x) image variants are preferred for the current SCREEN_DPI: from 10% above 96 DPI, where
+/// a 1x image would have to be upscaled
+@property bool preferHdpiImages() {
+    return SCREEN_DPI >= 106;
+}
+
+/// the file actually loaded for filename: for an embedded image, the hdpi_ variant when it is preferred
+/// (EmbeddedResourceList.find substitutes it)
+string resolvedImageFilename(string filename) {
+    if (filename.startsWith(EMBEDDED_RESOURCE_PREFIX)) {
+        EmbeddedResource * embedded = embeddedResourceList.find(filename[EMBEDDED_RESOURCE_PREFIX.length .. $]);
+        if (embedded)
+            return EMBEDDED_RESOURCE_PREFIX ~ embedded.name;
+    }
+    return filename;
+}
+
+/// factor to scale an image file for the current SCREEN_DPI (#794); 1.0 when the image is within 10% of the
+/// wanted size, so that images stay pixel exact at 100-110% and 2x images at 180-210%;
+/// filename is the file actually loaded (see resolvedImageFilename)
+double imageScaleForScreen(string filename) {
+    import std.math : abs;
+    double scale = SCREEN_DPI / cast(double)imageVariantDpi(filename);
+    return abs(scale - 1) < 0.1 ? 1.0 : scale;
+}
 
 //immutable string test_res = import("res/background.xml");
 // Unfortunately, import with full pathes does not work on Windows
@@ -1386,6 +1422,14 @@ class ImageCache {
         string _filename;
         DrawBufRef _drawbuf;
         DrawBufRef[ColorTransform] _transformMap;
+        // images scaled for SCREEN_DPI (#794), by DPI
+        string _loadedFilename; // the variant actually loaded (e.g. hdpi_ for an embedded image)
+        DrawBufRef[int] _scaled;
+        static struct ScaledTransformKey {
+            int dpi;
+            ColorTransform transform;
+        }
+        DrawBufRef[ScaledTransformKey] _scaledTransformMap;
 
         bool _error; // flag to avoid loading of file if it has been failed once
         bool _used;
@@ -1400,6 +1444,7 @@ class ImageCache {
                 _used = true;
                 return _drawbuf;
             }
+            _loadedFilename = resolvedImageFilename(_filename);
             immutable ubyte[] data = loadResourceBytes(_filename);
             if (data) {
                 _drawbuf = loadImage(data, _filename);
@@ -1427,10 +1472,44 @@ class ImageCache {
             return _transformMap[transform];
         }
 
+        /// image scaled for the current SCREEN_DPI (#794)
+        @property ref DrawBufRef getScaled() {
+            get();
+            double scale = imageScaleForScreen(_loadedFilename);
+            if (_drawbuf.isNull || scale == 1.0)
+                return _drawbuf;
+            int dpi = SCREEN_DPI;
+            if (auto p = dpi in _scaled)
+                return *p;
+            ColorDrawBuf src = cast(ColorDrawBuf)_drawbuf.get;
+            if (!src)
+                return _drawbuf;
+            _scaled[dpi] = DrawBufRef(scaleImage(src, scale));
+            return _scaled[dpi];
+        }
+        /// color transformed image scaled for the current SCREEN_DPI (#794)
+        @property ref DrawBufRef getScaled(ref ColorTransform transform) {
+            if (transform.empty)
+                return getScaled();
+            get();
+            if (imageScaleForScreen(_loadedFilename) == 1.0)
+                return get(transform);
+            auto key = ScaledTransformKey(SCREEN_DPI, transform);
+            if (auto p = key in _scaledTransformMap)
+                return *p;
+            DrawBufRef src = getScaled();
+            _scaledTransformMap[key] = src.isNull ? src : src.transformColors(transform);
+            return _scaledTransformMap[key];
+        }
+
         /// remove from memory, will cause reload on next access
         void compact() {
             if (!_drawbuf.isNull)
                 _drawbuf.clear();
+            foreach (ref b; _scaled)
+                b.clear();
+            _scaled.destroy();
+            _scaledTransformMap.destroy();
         }
         /// mark as not used
         void checkpoint() {
@@ -1452,6 +1531,21 @@ class ImageCache {
         ImageCacheItem item = new ImageCacheItem(filename);
         _map[filename] = item;
         return item.get;
+    }
+
+    /// get and cache image scaled for the current SCREEN_DPI (#794): drawables use it; get() returns the
+    /// image in its own size (e.g. for textures)
+    ref DrawBufRef getScaled(string filename) {
+        if (filename !in _map)
+            _map[filename] = new ImageCacheItem(filename);
+        return _map[filename].getScaled;
+    }
+
+    /// get and cache color transformed image scaled for the current SCREEN_DPI (#794)
+    ref DrawBufRef getScaled(string filename, ref ColorTransform transform) {
+        if (filename !in _map)
+            _map[filename] = new ImageCacheItem(filename);
+        return _map[filename].getScaled(transform);
     }
 
     /// get and cache color transformed image
@@ -1699,7 +1793,7 @@ class DrawableCache {
             string fname = findResource(id);
             if (fname.endsWith(".png") || fname.endsWith(".jpg") || fname.endsWith(".jpeg")
                     || fname.endsWith(".bmp") || fname.endsWith(".ico"))
-                return imageCache.get(fname);
+                return imageCache.getScaled(fname);
             return res;
         }
     }
@@ -1762,7 +1856,7 @@ private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform 
         } else {
             static if (BACKEND_GUI) {
                 // PNG/JPEG/BMP/ICO drawables support
-                DrawBufRef image = transform.empty ? imageCache.get(id) : imageCache.get(id, transform);
+                DrawBufRef image = transform.empty ? imageCache.getScaled(id) : imageCache.getScaled(id, transform);
                 if (!image.isNull) {
                     bool ninePatch = id.endsWith(".9.png") ||  id.endsWith(".9.PNG");
                     return new ImageDrawable(image, tiled, ninePatch);
