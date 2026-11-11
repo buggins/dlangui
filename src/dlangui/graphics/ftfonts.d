@@ -473,25 +473,22 @@ class FreeTypeFont : Font {
 }
 
 
+/// Throws if a FreeType function that dlangui calls is missing from the loaded library.
+/// Other missing functions (optional modules, newer FreeType versions) are only logged.
 private void ftCheckMissingSymFunc(const(loader.ErrorInfo)[] errors) {
-    import std.algorithm : equal;
+    import std.algorithm : canFind;
+    import std.exception : enforce;
+    import std.string : fromStringz;
     immutable names = ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
             "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face",
             "FT_Init_FreeType", "FT_Done_FreeType", "FT_Get_Kerning"];
-    foreach(info; errors)
-    {
-        import std.array;
-        import std.algorithm;
-        import std.exception;
-        import core.stdc.string;
-        // NOTE: this has crappy complexity as it was just updated as is
-        //     it also does not checks if the symbol was actually loaded
-        auto errMsg = cast(string) info.message[0 .. info.message.strlen];
-        bool found = names
-            .filter!(s => s.canFind(errMsg))
-            .array()
-            .length > 0;
-        enforce(!found, { return errMsg.idup; });
+    foreach(info; errors) {
+        // errors also hold failed attempts to load other library names
+        if (info.error is null || info.message is null || fromStringz(info.error) != "Missing Symbol")
+            continue;
+        string sym = fromStringz(info.message).idup;
+        Log.v("bindbc-freetype: missing symbol ", sym);
+        enforce(!names.canFind(sym), "missing FreeType function " ~ sym);
     }
 }
 
@@ -607,7 +604,11 @@ class FreeTypeFontManager : FontManager {
                     ftVer = loadFreeType("libfreetype.so.6");
                 }
             }
-            enforce(ftVer != FTSupport.badLibrary && ftVer != FTSupport.noLibrary, format!"bindbc-freetype unable to find suitable library, %s minimum required"(ftSupport));
+            enforce(ftVer != FTSupport.noLibrary, "bindbc-freetype: FreeType library not found");
+            // badLibrary: some functions bound by bindbc-freetype are missing, e.g. in a FreeType build
+            // without optional modules; the library is usable if dlangui's functions are there (#825)
+            if (ftVer == FTSupport.badLibrary)
+                Log.w("bindbc-freetype: FreeType library lacks some functions, ", ftSupport, " expected");
             ftCheckMissingSymFunc(loader.errors);
             Log.v("bindbc-freetype: Loaded");
         } catch (Exception e) {
