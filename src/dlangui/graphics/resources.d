@@ -160,11 +160,15 @@ struct EmbeddedResourceList {
         string jpegname = name ~ ".jpeg";
         string xpmname = name ~ ".xpm";
         string timname = name ~ ".tim";
+        string bmpname = name ~ ".bmp";
+        string iconame = name ~ ".ico";
+        string gifname = name ~ ".gif"; // found to report that GIF is not supported
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
             if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name)
-                    || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname))
+                    || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname)
+                    || s.equal(bmpname) || s.equal(iconame) || s.equal(gifname))
                 return &list[i];
         }
         return null;
@@ -1662,6 +1666,14 @@ class DrawableCache {
                 fn = checkFileName(path, id, ".9.png");
             if (fn is null)
                 fn = checkFileName(path, id, ".jpg");
+            if (fn is null)
+                fn = checkFileName(path, id, ".jpeg");
+            if (fn is null)
+                fn = checkFileName(path, id, ".bmp");
+            if (fn is null)
+                fn = checkFileName(path, id, ".ico");
+            if (fn is null)
+                fn = checkFileName(path, id, ".gif"); // found to report that GIF is not supported
             if (fn !is null) {
                 _idToFileMap[id] = fn;
                 return fn;
@@ -1675,7 +1687,8 @@ class DrawableCache {
         DrawBufRef getImage(string id) {
             DrawBufRef res;
             string fname = findResource(id);
-            if (fname.endsWith(".png") || fname.endsWith(".jpg"))
+            if (fname.endsWith(".png") || fname.endsWith(".jpg") || fname.endsWith(".jpeg")
+                    || fname.endsWith(".bmp") || fname.endsWith(".ico"))
                 return imageCache.get(fname);
             return res;
         }
@@ -1738,7 +1751,7 @@ private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform 
             }
         } else {
             static if (BACKEND_GUI) {
-                // PNG/JPEG drawables support
+                // PNG/JPEG/BMP/ICO drawables support
                 DrawBufRef image = transform.empty ? imageCache.get(id) : imageCache.get(id, transform);
                 if (!image.isNull) {
                     bool ninePatch = id.endsWith(".9.png") ||  id.endsWith(".9.PNG");
