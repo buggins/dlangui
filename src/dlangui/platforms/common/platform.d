@@ -697,10 +697,14 @@ class Window : CustomEventTarget {
         if (_mainWidget !is null) {
             _mainWidget.layout(rc);
         }
+        // popups are placed within the visible part of the window, not the whole scrolled content (#227)
+        Rect popupRc = rc;
+        if (_hScrollBar || _vScrollBar)
+            popupRc = Rect(0, 0, _vScrollBar ? _dx - _vScrollBar.measuredWidth : _dx, _hScrollBar ? _dy - _hScrollBar.measuredHeight : _dy);
         foreach(p; _popups)
-            p.layout(rc);
+            p.layout(popupRc);
         if (_tooltip.popup)
-            _tooltip.popup.layout(rc);
+            _tooltip.popup.layout(popupRc);
     }
     void onResize(int width, int height) {
         if (_dx == width && _dy == height)
