@@ -50,7 +50,17 @@ struct DockSpace {
     protected ResizerWidget _resizer;
     @property ResizerWidget resizer() { return _resizer; }
     protected int _space;
+    /// current size in pixels, including the resizer; 0 if there are no visible docked windows
     @property int space() { return _space; }
+    protected int _baseSize;
+    /// host client width (left/right) or height (top/bottom) at the last layout
+    @property int baseSize() { return _baseSize; }
+    /// current size in percent of baseSize, rounded (so that initialPercent = percent gives the same size); 0 if empty
+    @property int percent() {
+        if (_space <= 0 || _baseSize <= 0)
+            return 0;
+        return (_space * 100 + _baseSize / 2) / _baseSize;
+    }
     protected int _minSpace;
     protected int _maxSpace;
     protected int _initialPercent = 20;
@@ -90,6 +100,7 @@ struct DockSpace {
             baseSize = rc.height;
         else
             baseSize = rc.width;
+        _baseSize = baseSize;
         _minSpace = baseSize * 1 / 10;
         _maxSpace = baseSize * 4 / 10;
         if (_docks.length) {
@@ -228,13 +239,32 @@ class DockHost : WidgetGroupDefaultDrawing {
     /// set initial size of a dock area in percent of the host width (left/right) or height (top/bottom);
     /// default is 20%, the value is clamped to 10..40%. Call before the host is shown.
     void setInitialSpace(DockAlignment alignment, int percent) {
-        final switch (alignment) with(DockAlignment) {
-            case Top: _topSpace.initialPercent = percent; break;
-            case Bottom: _bottomSpace.initialPercent = percent; break;
-            case Left: _leftSpace.initialPercent = percent; break;
-            case Right: _rightSpace.initialPercent = percent; break;
-        }
+        dockSpace(alignment).initialPercent = percent;
         requestLayout();
+    }
+
+    /// current size of a dock area in pixels, including its resizer; 0 if it has no visible docked windows
+    int dockSpaceSize(DockAlignment alignment) {
+        return dockSpace(alignment).space;
+    }
+
+    /**
+        Current size of a dock area in percent of the host client width (left/right) or height (top/bottom), rounded;
+        0 if it has no visible docked windows.
+
+        Passing it to setInitialSpace() gives the same size, e.g. to restore dock sizes saved on exit at the next start.
+    */
+    int dockSpacePercent(DockAlignment alignment) {
+        return dockSpace(alignment).percent;
+    }
+
+    protected ref DockSpace dockSpace(DockAlignment alignment) {
+        final switch (alignment) with(DockAlignment) {
+            case Top: return _topSpace;
+            case Bottom: return _bottomSpace;
+            case Left: return _leftSpace;
+            case Right: return _rightSpace;
+        }
     }
 
     protected DockWindow[] getDockedWindowList(DockAlignment alignType) {
