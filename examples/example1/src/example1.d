@@ -151,6 +151,26 @@ auto constructMainMenu()
     }
     viewItem.add(gammaItem);
 
+    // subpixel rendering (#871); under OpenGL subpixel glyphs are not drawn correctly yet (#833)
+    MenuItem subpixelItem = new MenuItem(new Action(65, "MENU_VIEW_SUBPIXEL"));
+    static immutable SubpixelRenderingMode[] subpixelModes = [SubpixelRenderingMode.None, SubpixelRenderingMode.RGB,
+        SubpixelRenderingMode.BGR];
+    static immutable string[] subpixelLabels = ["MENU_VIEW_SUBPIXEL_NONE", "MENU_VIEW_SUBPIXEL_RGB", "MENU_VIEW_SUBPIXEL_BGR"];
+    auto onSubpixelChange = delegate (MenuItem item) {
+        if (!item.checked)
+            return false;
+        FontManager.subpixelRenderingMode = subpixelModes[item.id - 6500]; // clears the glyph caches
+        Platform.instance.requestLayout();
+        return true;
+    };
+    foreach (i, mode; subpixelModes) {
+        MenuItem modeItem = (new MenuItem(new Action(cast(int)(6500 + i), subpixelLabels[i]))).type(MenuItemType.Radio)
+            .checked(FontManager.subpixelRenderingMode == mode);
+        modeItem.menuItemClick = onSubpixelChange;
+        subpixelItem.add(modeItem);
+    }
+    viewItem.add(subpixelItem);
+
     MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"c));
     windowItem.add(new Action(30, "MENU_WINDOW_PREFERENCES"));
     windowItem.add(new Action(31, UIString.fromId("MENU_WINDOW_MINIMIZE")));
@@ -195,14 +215,6 @@ extern (C) int UIAppMain(string[] args)
     // embed resources listed in views/resources.list into executable
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
-    //version (USE_OPENGL) {
-    //    // you can turn on subpixel font rendering (ClearType) here
-        //FontManager.subpixelRenderingMode = SubpixelRenderingMode.None; //
-    //} else {
-        // you can turn on subpixel font rendering (ClearType) here
-        FontManager.subpixelRenderingMode = SubpixelRenderingMode.BGR; //SubpixelRenderingMode.None; //
-    //}
-
     // select translation file - for english language
     Platform.instance.uiLanguage = "en";
     // load theme from file "theme_default.xml"
@@ -214,13 +226,8 @@ extern (C) int UIAppMain(string[] args)
     // you can override antialiasing setting here (0 means antialiasing always on, some big value = always off)
     // fonts with size less than specified value will not be antialiased
     FontManager.minAnitialiasedFontSize = 0; // 0 means always antialiased
-    //version (USE_OPENGL) {
-    //    // you can turn on subpixel font rendering (ClearType) here
-    FontManager.subpixelRenderingMode = SubpixelRenderingMode.None; //
-    //} else {
-        // you can turn on subpixel font rendering (ClearType) here
-    //FontManager.subpixelRenderingMode = SubpixelRenderingMode.BGR; //SubpixelRenderingMode.None; //
-    //}
+    // subpixel font rendering (ClearType-like): None, RGB or BGR; also in View > Subpixel Rendering
+    FontManager.subpixelRenderingMode = SubpixelRenderingMode.None;
 
     // create window
     //Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 800, 700);
