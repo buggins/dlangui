@@ -500,7 +500,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         string iconId = toUTF8(_fileList.cellText(0, row));
         DrawableRef res;
         if (iconId.length)
-            res = drawableCache.get(iconId);
+            res = drawableCache.get(overrideCustomDrawableId(iconId)); // the theme may map it, e.g. to a _dark icon (#846)
         return res;
     }
 

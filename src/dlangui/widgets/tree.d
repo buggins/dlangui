@@ -855,6 +855,13 @@ class TreeItemWidget : HorizontalLayout {
 
     protected string _shownIconRes;
 
+    /// the icon with mark overlays is built from the theme's drawables: build it again for the new theme
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        if (_icon && visibleMarks().length)
+            updateIcon();
+    }
+
     /// set the icon drawable: plain icon, or icon with mark overlays (no relayout: the size stays the same)
     protected void updateIcon() {
         if (!_icon)
@@ -863,10 +870,11 @@ class TreeItemWidget : HorizontalLayout {
         TreeItemMark[] marks = visibleMarks();
         static if (BACKEND_GUI) {
             if (marks.length) {
-                DrawableRef base = drawableCache.get(_item.iconRes);
+                // icon ids may be mapped to other drawables by the theme, e.g. _dark variants (#846)
+                DrawableRef base = drawableCache.get(overrideCustomDrawableId(_item.iconRes));
                 OverlayDrawable d = new OverlayDrawable(base);
                 foreach (m; marks)
-                    d.add(drawableCache.get(m.drawableId), m.corner);
+                    d.add(drawableCache.get(overrideCustomDrawableId(m.drawableId)), m.corner);
                 _icon.drawable = DrawableRef(d);
                 return;
             }

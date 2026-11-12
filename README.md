@@ -268,4 +268,4 @@ License
 -------
 
 Boost Software License 1.0, see [LICENSE.txt](LICENSE.txt).
-The icons of the default theme have their own license, see [LICENSE_default_theme_icons.txt](LICENSE_default_theme_icons.txt).
+The icons of the default theme have their own licenses: the SVG icons in `views/res/icons` are JetBrains IntelliJ Platform icons (Apache License 2.0), see [LICENSE_JetBrains_icons.txt](LICENSE_JetBrains_icons.txt); the other icons, see [LICENSE_default_theme_icons.txt](LICENSE_default_theme_icons.txt).
