@@ -13,7 +13,7 @@ static if(BACKEND_GUI)
             colCount = 6;
             for(StandardIcon icon = StandardIcon.init; icon <= StandardIcon.deviceCameraVideo; ++icon)
             {
-                addChild(new TextWidget(to!string(icon), to!dstring(icon)).fontSize(12.pointsToPixels).alignment(Align.Right | Align.VCenter));
+                addChild(new TextWidget(to!string(icon), to!dstring(icon)).fontSize(makePointSize(12)).alignment(Align.Right | Align.VCenter));
                 auto imageBufRef = platform.iconProvider().getStandardIcon(icon);
                 auto imageWidget = new ImageWidget();
                 if (!imageBufRef.isNull()) {
