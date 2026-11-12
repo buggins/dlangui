@@ -490,7 +490,10 @@ class Win32Window : Window {
                     }
                 }
             }
-            sharedGLContext.initGLBindings(hDC);
+            // only with an OpenGL context: with OpenGL disabled (setOpenglEnabled(false)) there is none, and
+            // initializing GL support without it crashed (#862); if it fails, the window paints with GDI
+            if (useOpengl)
+                useOpengl = sharedGLContext.initGLBindings(hDC);
         }
 
         isInitialized = true;
