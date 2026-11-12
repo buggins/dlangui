@@ -1213,32 +1213,36 @@ class ColorDrawBufBase : DrawBuf {
         }
     }
 
+    /// put glyph image into an OpenGL glyph cache texture (the buffer is uploaded as GL_RGBA, byte 0 = red)
+    ///
+    /// Grayscale glyph: white with coverage in alpha.
+    /// Subpixel glyph: one texel per pixel with the coverage of the red, green and blue subpixels in the red,
+    /// green and blue channels, and their average in alpha (#833).
     void drawGlyphToTexture(int x, int y, Glyph * glyph) {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
         bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
+        bool bgr = glyph.subpixelMode == SubpixelRenderingMode.BGR;
         foreach(int yy; 0 .. srcdy) {
             int liney = y + yy;
             uint * row = scanLine(liney);
             ubyte * srcrow = src.ptr + yy * srcdx;
-            int increment = subpixel ? 3 : 1;
-            for (int xx = 0; xx <= srcdx - increment; xx += increment) {
-                int colx = x + (subpixel ? xx / 3 : xx);
-                if (subpixel) {
-                    uint t1 = srcrow[xx];
-                    uint t2 = srcrow[xx + 1];
-                    uint t3 = srcrow[xx + 2];
-                    //uint pixel = ((t2 ^ 0x00) << 24) | ((t1  ^ 0xFF)<< 16) | ((t2 ^ 0xFF) << 8) | (t3 ^ 0xFF);
-                    uint pixel = ((t2 ^ 0x00) << 24) | 0xFFFFFF;
-                    row[colx] = pixel;
-                } else {
-                    uint alpha1 = srcrow[xx] ^ 0xFF;
-                    //uint pixel = (alpha1 << 24) | 0xFFFFFF; //(alpha1 << 16) || (alpha1 << 8) || alpha1;
-                    //uint pixel = ((alpha1 ^ 0xFF) << 24) | (alpha1 << 16) | (alpha1 << 8) | alpha1;
-                    uint pixel = ((alpha1 ^ 0xFF) << 24) | 0xFFFFFF;
-                    row[colx] = pixel;
+            if (subpixel) {
+                foreach(int xx; 0 .. glyph.correctedBlackBoxX) {
+                    // the last pixel can have less than 3 subpixels
+                    int sx = xx * 3;
+                    uint t1 = srcrow[sx];
+                    uint t2 = sx + 1 < srcdx ? srcrow[sx + 1] : 0;
+                    uint t3 = sx + 2 < srcdx ? srcrow[sx + 2] : 0;
+                    uint r = bgr ? t3 : t1;
+                    uint b = bgr ? t1 : t3;
+                    uint a = (t1 + t2 + t3 + 1) / 3;
+                    row[x + xx] = (a << 24) | (b << 16) | (t2 << 8) | r;
                 }
+            } else {
+                foreach(int xx; 0 .. srcdx)
+                    row[x + xx] = (cast(uint)srcrow[xx] << 24) | 0xFFFFFF;
             }
         }
     }
