@@ -327,7 +327,8 @@
         minWidth="30pt"
         />
     <style id="EDIT_BOX"
-        fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        fontFace="Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Liberation Mono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        fontFamily="MonoSpace"
         backgroundImageId="editbox_background"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
@@ -337,7 +338,7 @@
         layoutHeight="FILL_PARENT"
         />
     <style id="LOG_WIDGET"
-        fontFace="Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        fontFace="Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Liberation Mono,Lucida Sans Typewriter,Courier New,Lucida Console"
         fontSize="9pt"
         fontFamily="MonoSpace"
         backgroundImageId="editbox_background"
@@ -356,7 +357,8 @@
         layoutHeight="FILL_PARENT"
         />
     <style id="EDIT_BOX_NO_FRAME"
-        fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        fontFace="Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Liberation Mono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        fontFamily="MonoSpace"
         backgroundColor="#FFFFFF"
         padding="2pt,2pt,2pt,2pt"
         margins="2pt,2pt,2pt,2pt"
