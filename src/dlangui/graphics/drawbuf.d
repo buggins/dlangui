@@ -299,6 +299,16 @@ class DrawBuf : RefCountedObject {
     abstract void drawPixel(int x, int y, uint color);
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
     abstract void drawGlyph(int x, int y, Glyph * glyph, uint color);
+    /**
+     * Draw subpixel glyph moved right by subpixelPhase subpixels (0..2, a third of a pixel each), for subpixel
+     * positioning of text (#878). The glyph bitmap of a subpixel glyph has 3 columns per pixel, so it is moved
+     * by adding empty columns at its left.
+     *
+     * The default implementation ignores the phase; glyphs without subpixel mode ignore it too.
+     */
+    void drawSubpixelGlyph(int x, int y, Glyph * glyph, uint color, int subpixelPhase) {
+        drawGlyph(x, y, glyph, color);
+    }
     /// draw source buffer rectangle contents to destination buffer
     abstract void drawFragment(int x, int y, DrawBuf src, Rect srcrect);
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
@@ -1170,12 +1180,18 @@ class ColorDrawBufBase : DrawBuf {
     }
 
     override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
+        drawSubpixelGlyph(x, y, glyph, color, 0);
+    }
+
+    override void drawSubpixelGlyph(int x, int y, Glyph * glyph, uint color, int subpixelPhase) {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
         bool clipping = true; //!_clipRect.empty();
         color = applyAlpha(color);
         bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
+        // subpixel positioning: the glyph starts subpixelPhase subpixels right of x (#878)
+        int phase = subpixel ? subpixelPhase : 0;
         foreach(int yy; 0 .. srcdy) {
             int liney = y + yy;
             if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
@@ -1185,7 +1201,7 @@ class ColorDrawBufBase : DrawBuf {
             uint * row = scanLine(liney);
             ubyte * srcrow = src.ptr + yy * srcdx;
             foreach(int xx; 0 .. srcdx) {
-                int colx = x + (subpixel ? xx / 3 : xx);
+                int colx = x + (subpixel ? (xx + phase) / 3 : xx);
                 if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
                     continue;
                 if (colx < 0 || colx >= _dx)
@@ -1194,7 +1210,7 @@ class ColorDrawBufBase : DrawBuf {
                 uint alpha1 = srcrow[xx] ^ 255;
                 uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
                 if (subpixel) {
-                    int x0 = xx % 3;
+                    int x0 = (xx + phase) % 3;
                     ubyte * dst = cast(ubyte*)(row + colx);
                     ubyte * pcolor = cast(ubyte*)(&color);
                     blendSubpixel(dst, pcolor, alpha, x0, glyph.subpixelMode);
@@ -1209,40 +1225,6 @@ class ColorDrawBufBase : DrawBuf {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    /// put glyph image into an OpenGL glyph cache texture (the buffer is uploaded as GL_RGBA, byte 0 = red)
-    ///
-    /// Grayscale glyph: white with coverage in alpha.
-    /// Subpixel glyph: one texel per pixel with the coverage of the red, green and blue subpixels in the red,
-    /// green and blue channels, and their average in alpha (#833).
-    void drawGlyphToTexture(int x, int y, Glyph * glyph) {
-        ubyte[] src = glyph.glyph;
-        int srcdx = glyph.blackBoxX;
-        int srcdy = glyph.blackBoxY;
-        bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
-        bool bgr = glyph.subpixelMode == SubpixelRenderingMode.BGR;
-        foreach(int yy; 0 .. srcdy) {
-            int liney = y + yy;
-            uint * row = scanLine(liney);
-            ubyte * srcrow = src.ptr + yy * srcdx;
-            if (subpixel) {
-                foreach(int xx; 0 .. glyph.correctedBlackBoxX) {
-                    // the last pixel can have less than 3 subpixels
-                    int sx = xx * 3;
-                    uint t1 = srcrow[sx];
-                    uint t2 = sx + 1 < srcdx ? srcrow[sx + 1] : 0;
-                    uint t3 = sx + 2 < srcdx ? srcrow[sx + 2] : 0;
-                    uint r = bgr ? t3 : t1;
-                    uint b = bgr ? t1 : t3;
-                    uint a = (t1 + t2 + t3 + 1) / 3;
-                    row[x + xx] = (a << 24) | (b << 16) | (t2 << 8) | r;
-                }
-            } else {
-                foreach(int xx; 0 .. srcdx)
-                    row[x + xx] = (cast(uint)srcrow[xx] << 24) | 0xFFFFFF;
             }
         }
     }

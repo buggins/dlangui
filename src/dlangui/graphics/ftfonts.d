@@ -256,6 +256,12 @@ class FreeTypeFontFile {
         glyph.widthScaled = cast(ushort)(myabs(cast(int)(_slot.metrics.horiAdvance)));
         glyph.widthPixels =     cast(ubyte)(myabs(cast(int)(_slot.metrics.horiAdvance + 32)) >> 6);
         glyph.subpixelMode = subpixel;
+        if (subpixel) {
+            // subpixel glyphs are positioned with 1/3 pixel precision (#878): use the advance not rounded to whole
+            // pixels by hinting (LCD hinting doesn't change the glyph horizontally); 16.16 -> 1/64 pixel
+            glyph.widthScaled = cast(ushort)((myabs(cast(int)_slot.linearHoriAdvance) + 512) >> 10);
+            glyph.widthPixels = cast(ubyte)((glyph.widthScaled + 32) >> 6);
+        }
         //glyph.glyphIndex = cast(ushort)code;
         if (withImage) {
             FT_Bitmap*  bitmap = &_slot.bitmap;
@@ -315,11 +321,14 @@ class FreeTypeFontFile {
 
     int getKerningOffset(uint prevCharIndex, uint nextCharIndex) {
         const FT_KERNING_DEFAULT = 0;
+        const FT_KERNING_UNFITTED = 1;
+        // subpixel glyphs are positioned with 1/3 pixel precision: kerning not rounded to whole pixels (#878)
+        uint mode = FontManager.subpixelRenderingMode != SubpixelRenderingMode.None ? FT_KERNING_UNFITTED : FT_KERNING_DEFAULT;
         FT_Vector delta;
         int error = FT_Get_Kerning( _face,          /* handle to face object */
                                prevCharIndex,      /* left glyph index      */
                                nextCharIndex,       /* right glyph index     */
-                               FT_KERNING_DEFAULT,  /* kerning mode          */
+                               mode,               /* kerning mode          */
                                &delta);            /* target vector         */
         const RSHIFT = 0;
         if ( !error )

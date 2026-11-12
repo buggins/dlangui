@@ -548,6 +548,11 @@ class Font : RefCountedObject {
             widths.assumeSafeAppend;
             widths.length = len + 16;
         }
+        // pen positions in 1/64 pixel for drawText (#878)
+        _textPos64Valid = false;
+        if (_textPos64Buffer.length < len)
+            _textPos64Buffer.length = len + 16;
+        int * ppos64 = _textPos64Buffer.ptr;
         bool fixed = isFixed;
         bool useKerning = allowKerning && !fixed;
         int fixedCharWidth = charWidth('M');
@@ -566,6 +571,7 @@ class Font : RefCountedObject {
         foreach(int i; 0 .. len) {
             //auto measureStart = std.datetime.Clock.currAppTick;
             dchar ch = pstr[i];
+            ppos64[i] = x64;
             if (ch == '\t') {
                 // measure tab
                 int tabPosition = (x + tabWidth - tabOffset) / tabWidth * tabWidth + tabOffset;
@@ -606,6 +612,7 @@ class Font : RefCountedObject {
                     int kerningDelta = getKerningOffset(prevChar, ch); // 1/64 pixel
                     if (kerningDelta) {
                         x64 += kerningDelta;
+                        ppos64[i] = x64;
                         int kx = roundPosition(x64);
                         if (kx != x) {
                             x = kx;
@@ -628,7 +635,27 @@ class Font : RefCountedObject {
                 break;
             prevChar = ch;
         }
+        _textPos64Valid = true;
         return charsMeasured;
+    }
+
+    /// pen position of each character measured by the last measureText() call, in 1/64 pixel: the position the
+    /// glyph is drawn at (after kerning), not rounded to pixels; valid only if _textPos64Valid (#878)
+    protected int[] _textPos64Buffer;
+    /// true if _textPos64Buffer holds positions for the last measureText() call (false for fonts that override it)
+    protected bool _textPos64Valid;
+
+    /// draw glyph of the character measured at index i by the last measureText() call at x + xx (in pixels);
+    /// subpixel glyphs are placed with 1/3 pixel precision from the unrounded pen position (#878)
+    protected final void drawMeasuredGlyph(DrawBuf buf, int x, int y, int i, int xx, Glyph * glyph, uint color) {
+        if (glyph.subpixelMode && _textPos64Valid) {
+            // pen position in subpixels: whole pixels and a phase of 0..2 subpixels
+            int sub = (_textPos64Buffer[i] * 3 + 32) >> 6;
+            int px = sub >= 0 ? sub / 3 : -((-sub + 2) / 3);
+            buf.drawSubpixelGlyph(x + px + glyph.originX, y, glyph, color, sub - px * 3);
+        } else {
+            buf.drawGlyph(x + xx + glyph.originX, y, glyph, color);
+        }
     }
 
     /// position in 1/64 pixel rounded to pixels
@@ -808,12 +835,9 @@ class Font : RefCountedObject {
                 continue;
             if ( glyph.blackBoxX && glyph.blackBoxY ) {
                 int gx = x + xx + glyph.originX;
-                if (gx + glyph.correctedBlackBoxX < clip.left)
+                if (gx + glyph.correctedBlackBoxX + 1 < clip.left)
                     continue;
-                buf.drawGlyph( gx,
-                               y + _baseline - glyph.originY,
-                              glyph,
-                              color);
+                drawMeasuredGlyph(buf, x, y + _baseline - glyph.originY, i, xx, glyph, color);
             }
         }
     }
@@ -881,12 +905,9 @@ class Font : RefCountedObject {
                 continue;
             if ( glyph.blackBoxX && glyph.blackBoxY ) {
                 int gx = x + xx + glyph.originX;
-                if (gx + glyph.correctedBlackBoxX < clip.left)
+                if (gx + glyph.correctedBlackBoxX + 1 < clip.left)
                     continue;
-                buf.drawGlyph( gx,
-                               y + _baseline - glyph.originY,
-                              glyph,
-                              color);
+                drawMeasuredGlyph(buf, x, y + _baseline - glyph.originY, i, xx, glyph, color);
             }
         }
     }
