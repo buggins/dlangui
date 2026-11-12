@@ -74,6 +74,129 @@ private MemoryImage largestIcoImage(const(ubyte)[] data) {
     return readBmp(image, false, false, true);
 }
 
+/// true if the image is an SVG file (#843): by the .svg extension, or by its content
+bool isSvgImage(string filename, const(ubyte)[] data) {
+    import std.uni : toLower;
+    if (filename.length > 4 && filename[$ - 4 .. $].toLower == ".svg")
+        return true;
+    return guessImageFormatFromMemory(data) == ImageFileFormat.Svg;
+}
+
+/// Rasterize an SVG image (#843) in its own size (width and height in px, at 96 DPI) multiplied by scale.
+/// `currentColor` in the SVG is replaced by currentColor (0xRRGGBB), so one-color icons can follow the theme.
+/// <style> blocks and <use> references are supported through arsd.dom. Returns null on errors.
+ColorDrawBuf renderSvg(const(ubyte)[] data, double scale = 1.0, uint currentColor = 0x000000, string filename = null) {
+    return renderSvgImpl(data, scale, 0, currentColor, filename);
+}
+
+/// Rasterize an SVG image (#843) so that its larger side is size pixels, keeping the aspect ratio
+/// (e.g. scalable icons of an icon theme, whose own size can be anything). Returns null on errors.
+ColorDrawBuf renderSvgToSize(const(ubyte)[] data, int size, uint currentColor = 0x000000, string filename = null) {
+    return renderSvgImpl(data, 1.0, size, currentColor, filename);
+}
+
+/// Rasterize an SVG file so that its larger side is size pixels (see renderSvgToSize). Returns null on errors.
+ColorDrawBuf renderSvgFile(string filename, int size, uint currentColor = 0x000000) {
+    static import std.file;
+    try {
+        return renderSvgToSize(cast(const(ubyte)[])std.file.read(filename), size, currentColor, filename);
+    } catch (Exception e) {
+        Log.e("exception while loading image from file ", filename, ": ", e.msg);
+        return null;
+    }
+}
+
+private ColorDrawBuf renderSvgImpl(const(ubyte)[] data, double scale, int fitSize, uint currentColor, string filename) {
+    import std.array : replace;
+    import std.algorithm : canFind;
+    import std.format : format;
+    import std.math : ceil;
+    import std.string : indexOf, CaseSensitive;
+
+    string text = cast(string)data.idup;
+    if (text.indexOf("currentcolor", CaseSensitive.no) >= 0) {
+        string rgb = format("#%06X", currentColor & 0xFFFFFF);
+        text = text.replace("currentColor", rgb).replace("currentcolor", rgb);
+    }
+    NSVG * svg;
+    if (text.canFind("<style") || text.canFind("<use")) {
+        // the preprocessor applies style sheets and copies <use> targets; it throws on XML it can't handle
+        try {
+            svg = nsvgParseWithPreprocessor(text);
+        } catch (Exception e) {
+            Log.w("SVG preprocessing failed for ", filename, ": ", e.msg);
+        }
+    }
+    if (!svg)
+        svg = nsvgParse(text);
+    if (!svg || svg.width <= 0 || svg.height <= 0) {
+        Log.e("Failed to parse SVG image ", filename);
+        if (svg)
+            svg.kill();
+        return null;
+    }
+    scope(exit) svg.kill();
+    if (fitSize > 0)
+        scale = fitSize / (svg.width > svg.height ? svg.width : svg.height);
+    // the size is rounded up, so the image is never clipped; a small tolerance avoids an extra pixel
+    // from floating point errors (e.g. 16 * 1.25)
+    int w = cast(int)ceil(svg.width * scale - 0.01);
+    int h = cast(int)ceil(svg.height * scale - 0.01);
+    if (w < 1)
+        w = 1;
+    if (h < 1)
+        h = 1;
+    ubyte[] rgba = new ubyte[w * h * 4];
+    auto rasterizer = nsvgCreateRasterizer();
+    scope(exit) rasterizer.kill();
+    rasterize(rasterizer, svg, 0, 0, cast(float)scale, rgba.ptr, w, h, w * 4);
+    // straight alpha RGBA to DlangUI colors (inverted alpha: 0 is opaque)
+    ColorDrawBuf buf = new ColorDrawBuf(w, h);
+    foreach (y; 0 .. h) {
+        uint * line = buf.scanLine(y);
+        const(ubyte) * p = rgba.ptr + y * w * 4;
+        foreach (x; 0 .. w) {
+            line[x] = makeRGBA(p[0], p[1], p[2], 255 - p[3]);
+            p += 4;
+        }
+    }
+    return buf;
+}
+
+unittest {
+    // size from width/height at 96 DPI, multiplied by the scale; currentColor replaced
+    enum square = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">`
+        ~ `<rect x="0" y="0" width="16" height="16" fill="currentColor"/></svg>`;
+    auto data = cast(const(ubyte)[])square;
+    assert(isSvgImage("icon.SVG", null));
+    assert(isSvgImage("noext", data));
+    ColorDrawBuf b = renderSvg(data, 1.0, 0x3366CC);
+    assert(b.width == 16 && b.height == 16);
+    assert(b.scanLine(8)[8] == 0x003366CC); // opaque
+    destroy(b);
+    b = renderSvg(data, 1.25);
+    assert(b.width == 20 && b.height == 20);
+    assert(b.scanLine(10)[10] == 0x00000000);
+    destroy(b);
+    // fit into a size, keeping the aspect ratio
+    enum wide = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 64"><rect width="128" height="64" fill="#FF0000"/></svg>`;
+    b = renderSvgToSize(cast(const(ubyte)[])wide, 32);
+    assert(b.width == 32 && b.height == 16);
+    assert(b.scanLine(8)[16] == 0x00FF0000);
+    destroy(b);
+    // <style> blocks (through the preprocessor), as in KDE Breeze icons
+    enum styled = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8">`
+        ~ `<style type="text/css">.ColorScheme-Text { color:#232629; } .accent { fill:#00FF00; }</style>`
+        ~ `<rect class="accent" width="8" height="4"/>`
+        ~ `<rect class="ColorScheme-Text" style="fill:currentColor" y="4" width="8" height="4"/></svg>`;
+    b = renderSvg(cast(const(ubyte)[])styled, 1.0, 0xE0E0E0);
+    assert(b.scanLine(1)[4] == 0x0000FF00);
+    assert(b.scanLine(6)[4] == 0x00E0E0E0);
+    destroy(b);
+    // not an SVG image
+    assert(renderSvg(cast(const(ubyte)[])"<html></html>") is null);
+}
+
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
     static import std.file;
@@ -103,6 +226,10 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
             return null;
         }
     }
+
+    // SVG in its own size (arsd's readSvg renders 1 px too large)
+    if (isSvgImage(filename, data))
+        return renderSvg(data, 1.0, 0x000000, filename);
 
     MemoryImage image;
     try {

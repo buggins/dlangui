@@ -505,7 +505,13 @@ static if (!WIDGET_STYLE_CONSOLE) {
                     }
 
                     if (iconPath.length) {
-                        auto image = DrawBufRef(loadImage(iconPath));
+                        // scalable icons (#843) are rendered in the requested size, scaled for the screen DPI
+                        import dlangui.graphics.resources : imageScaleForScreen, svgCurrentColor;
+                        import std.math : lround;
+                        import std.algorithm : endsWith;
+                        auto image = DrawBufRef(iconPath.endsWith(".svg")
+                            ? renderSvgFile(iconPath, cast(int)lround(32 * imageScaleForScreen(iconPath)), svgCurrentColor)
+                            : loadImage(iconPath));
                         _cache[name] = image;
                         return image;
                     } else {

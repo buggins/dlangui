@@ -1259,6 +1259,11 @@ private __gshared Theme _currentTheme;
         destroy(_currentTheme);
     }
     _currentTheme = theme;
+    // one-color SVG icons (#843) use the theme's text color
+    if (theme !is null) {
+        uint color = theme.textColor;
+        svgCurrentColor = color == COLOR_UNSPECIFIED ? 0x000000 : color;
+    }
 }
 
 immutable ATTR_SCROLLBAR_BUTTON_UP = "scrollbar_button_up";

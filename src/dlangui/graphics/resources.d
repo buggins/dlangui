@@ -162,13 +162,14 @@ struct EmbeddedResourceList {
         string timname = name ~ ".tim";
         string bmpname = name ~ ".bmp";
         string iconame = name ~ ".ico";
+        string svgname = name ~ ".svg";
         string gifname = name ~ ".gif"; // found to report that GIF is not supported
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
             if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name)
                     || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname)
-                    || s.equal(bmpname) || s.equal(iconame) || s.equal(gifname))
+                    || s.equal(bmpname) || s.equal(iconame) || s.equal(svgname) || s.equal(gifname))
                 return &list[i];
         }
         return null;
@@ -178,10 +179,12 @@ struct EmbeddedResourceList {
 __gshared EmbeddedResourceList embeddedResourceList;
 
 /// screen DPI an image variant is made for (#794): images from hdpi (`hdpi_` prefix or `hdpi` directory)
-/// are 2x, 192 DPI; all others are 1x, 96 DPI
+/// are 2x, 192 DPI; all others are 1x, 96 DPI. SVG images (#843) are always rendered from their size at 96 DPI.
 int imageVariantDpi(string filename) {
     import std.path : baseName;
     string name = baseName(filename);
+    if (isSvgFilename(name))
+        return 96;
     if (name.startsWith("hdpi_") || filename.canFind("/hdpi/") || filename.canFind("\\hdpi\\"))
         return 192;
     return 96;
@@ -202,6 +205,39 @@ string resolvedImageFilename(string filename) {
             return EMBEDDED_RESOURCE_PREFIX ~ embedded.name;
     }
     return filename;
+}
+
+/// true if filename has the .svg extension (#843)
+bool isSvgFilename(string filename) {
+    import std.uni : toLower;
+    return filename.length > 4 && filename[$ - 4 .. $].toLower == ".svg";
+}
+
+private __gshared uint _svgCurrentColor = 0x000000;
+/// color (0xRRGGBB) that replaces `currentColor` in SVG images (#843); the text color of the current theme
+@property uint svgCurrentColor() {
+    return _svgCurrentColor;
+}
+/// set the color that replaces `currentColor` in SVG images; when it changes, SVG images are rendered again
+@property void svgCurrentColor(uint color) {
+    color &= 0xFFFFFF;
+    if (color == _svgCurrentColor)
+        return;
+    _svgCurrentColor = color;
+    static if (BACKEND_GUI) {
+        if (_imageCache)
+            _imageCache.onSvgCurrentColorChanged();
+        if (_drawableCache)
+            _drawableCache.onSvgCurrentColorChanged();
+    }
+}
+
+unittest {
+    // SVG images are rendered from their size at 96 DPI, wherever they are (#843)
+    assert(imageVariantDpi("res/hdpi/icon.svg") == 96);
+    assert(imageVariantDpi("hdpi_icon.svg") == 96);
+    assert(imageVariantDpi("res/hdpi/icon.png") == 192);
+    assert(isSvgFilename("a/b/Icon.SVG") && !isSvgFilename("svg"));
 }
 
 /// factor to scale an image file for the current SCREEN_DPI (#794); 1.0 when the image is within 10% of the
@@ -282,7 +318,7 @@ private string[] missingResourceReferences(string resourceList)() {
     bool[string] ids;
     foreach (f; files) {
         string name = baseName(f.strip);
-        foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".xml", ".tim"])
+        foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".svg", ".xml", ".tim"])
             if (name.endsWith(ext)) {
                 name = name[0 .. $ - ext.length];
                 break;
@@ -1430,6 +1466,9 @@ class ImageCache {
             ColorTransform transform;
         }
         DrawBufRef[ScaledTransformKey] _scaledTransformMap;
+        // SVG images (#843) are rendered from their source for each DPI, with svgCurrentColor
+        bool _svg;
+        immutable(ubyte)[] _svgData;
 
         bool _error; // flag to avoid loading of file if it has been failed once
         bool _used;
@@ -1447,7 +1486,12 @@ class ImageCache {
             _loadedFilename = resolvedImageFilename(_filename);
             immutable ubyte[] data = loadResourceBytes(_filename);
             if (data) {
-                _drawbuf = loadImage(data, _filename);
+                _svg = isSvgImage(_filename, data);
+                if (_svg) {
+                    _svgData = data;
+                    _drawbuf = renderSvg(data, 1.0, svgCurrentColor, _filename);
+                } else
+                    _drawbuf = loadImage(data, _filename);
                 if (_filename.endsWith(".9.png"))
                     _drawbuf.detectNinePatch();
                 _used = true;
@@ -1481,6 +1525,12 @@ class ImageCache {
             int dpi = SCREEN_DPI;
             if (auto p = dpi in _scaled)
                 return *p;
+            if (_svg) {
+                // vector image: rendered in the wanted size instead of resampled
+                ColorDrawBuf buf = renderSvg(_svgData, scale, svgCurrentColor, _filename);
+                _scaled[dpi] = buf ? DrawBufRef(buf) : _drawbuf;
+                return _scaled[dpi];
+            }
             ColorDrawBuf src = cast(ColorDrawBuf)_drawbuf.get;
             if (!src)
                 return _drawbuf;
@@ -1506,6 +1556,9 @@ class ImageCache {
         void compact() {
             if (!_drawbuf.isNull)
                 _drawbuf.clear();
+            foreach (ref b; _transformMap)
+                b.clear();
+            _transformMap.destroy();
             foreach (ref b; _scaled)
                 b.clear();
             _scaled.destroy();
@@ -1522,6 +1575,13 @@ class ImageCache {
         }
     }
     ImageCacheItem[string] _map;
+
+    /// SVG images are rendered with svgCurrentColor (#843): drop them when it changes
+    void onSvgCurrentColorChanged() {
+        foreach (item; _map)
+            if (item._svg)
+                item.compact();
+    }
 
     /// get and cache image
     ref DrawBufRef get(string filename) {
@@ -1680,6 +1740,12 @@ class DrawableCache {
             item.drawable.clear();
         _idToDrawableMap.destroy();
     }
+    /// SVG images are rendered with svgCurrentColor (#843): when it changes, drop all drawables, because
+    /// state drawables (.xml) keep the image drawables they use
+    void onSvgCurrentColorChanged() {
+        foreach (item; _idToDrawableMap)
+            item.compact();
+    }
     // clear usage flags for all entries
     void checkpoint() {
         foreach (item; _idToDrawableMap)
@@ -1777,6 +1843,8 @@ class DrawableCache {
             if (fn is null)
                 fn = checkFileName(path, id, ".ico");
             if (fn is null)
+                fn = checkFileName(path, id, ".svg");
+            if (fn is null)
                 fn = checkFileName(path, id, ".gif"); // found to report that GIF is not supported
             if (fn !is null) {
                 _idToFileMap[id] = fn;
@@ -1792,7 +1860,7 @@ class DrawableCache {
             DrawBufRef res;
             string fname = findResource(id);
             if (fname.endsWith(".png") || fname.endsWith(".jpg") || fname.endsWith(".jpeg")
-                    || fname.endsWith(".bmp") || fname.endsWith(".ico"))
+                    || fname.endsWith(".bmp") || fname.endsWith(".ico") || isSvgFilename(fname))
                 return imageCache.getScaled(fname);
             return res;
         }
@@ -1855,7 +1923,7 @@ private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform 
             }
         } else {
             static if (BACKEND_GUI) {
-                // PNG/JPEG/BMP/ICO drawables support
+                // PNG/JPEG/BMP/ICO/SVG drawables support
                 DrawBufRef image = transform.empty ? imageCache.getScaled(id) : imageCache.getScaled(id, transform);
                 if (!image.isNull) {
                     bool ninePatch = id.endsWith(".9.png") ||  id.endsWith(".9.PNG");
