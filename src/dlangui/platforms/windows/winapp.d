@@ -1641,7 +1641,19 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         Log.e("UIAppMain exception: ", e);
     }
 
+    // destroy the platform before releasing resources, as other backends do: it owns the icon provider and its
+    // cached icon images (#876)
+    Log.d("Destroying Win32 platform");
+    Platform.setInstance(null);
+    // no GL context is current outside of window painting, and no window is left: don't call GL to delete
+    // textures of the GL caches, they are freed with the context (#876)
+    static if (ENABLE_OPENGL)
+        glNoContext = true;
+
     releaseResourcesOnAppExit();
+
+    static if (ENABLE_OPENGL)
+        sharedGLContext.uninit();
 
     Log.d("Exiting main");
     debug {
@@ -1704,7 +1716,19 @@ int myWinMainProfile(string[] args)
         Log.e("UIAppMain exception: ", e);
     }
 
+    // destroy the platform before releasing resources, as other backends do: it owns the icon provider and its
+    // cached icon images (#876)
+    Log.d("Destroying Win32 platform");
+    Platform.setInstance(null);
+    // no GL context is current outside of window painting, and no window is left: don't call GL to delete
+    // textures of the GL caches, they are freed with the context (#876)
+    static if (ENABLE_OPENGL)
+        glNoContext = true;
+
     releaseResourcesOnAppExit();
+
+    static if (ENABLE_OPENGL)
+        sharedGLContext.uninit();
 
     Log.d("Exiting main");
     debug {
@@ -1756,6 +1780,9 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 //window.handleUnknownWindowMessage(message, wParam, lParam);
                 window.onDestroy();
             }
+            // the window is removed from the window map: forget it for the messages that still come (WM_NCDESTROY),
+            // they logged "Cannot find window in map by HWND" (#876)
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
             if (w32platform.windowCount == 0 && isInitialized)
                 PostQuitMessage(0);
             return 0;
