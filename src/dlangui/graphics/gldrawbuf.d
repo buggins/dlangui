@@ -83,6 +83,8 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         glSupport.flushGL();
         destroy(_scene);
         _scene = null;
+        // the GL context is current here: delete textures of images and glyphs deleted since the last frame
+        removeDeletedGLCacheItems();
     }
 
     /// resize buffer
@@ -316,6 +318,14 @@ void initGLCaches() {
         glGlyphCache = new GLGlyphCache;
 }
 
+/// free GL resources of deleted images and glyphs; call when the GL context is current (#876)
+void removeDeletedGLCacheItems() {
+    if (glImageCache)
+        glImageCache.removeDeletedItems();
+    if (glGlyphCache)
+        glGlyphCache.removeDeletedItems();
+}
+
 void destroyGLCaches() {
     if (glImageCache)
         destroy(glImageCache);
@@ -490,32 +500,39 @@ private abstract class GLCache
         destroy(_pages);
         destroy(_map);
     }
-    /// handle cached object deletion, mark as deleted
+    // number of items marked as deleted and not removed yet
+    private int _deletedCount;
+    /// handle cached object deletion: mark the item as deleted, it is removed by removeDeletedItems()
+    ///
+    /// Objects are deleted at any time, also when no GL context is current (Win32 makes it current only while
+    /// painting), so textures can't be deleted here (#876).
     final void onCachedObjectDeleted(uint objectId) {
-        if (objectId in _map) {
-            GLCacheItem item = _map[objectId];
-            if (hasActiveScene()) {
-                item._deleted = true;
-            } else {
-                int itemsLeft = item.page.deleteItem(item);
-                if (itemsLeft <= 0) {
-                    removePage(item.page);
-                }
-                _map.remove(objectId);
-                destroy(item);
+        if (auto p = objectId in _map) {
+            if (!(*p)._deleted) {
+                (*p)._deleted = true;
+                _deletedCount++;
             }
         }
     }
-    /// remove deleted items - remove page if contains only deleted items
+    /// remove items marked as deleted, and pages left without items; call when the GL context is current
     final void removeDeletedItems() {
+        if (!_deletedCount)
+            return;
         uint[] list;
         foreach(GLCacheItem item; _map) {
             if (item._deleted)
                 list ~= item._objectId;
         }
-        foreach(i; 0 .. list.length) {
-            onCachedObjectDeleted(list[i]);
+        foreach(objectId; list) {
+            GLCacheItem item = _map[objectId];
+            int itemsLeft = item.page.deleteItem(item);
+            if (itemsLeft <= 0) {
+                removePage(item.page);
+            }
+            _map.remove(objectId);
+            destroy(item);
         }
+        _deletedCount = 0;
     }
 }
 
