@@ -93,6 +93,23 @@
     <drawable id="arrow_right_hollow" value="arrow_right_hollow_dark"/>
     <drawable id="toolbar_separator" value="toolbar_separator_dark"/>
 
+    <!-- icons (JetBrains IntelliJ Platform icons, res/icons) -->
+    <drawable id="dialog-ok" value="dialog-ok_dark"/>
+    <drawable id="dialog-ok-apply" value="dialog-ok-apply_dark"/>
+    <drawable id="dialog-cancel" value="dialog-cancel_dark"/>
+    <drawable id="dialog-close" value="dialog-close_dark"/>
+    <drawable id="dialog-information" value="dialog-information_dark"/>
+    <drawable id="dialog-warning" value="dialog-warning_dark"/>
+    <drawable id="dialog-error" value="dialog-error_dark"/>
+    <drawable id="find_case_sensitive" value="find_case_sensitive_dark"/>
+    <drawable id="find_whole_words" value="find_whole_words_dark"/>
+    <drawable id="folder" value="folder_dark"/>
+    <drawable id="text-plain" value="text-plain_dark"/>
+    <drawable id="applications-internet" value="applications-internet_dark"/>
+    <drawable id="emblem-error" value="emblem-error_dark"/>
+    <drawable id="emblem-warning" value="emblem-warning_dark"/>
+    <drawable id="emblem-modified" value="emblem-modified_dark"/>
+
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up_dark"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down_dark"/>
     <drawable id="scrollbar_button_left" value="scrollbar_btn_left_dark"/>
