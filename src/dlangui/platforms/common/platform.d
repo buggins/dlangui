@@ -1283,9 +1283,6 @@ class Window : CustomEventTarget {
     /// widget which tracks all events after processed ButtonDown
     protected Widget _mouseCaptureWidget;
     protected ushort _mouseCaptureButtons;
-    /// mouse buttons pressed while the pointer was in this window: a button pressed in another window and still
-    /// held (e.g. the second click of a double-click that closed a dialog above this window) is not a drag here
-    protected ushort _buttonsPressedHere;
     protected bool _mouseCaptureFocusedOut;
     /// does current capture widget want to receive move events even if pointer left it
     protected bool _mouseCaptureFocusedOutTrackMovements;
@@ -1485,25 +1482,6 @@ class Window : CustomEventTarget {
         // ignore events if there is no root
         if (_mainWidget is null)
             return false;
-
-        // buttons pressed in another window: ignore their release, and don't report them as held while moving
-        ushort buttonFlag = cast(ushort)(event.button & MouseFlag.ButtonsMask);
-        if (event.action == MouseAction.ButtonDown) {
-            _buttonsPressedHere |= buttonFlag;
-        } else if (event.action == MouseAction.ButtonUp) {
-            if (buttonFlag && !(_buttonsPressedHere & buttonFlag)) {
-                debug(DebugMouseEvents) Log.d("dispatchMouseEvent: ignoring ButtonUp of a button pressed in another window");
-                return false;
-            }
-            _buttonsPressedHere &= ~buttonFlag;
-        } else if (event.action == MouseAction.Move) {
-            // a button released outside this window (its ButtonUp went elsewhere) is no longer held;
-            // only Move events carry the real button state (e.g. Leave may be sent without it)
-            _buttonsPressedHere &= event.buttonFlags;
-        }
-        ushort foreignButtons = cast(ushort)(event.buttonFlags & ~_buttonsPressedHere);
-        if (foreignButtons)
-            event.clearFlags(foreignButtons);
 
         bool actualChange = true;
         if (event.action == MouseAction.Move) {
