@@ -338,8 +338,13 @@ int fromPercentSize(int size, int baseSize) {
     return size;
 }
 
+/// Reference DPI: the screen DPI of 100% scaling (Windows at 100%, X11 and GTK/Qt default, CSS and SVG px).
+/// Sizes of images (1x images, SVG content size, `name.24x24.svg` suffix) and default sizes in pixels are given
+/// for this DPI and scaled by SCREEN_DPI / BASE_DPI; 2x (hdpi) images are made for 2 * BASE_DPI.
+enum int BASE_DPI = 96;
+
 /// screen dots per inch
-private __gshared int PRIVATE_SCREEN_DPI = 96;
+private __gshared int PRIVATE_SCREEN_DPI = BASE_DPI;
 /// value to override detected system DPI, 0 to disable overriding
 private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
 
@@ -354,7 +359,7 @@ private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
 }
 
 /// call to disable automatic screen DPI detection, use provided one instead (pass 0 to disable override and use value detected by platform)
-@property void overrideScreenDPI(int dpi = 96) {
+@property void overrideScreenDPI(int dpi = BASE_DPI) {
     static if (WIDGET_STYLE_CONSOLE) {
     } else {
         if ((dpi >= 72 && dpi <= 500) || dpi == 0)

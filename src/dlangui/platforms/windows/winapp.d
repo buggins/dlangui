@@ -408,11 +408,11 @@ class Win32Window : Window {
         HWND parenthwnd = _w32parent ? _w32parent._hwnd : null;
         _dx = width;
         _dy = height;
-        // default size is 600x400 at 96 DPI, scaled like a size given in points (#806)
+        // default size is 600x400 at BASE_DPI, scaled like a size given in points (#806)
         if (!_dx)
-            _dx = 600 * SCREEN_DPI / 96;
+            _dx = 600 * SCREEN_DPI / BASE_DPI;
         if (!_dy)
-            _dy = 400 * SCREEN_DPI / 96;
+            _dy = 400 * SCREEN_DPI / BASE_DPI;
         _platform = platform;
         _caption = windowCaption;
         _windowState = WindowState.hidden;

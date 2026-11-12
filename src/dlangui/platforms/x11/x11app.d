@@ -301,11 +301,11 @@ class X11Window : DWindow {
         _platform = platform;
         //backgroundColor = 0xFFFFFF;
         debug Log.d("X11Window: Creating window");
-        // default size is 500x300 at 96 DPI (#806)
+        // default size is 500x300 at BASE_DPI (#806)
         if (width == 0)
-            width = 500 * SCREEN_DPI / 96;
+            width = 500 * SCREEN_DPI / BASE_DPI;
         if (height == 0)
-            height = 300 * SCREEN_DPI / 96;
+            height = 300 * SCREEN_DPI / BASE_DPI;
         _cachedWidth = _dx = width;
         _cachedHeight = _dy = height;
         _flags = flags;

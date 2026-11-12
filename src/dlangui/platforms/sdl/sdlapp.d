@@ -247,11 +247,11 @@ class SDLWindow : Window {
     }
 
     bool create(uint flags) {
-        // default size is 600x400 at 96 DPI (#806)
+        // default size is 600x400 at BASE_DPI (#806)
         if (!_dx)
-            _dx = 600 * SCREEN_DPI / 96;
+            _dx = 600 * SCREEN_DPI / BASE_DPI;
         if (!_dy)
-            _dy = 400 * SCREEN_DPI / 96;
+            _dy = 400 * SCREEN_DPI / BASE_DPI;
         _flags = flags;
         SDL_WindowFlags windowFlags = SDL_WINDOW_HIDDEN;
         if (flags & WindowFlag.Resizable)
@@ -354,8 +354,8 @@ class SDLWindow : Window {
     } else {
         /// index of the display the window is on, -1 if not known yet
         private int _displayIndex = -1;
-        /// DPI of that display without HiDPI scaling (Xft.dpi, SDL_GetDisplayDPI or 96)
-        private int _displayDpi = 96;
+        /// DPI of that display without HiDPI scaling (Xft.dpi, SDL_GetDisplayDPI or BASE_DPI)
+        private int _displayDpi = BASE_DPI;
 
         /// update SCREEN_DPI for the display the window is on and its HiDPI scale (#101);
         /// returns true if SCREEN_DPI is changed
@@ -376,12 +376,12 @@ class SDLWindow : Window {
                 // window moved to another display
                 _displayIndex = displayIndex;
                 int dpi = sdlDetectScreenDpi(displayIndex);
-                _displayDpi = dpi ? dpi : 96;
+                _displayDpi = dpi ? dpi : BASE_DPI;
             }
             int dpi = _displayDpi;
             // HiDPI scaling (e.g. macOS Retina): drawable is bigger than the window
             if (drawableW > width && drawableH > height && width > 0 && height > 0)
-                dpi = 96 * drawableW / width;
+                dpi = BASE_DPI * drawableW / width;
             int oldDpi = SCREEN_DPI;
             SCREEN_DPI = dpi;
             if (SCREEN_DPI == oldDpi)

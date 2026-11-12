@@ -82,7 +82,7 @@ bool isSvgImage(string filename, const(ubyte)[] data) {
     return guessImageFormatFromMemory(data) == ImageFileFormat.Svg;
 }
 
-/// Rasterize an SVG image (#843) in its own size (width and height in px, at 96 DPI) multiplied by scale.
+/// Rasterize an SVG image (#843) in its own size (width and height in px, at BASE_DPI = 96) multiplied by scale.
 /// If filename has a size suffix (`name.24x24.svg`, see svgSizeSuffix), that size is used instead, with the
 /// content fitted and centered in it.
 /// `currentColor` in the SVG is replaced by currentColor (0xRRGGBB), so one-color icons can follow the theme.
@@ -197,7 +197,7 @@ private ColorDrawBuf renderSvgImpl(const(ubyte)[] data, double scale, int fitSiz
         w = pixels(svg.width * contentScale);
         h = pixels(svg.height * contentScale);
     } else if (filename.length && svgSizeSuffix(filename, sizedW, sizedH) !is null) {
-        // name.WxH.svg: WxH px at 96 DPI, whatever the size of the content; it is fitted and centered
+        // name.WxH.svg: WxH px at BASE_DPI, whatever the size of the content; it is fitted and centered
         w = pixels(sizedW * scale);
         h = pixels(sizedH * scale);
         float sx = w / svg.width;
@@ -228,7 +228,7 @@ private ColorDrawBuf renderSvgImpl(const(ubyte)[] data, double scale, int fitSiz
 }
 
 unittest {
-    // size from width/height at 96 DPI, multiplied by the scale; currentColor replaced
+    // size from width/height at BASE_DPI, multiplied by the scale; currentColor replaced
     enum square = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">`
         ~ `<rect x="0" y="0" width="16" height="16" fill="currentColor"/></svg>`;
     auto data = cast(const(ubyte)[])square;

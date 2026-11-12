@@ -181,21 +181,22 @@ struct EmbeddedResourceList {
 __gshared EmbeddedResourceList embeddedResourceList;
 
 /// screen DPI an image variant is made for (#794): images from hdpi (`hdpi_` prefix or `hdpi` directory)
-/// are 2x, 192 DPI; all others are 1x, 96 DPI. SVG images (#843) are always rendered from their size at 96 DPI.
+/// are 2x, 2 * BASE_DPI (192); all others are 1x, BASE_DPI (96). SVG images (#843) are always rendered from
+/// their size at BASE_DPI.
 int imageVariantDpi(string filename) {
     import std.path : baseName;
     string name = baseName(filename);
     if (isSvgFilename(name))
-        return 96;
+        return BASE_DPI;
     if (name.startsWith("hdpi_") || filename.canFind("/hdpi/") || filename.canFind("\\hdpi\\"))
-        return 192;
-    return 96;
+        return 2 * BASE_DPI;
+    return BASE_DPI;
 }
 
-/// true if hdpi (2x) image variants are preferred for the current SCREEN_DPI: from 10% above 96 DPI, where
-/// a 1x image would have to be upscaled
+/// true if hdpi (2x) image variants are preferred for the current SCREEN_DPI: from 10% above BASE_DPI
+/// (106 DPI), where a 1x image would have to be upscaled
 @property bool preferHdpiImages() {
-    return SCREEN_DPI >= 106;
+    return SCREEN_DPI * 10 >= BASE_DPI * 11;
 }
 
 /// the file actually loaded for filename: for an embedded image, the hdpi_ variant when it is preferred
@@ -209,7 +210,7 @@ string resolvedImageFilename(string filename) {
     return filename;
 }
 
-/// Size at 96 DPI given in the name of an SVG file (#843): `name.24x24.svg` is drawn as 24x24 px at 96 DPI,
+/// Size at BASE_DPI (96) given in the name of an SVG file (#843): `name.24x24.svg` is drawn as 24x24 px at 96 DPI,
 /// whatever size the SVG content has, so icons from different sources can be used without editing them.
 /// filename is a file name with or without directory. Returns the resource id (`name`, without directory) and
 /// the size, or null if the name has no such suffix.
@@ -295,10 +296,11 @@ private __gshared uint _svgCurrentColor = 0x000000;
 }
 
 unittest {
-    // SVG images are rendered from their size at 96 DPI, wherever they are (#843)
-    assert(imageVariantDpi("res/hdpi/icon.svg") == 96);
-    assert(imageVariantDpi("hdpi_icon.svg") == 96);
-    assert(imageVariantDpi("res/hdpi/icon.png") == 192);
+    // SVG images are rendered from their size at BASE_DPI, wherever they are (#843)
+    assert(imageVariantDpi("res/hdpi/icon.svg") == BASE_DPI);
+    assert(imageVariantDpi("hdpi_icon.svg") == BASE_DPI);
+    assert(imageVariantDpi("res/hdpi/icon.png") == 2 * BASE_DPI);
+    assert(imageVariantDpi("res/mdpi/icon.png") == BASE_DPI);
     assert(isSvgFilename("a/b/Icon.SVG") && !isSvgFilename("svg"));
 }
 
