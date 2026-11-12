@@ -2013,7 +2013,7 @@ class StringGridWidget : StringGridWidgetBase {
             ha = Align.Right;
         //if (row < 0)
         //    ha = Align.HCenter;
-        applyAlign(rc, sz, ha, Align.VCenter);
+        applyTextAlign(rc, sz, ha, Align.VCenter, fnt.get);
         int offset = WIDGET_STYLE_CONSOLE ? 0 : 1;
         uint cl = textColor;
         cl = style.customColor("grid_cell_text_color_header", cl);

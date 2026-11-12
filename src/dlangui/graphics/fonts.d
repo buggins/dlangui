@@ -449,6 +449,18 @@ class Font : RefCountedObject {
     abstract @property int weight();
     /// returns baseline offset
     abstract @property int baseline();
+
+    protected int _capHeight = -1;
+    /// height of the capital letters above the baseline (top of 'H'), in pixels (#856); between 0 and baseline
+    @property int capHeight() {
+        if (_capHeight < 0) {
+            int b = baseline;
+            Glyph * g = getCharGlyph('H', false);
+            int h = g !is null && g.originY > 0 ? g.originY : b * 7 / 10;
+            _capHeight = h > b ? b : (h < 0 ? 0 : h);
+        }
+        return _capHeight;
+    }
     /// returns true if font is italic
     abstract @property bool italic();
     /// returns font face name

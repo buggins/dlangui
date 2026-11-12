@@ -250,13 +250,13 @@ class TextWidget : Widget {
                 txt = ellipsizedText(font.get, rc.width, flags, w);
                 sz.x = w;
             }
-            applyAlign(rc, sz);
+            applyTextAlign(rc, sz, font.get);
             font.drawText(buf, rc.left, rc.top, txt, textColor, 4, 0, flags);
         } else {
             SimpleTextFormatter fmt;
             Point sz = fmt.format(text, font, maxLines, rc.width, 4, 0, flags, ellipsize);
             _textTruncated = fmt._truncated || sz.x > rc.width;
-            applyAlign(rc, sz);
+            applyTextAlign(rc, sz, font.get);
             // TODO: apply align to alignment lines
             fmt.draw(buf, rc.left, rc.top, font, textColor);
         }
@@ -733,7 +733,7 @@ class Button : Widget {
         auto saver = ClipRectSaver(buf, rc, alpha);
         FontRef font = font();
         Point sz = font.textSize(text);
-        applyAlign(rc, sz);
+        applyTextAlign(rc, sz, font.get);
         font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
     }
 
