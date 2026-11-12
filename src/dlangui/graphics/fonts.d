@@ -553,7 +553,8 @@ class Font : RefCountedObject {
         int fixedCharWidth = charWidth('M');
         if (fixedCharWidth == 0)
             fixedCharWidth = spaceWidth;
-        int x = 0;
+        int x = 0; // position in pixels: x64 rounded
+        int x64 = 0; // position in 1/64 pixel: advances and kerning are added without rounding them (#861)
         int charsMeasured = 0;
         int * pwidths = widths.ptr;
         int spWidth = fixed ? fixedCharWidth : spaceWidth;
@@ -573,6 +574,7 @@ class Font : RefCountedObject {
                 pwidths[i] = tabPosition;
                 charsMeasured = i + 1;
                 x = tabPosition;
+                x64 = x << 6;
                 prevChar = 0;
                 continue;
             } else if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
@@ -583,6 +585,7 @@ class Font : RefCountedObject {
             if (fixed) {
                 // fast calculation for fixed pitch
                 x += fixedCharWidth;
+                x64 = x << 6;
                 pwidths[i] = x;
                 charsMeasured = i + 1;
             } else {
@@ -601,21 +604,24 @@ class Font : RefCountedObject {
                 // at widths[i - 1], so that boundary (also the caret position between them) is moved
                 if (useKerning && prevChar) {
                     int kerningDelta = getKerningOffset(prevChar, ch); // 1/64 pixel
-                    int dx = kerningDelta >= 0 ? (kerningDelta + 32) / 64 : -((-kerningDelta + 32) / 64);
-                    if (dx) {
-                        x += dx;
-                        pwidths[i - 1] = x;
+                    if (kerningDelta) {
+                        x64 += kerningDelta;
+                        int kx = roundPosition(x64);
+                        if (kx != x) {
+                            x = kx;
+                            pwidths[i - 1] = x;
+                        }
                     }
                 }
-                int width = ((glyph.widthScaled + 63) >> 6);
-                if (width < glyph.originX + glyph.correctedBlackBoxX)
-                    width = glyph.originX + glyph.correctedBlackBoxX;
-                int w = x + width; // using advance
-                //int w2 = x + glyph.originX + glyph.correctedBlackBoxX; // using black box
-                //if (w < w2) // choose bigger value
-                //    w = w2;
-                pwidths[i] = w;
-                x += width;
+                // the advance, in 1/64 pixel; not rounded per glyph, which made text wider (#861)
+                int advance = glyph.widthScaled;
+                // at least as wide as the glyph's black box, so that the next glyph doesn't overlap it; not for
+                // subpixel glyphs, whose bitmap is wider than the ink (LCD filter), which made some glyphs wider
+                if (!glyph.subpixelMode && advance < ((glyph.originX + glyph.correctedBlackBoxX) << 6))
+                    advance = (glyph.originX + glyph.correctedBlackBoxX) << 6;
+                x64 += advance;
+                x = roundPosition(x64);
+                pwidths[i] = x;
                 charsMeasured = i + 1;
             }
             if (x > maxWidth)
@@ -623,6 +629,11 @@ class Font : RefCountedObject {
             prevChar = ch;
         }
         return charsMeasured;
+    }
+
+    /// position in 1/64 pixel rounded to pixels
+    private static int roundPosition(int pos64) pure nothrow @nogc @safe {
+        return pos64 >= 0 ? (pos64 + 32) >> 6 : -((-pos64 + 32) >> 6);
     }
 
     /*************************************************************************
@@ -925,6 +936,16 @@ unittest {
                 g.widthScaled = cast(ushort)(w << 6);
                 _glyphs[ch] = g;
             }
+            // fractional advance, 5.5 px (#861)
+            Glyph f;
+            f.blackBoxX = 4; f.blackBoxY = 10; f.originY = 10;
+            f.widthPixels = 6; f.widthScaled = 5 * 64 + 32;
+            _glyphs['f'] = f;
+            // subpixel glyph: 7 px advance, bitmap 3 * 9 subpixels wide (with LCD filter padding)
+            Glyph l;
+            l.blackBoxX = 27; l.blackBoxY = 10; l.originY = 10; l.subpixelMode = SubpixelRenderingMode.RGB;
+            l.widthPixels = 7; l.widthScaled = 7 * 64;
+            _glyphs['l'] = l;
         }
         override @property int size() { return 12; }
         override @property int height() { return 14; }
@@ -953,6 +974,12 @@ unittest {
     assert(w[0] == 8 && w[1] == 18); // no pair o->T
     font.measureText("AVA"d, w);
     assert(w[0] == 8 && w[1] == 18 && w[2] == 28);
+    // fractional advances are added before rounding (#861): 5.5 + 5.5 + 5.5 px
+    font.measureText("fff"d, w);
+    assert(w[0] == 6 && w[1] == 11 && w[2] == 17); // rounding each glyph up made it 6, 12, 18
+    // a subpixel glyph keeps its advance although its bitmap is wider
+    font.measureText("ll"d, w);
+    assert(w[0] == 7 && w[1] == 14);
     destroy(font);
 }
 alias FontRef = Ref!Font;
