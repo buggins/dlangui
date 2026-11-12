@@ -31,7 +31,8 @@ Main features:
 * HiDPI support: sizes in points (`pt`) scale with screen DPI
 * Hardware acceleration using OpenGL (when built with version USE_OPENGL)
 * Fallback to pure Win32 API / SDL / X11 when OpenGL is not available (e.g. opengl dynamic library cannot be loaded)
-* Software rendering on request: call `setOpenglEnabled(false)` before creating the first window (e.g. for subpixel font rendering, which needs it); example1 has a `--no-opengl` command line option
+* Software rendering on request: call `setOpenglEnabled(false)` before creating the first window; example1 has a `--no-opengl` command line option
+* Subpixel (ClearType-like) font rendering with 1/3 pixel glyph positioning, with OpenGL and software rendering. On by default as set for the system (`SubpixelRenderingMode.Auto`: ClearType settings on Windows, `Xft.rgba` or fontconfig on Linux); set `FontManager.subpixelRenderingMode` to `None`, `RGB` or `BGR` to override it
 * Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app project from C++.
 * Non thread safe - all UI operations should be performed in single thread
 * Simple 3d engine - allows to embed 3D scenes within GUI
