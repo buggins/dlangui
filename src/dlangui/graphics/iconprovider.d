@@ -486,6 +486,17 @@ static if (!WIDGET_STYLE_CONSOLE) {
             {
                 static if (!WIDGET_STYLE_CONSOLE) {
                     immutable extensions = [".svg",".png"];
+                    // SVG icons are rendered for the screen DPI and with the theme's text color (#843):
+                    // render them again when either has changed
+                    import dlangui.core.types : SCREEN_DPI;
+                    import dlangui.graphics.resources : svgCurrentColor;
+                    if (_cacheDpi != SCREEN_DPI || _cacheColor != svgCurrentColor) {
+                        foreach (ref buf; _cache)
+                            buf.clear();
+                        _cache.destroy();
+                        _cacheDpi = SCREEN_DPI;
+                        _cacheColor = svgCurrentColor;
+                    }
                     auto found = name in _cache;
                     if (found) {
                         return *found;
@@ -612,6 +623,8 @@ static if (!WIDGET_STYLE_CONSOLE) {
             }
 
             DrawBufRef[string] _cache;
+            int _cacheDpi; // SCREEN_DPI and svgCurrentColor the cached icons are rendered for
+            uint _cacheColor;
             string[] _baseIconDirs;
             IconThemeFile[] _iconThemes;
         }
