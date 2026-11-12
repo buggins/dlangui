@@ -83,6 +83,8 @@ bool isSvgImage(string filename, const(ubyte)[] data) {
 }
 
 /// Rasterize an SVG image (#843) in its own size (width and height in px, at 96 DPI) multiplied by scale.
+/// If filename has a size suffix (`name.24x24.svg`, see svgSizeSuffix), that size is used instead, with the
+/// content fitted and centered in it.
 /// `currentColor` in the SVG is replaced by currentColor (0xRRGGBB), so one-color icons can follow the theme.
 /// <style> blocks and <use> references are supported through arsd.dom. Returns null on errors.
 ColorDrawBuf renderSvg(const(ubyte)[] data, double scale = 1.0, uint currentColor = 0x000000, string filename = null) {
@@ -179,20 +181,39 @@ private ColorDrawBuf renderSvgImpl(const(ubyte)[] data, double scale, int fitSiz
         return null;
     }
     scope(exit) svg.kill();
-    if (fitSize > 0)
-        scale = fitSize / (svg.width > svg.height ? svg.width : svg.height);
     // the size is rounded up, so the image is never clipped; a small tolerance avoids an extra pixel
     // from floating point errors (e.g. 16 * 1.25)
-    int w = cast(int)ceil(svg.width * scale - 0.01);
-    int h = cast(int)ceil(svg.height * scale - 0.01);
-    if (w < 1)
-        w = 1;
-    if (h < 1)
-        h = 1;
+    static int pixels(double size) {
+        int n = cast(int)ceil(size - 0.01);
+        return n < 1 ? 1 : n;
+    }
+    int w, h;
+    float contentScale;
+    float tx = 0, ty = 0;
+    int sizedW, sizedH;
+    import dlangui.graphics.resources : svgSizeSuffix;
+    if (fitSize > 0) {
+        contentScale = fitSize / (svg.width > svg.height ? svg.width : svg.height);
+        w = pixels(svg.width * contentScale);
+        h = pixels(svg.height * contentScale);
+    } else if (filename.length && svgSizeSuffix(filename, sizedW, sizedH) !is null) {
+        // name.WxH.svg: WxH px at 96 DPI, whatever the size of the content; it is fitted and centered
+        w = pixels(sizedW * scale);
+        h = pixels(sizedH * scale);
+        float sx = w / svg.width;
+        float sy = h / svg.height;
+        contentScale = sx < sy ? sx : sy;
+        tx = (w - svg.width * contentScale) / 2;
+        ty = (h - svg.height * contentScale) / 2;
+    } else {
+        contentScale = cast(float)scale;
+        w = pixels(svg.width * scale);
+        h = pixels(svg.height * scale);
+    }
     ubyte[] rgba = new ubyte[w * h * 4];
     auto rasterizer = nsvgCreateRasterizer();
     scope(exit) rasterizer.kill();
-    rasterize(rasterizer, svg, 0, 0, cast(float)scale, rgba.ptr, w, h, w * 4);
+    rasterize(rasterizer, svg, tx, ty, contentScale, rgba.ptr, w, h, w * 4);
     // straight alpha RGBA to DlangUI colors (inverted alpha: 0 is opaque)
     ColorDrawBuf buf = new ColorDrawBuf(w, h);
     foreach (y; 0 .. h) {
@@ -246,6 +267,19 @@ unittest {
     destroy(b);
     assert(clipShapesToPaths(`<clipPath id="c"><circle cx="5" cy="5" r="2"></circle></clipPath>`)
         == `<clipPath id="c"><path d="M3 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0z" cx="5" cy="5" r="2"></path></clipPath>`);
+    // size suffix in the file name: content drawn 100x100 becomes 24x24 at 96 DPI, 30x30 at 125%
+    enum big = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#00FF00"/></svg>`;
+    b = renderSvg(cast(const(ubyte)[])big, 1.0, 0, "res/icon.24x24.svg");
+    assert(b.width == 24 && b.height == 24 && b.scanLine(23)[23] == 0x0000FF00);
+    destroy(b);
+    b = renderSvg(cast(const(ubyte)[])big, 1.25, 0, "icon.24x24.svg");
+    assert(b.width == 30 && b.height == 30 && b.scanLine(0)[0] == 0x0000FF00 && b.scanLine(29)[29] == 0x0000FF00);
+    destroy(b);
+    // other aspect ratio: fitted and centered (128x64 content in 32x32: 32x16 in the middle)
+    b = renderSvg(cast(const(ubyte)[])wide, 1.0, 0, "wide.32x32.svg");
+    assert(b.width == 32 && b.height == 32);
+    assert(b.scanLine(2)[16] >> 24 == 0xFF && b.scanLine(16)[16] == 0x00FF0000 && b.scanLine(29)[16] >> 24 == 0xFF);
+    destroy(b);
     // not an SVG image
     assert(renderSvg(cast(const(ubyte)[])"<html></html>") is null);
 }

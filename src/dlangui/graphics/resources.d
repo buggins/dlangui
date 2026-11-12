@@ -167,9 +167,11 @@ struct EmbeddedResourceList {
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
+            int w, h;
             if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name)
                     || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname)
-                    || s.equal(bmpname) || s.equal(iconame) || s.equal(svgname) || s.equal(gifname))
+                    || s.equal(bmpname) || s.equal(iconame) || s.equal(svgname) || s.equal(gifname)
+                    || svgSizeSuffix(s, w, h) == name) // name.WxH.svg
                 return &list[i];
         }
         return null;
@@ -205,6 +207,66 @@ string resolvedImageFilename(string filename) {
             return EMBEDDED_RESOURCE_PREFIX ~ embedded.name;
     }
     return filename;
+}
+
+/// Size at 96 DPI given in the name of an SVG file (#843): `name.24x24.svg` is drawn as 24x24 px at 96 DPI,
+/// whatever size the SVG content has, so icons from different sources can be used without editing them.
+/// filename is a file name with or without directory. Returns the resource id (`name`, without directory) and
+/// the size, or null if the name has no such suffix.
+string svgSizeSuffix(string filename, out int width, out int height) pure nothrow @safe {
+    // file name without directory
+    size_t start = 0;
+    foreach (i, c; filename)
+        if (c == '/' || c == '\\')
+            start = i + 1;
+    string name = filename[start .. $];
+    if (name.length < 4 || (name[$ - 4 .. $] != ".svg" && name[$ - 4 .. $] != ".SVG"))
+        return null;
+    name = name[0 .. $ - 4];
+    // name.WxH
+    size_t dot = name.length;
+    foreach_reverse (i, c; name)
+        if (c == '.') {
+            dot = i;
+            break;
+        }
+    if (dot == 0 || dot >= name.length)
+        return null;
+    string size = name[dot + 1 .. $];
+    int w = 0, h = 0;
+    bool x = false;
+    size_t digits = 0;
+    foreach (c; size) {
+        if (c >= '0' && c <= '9') {
+            if (++digits > 4)
+                return null;
+            if (x)
+                h = h * 10 + (c - '0');
+            else
+                w = w * 10 + (c - '0');
+        } else if ((c == 'x' || c == 'X') && !x && digits) {
+            x = true;
+            digits = 0;
+        } else
+            return null;
+    }
+    if (!x || !digits || w <= 0 || h <= 0)
+        return null;
+    width = w;
+    height = h;
+    return name[0 .. dot];
+}
+
+unittest {
+    int w, h;
+    assert(svgSizeSuffix("res/icons/edit-copy.24x24.svg", w, h) == "edit-copy" && w == 24 && h == 24);
+    assert(svgSizeSuffix("a.b.16X20.SVG", w, h) == "a.b" && w == 16 && h == 20);
+    assert(svgSizeSuffix("edit-copy.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.24x.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.x24.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.0x24.svg", w, h) is null);
+    assert(svgSizeSuffix(".24x24.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.24x24.png", w, h) is null);
 }
 
 /// true if filename has the .svg extension (#843)
@@ -318,11 +380,16 @@ private string[] missingResourceReferences(string resourceList)() {
     bool[string] ids;
     foreach (f; files) {
         string name = baseName(f.strip);
-        foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".svg", ".xml", ".tim"])
-            if (name.endsWith(ext)) {
-                name = name[0 .. $ - ext.length];
-                break;
-            }
+        int svgw, svgh;
+        string sized = svgSizeSuffix(name, svgw, svgh);
+        if (sized !is null)
+            name = sized; // name.WxH.svg
+        else
+            foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".svg", ".xml", ".tim"])
+                if (name.endsWith(ext)) {
+                    name = name[0 .. $ - ext.length];
+                    break;
+                }
         if (name.startsWith("hdpi_"))
             name = name[5 .. $];
         ids[name] = true;
@@ -1813,6 +1880,25 @@ class DrawableCache {
         return null;
     }
 
+    /// find an SVG file with a size suffix (#843), path ~ id ~ ".WxH.svg"; null if there is none
+    private string findSizedSvg(string path, string id) {
+        string full = path ~ id;
+        string dir = dirName(full);
+        string name = baseName(full);
+        if (!exists(dir) || !isDir(dir))
+            return null;
+        try {
+            foreach (DirEntry e; dirEntries(dir, name ~ ".*.svg", SpanMode.shallow)) {
+                int w, h;
+                if (e.isFile && svgSizeSuffix(e.name, w, h) == name)
+                    return e.name;
+            }
+        } catch (Exception e) {
+            // unreadable directory
+        }
+        return null;
+    }
+
     /// get resource file full pathname by resource id, null if not found
     string findResource(string id) {
         if (id.startsWith("#") || id.startsWith("{"))
@@ -1844,6 +1930,8 @@ class DrawableCache {
                 fn = checkFileName(path, id, ".ico");
             if (fn is null)
                 fn = checkFileName(path, id, ".svg");
+            if (fn is null)
+                fn = findSizedSvg(path, id);
             if (fn is null)
                 fn = checkFileName(path, id, ".gif"); // found to report that GIF is not supported
             if (fn !is null) {

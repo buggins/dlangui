@@ -110,7 +110,7 @@ Resources like fonts and images use reference counting. For proper resource free
 
 * FontManager: provides access to fonts
 * Images: .png, .jpg, .bmp, .ico or .svg images; if filename ends with .9.png, it's autodetected as nine-patch image (see Android drawables description)
-* SVG images are rendered in the size the screen DPI needs (an SVG of 16x16 px is 20 px at 125%, 32 px at 200%); `currentColor` in them is replaced by the text color of the current theme, so one-color icons work in light and dark themes. In a resource directory, a .png with the same resource id wins over an .svg.
+* SVG images are rendered in the size the screen DPI needs (an SVG of 16x16 px is 20 px at 125%, 32 px at 200%); `currentColor` in them is replaced by the text color of the current theme, so one-color icons work in light and dark themes. In a resource directory, a .png with the same resource id wins over an .svg. A size in the file name sets the size at 96 DPI whatever the SVG content says: `edit-copy.24x24.svg` (resource id `edit-copy`) is 24x24 px at 100%, 30x30 at 125%.
 * StateDrawables: .xml file can describe list of other drawables to choose based on widget's State (.xml files from android themes can be used directly)
 * imageCache allows to cache unpacked images
 * drawableCache provides access by resource id (string, usually filename w/o extension) to drawables located in specified list of resource directories.
