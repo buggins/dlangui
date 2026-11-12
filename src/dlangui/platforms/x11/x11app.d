@@ -918,6 +918,15 @@ class X11Window : DWindow {
         // Take keyboard modifiers from the event state, which the X server reports for the moment
         // of the event, rather than from the last key event: key releases may be missed (#582).
         ushort modifierFlags = convertMouseModifierFlags(state);
+        if (action == MouseAction.Move) {
+            // the X server reports the real button state: forget presses of buttons released meanwhile (#852)
+            if (!(state & Button1Mask) && _lbutton.isDown)
+                _lbutton.reset();
+            if (!(state & Button2Mask) && _mbutton.isDown)
+                _mbutton.reset();
+            if (!(state & Button3Mask) && _rbutton.isDown)
+                _rbutton.reset();
+        }
         if (action == MouseAction.Wheel) {
             // handle wheel
             short wheelDelta = cast(short)y;
@@ -1798,7 +1807,9 @@ class X11Platform : Platform {
                 Log.d("X11: EnterNotify event");
                 X11Window w = findWindow(event.xcrossing.window);
                 if (w) {
-                    w.processMouseEvent(MouseAction.Move, 0, event.xmotion.state, event.xcrossing.x, event.xcrossing.y);
+                    // the button state of a crossing event (xmotion.state is another field of this event type);
+                    // it also resyncs the buttons: a release over another window may have been missed (#852)
+                    w.processMouseEvent(MouseAction.Move, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
                 } else {
                     Log.e("Window not found");
                 }
