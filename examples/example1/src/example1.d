@@ -151,7 +151,7 @@ auto constructMainMenu()
     }
     viewItem.add(gammaItem);
 
-    // subpixel rendering (#871); under OpenGL subpixel glyphs are not drawn correctly yet (#833)
+    // subpixel rendering (#871)
     MenuItem subpixelItem = new MenuItem(new Action(65, "MENU_VIEW_SUBPIXEL"));
     static immutable SubpixelRenderingMode[] subpixelModes = [SubpixelRenderingMode.None, SubpixelRenderingMode.RGB,
         SubpixelRenderingMode.BGR];
@@ -231,7 +231,8 @@ extern (C) int UIAppMain(string[] args)
     // fonts with size less than specified value will not be antialiased
     FontManager.minAnitialiasedFontSize = 0; // 0 means always antialiased
     // subpixel font rendering (ClearType-like): None, RGB or BGR; also in View > Subpixel Rendering
-    FontManager.subpixelRenderingMode = SubpixelRenderingMode.None;
+    // the default follows the system settings (ClearType on Windows, #880); you can override it here
+    //FontManager.subpixelRenderingMode = SubpixelRenderingMode.None;
 
     // create window
     //Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 800, 700);

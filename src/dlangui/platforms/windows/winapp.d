@@ -1628,6 +1628,8 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         assert(false);
     }
     initResourceManagers();
+    // subpixel text by default, as set for ClearType (#880); apps can change it in UIAppMain
+    FontManager.subpixelRenderingMode = systemSubpixelRenderingMode();
 
     currentTheme = createDefaultTheme();
 
@@ -1703,6 +1705,8 @@ int myWinMainProfile(string[] args)
         assert(false);
     }
     initResourceManagers();
+    // subpixel text by default, as set for ClearType (#880); apps can change it in UIAppMain
+    FontManager.subpixelRenderingMode = systemSubpixelRenderingMode();
 
     currentTheme = createDefaultTheme();
 
