@@ -333,6 +333,8 @@ private abstract class GLCache
         // image size
         Rect _rc;
         bool _deleted;
+        // glyph with subpixel coverage in the RGB channels (#833)
+        bool _subpixel;
 
         this(GLCachePage page, uint objectId) { _page = page; _objectId = objectId; }
 
@@ -644,6 +646,7 @@ private class GLGlyphCache : GLCache
                 return null;
             //_drawbuf.drawGlyph(cacheItem._rc.left, cacheItem._rc.top, glyph, 0xFFFFFF);
             _drawbuf.drawGlyphToTexture(cacheItem._rc.left, cacheItem._rc.top, glyph);
+            cacheItem._subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
             _needUpdateTexture = true;
             return cacheItem;
         }
@@ -674,7 +677,10 @@ private class GLGlyphCache : GLCache
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    glSupport.queue.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, false);
+                    if (item._subpixel)
+                        glSupport.queue.addSubpixelTextRect(_texture, _tdx, _tdy, color, srcrc, dstrc);
+                    else
+                        glSupport.queue.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, false);
                 }
             }
         }

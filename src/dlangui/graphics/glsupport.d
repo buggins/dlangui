@@ -608,6 +608,25 @@ class TextureProgram : SolidFillProgram {
 }
 
 
+/// Draws subpixel glyphs: the texture holds the coverage of the red, green and blue subpixels in its RGB channels.
+/// Outputs the per-channel coverage multiplied by the text opacity; the text color comes from the blend color
+/// (see GLSupport.drawSubpixelTextTriangles), so each channel is blended with its own coverage (#833).
+class SubpixelTextProgram : TextureProgram {
+    @property override string fragmentSource() {
+        return q{
+            uniform sampler2D tex;
+            in vec4 col;
+            in vec2 UV;
+            out vec4 outColor;
+            void main(void)
+            {
+                vec4 coverage = texture(tex, UV);
+                outColor = vec4(coverage.rgb * col.a, coverage.a * col.a);
+            }
+        };
+    }
+}
+
 struct Color
 {
     float r, g, b, a;
@@ -749,6 +768,7 @@ final class GLSupport {
 
     private SolidFillProgram _solidFillProgram;
     private TextureProgram _textureProgram;
+    private SubpixelTextProgram _subpixelTextProgram;
 
     private bool _shadersAreInitialized;
     private bool initShaders() {
@@ -766,6 +786,17 @@ final class GLSupport {
             if (!_textureProgram.check())
                 return false;
         }
+        if (_subpixelTextProgram is null) {
+            Log.v("Compiling subpixel text program");
+            _subpixelTextProgram = new SubpixelTextProgram();
+            _subpixelTextProgram.compile();
+            if (!_subpixelTextProgram.check()) {
+                // not fatal: subpixel glyphs are drawn as grayscale then
+                Log.e("Cannot compile subpixel text program");
+                destroy(_subpixelTextProgram);
+                _subpixelTextProgram = null;
+            }
+        }
         Log.d("Shaders compiled successfully");
         return true;
     }
@@ -779,6 +810,10 @@ final class GLSupport {
         if (_textureProgram !is null) {
             destroy(_textureProgram);
             _textureProgram = null;
+        }
+        if (_subpixelTextProgram !is null) {
+            destroy(_subpixelTextProgram);
+            _subpixelTextProgram = null;
         }
     }
 
@@ -813,6 +848,11 @@ final class GLSupport {
         _textureProgram.createVAO(vertices.length, colors.length);
         vbo.bind();
         ebo.bind();
+        if (_subpixelTextProgram) {
+            _subpixelTextProgram.createVAO(vertices.length, colors.length);
+            vbo.bind();
+            ebo.bind();
+        }
     }
 
     /// This function is needed to draw custom OpenGL scene correctly (especially on legacy API)
@@ -836,6 +876,8 @@ final class GLSupport {
             _solidFillProgram.destroyBuffers();
         if (_textureProgram)
             _textureProgram.destroyBuffers();
+        if (_subpixelTextProgram)
+            _subpixelTextProgram.destroyBuffers();
 
         destroy(vbo);
         destroy(ebo);
@@ -909,6 +951,26 @@ final class GLSupport {
         } else {
             _textureProgram.drawBatch(texture, linear, length, start);
         }
+    }
+
+    /// draw subpixel glyphs of one color: blend each color channel with its own coverage (#833)
+    ///
+    /// result = color * coverage + dst * (1 - coverage), per channel, like blendSubpixel() in the software
+    /// renderer. The text color is the constant blend color, so a batch holds glyphs of one color only.
+    private void drawSubpixelTextTriangles(Tex2D texture, uint color, int length, int start) {
+        if (_legacyMode || !_subpixelTextProgram) {
+            // grayscale fallback: alpha of the texture is the average coverage; the RGB channels hold coverage,
+            // not white, so this is only an approximation
+            drawColorAndTextureTriangles(texture, false, length, start);
+            return;
+        }
+        float r = ((color >> 16) & 255) / 255.0f;
+        float g = ((color >> 8) & 255) / 255.0f;
+        float b = (color & 255) / 255.0f;
+        checkgl!glBlendColor(r, g, b, 1.0f);
+        checkgl!glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_COLOR);
+        _subpixelTextProgram.drawBatch(texture, false, length, start);
+        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     /// call glFlush
@@ -1431,13 +1493,15 @@ private final class OpenGLQueue {
     /// OpenGL batch structure - to draw several triangles in single OpenGL call
     private struct OpenGLBatch {
 
-        enum BatchType { Line = 0, Rect, Triangle, TexturedRect }
+        enum BatchType { Line = 0, Rect, Triangle, TexturedRect, SubpixelText }
         BatchType type;
 
         Tex2D texture;
         int textureDx;
         int textureDy;
         bool textureLinear;
+        // SubpixelText: text color (RGB)
+        uint color;
 
         // length of batch in indices
         int length;
@@ -1463,6 +1527,7 @@ private final class OpenGLQueue {
                 case Rect:          glSupport.drawSolidFillTriangles(b.length, b.start); break;
                 case Triangle:      glSupport.drawSolidFillTriangles(b.length, b.start); break;
                 case TexturedRect:  glSupport.drawColorAndTextureTriangles(b.texture, b.textureLinear, b.length, b.start); break;
+                case SubpixelText:  glSupport.drawSubpixelTextTriangles(b.texture, b.color, b.length, b.start); break;
                 default: break;
             }
         }
@@ -1479,21 +1544,36 @@ private final class OpenGLQueue {
 
     /// add textured rectangle to queue
     void addTexturedRect(Tex2D texture, int textureDx, int textureDy, uint color1, uint color2, uint color3, uint color4, Rect srcrc, Rect dstrc, bool linear) {
+        startTexturedBatch(OpenGLBatch.BatchType.TexturedRect, texture, textureDx, textureDy, linear, 0);
+        addTexturedRectVertices(textureDx, textureDy, color1, color2, color3, color4, srcrc, dstrc);
+    }
+
+    /// add subpixel glyph rectangle to queue: texture holds per-subpixel coverage in RGB (#833)
+    void addSubpixelTextRect(Tex2D texture, int textureDx, int textureDy, uint color, Rect srcrc, Rect dstrc) {
+        startTexturedBatch(OpenGLBatch.BatchType.SubpixelText, texture, textureDx, textureDy, false, color & 0xFFFFFF);
+        addTexturedRectVertices(textureDx, textureDy, color, color, color, color, srcrc, dstrc);
+    }
+
+    private void startTexturedBatch(OpenGLBatch.BatchType type, Tex2D texture, int textureDx, int textureDy, bool linear, uint color) {
         if (batches.data.length == 0
-            || batches.data[$-1].type != OpenGLBatch.BatchType.TexturedRect
+            || batches.data[$-1].type != type
             || batches.data[$-1].texture.ID != texture.ID
-            || batches.data[$-1].textureLinear != linear)
+            || batches.data[$-1].textureLinear != linear
+            || batches.data[$-1].color != color)
         {
             batches ~= OpenGLBatch();
-            batches.data[$-1].type = OpenGLBatch.BatchType.TexturedRect;
+            batches.data[$-1].type = type;
             batches.data[$-1].texture = texture;
             batches.data[$-1].textureDx = textureDx;
             batches.data[$-1].textureDy = textureDy;
             batches.data[$-1].textureLinear = linear;
+            batches.data[$-1].color = color;
             if(batches.data.length > 1)
                 batches.data[$-1].start = batches.data[$-2].start + batches.data[$-2].length;
         }
+    }
 
+    private void addTexturedRectVertices(int textureDx, int textureDy, uint color1, uint color2, uint color3, uint color4, Rect srcrc, Rect dstrc) {
         uint[4] colorsARGB = [color1, color2, color3, color4];
         float[] colors = convertColors(colorsARGB);
 

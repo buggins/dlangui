@@ -191,6 +191,9 @@ ushort prepare_lcd_glyph(ubyte * gbuf1,
         }
     }
     */
+    // apply FontManager.fontGamma to the filtered subpixel coverage, as for FreeType LCD glyphs (#833)
+    foreach(ref v; gbuf2)
+        v = _gamma256.correct(v);
     return cast(ushort) dst_width;
 }
 

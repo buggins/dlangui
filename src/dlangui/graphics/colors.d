@@ -212,16 +212,18 @@ uint blendARGB(uint dst, uint src, uint alpha) pure nothrow {
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
-//immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
+/// byte offsets of the color components of a 32-bit ARGB pixel in memory, listed for the subpixels from left
+/// to right: a pixel is stored as B, G, R, A bytes, so on an RGB panel the leftmost (red) subpixel is byte 2
 immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
-//immutable int[3] COMPONENT_OFFSET_BGR = [1, 2, 0];
+/// byte offsets for the subpixels of a BGR panel, from left to right (blue first)
 immutable int[3] COMPONENT_OFFSET_RGB = [0, 1, 2];
 immutable int COMPONENT_OFFSET_ALPHA = 3;
+/// byte offset of the color component lit by subpixel x0 (0..2, from the left) of a pixel
 int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) pure nothrow {
     switch (mode) with(SubpixelRenderingMode) {
-        case RGB:
-            return COMPONENT_OFFSET_BGR[x0];
         case BGR:
+            return COMPONENT_OFFSET_RGB[x0];
+        case RGB:
         default:
             return COMPONENT_OFFSET_BGR[x0];
     }
