@@ -162,13 +162,16 @@ struct EmbeddedResourceList {
         string timname = name ~ ".tim";
         string bmpname = name ~ ".bmp";
         string iconame = name ~ ".ico";
+        string svgname = name ~ ".svg";
         string gifname = name ~ ".gif"; // found to report that GIF is not supported
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
+            int w, h;
             if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name)
                     || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname)
-                    || s.equal(bmpname) || s.equal(iconame) || s.equal(gifname))
+                    || s.equal(bmpname) || s.equal(iconame) || s.equal(svgname) || s.equal(gifname)
+                    || svgSizeSuffix(s, w, h) == name) // name.WxH.svg
                 return &list[i];
         }
         return null;
@@ -178,19 +181,22 @@ struct EmbeddedResourceList {
 __gshared EmbeddedResourceList embeddedResourceList;
 
 /// screen DPI an image variant is made for (#794): images from hdpi (`hdpi_` prefix or `hdpi` directory)
-/// are 2x, 192 DPI; all others are 1x, 96 DPI
+/// are 2x, 2 * BASE_DPI (192); all others are 1x, BASE_DPI (96). SVG images (#843) are always rendered from
+/// their size at BASE_DPI.
 int imageVariantDpi(string filename) {
     import std.path : baseName;
     string name = baseName(filename);
+    if (isSvgFilename(name))
+        return BASE_DPI;
     if (name.startsWith("hdpi_") || filename.canFind("/hdpi/") || filename.canFind("\\hdpi\\"))
-        return 192;
-    return 96;
+        return 2 * BASE_DPI;
+    return BASE_DPI;
 }
 
-/// true if hdpi (2x) image variants are preferred for the current SCREEN_DPI: from 10% above 96 DPI, where
-/// a 1x image would have to be upscaled
+/// true if hdpi (2x) image variants are preferred for the current SCREEN_DPI: from 10% above BASE_DPI
+/// (106 DPI), where a 1x image would have to be upscaled
 @property bool preferHdpiImages() {
-    return SCREEN_DPI >= 106;
+    return SCREEN_DPI * 10 >= BASE_DPI * 11;
 }
 
 /// the file actually loaded for filename: for an embedded image, the hdpi_ variant when it is preferred
@@ -202,6 +208,100 @@ string resolvedImageFilename(string filename) {
             return EMBEDDED_RESOURCE_PREFIX ~ embedded.name;
     }
     return filename;
+}
+
+/// Size at BASE_DPI (96) given in the name of an SVG file (#843): `name.24x24.svg` is drawn as 24x24 px at 96 DPI,
+/// whatever size the SVG content has, so icons from different sources can be used without editing them.
+/// filename is a file name with or without directory. Returns the resource id (`name`, without directory) and
+/// the size, or null if the name has no such suffix.
+string svgSizeSuffix(string filename, out int width, out int height) pure nothrow @safe {
+    // file name without directory
+    size_t start = 0;
+    foreach (i, c; filename)
+        if (c == '/' || c == '\\')
+            start = i + 1;
+    string name = filename[start .. $];
+    if (name.length < 4 || (name[$ - 4 .. $] != ".svg" && name[$ - 4 .. $] != ".SVG"))
+        return null;
+    name = name[0 .. $ - 4];
+    // name.WxH
+    size_t dot = name.length;
+    foreach_reverse (i, c; name)
+        if (c == '.') {
+            dot = i;
+            break;
+        }
+    if (dot == 0 || dot >= name.length)
+        return null;
+    string size = name[dot + 1 .. $];
+    int w = 0, h = 0;
+    bool x = false;
+    size_t digits = 0;
+    foreach (c; size) {
+        if (c >= '0' && c <= '9') {
+            if (++digits > 4)
+                return null;
+            if (x)
+                h = h * 10 + (c - '0');
+            else
+                w = w * 10 + (c - '0');
+        } else if ((c == 'x' || c == 'X') && !x && digits) {
+            x = true;
+            digits = 0;
+        } else
+            return null;
+    }
+    if (!x || !digits || w <= 0 || h <= 0)
+        return null;
+    width = w;
+    height = h;
+    return name[0 .. dot];
+}
+
+unittest {
+    int w, h;
+    assert(svgSizeSuffix("res/icons/edit-copy.24x24.svg", w, h) == "edit-copy" && w == 24 && h == 24);
+    assert(svgSizeSuffix("a.b.16X20.SVG", w, h) == "a.b" && w == 16 && h == 20);
+    assert(svgSizeSuffix("edit-copy.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.24x.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.x24.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.0x24.svg", w, h) is null);
+    assert(svgSizeSuffix(".24x24.svg", w, h) is null);
+    assert(svgSizeSuffix("edit-copy.24x24.png", w, h) is null);
+}
+
+/// true if filename has the .svg extension (#843)
+bool isSvgFilename(string filename) {
+    import std.uni : toLower;
+    return filename.length > 4 && filename[$ - 4 .. $].toLower == ".svg";
+}
+
+private __gshared uint _svgCurrentColor = 0x000000;
+/// color (0xRRGGBB) that replaces `currentColor` in SVG images (#843); the text color of the current theme
+@property uint svgCurrentColor() {
+    return _svgCurrentColor;
+}
+/// set the color that replaces `currentColor` in SVG images; when it changes, SVG images are rendered again
+@property void svgCurrentColor(uint color) {
+    color &= 0xFFFFFF;
+    if (color == _svgCurrentColor)
+        return;
+    _svgCurrentColor = color;
+    static if (BACKEND_GUI) {
+        if (_imageCache)
+            _imageCache.onSvgCurrentColorChanged();
+        if (_drawableCache)
+            _drawableCache.onSvgCurrentColorChanged();
+    }
+}
+
+unittest {
+    // SVG images are rendered from their size at BASE_DPI, wherever they are (#843)
+    assert(imageVariantDpi("res/hdpi/icon.svg") == BASE_DPI);
+    assert(imageVariantDpi("hdpi_icon.svg") == BASE_DPI);
+    assert(imageVariantDpi("res/hdpi/icon.png") == 2 * BASE_DPI);
+    assert(imageVariantDpi("res/mdpi/icon.png") == BASE_DPI);
+    assert(isSvgFilename("a/b/Icon.SVG") && !isSvgFilename("svg"));
 }
 
 /// factor to scale an image file for the current SCREEN_DPI (#794); 1.0 when the image is within 10% of the
@@ -282,11 +382,16 @@ private string[] missingResourceReferences(string resourceList)() {
     bool[string] ids;
     foreach (f; files) {
         string name = baseName(f.strip);
-        foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".xml", ".tim"])
-            if (name.endsWith(ext)) {
-                name = name[0 .. $ - ext.length];
-                break;
-            }
+        int svgw, svgh;
+        string sized = svgSizeSuffix(name, svgw, svgh);
+        if (sized !is null)
+            name = sized; // name.WxH.svg
+        else
+            foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".svg", ".xml", ".tim"])
+                if (name.endsWith(ext)) {
+                    name = name[0 .. $ - ext.length];
+                    break;
+                }
         if (name.startsWith("hdpi_"))
             name = name[5 .. $];
         ids[name] = true;
@@ -1430,6 +1535,9 @@ class ImageCache {
             ColorTransform transform;
         }
         DrawBufRef[ScaledTransformKey] _scaledTransformMap;
+        // SVG images (#843) are rendered from their source for each DPI, with svgCurrentColor
+        bool _svg;
+        immutable(ubyte)[] _svgData;
 
         bool _error; // flag to avoid loading of file if it has been failed once
         bool _used;
@@ -1447,7 +1555,12 @@ class ImageCache {
             _loadedFilename = resolvedImageFilename(_filename);
             immutable ubyte[] data = loadResourceBytes(_filename);
             if (data) {
-                _drawbuf = loadImage(data, _filename);
+                _svg = isSvgImage(_filename, data);
+                if (_svg) {
+                    _svgData = data;
+                    _drawbuf = renderSvg(data, 1.0, svgCurrentColor, _filename);
+                } else
+                    _drawbuf = loadImage(data, _filename);
                 if (_filename.endsWith(".9.png"))
                     _drawbuf.detectNinePatch();
                 _used = true;
@@ -1481,6 +1594,12 @@ class ImageCache {
             int dpi = SCREEN_DPI;
             if (auto p = dpi in _scaled)
                 return *p;
+            if (_svg) {
+                // vector image: rendered in the wanted size instead of resampled
+                ColorDrawBuf buf = renderSvg(_svgData, scale, svgCurrentColor, _filename);
+                _scaled[dpi] = buf ? DrawBufRef(buf) : _drawbuf;
+                return _scaled[dpi];
+            }
             ColorDrawBuf src = cast(ColorDrawBuf)_drawbuf.get;
             if (!src)
                 return _drawbuf;
@@ -1506,6 +1625,9 @@ class ImageCache {
         void compact() {
             if (!_drawbuf.isNull)
                 _drawbuf.clear();
+            foreach (ref b; _transformMap)
+                b.clear();
+            _transformMap.destroy();
             foreach (ref b; _scaled)
                 b.clear();
             _scaled.destroy();
@@ -1522,6 +1644,13 @@ class ImageCache {
         }
     }
     ImageCacheItem[string] _map;
+
+    /// SVG images are rendered with svgCurrentColor (#843): drop them when it changes
+    void onSvgCurrentColorChanged() {
+        foreach (item; _map)
+            if (item._svg)
+                item.compact();
+    }
 
     /// get and cache image
     ref DrawBufRef get(string filename) {
@@ -1680,6 +1809,12 @@ class DrawableCache {
             item.drawable.clear();
         _idToDrawableMap.destroy();
     }
+    /// SVG images are rendered with svgCurrentColor (#843): when it changes, drop all drawables, because
+    /// state drawables (.xml) keep the image drawables they use
+    void onSvgCurrentColorChanged() {
+        foreach (item; _idToDrawableMap)
+            item.compact();
+    }
     // clear usage flags for all entries
     void checkpoint() {
         foreach (item; _idToDrawableMap)
@@ -1747,6 +1882,25 @@ class DrawableCache {
         return null;
     }
 
+    /// find an SVG file with a size suffix (#843), path ~ id ~ ".WxH.svg"; null if there is none
+    private string findSizedSvg(string path, string id) {
+        string full = path ~ id;
+        string dir = dirName(full);
+        string name = baseName(full);
+        if (!exists(dir) || !isDir(dir))
+            return null;
+        try {
+            foreach (DirEntry e; dirEntries(dir, name ~ ".*.svg", SpanMode.shallow)) {
+                int w, h;
+                if (e.isFile && svgSizeSuffix(e.name, w, h) == name)
+                    return e.name;
+            }
+        } catch (Exception e) {
+            // unreadable directory
+        }
+        return null;
+    }
+
     /// get resource file full pathname by resource id, null if not found
     string findResource(string id) {
         if (id.startsWith("#") || id.startsWith("{"))
@@ -1777,6 +1931,10 @@ class DrawableCache {
             if (fn is null)
                 fn = checkFileName(path, id, ".ico");
             if (fn is null)
+                fn = checkFileName(path, id, ".svg");
+            if (fn is null)
+                fn = findSizedSvg(path, id);
+            if (fn is null)
                 fn = checkFileName(path, id, ".gif"); // found to report that GIF is not supported
             if (fn !is null) {
                 _idToFileMap[id] = fn;
@@ -1792,7 +1950,7 @@ class DrawableCache {
             DrawBufRef res;
             string fname = findResource(id);
             if (fname.endsWith(".png") || fname.endsWith(".jpg") || fname.endsWith(".jpeg")
-                    || fname.endsWith(".bmp") || fname.endsWith(".ico"))
+                    || fname.endsWith(".bmp") || fname.endsWith(".ico") || isSvgFilename(fname))
                 return imageCache.getScaled(fname);
             return res;
         }
@@ -1855,7 +2013,7 @@ private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform 
             }
         } else {
             static if (BACKEND_GUI) {
-                // PNG/JPEG/BMP/ICO drawables support
+                // PNG/JPEG/BMP/ICO/SVG drawables support
                 DrawBufRef image = transform.empty ? imageCache.getScaled(id) : imageCache.getScaled(id, transform);
                 if (!image.isNull) {
                     bool ninePatch = id.endsWith(".9.png") ||  id.endsWith(".9.PNG");
