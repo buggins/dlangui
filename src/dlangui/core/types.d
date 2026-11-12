@@ -538,7 +538,8 @@ struct Ref(T) { // if (T is RefCountedObject)
     /// clears reference
     void clear() {
         if (_data !is null) {
-            _data.releaseRef();
+            if (!inGCFinalizer)
+                _data.releaseRef();
             _data = null;
         }
     }
@@ -552,9 +553,18 @@ struct Ref(T) { // if (T is RefCountedObject)
     }
     /// decreases counter, and destroys object if no more references left
     ~this() {
-        if (_data !is null)
+        if (_data !is null && !inGCFinalizer)
             _data.releaseRef();
     }
+}
+
+/// true while the GC runs finalizers (#849). An object that holds a Ref and is finalized by the GC (it was
+/// not destroyed explicitly) must not release the referenced object: it may be finalized in the same
+/// collection and already be freed. Not releasing it is safe: if it is still alive, it just keeps a
+/// reference count that can't reach 0, as for any leaked reference.
+private bool inGCFinalizer() nothrow @nogc @safe {
+    import core.memory : GC;
+    return GC.inFinalizer;
 }
 
 
