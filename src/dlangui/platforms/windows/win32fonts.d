@@ -348,8 +348,10 @@ class Win32Font : Font {
             g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
             g.originX = cast(byte)((metrics.gmptGlyphOrigin.x + 0) / 3);
             g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
-            g.widthPixels = cast(ubyte)((metrics.gmCellIncX  + 2) / 3);
-            g.widthScaled = g.widthPixels << 6;
+            // the advance of the 3 times wider glyph divided by 3: kept in 1/64 pixel, rounded only to whole
+            // pixels for widthPixels (rounding it up for each glyph made gaps between letters, #861)
+            g.widthScaled = cast(ushort)((metrics.gmCellIncX * 64 + 1) / 3);
+            g.widthPixels = cast(ubyte)((metrics.gmCellIncX + 1) / 3);
             g.subpixelMode = FontManager.subpixelRenderingMode;
             //Log.d(" *3   :  blackBoxX=", metrics.gmBlackBoxX, " \tblackBoxY=", metrics.gmBlackBoxY, " \torigin.x=", metrics.gmptGlyphOrigin.x, " \torigin.y=", metrics.gmptGlyphOrigin.y, " \tgmCellIncX=", metrics.gmCellIncX);
             //Log.d("  /3  :  blackBoxX=", g.blackBoxX, " \tblackBoxY=", g.blackBoxY, " \torigin.x=", g.originX, " \torigin.y=", g.originY, "\tgmCellIncX=", g.width);
