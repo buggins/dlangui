@@ -151,11 +151,12 @@ auto constructMainMenu()
     }
     viewItem.add(gammaItem);
 
-    // subpixel rendering (#871)
+    // subpixel rendering (#871): Disabled, Auto (the mode detected for the system, #882), RGB or BGR
     MenuItem subpixelItem = new MenuItem(new Action(65, "MENU_VIEW_SUBPIXEL"));
-    static immutable SubpixelRenderingMode[] subpixelModes = [SubpixelRenderingMode.None, SubpixelRenderingMode.RGB,
-        SubpixelRenderingMode.BGR];
-    static immutable string[] subpixelLabels = ["MENU_VIEW_SUBPIXEL_NONE", "MENU_VIEW_SUBPIXEL_RGB", "MENU_VIEW_SUBPIXEL_BGR"];
+    static immutable SubpixelRenderingMode[] subpixelModes = [SubpixelRenderingMode.None, SubpixelRenderingMode.Auto,
+        SubpixelRenderingMode.RGB, SubpixelRenderingMode.BGR];
+    static immutable string[] subpixelLabels = ["MENU_VIEW_SUBPIXEL_NONE", "MENU_VIEW_SUBPIXEL_AUTO",
+        "MENU_VIEW_SUBPIXEL_RGB", "MENU_VIEW_SUBPIXEL_BGR"];
     auto onSubpixelChange = delegate (MenuItem item) {
         if (!item.checked)
             return false;
@@ -164,8 +165,17 @@ auto constructMainMenu()
         return true;
     };
     foreach (i, mode; subpixelModes) {
-        MenuItem modeItem = (new MenuItem(new Action(cast(int)(6500 + i), subpixelLabels[i]))).type(MenuItemType.Radio)
-            .checked(FontManager.subpixelRenderingMode == mode);
+        UIString label = UIString.fromId(subpixelLabels[i]);
+        if (mode == SubpixelRenderingMode.Auto) {
+            // show the detected mode: "Auto (RGB)"
+            SubpixelRenderingMode detected = FontManager.systemSubpixelRenderingMode;
+            string detectedId = detected == SubpixelRenderingMode.RGB ? "MENU_VIEW_SUBPIXEL_RGB"
+                : detected == SubpixelRenderingMode.BGR ? "MENU_VIEW_SUBPIXEL_BGR" : "MENU_VIEW_SUBPIXEL_NONE";
+            dstring detectedLabel = UIString.fromId(detectedId).value;
+            label = UIString.fromRaw(label.value ~ " ("d ~ detectedLabel ~ ")"d);
+        }
+        MenuItem modeItem = (new MenuItem(new Action(cast(int)(6500 + i), label))).type(MenuItemType.Radio)
+            .checked(FontManager.subpixelRenderingModeSetting == mode);
         modeItem.menuItemClick = onSubpixelChange;
         subpixelItem.add(modeItem);
     }
@@ -230,8 +240,8 @@ extern (C) int UIAppMain(string[] args)
     // you can override antialiasing setting here (0 means antialiasing always on, some big value = always off)
     // fonts with size less than specified value will not be antialiased
     FontManager.minAnitialiasedFontSize = 0; // 0 means always antialiased
-    // subpixel font rendering (ClearType-like): None, RGB or BGR; also in View > Subpixel Rendering
-    // the default follows the system settings (ClearType on Windows, #880); you can override it here
+    // subpixel font rendering (ClearType-like): None, RGB, BGR, or Auto (the default): the mode set for the system
+    // (ClearType on Windows, Xft.rgba or fontconfig on Linux, #880, #882); also in View > Subpixel Rendering
     //FontManager.subpixelRenderingMode = SubpixelRenderingMode.None;
 
     // create window

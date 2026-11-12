@@ -434,6 +434,9 @@ enum SubpixelRenderingMode : ubyte {
     BGR,
     /// subpixel rendering on, subpixel order on device: R,G,B
     RGB,
+    /// the mode detected for the platform (FontManager.systemSubpixelRenderingMode): ClearType settings on Windows,
+    /// Xft.rgba or fontconfig on Linux; only for FontManager.subpixelRenderingMode, never a glyph's mode (#882)
+    Auto,
 }
 
 /**
