@@ -1322,7 +1322,12 @@ class FontManager {
 
     /// set subpixel rendering mode for fonts (aka ClearType)
     static @property void subpixelRenderingMode(SubpixelRenderingMode mode) {
-        _subpixelRenderingMode = mode;
+        if (_subpixelRenderingMode != mode) {
+            _subpixelRenderingMode = mode;
+            // glyphs are rendered for a mode: render them again (#871)
+            if (_instance)
+                _instance.clearGlyphCaches();
+        }
     }
 
     private static __gshared double _fontGamma = 1.0;
