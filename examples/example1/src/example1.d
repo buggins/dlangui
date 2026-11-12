@@ -24,6 +24,7 @@ import std.conv;
 import std.utf;
 import std.algorithm;
 import std.path;
+import std.format : format;
 
 import widgets;
 
@@ -110,6 +111,45 @@ auto constructMainMenu()
     themeItem.add(theme2);
     themeItem.add(theme3);
     viewItem.add(themeItem);
+
+    // screen DPI override and font gamma, for testing rendering (#859)
+    MenuItem dpiItem = new MenuItem(new Action(63, "MENU_VIEW_SCREEN_DPI"));
+    static immutable int[] screenDpis = [0, 96, 120, 144, 168, 192, 240, 288];
+    auto onDpiChange = delegate (MenuItem item) {
+        if (!item.checked)
+            return false;
+        overrideScreenDPI = screenDpis[item.id - 6300]; // 0: the DPI detected by the platform
+        // reload fonts and images cached for the old DPI, and lay out again
+        Platform.instance.onThemeChanged();
+        Platform.instance.requestLayout();
+        return true;
+    };
+    foreach (i, dpi; screenDpis) {
+        Action a = dpi ? new Action(cast(int)(6300 + i), to!dstring(dpi) ~ " (" ~ to!dstring(dpi * 100 / BASE_DPI) ~ "%)")
+                       : new Action(cast(int)(6300 + i), "MENU_VIEW_SCREEN_DPI_SYSTEM");
+        MenuItem dpiValue = (new MenuItem(a)).type(MenuItemType.Radio).checked(dpi == overrideScreenDPI);
+        dpiValue.menuItemClick = onDpiChange;
+        dpiItem.add(dpiValue);
+    }
+    viewItem.add(dpiItem);
+
+    MenuItem gammaItem = new MenuItem(new Action(64, "MENU_VIEW_FONT_GAMMA"));
+    auto onGammaChange = delegate (MenuItem item) {
+        if (!item.checked)
+            return false;
+        FontManager.fontGamma = (70 + 5 * (item.id - 6400)) / 100.0; // clears the glyph caches
+        Platform.instance.requestLayout();
+        return true;
+    };
+    foreach (i; 0 .. 13) {
+        int percent = 70 + 5 * i; // 0.70 .. 1.30
+        dstring label = format("%d.%02d"d, percent / 100, percent % 100);
+        MenuItem gammaValue = (new MenuItem(new Action(6400 + i, label))).type(MenuItemType.Radio)
+            .checked(cast(int)(FontManager.fontGamma * 100 + 0.5) == percent);
+        gammaValue.menuItemClick = onGammaChange;
+        gammaItem.add(gammaValue);
+    }
+    viewItem.add(gammaItem);
 
     MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"c));
     windowItem.add(new Action(30, "MENU_WINDOW_PREFERENCES"));
