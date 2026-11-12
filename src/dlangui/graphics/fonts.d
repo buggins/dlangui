@@ -1509,6 +1509,37 @@ private:
     double _gamma = 1.0;
 }
 
+/**
+ * Subpixel rendering mode matching the system font smoothing settings (#880).
+ *
+ * Windows: the ClearType settings GDI uses for its own text: RGB or BGR when font smoothing is on and its type
+ * is ClearType (SPI_GETFONTSMOOTHING, SPI_GETFONTSMOOTHINGTYPE, SPI_GETFONTSMOOTHINGORIENTATION), None for
+ * standard (grayscale) smoothing or no smoothing. Other platforms: None.
+ */
+SubpixelRenderingMode systemSubpixelRenderingMode() {
+    version (Windows) {
+        import core.sys.windows.windows : SystemParametersInfoW, BOOL, UINT;
+        enum : UINT {
+            SPI_GETFONTSMOOTHING = 0x004A,
+            SPI_GETFONTSMOOTHINGTYPE = 0x200A,
+            SPI_GETFONTSMOOTHINGORIENTATION = 0x2012,
+            FE_FONTSMOOTHINGCLEARTYPE = 2,
+            FE_FONTSMOOTHINGORIENTATIONBGR = 0,
+        }
+        BOOL smoothing;
+        UINT type, orientation;
+        if (!SystemParametersInfoW(SPI_GETFONTSMOOTHING, 0, &smoothing, 0) || !smoothing)
+            return SubpixelRenderingMode.None;
+        if (!SystemParametersInfoW(SPI_GETFONTSMOOTHINGTYPE, 0, &type, 0) || type != FE_FONTSMOOTHINGCLEARTYPE)
+            return SubpixelRenderingMode.None;
+        if (!SystemParametersInfoW(SPI_GETFONTSMOOTHINGORIENTATION, 0, &orientation, 0))
+            return SubpixelRenderingMode.RGB;
+        return orientation == FE_FONTSMOOTHINGORIENTATIONBGR ? SubpixelRenderingMode.BGR : SubpixelRenderingMode.RGB;
+    } else {
+        return SubpixelRenderingMode.None;
+    }
+}
+
 /// find some suitable replacement for important characters missing in font
 dchar getReplacementChar(dchar code) {
     switch (code) {

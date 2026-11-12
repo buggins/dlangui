@@ -1876,6 +1876,8 @@ int sdlmain(string[] args) {
         int cx = GetSystemMetrics(SM_CXDOUBLECLK), cy = GetSystemMetrics(SM_CYDOUBLECLK);
         int dist = (cx > cy ? cx : cy) / 2;
         DOUBLE_CLICK_DISTANCE = dist > 0 ? dist : 1;
+        // subpixel text by default, as set for ClearType (#880); apps can change it in UIAppMain
+        FontManager.subpixelRenderingMode = systemSubpixelRenderingMode();
     }
 
     try {
