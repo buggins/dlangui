@@ -191,6 +191,10 @@ auto constructMainMenu()
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args)
 {
+    // --no-opengl: software rendering, e.g. to test subpixel font rendering (#873); before creating windows
+    foreach (arg; args[1 .. $])
+        if (arg == "--no-opengl")
+            setOpenglEnabled(false);
     // always use trace, even for release builds
     //Log.setLogLevel(LogLevel.Trace);
     //Log.setFileLogger(new std.stdio.File("ui.log", "w"));
