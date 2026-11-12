@@ -394,6 +394,28 @@ int pointsToPixels(int pt) {
     return pt * SCREEN_DPI / POINTS_PER_INCH;
 }
 
+/// font size in points to pixels, rounded to the nearest pixel as Windows applications do with
+/// MulDiv(pt, dpi, 72) (#869); pointsToPixels() truncates, which the theme metrics in points rely on
+int fontPointsToPixels(int pt, int dpi = SCREEN_DPI) pure nothrow @nogc @safe {
+    return (pt * dpi + POINTS_PER_INCH / 2) / POINTS_PER_INCH;
+}
+
+/// font size to pixels: sz in pixels, or in points if SIZE_IN_POINTS_FLAG is set (rounded, see fontPointsToPixels)
+int fontSizeToPixels(int sz) {
+    if (sz > 0 && (sz & SIZE_IN_POINTS_FLAG) != 0)
+        return fontPointsToPixels(sz ^ SIZE_IN_POINTS_FLAG);
+    return sz;
+}
+
+unittest {
+    // the same pixel sizes as -MulDiv(pt, dpi, 72) in Windows applications
+    assert(fontPointsToPixels(9, 96) == 12 && fontPointsToPixels(10, 96) == 13);
+    assert(fontPointsToPixels(9, 120) == 15 && fontPointsToPixels(10, 120) == 17); // truncated: 16
+    assert(fontPointsToPixels(10, 144) == 20 && fontPointsToPixels(10, 192) == 27); // truncated: 26
+    assert(fontPointsToPixels(8, 120) == 13); // 13.33
+    assert(fontSizeToPixels(15) == 15); // pixels unchanged
+}
+
 /// rectangle coordinates in points (1/72in units) to pixels according to SCREEN_DPI
 Rect pointsToPixels(Rect rc) {
     return Rect(rc.left.pointsToPixels, rc.top.pointsToPixels, rc.right.pointsToPixels, rc.bottom.pointsToPixels);
