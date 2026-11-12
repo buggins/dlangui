@@ -139,21 +139,22 @@ private int minIndex(int n0, int n1, int n2) {
 // to 4 bytes, that is, the output gm.gmBlackBoxX is the
 // actual width of the array.
 // returns dst glyph width
+// leftPad: empty subpixel columns added at the left, so that the bitmap starts at a pixel boundary (#861);
+// the source rows are aligned to 4 bytes, the output rows are not padded
 //---------------------------------
 ushort prepare_lcd_glyph(ubyte * gbuf1,
                        ref GLYPHMETRICS gm,
                        ref ubyte[] gbuf2,
-                       ref int shiftedBy)
+                       int leftPad)
 {
-    shiftedBy = 0;
     uint src_stride = (gm.gmBlackBoxX + 3) / 4 * 4;
-    uint dst_width  = src_stride + 4;
+    uint dst_width  = leftPad + gm.gmBlackBoxX + 4;
     gbuf2 = new ubyte[dst_width * gm.gmBlackBoxY];
 
     for(uint y = 0; y < gm.gmBlackBoxY; ++y)
     {
         ubyte * src_ptr = gbuf1 + src_stride * y;
-        ubyte * dst_ptr = gbuf2.ptr + dst_width * y;
+        ubyte * dst_ptr = gbuf2.ptr + dst_width * y + leftPad;
         for(uint x = 0; x < gm.gmBlackBoxX; ++x)
         {
             uint v = *src_ptr++;
@@ -293,6 +294,7 @@ class Win32Font : Font {
         GLYPHMETRICS metrics;
 
         bool needSubpixelRendering = FontManager.subpixelRenderingMode && antialiased;
+        int subpixelLeftPad = 0; // empty subpixel columns before the bitmap: its subpixel phase (#861)
         MAT2 scaleMatrix = { {0,1}, {0,0}, {0,0}, {0,1} };
 
         uint res;
@@ -346,7 +348,15 @@ class Win32Font : Font {
             //Log.d("NORMAL:  blackBoxX=", g.blackBoxX, " \tblackBoxY=", g.blackBoxY, " \torigin.x=", g.originX, " \torigin.y=", g.originY, "\tgmCellIncX=", g.width);
             g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;
             g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
-            g.originX = cast(byte)((metrics.gmptGlyphOrigin.x + 0) / 3);
+            // the bitmap from prepare_lcd_glyph starts 2 subpixels before the glyph (its filter spreads each
+            // subpixel over 2 neighbours on each side): its first column is at gmptGlyphOrigin.x - 2 subpixels.
+            // Glyph bitmaps are drawn from a pixel boundary, so the subpixel phase is added as empty columns
+            // at the left of the bitmap; truncating the origin to pixels misplaced glyphs by up to 2/3 pixel
+            // (gaps between letters, #861)
+            int startSubpixel = metrics.gmptGlyphOrigin.x - 2;
+            int originPixel = startSubpixel >= 0 ? startSubpixel / 3 : -((-startSubpixel + 2) / 3); // floor
+            subpixelLeftPad = startSubpixel - originPixel * 3;
+            g.originX = cast(byte)originPixel;
             g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
             // the advance of the 3 times wider glyph divided by 3: kept in 1/64 pixel, rounded only to whole
             // pixels for widthPixels (rounding it up for each glyph made gaps between letters, #861)
@@ -383,14 +393,11 @@ class Win32Font : Font {
                     }
                     if (needSubpixelRendering) {
                         ubyte[] newglyph;
-                        int shiftedBy = 0;
                         g.blackBoxX = prepare_lcd_glyph(glyph.ptr,
                                                  metrics,
                                                  newglyph,
-                                                 shiftedBy);
+                                                 subpixelLeftPad);
                         g.glyph = newglyph;
-                        //g.originX = cast(ubyte)((metrics.gmptGlyphOrigin.x + 2 - shiftedBy) / 3);
-                        //g.width = cast(ubyte)((metrics.gmCellIncX  + 2 - shiftedBy) / 3);
                     } else {
                         int glyph_row_size = (g.blackBoxX + 3) / 4 * 4;
                         ubyte * src = glyph.ptr;
