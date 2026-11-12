@@ -554,7 +554,7 @@ public:
         if (_fontSize != FONT_SIZE_UNSPECIFIED) {
             if (_fontSize & SIZE_IN_PERCENTS_FLAG)
                 return parentStyle.fontSize * (_fontSize ^ SIZE_IN_PERCENTS_FLAG) / 10000;
-            return toPixels(_fontSize);
+            return fontSizeToPixels(_fontSize); // points rounded like Windows applications do (#869)
         } else
             return parentStyle.fontSize;
     }
