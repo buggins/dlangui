@@ -1186,8 +1186,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 }
             }
         }
-        if (event.action == MouseAction.Cancel || event.action == MouseAction.FocusOut)
-            _activateOnButtonUp = false;
+        if (event.action == MouseAction.Cancel)
+            _activateOnButtonUp = false; // (not on FocusOut: the release must be over the same cell anyway)
         if (event.action == MouseAction.Move && (event.flags & MouseFlag.LButton)) {
             // TODO: selection
             if (cellFound && normalCell) {
