@@ -106,6 +106,47 @@ ColorDrawBuf renderSvgFile(string filename, int size, uint currentColor = 0x0000
     }
 }
 
+/// arsd.svg keeps only <path> elements of a <clipPath> in <defs>; other shapes leave the clip area empty,
+/// which hides everything clipped by it. Figma, for example, clips icons with a <rect>: convert <rect> and
+/// <circle> in clip paths to equivalent <path> elements (rounded corners of a clip rect are ignored).
+private string clipShapesToPaths(string text) {
+    import std.conv : to, ConvException;
+    import std.format : format;
+    import std.regex : regex, replaceAll, matchFirst, Captures;
+    auto clipRe = regex(`<clipPath\b.*?</clipPath>`, "s");
+    auto shapeRe = regex(`<(rect|circle)\b([^>]*?)(/?)>`);
+    auto closeRe = regex(`</(rect|circle)\s*>`);
+    double num(string attrs, string name) {
+        auto m = matchFirst(attrs, regex(`(?:^|\s)` ~ name ~ `\s*=\s*["']\s*([-+0-9.eE]+)`));
+        if (m.empty)
+            return 0;
+        try {
+            return to!double(m[1]);
+        } catch (ConvException) {
+            return 0;
+        }
+    }
+    string shapeToPath(Captures!string m) {
+        string attrs = m[2];
+        string d;
+        if (m[1] == "rect") {
+            double w = num(attrs, "width");
+            d = format("M%g %gh%gv%gh%gz", num(attrs, "x"), num(attrs, "y"), w, num(attrs, "height"), -w);
+        } else {
+            double r = num(attrs, "r");
+            double cx = num(attrs, "cx");
+            double cy = num(attrs, "cy");
+            d = format("M%g %ga%g %g 0 1 0 %g 0a%g %g 0 1 0 %g 0z", cx - r, cy, r, r, 2 * r, r, r, -2 * r);
+        }
+        // the other attributes (e.g. transform) are kept; x, width etc. mean nothing for a path
+        return "<path d=\"" ~ d ~ "\"" ~ attrs ~ m[3] ~ ">";
+    }
+    string fixClip(Captures!string m) {
+        return replaceAll(replaceAll!shapeToPath(m.hit, shapeRe), closeRe, "</path>");
+    }
+    return replaceAll!fixClip(text, clipRe);
+}
+
 private ColorDrawBuf renderSvgImpl(const(ubyte)[] data, double scale, int fitSize, uint currentColor, string filename) {
     import std.array : replace;
     import std.algorithm : canFind;
@@ -119,6 +160,8 @@ private ColorDrawBuf renderSvgImpl(const(ubyte)[] data, double scale, int fitSiz
         text = text.replace("currentColor", rgb).replace("currentcolor", rgb);
     }
     NSVG * svg;
+    if (text.canFind("<clipPath"))
+        text = clipShapesToPaths(text);
     if (text.canFind("<style") || text.canFind("<use")) {
         // the preprocessor applies style sheets and copies <use> targets; it throws on XML it can't handle
         try {
@@ -193,6 +236,16 @@ unittest {
     assert(b.scanLine(1)[4] == 0x0000FF00);
     assert(b.scanLine(6)[4] == 0x00E0E0E0);
     destroy(b);
+    // clip paths made of a <rect> (as exported by Figma), defined after their use: left 4 px of 8 visible
+    enum clipped = `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><g clip-path="url(#c)">`
+        ~ `<rect width="8" height="8" fill="#0000FF"/></g>`
+        ~ `<defs><clipPath id="c"><rect x="0" y="0" width="4" height="8" fill="white"/></clipPath></defs></svg>`;
+    b = renderSvg(cast(const(ubyte)[])clipped);
+    assert(b.scanLine(4)[1] == 0x000000FF);
+    assert(b.scanLine(4)[6] >> 24 == 0xFF); // transparent
+    destroy(b);
+    assert(clipShapesToPaths(`<clipPath id="c"><circle cx="5" cy="5" r="2"></circle></clipPath>`)
+        == `<clipPath id="c"><path d="M3 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0z" cx="5" cy="5" r="2"></path></clipPath>`);
     // not an SVG image
     assert(renderSvg(cast(const(ubyte)[])"<html></html>") is null);
 }
