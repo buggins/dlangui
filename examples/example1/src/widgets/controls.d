@@ -8,7 +8,7 @@ class BasicControls : LinearLayout
     {
         super(ID);
         layoutHeight(FILL_PARENT);
-        padding = Rect(12.pointsToPixels,12.pointsToPixels,12.pointsToPixels,12.pointsToPixels);
+        padding = Rect(makePointSize(12),makePointSize(12),makePointSize(12),makePointSize(12));
 
         HorizontalLayout line1 = new HorizontalLayout();
         addChild(line1);
@@ -36,8 +36,8 @@ class BasicControls : LinearLayout
         gb4.addChild(new ImageTextButton("itb2", "document-save", "Disabled"d).enabled(false));
         col1.addChild(gb4);
         GroupBox gbtext = new GroupBox("text", "TextWidget"d, Orientation.Horizontal);
-        gbtext.addChild(new TextWidget("t1", "Red text"d).fontSize(12.pointsToPixels).textColor(0xFF0000));
-        gbtext.addChild(new TextWidget("t2", "Italic text"d).fontSize(12.pointsToPixels).fontItalic(true));
+        gbtext.addChild(new TextWidget("t1", "Red text"d).fontSize(makePointSize(12)).textColor(0xFF0000));
+        gbtext.addChild(new TextWidget("t2", "Italic text"d).fontSize(makePointSize(12)).fontItalic(true));
         col1.addChild(gbtext);
         line1.addChild(col1);
 
@@ -71,10 +71,10 @@ class BasicControls : LinearLayout
         gb6.addChild(new SliderWidget("sb2", Orientation.Horizontal));
         line2.addChild(gb6);
         GroupBox gb7 = new GroupBox("editline1", "EditLine"d);
-        gb7.addChild(new EditLine("ed1", "Some text"d).minWidth(120.pointsToPixels));
+        gb7.addChild(new EditLine("ed1", "Some text"d).minWidth(makePointSize(120)));
         line2.addChild(gb7);
         GroupBox gb8 = new GroupBox("editline2", "EditLine disabled"d);
-        gb8.addChild(new EditLine("ed2", "Some text"d).enabled(false).minWidth(120.pointsToPixels));
+        gb8.addChild(new EditLine("ed2", "Some text"d).enabled(false).minWidth(makePointSize(120)));
         line2.addChild(gb8);
 
         HorizontalLayout line3 = new HorizontalLayout();
@@ -91,7 +91,7 @@ class BasicControls : LinearLayout
         tabs1.addTab(new TextWidget("tab1", "TextWidget on tab page\nTextWidgets can be\nMultiline"d).maxLines(3), "Tab 1"d);
         tabs1.addTab(new ImageWidget("tab2", "dlangui-logo1"), "Tab 2"d);
         tabs1.tabHost.backgroundColor = 0xE0E0E0;
-        tabs1.tabHost.padding = Rect(10.pointsToPixels, 10.pointsToPixels, 10.pointsToPixels, 10.pointsToPixels);
+        tabs1.tabHost.padding = Rect(makePointSize(10), makePointSize(10), makePointSize(10), makePointSize(10));
         gbtabs.addChild(tabs1);
         line3.addChild(gbtabs);
         addChild(line3);
@@ -127,7 +127,7 @@ class BasicControls : LinearLayout
 
         GroupBox gbtree = new GroupBox("tree", "TreeWidget"d, Orientation.Vertical);
         auto tree = new TreeWidget("gbtree");
-        tree.maxHeight(200.pointsToPixels);
+        tree.maxHeight(makePointSize(200));
         TreeItem tree1 = tree.items.newChild("group1", "Group 1"d, "document-open");
         tree1.newChild("g1_1", "Group 1 item 1"d);
         tree1.newChild("g1_2", "Group 1 item 2"d);

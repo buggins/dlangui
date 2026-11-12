@@ -26,7 +26,7 @@ class TextExample : VerticalLayout
         slider.setRange(minW, maxW).position(initW).layoutWeight(1).fillHorizontal;
         widthRow.addChild(slider);
         TextWidget widthLabel = new TextWidget("TEXT_WIDTH_LABEL", to!dstring(initW) ~ " px"d);
-        widthLabel.minWidth = BACKEND_CONSOLE ? 8 : 60.pointsToPixels;
+        widthLabel.minWidth = BACKEND_CONSOLE ? 8 : makePointSize(60);
         widthRow.addChild(widthLabel);
         addChild(widthRow);
 
