@@ -331,6 +331,10 @@ class X11Window : DWindow {
             Visual * visual = DefaultVisual(x11display, x11screen);
             int depth = DefaultDepth(x11display, x11screen);
             static if (ENABLE_OPENGL) {
+                // the application may request software rendering with setOpenglEnabled(false) before creating
+                // the window (#873)
+                if (!openglEnabled)
+                    _enableOpengl = false;
                 if (_enableOpengl) {
                     swamask |= CWColormap;
                     swa.colormap = x11cmap;
@@ -559,6 +563,8 @@ class X11Window : DWindow {
             } else {
                 Log.d("Open GL support is disabled");
             }
+            // the global state (and the glyph cache callback it sets) follows what the window uses (#873)
+            setOpenglEnabled(_enableOpengl);
         }
         if (_mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);

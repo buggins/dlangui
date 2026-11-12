@@ -262,6 +262,10 @@ class SDLWindow : Window {
             windowFlags = SDL_WINDOW_BORDERLESS;
         windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
         static if (ENABLE_OPENGL) {
+            // the application may request software rendering with setOpenglEnabled(false) before creating
+            // the window (#873); setOpenglEnabled(_enableOpengl) below keeps the global state right
+            if (!openglEnabled)
+                _enableOpengl = false;
             if (_enableOpengl)
                 windowFlags |= SDL_WINDOW_OPENGL;
         }
