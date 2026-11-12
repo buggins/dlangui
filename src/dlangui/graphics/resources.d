@@ -1629,6 +1629,11 @@ class ImageCache {
             return _scaledTransformMap[key];
         }
 
+        ~this() {
+            // the Refs in the maps are not released by destroy(): release them here
+            compact();
+        }
+
         /// remove from memory, will cause reload on next access
         void compact() {
             if (!_drawbuf.isNull)
