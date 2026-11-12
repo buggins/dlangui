@@ -1631,6 +1631,8 @@ class ImageCache {
             foreach (ref b; _scaled)
                 b.clear();
             _scaled.destroy();
+            foreach (ref b; _scaledTransformMap)
+                b.clear();
             _scaledTransformMap.destroy();
         }
         /// mark as not used
@@ -1767,7 +1769,9 @@ class DrawableCache {
         void compact() {
             if (!_drawable.isNull)
                 _drawable.clear();
-            foreach(t; _transformed)
+            // by ref: clearing a copy of a Ref would leave the reference in the map, and the drawable,
+            // no longer reachable, would be finalized by the GC later
+            foreach(ref t; _transformed)
                 t.clear();
             _transformed.destroy();
         }
@@ -1805,8 +1809,13 @@ class DrawableCache {
     void clear() {
         Log.d("DrawableCache.clear()");
         _idToFileMap.destroy();
-        foreach(DrawableCacheItem item; _idToDrawableMap)
-            item.drawable.clear();
+        // destroy the items: their destructors release the drawable and the transformed ones. Items just
+        // dropped from the map would keep their references, and the GC would finalize them and their
+        // drawables later in any order (a drawable's destructor then touches an already freed image)
+        foreach(ref DrawableCacheItem item; _idToDrawableMap) {
+            destroy(item);
+            item = null;
+        }
         _idToDrawableMap.destroy();
     }
     /// SVG images are rendered with svgCurrentColor (#843): when it changes, drop all drawables, because
