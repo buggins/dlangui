@@ -1475,6 +1475,14 @@ class OverlayDrawable : Drawable {
         _base = base;
     }
 
+    ~this() {
+        // destroy() runs the destructors of fields, but not of the Refs in the array: release them here
+        _base.clear();
+        foreach (ref o; _overlays)
+            o.clear();
+        _overlays = null;
+    }
+
     /// add an overlay in the given corner (drawn after the ones added before)
     OverlayDrawable add(DrawableRef overlay, OverlayCorner corner) {
         if (!overlay.isNull) {
