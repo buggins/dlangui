@@ -1562,6 +1562,90 @@ public:
         Align ha = halign;
         applyAlign(rc, sz, ha, va);
     }
+    /// Applies alignment for text of size sz drawn with font (#856): like applyAlign, but vertically centered text
+    /// is placed by its visible part, from the top of the capitals of the first line to the last baseline, instead
+    /// of its line boxes. These include the descent and the internal leading, which differ a lot between fonts:
+    /// with e.g. DejaVu Sans, centering the line box puts the letters about 2 pixels above the middle.
+    /// The line boxes stay inside rc, so text in an area just as tall as the text keeps its position.
+    static void applyTextAlign(ref Rect rc, Point sz, Align ha, Align va, Font font) {
+        static if (WIDGET_STYLE_CONSOLE) {
+            applyAlign(rc, sz, ha, va);
+        } else {
+            if (va != Align.VCenter || font is null) {
+                applyAlign(rc, sz, ha, va);
+                return;
+            }
+            Rect area = rc;
+            applyAlign(rc, sz, ha, va);
+            int lineHeight = font.height;
+            int baseline = font.baseline;
+            int capHeight = font.capHeight;
+            if (lineHeight <= 0 || capHeight <= 0 || sz.y < lineHeight)
+                return;
+            // visible part relative to the text top: first capital top .. last baseline
+            int visibleTop = baseline - capHeight;
+            int visibleBottom = sz.y - lineHeight + baseline;
+            int top = area.top + (area.height - (visibleTop + visibleBottom)) / 2;
+            // keep the line boxes (with the descenders) inside the area: text in a tight area, e.g. a grid cell
+            // that clips at its border, is only moved as far as there is room
+            if (top + sz.y > area.bottom)
+                top = area.bottom - sz.y;
+            if (top < area.top)
+                top = area.top;
+            if (area.height < sz.y)
+                return; // no room at all: keep applyAlign's position
+            rc.top = top;
+            rc.bottom = top + sz.y;
+        }
+    }
+    /// Applies alignment for text of size sz drawn with font, using the widget's alignment (see the static version)
+    void applyTextAlign(ref Rect rc, Point sz, Font font) {
+        applyTextAlign(rc, sz, halign, valign, font);
+    }
+
+    static if (!WIDGET_STYLE_CONSOLE) unittest {
+        // a font like DejaVu Sans at 13 px: line height 15, baseline 11, capitals 10 px high
+        static class TestFont : Font {
+            Glyph _h;
+            this() { _h.originY = 10; _h.blackBoxY = 10; }
+            override @property int size() { return 13; }
+            override @property int height() { return 15; }
+            override @property int weight() { return 400; }
+            override @property int baseline() { return 11; }
+            override @property bool italic() { return false; }
+            override @property string face() { return "test"; }
+            override @property FontFamily family() { return FontFamily.SansSerif; }
+            override @property bool isNull() { return false; }
+            override Glyph * getCharGlyph(dchar ch, bool withImage = true) { return &_h; }
+            override void checkpoint() {}
+            override void cleanup() {}
+            override void clearGlyphCache() {}
+        }
+        auto font = new TestFont();
+        assert(font.capHeight == 10);
+        Rect rc;
+        // room around the text: capitals (rows 1..11 of the line box) centered instead of the line box
+        rc = Rect(0, 0, 100, 30);
+        applyTextAlign(rc, Point(50, 15), Align.Left, Align.VCenter, font);
+        assert(rc.top == 9 && rc.bottom == 24); // applyAlign: 7
+        // area as tall as the text: unchanged
+        rc = Rect(0, 0, 100, 15);
+        applyTextAlign(rc, Point(50, 15), Align.Left, Align.VCenter, font);
+        assert(rc.top == 0 && rc.bottom == 15);
+        // little room: moved only as far as the line box stays inside
+        rc = Rect(0, 0, 100, 16);
+        applyTextAlign(rc, Point(50, 15), Align.Left, Align.VCenter, font);
+        assert(rc.top == 1 && rc.bottom == 16);
+        // other alignments: as applyAlign
+        rc = Rect(0, 0, 100, 30);
+        applyTextAlign(rc, Point(50, 15), Align.Left, Align.Top, font);
+        assert(rc.top == 0 && rc.bottom == 15);
+        // two lines: first capital top .. last baseline centered
+        rc = Rect(0, 0, 100, 50);
+        applyTextAlign(rc, Point(50, 30), Align.Left, Align.VCenter, font);
+        assert(rc.top == 11 && rc.bottom == 41); // applyAlign: 10
+        destroy(font);
+    }
 
     // ===========================================================
     // popup menu support
