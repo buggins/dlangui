@@ -362,6 +362,12 @@ extern (C) void initResourceManagers() {
     import dlangui.graphics.fonts;
     _gamma65 = new glyph_gamma_table!65(1.0);
     _gamma256 = new glyph_gamma_table!256(1.0);
+    static if (BACKEND_GUI) {
+        // subpixel rendering mode set for the system (ClearType on Windows, Xft.rgba or fontconfig on Linux), used
+        // while FontManager.subpixelRenderingMode is Auto, the default (#880, #882)
+        FontManager.systemSubpixelRenderingMode = detectSubpixelRenderingMode();
+        Log.i("Subpixel rendering mode detected for the system: ", FontManager.systemSubpixelRenderingMode);
+    }
     static if (ENABLE_FREETYPE) {
         import dlangui.graphics.ftfonts;
         STD_FONT_FACES = [

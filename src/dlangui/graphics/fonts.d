@@ -1278,7 +1278,12 @@ class FontManager {
     protected static __gshared FontManager _instance;
     protected static __gshared int _minAnitialiasedFontSize = DEF_MIN_ANTIALIASED_FONT_SIZE;
     protected static __gshared HintingMode _hintingMode = HintingMode.Normal;
+    // effective mode: never Auto
     protected static __gshared SubpixelRenderingMode _subpixelRenderingMode = SubpixelRenderingMode.None;
+    // mode as set, Auto by default (#882)
+    protected static __gshared SubpixelRenderingMode _subpixelRenderingModeSetting = SubpixelRenderingMode.Auto;
+    // mode detected for the platform, used for Auto (#882)
+    protected static __gshared SubpixelRenderingMode _systemSubpixelRenderingMode = SubpixelRenderingMode.None;
 
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
@@ -1336,13 +1341,40 @@ class FontManager {
         }
     }
 
-    /// get current subpixel rendering mode for fonts (aka ClearType)
+    /// get current subpixel rendering mode for fonts (aka ClearType): None, RGB or BGR, never Auto (for Auto, the
+    /// mode detected for the platform, see subpixelRenderingModeSetting)
     static @property SubpixelRenderingMode subpixelRenderingMode() {
         return _subpixelRenderingMode;
     }
 
-    /// set subpixel rendering mode for fonts (aka ClearType)
+    /// set subpixel rendering mode for fonts (aka ClearType): None, RGB, BGR, or Auto (the default) for the mode
+    /// detected for the platform: systemSubpixelRenderingMode (#882)
     static @property void subpixelRenderingMode(SubpixelRenderingMode mode) {
+        _subpixelRenderingModeSetting = mode;
+        updateSubpixelRenderingMode();
+    }
+
+    /// subpixel rendering mode as set: None, RGB, BGR or Auto (#882)
+    static @property SubpixelRenderingMode subpixelRenderingModeSetting() {
+        return _subpixelRenderingModeSetting;
+    }
+
+    /// subpixel rendering mode detected for the platform, used when subpixelRenderingMode is set to Auto (#882):
+    /// ClearType settings on Windows, Xft.rgba or fontconfig on Linux (see detectSubpixelRenderingMode()); None for
+    /// other platforms and backends
+    static @property SubpixelRenderingMode systemSubpixelRenderingMode() {
+        return _systemSubpixelRenderingMode;
+    }
+
+    /// set subpixel rendering mode detected for the platform; backends set it at startup
+    static @property void systemSubpixelRenderingMode(SubpixelRenderingMode mode) {
+        _systemSubpixelRenderingMode = mode == SubpixelRenderingMode.Auto ? SubpixelRenderingMode.None : mode;
+        updateSubpixelRenderingMode();
+    }
+
+    private static void updateSubpixelRenderingMode() {
+        SubpixelRenderingMode mode = _subpixelRenderingModeSetting == SubpixelRenderingMode.Auto
+            ? _systemSubpixelRenderingMode : _subpixelRenderingModeSetting;
         if (_subpixelRenderingMode != mode) {
             _subpixelRenderingMode = mode;
             // glyphs are rendered for a mode: render them again (#871)
@@ -1510,13 +1542,18 @@ private:
 }
 
 /**
- * Subpixel rendering mode matching the system font smoothing settings (#880).
+ * Detect the subpixel rendering mode matching the system font smoothing settings (#880, #882).
  *
  * Windows: the ClearType settings GDI uses for its own text: RGB or BGR when font smoothing is on and its type
  * is ClearType (SPI_GETFONTSMOOTHING, SPI_GETFONTSMOOTHINGTYPE, SPI_GETFONTSMOOTHINGORIENTATION), None for
- * standard (grayscale) smoothing or no smoothing. Other platforms: None.
+ * standard (grayscale) smoothing or no smoothing.
+ *
+ * Linux and other X11 desktops: Xft.rgba (and Xft.antialias) of the X resources set by the desktop, or the
+ * subpixel order fontconfig configures (FC_RGBA) when Xft.rgba is not set; see dlangui.platforms.common.xftdpi.
+ *
+ * Other platforms: None.
  */
-SubpixelRenderingMode systemSubpixelRenderingMode() {
+SubpixelRenderingMode detectSubpixelRenderingMode() {
     version (Windows) {
         import core.sys.windows.windows : SystemParametersInfoW, BOOL, UINT;
         enum : UINT {
@@ -1536,7 +1573,8 @@ SubpixelRenderingMode systemSubpixelRenderingMode() {
             return SubpixelRenderingMode.RGB;
         return orientation == FE_FONTSMOOTHINGORIENTATIONBGR ? SubpixelRenderingMode.BGR : SubpixelRenderingMode.RGB;
     } else {
-        return SubpixelRenderingMode.None;
+        import dlangui.platforms.common.xftdpi : detectXftSubpixelRenderingMode;
+        return detectXftSubpixelRenderingMode();
     }
 }
 
