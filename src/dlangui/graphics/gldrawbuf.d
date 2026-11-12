@@ -151,14 +151,23 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     }
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
     override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
+        drawSubpixelGlyph(x, y, glyph, color, 0);
+    }
+    /// draw glyph; a subpixel glyph is moved right by subpixelPhase subpixels (0..2) (#878)
+    override void drawSubpixelGlyph(int x, int y, Glyph * glyph, uint color, int subpixelPhase) {
         assert(_scene !is null);
-        Rect dstrect = Rect(x,y, x + glyph.correctedBlackBoxX, y + glyph.blackBoxY);
-        Rect srcrect = Rect(0, 0, glyph.correctedBlackBoxX, glyph.blackBoxY);
+        int phase = glyph.subpixelMode ? subpixelPhase : 0;
+        if (phase < 0 || phase > 2)
+            phase = 0;
+        // width in pixels: for a subpixel glyph, its subpixel columns after the phase, 3 per pixel
+        int width = glyph.subpixelMode ? (glyph.blackBoxX + phase + 2) / 3 : glyph.blackBoxX;
+        Rect dstrect = Rect(x,y, x + width, y + glyph.blackBoxY);
+        Rect srcrect = Rect(0, 0, width, glyph.blackBoxY);
         color = applyAlpha(color);
         if (!isFullyTransparentColor(color) && applyClipping(dstrect, srcrect)) {
             if (!glGlyphCache.isInCache(glyph.id))
                 glGlyphCache.put(glyph);
-            _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, color, null));
+            _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, color, null, phase));
         }
     }
     /// draw source buffer rectangle contents to destination buffer
@@ -343,8 +352,11 @@ private abstract class GLCache
         // image size
         Rect _rc;
         bool _deleted;
-        // glyph with subpixel coverage in the RGB channels (#833)
+        // subpixel glyph: _rc holds its subpixel columns (one texel each) with GLYPH_SUBPIXEL_PAD empty texels
+        // at both sides (#878)
         bool _subpixel;
+        // BGR subpixel order
+        bool _bgr;
 
         this(GLCachePage page, uint objectId) { _page = page; _objectId = objectId; }
 
@@ -357,6 +369,9 @@ private abstract class GLCache
         int _tdx;
         int _tdy;
         ColorDrawBuf _drawbuf;
+        // one byte per texel, used instead of _drawbuf by pages of single channel (GL_R8) textures: glyphs (#878)
+        bool _singleChannel;
+        ubyte[] _pixels;
         int _currentLine;
         int _nextLine;
         int _x;
@@ -385,7 +400,7 @@ private abstract class GLCache
         }
 
         final void updateTexture() {
-            if (_drawbuf is null)
+            if (_drawbuf is null && _pixels is null)
                 return; // no draw buffer!!!
             if (_texture is null || _texture.ID == 0) {
                 _texture = new Tex2D();
@@ -393,17 +408,20 @@ private abstract class GLCache
                 if (!_texture.ID)
                     return;
             }
-            Log.d("updateTexture for cache page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _texture ? _texture.ID : 0);
-            uint * pixels = _drawbuf.scanLine(0);
-            if (!glSupport.setTextureImage(_texture, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
+            Log.d("updateTexture for cache page - setting image ", _tdx, "x", _tdy, " tx=", _texture ? _texture.ID : 0);
+            bool ok = _singleChannel ? glSupport.setTextureImageR8(_texture, _tdx, _tdy, _pixels.ptr)
+                : glSupport.setTextureImage(_texture, _drawbuf.width, _drawbuf.height, cast(ubyte*)_drawbuf.scanLine(0));
+            if (!ok) {
                 destroy(_texture);
                 _texture = null;
                 return;
             }
             _needUpdateTexture = false;
             if (_closed) {
-                destroy(_drawbuf);
+                if (_drawbuf)
+                    destroy(_drawbuf);
                 _drawbuf = null;
+                _pixels = null;
             }
         }
 
@@ -429,7 +447,10 @@ private abstract class GLCache
             if (height && width) {
                 if (_nextLine < _currentLine + height + 2 * spacer)
                     _nextLine = _currentLine + height + 2 * spacer;
-                if (!_drawbuf) {
+                if (_singleChannel) {
+                    if (!_pixels)
+                        _pixels = new ubyte[_tdx * _tdy]; // zero: no coverage
+                } else if (!_drawbuf) {
                     _drawbuf = new ColorDrawBuf(_tdx, _tdy);
                     //_drawbuf.SetBackgroundColor(0x000000);
                     //_drawbuf.SetTextColor(0xFFFFFF);
@@ -648,32 +669,43 @@ private class GLImageCache : GLCache
     }
 }
 
+/// empty texels at both sides of a subpixel glyph in the glyph cache: the subpixel text shader reads up to 2
+/// subpixels before the glyph (phase) and up to 2 after it (the last pixel) (#878)
+private enum GLYPH_SUBPIXEL_PAD = 2;
+
 private class GLGlyphCache : GLCache
 {
     static class GLGlyphCachePage : GLCachePage {
 
         this(GLGlyphCache cache, int dx, int dy) {
             super(cache, dx, dy);
+            _singleChannel = true;
             Log.v("created glyph cache page ", dx, "x", dy);
         }
 
+        /// put the glyph bitmap into the page: one texel per pixel, or per subpixel for subpixel glyphs (#878)
         GLCacheItem addItem(Glyph* glyph) {
-            GLCacheItem cacheItem = reserveSpace(glyph.id, glyph.correctedBlackBoxX, glyph.blackBoxY);
+            bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
+            int pad = subpixel ? GLYPH_SUBPIXEL_PAD : 0;
+            GLCacheItem cacheItem = reserveSpace(glyph.id, glyph.blackBoxX + pad * 2, glyph.blackBoxY);
             if (cacheItem is null)
                 return null;
-            //_drawbuf.drawGlyph(cacheItem._rc.left, cacheItem._rc.top, glyph, 0xFFFFFF);
-            _drawbuf.drawGlyphToTexture(cacheItem._rc.left, cacheItem._rc.top, glyph);
-            cacheItem._subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
+            cacheItem._subpixel = subpixel;
+            cacheItem._bgr = glyph.subpixelMode == SubpixelRenderingMode.BGR;
+            int w = glyph.blackBoxX;
+            foreach(int yy; 0 .. glyph.blackBoxY) {
+                int offset = (cacheItem._rc.top + yy) * _tdx + cacheItem._rc.left + pad;
+                _pixels[offset .. offset + w] = glyph.glyph[yy * w .. yy * w + w];
+            }
             _needUpdateTexture = true;
             return cacheItem;
         }
 
-        void drawItem(GLCacheItem item, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
+        /// draw glyph: srcrc is in pixels of the glyph (moved by phase subpixels for a subpixel glyph)
+        void drawItem(GLCacheItem item, Rect dstrc, Rect srcrc, uint color, Rect * clip, int phase) {
             if (_needUpdateTexture)
                 updateTexture();
             if (_texture && _texture.ID != 0) {
-                // convert coordinates to cached texture
-                srcrc.offset(item._rc.left, item._rc.top);
                 if (clip) {
                     int srcw = srcrc.width();
                     int srch = srcrc.height();
@@ -694,10 +726,16 @@ private class GLGlyphCache : GLCache
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    if (item._subpixel)
-                        glSupport.queue.addSubpixelTextRect(_texture, _tdx, _tdy, color, srcrc, dstrc);
-                    else
-                        glSupport.queue.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, false);
+                    if (item._subpixel) {
+                        // texel columns: 3 subpixels per pixel, the glyph starts phase subpixels right of the pixel
+                        int x0 = item._rc.left + GLYPH_SUBPIXEL_PAD - phase;
+                        Rect texrc = Rect(x0 + srcrc.left * 3, item._rc.top + srcrc.top,
+                                          x0 + srcrc.right * 3, item._rc.top + srcrc.bottom);
+                        glSupport.queue.addSubpixelTextRect(_texture, color, texrc, dstrc, item._bgr);
+                    } else {
+                        srcrc.offset(item._rc.left, item._rc.top);
+                        glSupport.queue.addGlyphRect(_texture, _tdx, _tdy, color, srcrc, dstrc);
+                    }
                 }
             }
         }
@@ -721,10 +759,10 @@ private class GLGlyphCache : GLCache
         _map[glyph.id] = res;
     }
     /// draw cached item
-    void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
+    void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, Rect * clip, int phase) {
         GLCacheItem* item = objectId in _map;
         if (item)
-            (cast(GLGlyphCachePage)item.page).drawItem(*item, dstrc, srcrc, color, clip);
+            (cast(GLGlyphCachePage)item.page).drawItem(*item, dstrc, srcrc, color, clip, phase);
     }
 }
 
@@ -863,19 +901,21 @@ private:
     Rect srcrc;
     uint color;
     Rect * clip;
+    int phase;
 
 public:
     override void draw() {
         if (glGlyphCache)
-            glGlyphCache.drawItem(objectId, dstrc, srcrc, color, clip);
+            glGlyphCache.drawItem(objectId, dstrc, srcrc, color, clip, phase);
     }
-    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, Rect * _clip)
+    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, Rect * _clip, int _phase = 0)
     {
         objectId = _objectId;
         dstrc = _dstrc;
         srcrc = _srcrc;
         color = _color;
         clip = _clip;
+        phase = _phase;
     }
 }
 
