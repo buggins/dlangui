@@ -963,6 +963,8 @@ class MouseEvent {
     @property ushort flags() { return _flags; }
     /// returns mouse button flags only
     @property ushort buttonFlags() { return _flags & MouseFlag.ButtonsMask; }
+    /// clears the given flags (e.g. buttons that were not pressed in the window that gets the event)
+    void clearFlags(ushort mask) { _flags &= ~mask; }
     /// returns keyboard modifier flags only
     @property ushort keyFlags() { return _flags & MouseFlag.KeyMask; }
     /// returns delta for Wheel event
