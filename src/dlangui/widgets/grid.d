@@ -357,6 +357,10 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     private Point _lastSelectedCell;
     /// when true, allows to select only whole row
     protected bool _rowSelect;
+    /// a double-click on the selected cell: activate it when the button is released over it (#852)
+    protected bool _activateOnButtonUp;
+    protected int _activateCol;
+    protected int _activateRow;
     /// default column width - for newly added columns
     protected int _defColumnWidth;
     /// default row height - for newly added rows
@@ -1155,7 +1159,11 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             }
             if (cellFound && normalCell) {
                 if (c == _col && r == _row && event.doubleClick) {
-                    activateCell(c, r);
+                    // activated on the release: the activation may close the window (e.g. a file dialog), and the
+                    // still pressed button would then reach the window below as a drag (#852)
+                    _activateOnButtonUp = true;
+                    _activateCol = c;
+                    _activateRow = r;
                 } else if (_multiSelect && (event.flags & (MouseFlag.Shift | MouseFlag.Control)) != 0) {
                     multiSelectCell(c, r, (event.flags & MouseFlag.Shift) != 0);
                 } else {
@@ -1165,12 +1173,21 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             return true;
         }
         if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            if (_activateOnButtonUp) {
+                _activateOnButtonUp = false;
+                if (cellFound && normalCell && c == _activateCol && r == _activateRow) {
+                    activateCell(c, r);
+                    return true;
+                }
+            }
             if (cellFound && !normalCell) {
                 if (headerCellClicked.assigned) {
                     headerCellClicked(this, c, r);
                 }
             }
         }
+        if (event.action == MouseAction.Cancel || event.action == MouseAction.FocusOut)
+            _activateOnButtonUp = false;
         if (event.action == MouseAction.Move && (event.flags & MouseFlag.LButton)) {
             // TODO: selection
             if (cellFound && normalCell) {

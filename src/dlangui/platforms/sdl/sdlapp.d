@@ -801,6 +801,35 @@ class SDLWindow : Window {
     protected ButtonDetails _lbutton;
     protected ButtonDetails _mbutton;
     protected ButtonDetails _rbutton;
+
+    /// mouse buttons that SDL reports as pressed although they are released (#852): when a button is released
+    /// over a window that was closed meanwhile (e.g. a dialog), SDL may not get the release, and its button
+    /// state, reported with every mouse move, stays "pressed" until the next press or release of that button
+    protected uint _staleButtons;
+
+    /// compare SDL's mouse button state with the real one (when the window gets focus or the mouse enters it)
+    void syncMouseButtons() {
+        SDL_version v;
+        SDL_GetVersion(&v);
+        if (v.major == 2 && v.minor == 0 && v.patch < 4)
+            return; // SDL_GetGlobalMouseState is new in SDL 2.0.4
+        uint actual = SDL_GetGlobalMouseState(null, null);
+        uint sdlState = SDL_GetMouseState(null, null);
+        _staleButtons = sdlState & ~actual;
+        debug(DebugSDL) if (_staleButtons) Log.d("SDL mouse buttons released elsewhere: ", _staleButtons);
+        resetReleasedButtons(actual);
+    }
+
+    /// forget the presses of buttons that are not pressed in state (an SDL button mask)
+    protected void resetReleasedButtons(uint state) {
+        if (!(state & SDL_BUTTON_LMASK) && _lbutton.isDown)
+            _lbutton.reset();
+        if (!(state & SDL_BUTTON_MMASK) && _mbutton.isDown)
+            _mbutton.reset();
+        if (!(state & SDL_BUTTON_RMASK) && _rbutton.isDown)
+            _rbutton.reset();
+    }
+
     ushort convertMouseFlags(uint flags) {
         ushort res = 0;
         if (flags & SDL_BUTTON_LMASK)
@@ -841,6 +870,14 @@ class SDLWindow : Window {
             }
         }
 
+
+        if (action == MouseAction.Move) {
+            state &= ~_staleButtons;
+            resetReleasedButtons(state);
+        } else if (action == MouseAction.ButtonDown || action == MouseAction.ButtonUp) {
+            if (button >= 1 && button <= 32)
+                _staleButtons &= ~(1u << (button - 1)); // SDL_BUTTON(button): SDL got a real press or release
+        }
 
         MouseEvent event = null;
         if (action == MouseAction.Wheel) {
@@ -1533,12 +1570,14 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_ENTER:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_ENTER - ", w.windowCaption);
+                                w.syncMouseButtons();
                                 break;
                             case SDL_WINDOWEVENT_LEAVE:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_LEAVE - ", w.windowCaption);
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_GAINED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_GAINED - ", w.windowCaption);
+                                w.syncMouseButtons();
                                 if (!_windowsMinimized)
                                     w.restoreModalChilds();
                                 w.handleWindowActivityChange(true);
