@@ -597,8 +597,17 @@ class Font : RefCountedObject {
                     prevChar = 0;
                     continue;
                 }
-                int kerningDelta = useKerning && prevChar ? getKerningOffset(ch, prevChar) : 0;
-                int width = ((glyph.widthScaled + kerningDelta + 63) >> 6);
+                // kerning between the previous character and this one moves this one (#863): glyph i is drawn
+                // at widths[i - 1], so that boundary (also the caret position between them) is moved
+                if (useKerning && prevChar) {
+                    int kerningDelta = getKerningOffset(prevChar, ch); // 1/64 pixel
+                    int dx = kerningDelta >= 0 ? (kerningDelta + 32) / 64 : -((-kerningDelta + 32) / 64);
+                    if (dx) {
+                        x += dx;
+                        pwidths[i - 1] = x;
+                    }
+                }
+                int width = ((glyph.widthScaled + 63) >> 6);
                 if (width < glyph.originX + glyph.correctedBlackBoxX)
                     width = glyph.originX + glyph.correctedBlackBoxX;
                 int w = x + width; // using advance
@@ -899,6 +908,52 @@ class Font : RefCountedObject {
 
     void clear() {}
 
+}
+
+unittest {
+    // kerning in measureText (#863): a pair moves the second character, and the boundary between them
+    static class KerningTestFont : Font {
+        Glyph[dchar] _glyphs;
+        this() {
+            foreach (ch, w; ['T': 10, 'o': 8, 'A': 10, 'V': 10, ' ': 4, 'i': 3, 'M': 12]) {
+                Glyph g;
+                g.blackBoxX = cast(ushort)(w - 1);
+                g.blackBoxY = 10;
+                g.originX = 0;
+                g.originY = 10;
+                g.widthPixels = cast(ubyte)w;
+                g.widthScaled = cast(ushort)(w << 6);
+                _glyphs[ch] = g;
+            }
+        }
+        override @property int size() { return 12; }
+        override @property int height() { return 14; }
+        override @property int weight() { return 400; }
+        override @property int baseline() { return 11; }
+        override @property bool italic() { return false; }
+        override @property string face() { return "test"; }
+        override @property FontFamily family() { return FontFamily.SansSerif; }
+        override @property bool isNull() { return false; }
+        override Glyph * getCharGlyph(dchar ch, bool withImage = true) { return ch in _glyphs; }
+        override void checkpoint() {}
+        override void cleanup() {}
+        override void clearGlyphCache() {}
+        override @property bool allowKerning() { return true; }
+        override int getKerningOffset(dchar prevChar, dchar currentChar) {
+            if (prevChar == 'T' && currentChar == 'o') return -3 * 64;
+            if (prevChar == 'A' && currentChar == 'V') return -2 * 64 - 20; // rounded to -2
+            return 0;
+        }
+    }
+    auto font = new KerningTestFont();
+    int[] w;
+    font.measureText("To"d, w);
+    assert(w[0] == 7 && w[1] == 15); // o starts 3 px earlier
+    font.measureText("oT"d, w);
+    assert(w[0] == 8 && w[1] == 18); // no pair o->T
+    font.measureText("AVA"d, w);
+    assert(w[0] == 8 && w[1] == 18 && w[2] == 28);
+    destroy(font);
 }
 alias FontRef = Ref!Font;
 

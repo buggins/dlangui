@@ -209,6 +209,8 @@ class Win32Font : Font {
     protected LOGFONTA _logfont;
     protected Win32ColorDrawBuf _drawbuf;
     protected GlyphCache _glyphCache;
+    /// kerning pairs of the font (#864): (first << 16) | second (UTF-16 code units) -> offset in pixels
+    protected int[uint] _kerningPairs;
 
     /// need to call create() after construction to initialize font
     this() {
@@ -229,6 +231,7 @@ class Win32Font : Font {
             _baseline = 0;
             _size = 0;
         }
+        _kerningPairs = null;
         if (_drawbuf !is null) {
             destroy(_drawbuf);
             _drawbuf = null;
@@ -478,8 +481,38 @@ class Win32Font : Font {
         _italic = italic;
         _face = def.face;
         _family = def.family;
+        loadKerningPairs();
         debug(FontResources) Log.d("Created font ", _face, " ", _size);
         return true;
+    }
+
+    /// read the kerning pairs of the font (its kern table), in pixels for its size (#864)
+    protected void loadKerningPairs() {
+        _kerningPairs = null;
+        _allowKerning = true;
+        DWORD count = GetKerningPairsW(_drawbuf.dc, 0, null);
+        if (count == 0 || count > 1_000_000)
+            return;
+        KERNINGPAIR[] pairs = new KERNINGPAIR[count];
+        count = GetKerningPairsW(_drawbuf.dc, count, pairs.ptr);
+        foreach (ref p; pairs[0 .. count])
+            if (p.iKernAmount)
+                _kerningPairs[(cast(uint)p.wFirst << 16) | p.wSecond] = p.iKernAmount;
+        debug(FontResources) Log.d("Font ", _face, " ", _size, ": ", _kerningPairs.length, " kerning pairs");
+    }
+
+    /// kerning is used if the font has kerning pairs
+    override @property bool allowKerning() {
+        return _allowKerning && _kerningPairs.length > 0;
+    }
+
+    /// kerning offset between two characters, in 1/64 pixel
+    override int getKerningOffset(dchar prevChar, dchar currentChar) {
+        if (!_allowKerning || prevChar > 0xFFFF || currentChar > 0xFFFF)
+            return 0;
+        if (int * p = ((cast(uint)prevChar << 16) | currentChar) in _kerningPairs)
+            return *p * 64;
+        return 0;
     }
 
     /// clear usage flags for all entries
