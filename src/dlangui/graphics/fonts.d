@@ -49,6 +49,8 @@ public import dlangui.core.types;
 public import dlangui.core.logger;
 private import dlangui.widgets.styles;
 import std.algorithm;
+import core.stdc.stdlib : calloc, free;
+import core.exception : onOutOfMemoryError;
 
 /// font families enum
 enum FontFamily : ubyte {
@@ -931,6 +933,47 @@ class Font : RefCountedObject {
     /// get character glyph information
     abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
 
+    /// returns true if this font instance has a glyph for codepoint ch (replacement characters and fallback fonts
+    /// are not used); characters >= MAX_UNICODE_CODEPOINTS are missing in any font (#886)
+    bool hasCodepoint(dchar ch) {
+        if (ch >= MAX_UNICODE_CODEPOINTS)
+            return false;
+        CodepointPresence presence = cachedCodepointPresence(ch);
+        if (presence == CodepointPresence.unknown) {
+            presence = loadCodepointPresence(ch);
+            cacheCodepointPresence(ch, presence);
+        }
+        // unknown: the font engine cannot tell, assume the glyph exists
+        return presence != CodepointPresence.missing;
+    }
+
+    /// codepoint presence cache shared by all instances (sizes) of the same font face, owned by the font manager;
+    /// null if presence is not cached (#886)
+    private CodepointPresenceCache * _codepointPresenceCache;
+
+    /// set by font manager when the font is created
+    package(dlangui) @property void codepointPresenceCache(CodepointPresenceCache * cache) {
+        _codepointPresenceCache = cache;
+    }
+
+    /// returns presence of codepoint ch from the cache shared by all sizes of the font face, unknown if not cached
+    protected final CodepointPresence cachedCodepointPresence(dchar ch) {
+        return _codepointPresenceCache ? _codepointPresenceCache.getPresence(ch) : CodepointPresence.unknown;
+    }
+
+    /// stores presence of codepoint ch in the cache shared by all sizes of the font face (unknown is ignored);
+    /// font implementations call it when they find out whether a codepoint exists in the font
+    protected final void cacheCodepointPresence(dchar ch, CodepointPresence presence) {
+        if (_codepointPresenceCache)
+            _codepointPresenceCache.setPresence(ch, presence);
+    }
+
+    /// override to check whether codepoint ch exists in the font, without replacement characters;
+    /// called by hasCodepoint() for codepoints not in the cache; returns unknown if the font engine cannot tell
+    protected CodepointPresence loadCodepointPresence(dchar ch) {
+        return CodepointPresence.unknown;
+    }
+
     /// clear usage flags for all entries
     abstract void checkpoint();
     /// removes entries not used after last call of checkpoint() or cleanup()
@@ -1003,6 +1046,57 @@ unittest {
     assert(w[0] == 7 && w[1] == 14);
     destroy(font);
 }
+
+unittest {
+    // Font.hasCodepoint with a presence cache shared by two sizes of a font face (#886)
+    static class PresenceTestFont : Font {
+        int _size;
+        int loads; // calls of loadCodepointPresence
+        this(int size) { _size = size; }
+        override @property int size() { return _size; }
+        override @property int height() { return _size + 2; }
+        override @property int weight() { return 400; }
+        override @property int baseline() { return _size; }
+        override @property bool italic() { return false; }
+        override @property string face() { return "test"; }
+        override @property FontFamily family() { return FontFamily.SansSerif; }
+        override @property bool isNull() { return false; }
+        override Glyph * getCharGlyph(dchar ch, bool withImage = true) { return null; }
+        override void checkpoint() {}
+        override void cleanup() {}
+        override void clearGlyphCache() {}
+        override protected CodepointPresence loadCodepointPresence(dchar ch) {
+            loads++;
+            if (ch == '?')
+                return CodepointPresence.unknown; // engine cannot tell
+            return ch < 0x80 || ch == 0x1F600 ? CodepointPresence.present : CodepointPresence.missing;
+        }
+    }
+    CodepointPresenceCache cache;
+    auto font12 = new PresenceTestFont(12);
+    auto font20 = new PresenceTestFont(20);
+    font12.codepointPresenceCache = &cache;
+    font20.codepointPresenceCache = &cache;
+    assert(font12.hasCodepoint('A') && font12.loads == 1);
+    assert(!font12.hasCodepoint(0x4E2D) && font12.loads == 2);
+    assert(font12.hasCodepoint(0x1F600) && font12.loads == 3);
+    // cached: no more engine lookups, also for the other size
+    assert(font12.hasCodepoint('A') && !font12.hasCodepoint(0x4E2D) && font12.loads == 3);
+    assert(font20.hasCodepoint('A') && !font20.hasCodepoint(0x4E2D) && font20.hasCodepoint(0x1F600) && font20.loads == 0);
+    assert(cache.getPresence(0x4E2D) == CodepointPresence.missing);
+    // unknown: assumed present, not cached
+    assert(font20.hasCodepoint('?') && font20.hasCodepoint('?') && font20.loads == 2);
+    assert(cache.getPresence('?') == CodepointPresence.unknown);
+    // beyond Unicode: missing, the engine is not asked
+    assert(!font20.hasCodepoint(cast(dchar)0x110000) && font20.loads == 2);
+    // no cache: every call asks the engine
+    auto font30 = new PresenceTestFont(30);
+    assert(font30.hasCodepoint('A') && font30.hasCodepoint('A') && font30.loads == 2);
+    destroy(font12);
+    destroy(font20);
+    destroy(font30);
+}
+
 alias FontRef = Ref!Font;
 
 /// helper to split text into several lines and draw it
@@ -1505,6 +1599,211 @@ struct GlyphCache
     ~this() {
         clear();
     }
+}
+
+/// number of Unicode codepoints (U+0000..U+10FFFF): characters >= MAX_UNICODE_CODEPOINTS are missing in any font
+enum uint MAX_UNICODE_CODEPOINTS = 0x110000;
+
+/// presence of codepoint (glyph) in font
+enum CodepointPresence : ubyte {
+    /// not checked yet
+    unknown = 0,
+    /// font has glyph for codepoint
+    present = 1,
+    /// font has no glyph for codepoint
+    missing = 2
+}
+
+/// smallest number of bits, a power of two, enough to store values 0..maxValue
+private uint bitsPerEnumItem(ulong maxValue) pure nothrow @nogc @safe {
+    uint bits = 1;
+    while (bits < 64 && (1UL << bits) <= maxValue)
+        bits *= 2;
+    return bits;
+}
+
+/**
+    Array of size small enum (or unsigned integer) items packed into bits.
+
+    Items are stored in chunkCount chunks of the same size, allocated on the first write of a non-zero value
+    to a chunk; items of not allocated chunks are 0 (cast(T)0 is the default value).
+    Chunks are allocated with malloc: no GC scanning; they are freed by clear() or the destructor. Not copyable.
+*/
+struct EnumArray(T, uint size, uint chunkCount) {
+    static assert(size > 0 && chunkCount > 0 && chunkCount <= size, "EnumArray: bad size or chunkCount");
+    static assert(T.min >= 0, "EnumArray: item values must not be negative");
+
+    /// number of bits per item: enough to store T.max, a power of two
+    enum uint BITS_PER_ITEM = bitsPerEnumItem(T.max);
+    static assert(BITS_PER_ITEM <= 32, "EnumArray: item type is too big");
+    /// items in one uint
+    enum uint ITEMS_PER_UINT = 32 / BITS_PER_ITEM;
+    /// items in one chunk
+    enum uint ITEMS_PER_CHUNK = (size + chunkCount - 1) / chunkCount;
+    /// size of one chunk in uints
+    enum uint CHUNK_SIZE_UINTS = (ITEMS_PER_CHUNK + ITEMS_PER_UINT - 1) / ITEMS_PER_UINT;
+    private enum uint ITEM_MASK = BITS_PER_ITEM == 32 ? uint.max : (1u << BITS_PER_ITEM) - 1;
+
+    private alias Chunk = uint[CHUNK_SIZE_UINTS];
+    /// chunk pointers, null for chunks not allocated yet
+    private Chunk*[chunkCount] _chunks;
+
+    @disable this(this);
+
+    /// returns item by index; cast(T)0 if index >= size or its chunk is not allocated
+    T get(uint index) const {
+        if (index >= size)
+            return cast(T)0;
+        const(Chunk)* chunk = _chunks[index / ITEMS_PER_CHUNK];
+        if (!chunk)
+            return cast(T)0;
+        uint i = index % ITEMS_PER_CHUNK;
+        uint shift = (i % ITEMS_PER_UINT) * BITS_PER_ITEM;
+        return cast(T)(((*chunk)[i / ITEMS_PER_UINT] >> shift) & ITEM_MASK);
+    }
+
+    /// sets item value, allocates its chunk if needed; ignored if index >= size
+    void set(uint index, T value) {
+        if (index >= size)
+            return;
+        uint chunkIndex = index / ITEMS_PER_CHUNK;
+        Chunk* chunk = _chunks[chunkIndex];
+        if (!chunk) {
+            if (value == cast(T)0)
+                return; // default value: nothing to store
+            chunk = cast(Chunk*)calloc(1, Chunk.sizeof);
+            if (!chunk)
+                onOutOfMemoryError();
+            _chunks[chunkIndex] = chunk;
+        }
+        uint i = index % ITEMS_PER_CHUNK;
+        uint shift = (i % ITEMS_PER_UINT) * BITS_PER_ITEM;
+        uint* p = &(*chunk)[i / ITEMS_PER_UINT];
+        *p = (*p & ~(ITEM_MASK << shift)) | ((cast(uint)value & ITEM_MASK) << shift);
+    }
+
+    /// frees all chunks: all items become 0
+    void clear() {
+        foreach (ref chunk; _chunks) {
+            if (chunk) {
+                free(chunk);
+                chunk = null;
+            }
+        }
+    }
+
+    /// frees chunks
+    ~this() {
+        clear();
+    }
+}
+
+/**
+    Cache of codepoint (glyph) presence in a font face (#886).
+
+    One cache is shared by all instances (sizes) of the same font face; it is owned by the font manager item of the
+    face. Font instances read it before checking a codepoint in the font (Font.hasCodepoint(), getCharGlyph()), and
+    store what they find out about codepoints. Allocated on the first write: about 1 KB per 4096 codepoints used.
+    Not copyable.
+*/
+struct CodepointPresenceCache {
+    private alias PresenceArray = EnumArray!(CodepointPresence, MAX_UNICODE_CODEPOINTS, MAX_UNICODE_CODEPOINTS / 0x1000);
+    static assert(__traits(isZeroInit, PresenceArray));
+    private PresenceArray* _array;
+
+    @disable this(this);
+
+    /// returns presence of codepoint ch, unknown if not cached or ch >= MAX_UNICODE_CODEPOINTS
+    CodepointPresence getPresence(dchar ch) const {
+        if (ch >= MAX_UNICODE_CODEPOINTS || !_array)
+            return CodepointPresence.unknown;
+        return _array.get(ch);
+    }
+
+    /// stores presence of codepoint ch; ignored for ch >= MAX_UNICODE_CODEPOINTS and for unknown presence
+    void setPresence(dchar ch, CodepointPresence presence) {
+        if (ch >= MAX_UNICODE_CODEPOINTS || presence == CodepointPresence.unknown)
+            return;
+        if (!_array) {
+            _array = cast(PresenceArray*)calloc(1, PresenceArray.sizeof); // zero bytes are PresenceArray.init
+            if (!_array)
+                onOutOfMemoryError();
+        }
+        _array.set(ch, presence);
+    }
+
+    /// clears whole cache
+    void clear() {
+        if (_array) {
+            _array.clear();
+            free(_array);
+            _array = null;
+        }
+    }
+
+    ~this() {
+        clear();
+    }
+}
+
+unittest {
+    // EnumArray (#886)
+    EnumArray!(CodepointPresence, 0x110000, 0x110) a;
+    static assert(a.BITS_PER_ITEM == 2 && a.ITEMS_PER_CHUNK == 0x1000 && a.CHUNK_SIZE_UINTS == 256);
+    assert(a.get(0) == CodepointPresence.unknown);
+    assert(a.get(0x10FFFF) == CodepointPresence.unknown);
+    a.set(0x41, CodepointPresence.present);
+    a.set(0x42, CodepointPresence.missing);
+    a.set(0x10FFFF, CodepointPresence.missing);
+    a.set(0x110000, CodepointPresence.present); // out of range: ignored
+    a.set(0x5000, CodepointPresence.unknown); // default value in a not allocated chunk: nothing allocated
+    assert(a.get(0x40) == CodepointPresence.unknown);
+    assert(a.get(0x41) == CodepointPresence.present);
+    assert(a.get(0x42) == CodepointPresence.missing);
+    assert(a.get(0x43) == CodepointPresence.unknown);
+    assert(a.get(0x10FFFF) == CodepointPresence.missing);
+    assert(a.get(0x110000) == CodepointPresence.unknown);
+    assert(a._chunks[0] !is null && a._chunks[5] is null && a._chunks[0x10F] !is null);
+    a.set(0x41, CodepointPresence.missing); // overwrite, neighbours kept
+    assert(a.get(0x41) == CodepointPresence.missing && a.get(0x42) == CodepointPresence.missing && a.get(0x40) == CodepointPresence.unknown);
+    a.set(0x42, CodepointPresence.unknown);
+    assert(a.get(0x42) == CodepointPresence.unknown && a.get(0x41) == CodepointPresence.missing);
+    a.clear();
+    assert(a.get(0x41) == CodepointPresence.unknown && a._chunks[0] is null);
+
+    // other item sizes; size not divisible by chunkCount
+    enum Five : ubyte { a, b, c, d, e }
+    EnumArray!(Five, 1000, 3) b;
+    static assert(b.BITS_PER_ITEM == 4 && b.ITEMS_PER_CHUNK == 334 && b.CHUNK_SIZE_UINTS == 42);
+    foreach (uint i; 0 .. 1000)
+        b.set(i, cast(Five)(i % 5));
+    foreach (uint i; 0 .. 1000)
+        assert(b.get(i) == cast(Five)(i % 5));
+    EnumArray!(bool, 100, 1) c;
+    static assert(c.BITS_PER_ITEM == 1);
+    c.set(31, true);
+    c.set(32, true);
+    assert(!c.get(30) && c.get(31) && c.get(32) && !c.get(33));
+    EnumArray!(ushort, 10, 2) d;
+    static assert(d.BITS_PER_ITEM == 16);
+    d.set(9, 0xFFFF);
+    d.set(8, 0x1234);
+    assert(d.get(9) == 0xFFFF && d.get(8) == 0x1234 && d.get(7) == 0);
+
+    // CodepointPresenceCache
+    CodepointPresenceCache cache;
+    assert(cache.getPresence('A') == CodepointPresence.unknown && cache._array is null);
+    cache.setPresence('A', CodepointPresence.unknown); // ignored: nothing allocated
+    assert(cache._array is null);
+    cache.setPresence('A', CodepointPresence.present);
+    cache.setPresence(0x4E2D, CodepointPresence.missing);
+    cache.setPresence(cast(dchar)0x110000, CodepointPresence.present); // ignored
+    assert(cache.getPresence('A') == CodepointPresence.present);
+    assert(cache.getPresence(0x4E2D) == CodepointPresence.missing);
+    assert(cache.getPresence('B') == CodepointPresence.unknown);
+    assert(cache.getPresence(cast(dchar)0x110000) == CodepointPresence.unknown);
+    cache.clear();
+    assert(cache.getPresence('A') == CodepointPresence.unknown && cache._array is null);
 }
 
 
