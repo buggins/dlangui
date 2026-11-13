@@ -273,6 +273,19 @@ class Win32Font : Font {
         return g[0];
     }
 
+    /// check presence of codepoint in the font with GetGlyphIndicesW (#886); no font linking
+    override protected CodepointPresence loadCodepointPresence(dchar ch) {
+        if (ch > 0xFFFF)
+            return CodepointPresence.missing; // GDI glyph lookup takes UTF-16 code units: no glyphs above U+FFFF (#779)
+        if (_drawbuf is null)
+            return CodepointPresence.unknown;
+        wchar code = cast(wchar)ch;
+        WORD index;
+        if (GetGlyphIndicesW(_drawbuf.dc, &code, 1, &index, GGI_MARK_NONEXISTING_GLYPHS) == GDI_ERROR)
+            return CodepointPresence.unknown;
+        return index == 0xFFFF ? CodepointPresence.missing : CodepointPresence.present;
+    }
+
     override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
         Glyph * found = _glyphCache.find(ch);
         if (found !is null)
@@ -588,6 +601,27 @@ class Win32FontManager : FontManager {
     }
     ~this() {
         debug Log.i("Destroying Win32FontManager");
+        foreach (cache; _codepointPresence)
+            cache.clear();
+        _codepointPresence = null;
+    }
+
+    private static struct FaceVariant {
+        string face;
+        int weight;
+        bool italic;
+    }
+    /// presence of codepoints in font faces, shared by fonts of all sizes (#886)
+    private CodepointPresenceCache*[FaceVariant] _codepointPresence;
+
+    /// returns codepoint presence cache for font face, weight and italic
+    private CodepointPresenceCache * codepointPresence(string face, int weight, bool italic) {
+        FaceVariant key = FaceVariant(face, weight, italic);
+        if (auto p = key in _codepointPresence)
+            return *p;
+        CodepointPresenceCache * cache = new CodepointPresenceCache;
+        _codepointPresence[key] = cache;
+        return cache;
     }
 
     /// initialize font manager by enumerating of system fonts
@@ -627,6 +661,7 @@ class Win32FontManager : FontManager {
             Win32Font item = new Win32Font();
             if (!item.create(def, size, weight, italic))
                 return _emptyFontRef;
+            item.codepointPresenceCache = codepointPresence(def.face, weight, italic);
             debug(FontResources) Log.d("Adding to list of active fonts");
             return _activeFonts.add(item);
         } else {

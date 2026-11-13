@@ -65,6 +65,9 @@ private class FontFileItem {
     private FT_Library _library;
     private FontDef _def;
     string[] _filenames;
+    /// presence of codepoints in the files of this face, shared by fonts of all sizes (#886)
+    private CodepointPresenceCache _codepointPresence;
+    @property CodepointPresenceCache * codepointPresence() { return &_codepointPresence; }
     @property ref FontDef def() { return _def; }
     @property string[] filenames() { return _filenames; }
     @property FT_Library library() { return _library; }
@@ -74,6 +77,7 @@ private class FontFileItem {
             if (fn.equal(existing))
                 return;
         _filenames ~= fn;
+        _codepointPresence.clear(); // a new file may have more codepoints
     }
     this(FT_Library library, ref FontDef def) {
         _library = library;
@@ -199,6 +203,11 @@ class FreeTypeFontFile {
         return true; // successfully opened
     }
 
+
+    /// returns glyph index of codepoint, without replacement characters; 0 if the font has no glyph for it
+    uint getCodepointIndex(dchar code) {
+        return FT_Get_Char_Index(_face, code);
+    }
 
     /// find glyph index for character
     uint getCharIndex(dchar code, dchar def_char = 0) {
@@ -350,6 +359,7 @@ class FreeTypeFont : Font {
     /// need to call create() after construction to initialize font
     this(FontFileItem item, int size) {
         _fontItem = item;
+        codepointPresenceCache = item.codepointPresence;
         _size = size;
         _height = size;
         _allowKerning = true;
@@ -392,6 +402,33 @@ class FreeTypeFont : Font {
         return false;
     }
 
+    /// find glyph of codepoint (without replacement characters) in font files; uses and updates the codepoint
+    /// presence cache shared by all sizes of the font face (#886)
+    private bool findCodepointGlyph(dchar code, ref uint index, ref FreeTypeFontFile file) {
+        if (cachedCodepointPresence(code) == CodepointPresence.missing)
+            return false;
+        foreach(FreeTypeFontFile f; _files) {
+            index = f.getCodepointIndex(code);
+            if (index != 0) {
+                file = f;
+                cacheCodepointPresence(code, CodepointPresence.present);
+                return true;
+            }
+        }
+        cacheCodepointPresence(code, _files.length ? CodepointPresence.missing : CodepointPresence.unknown);
+        return false;
+    }
+
+    /// check presence of codepoint in font files (#886)
+    override protected CodepointPresence loadCodepointPresence(dchar ch) {
+        if (_files.length == 0)
+            return CodepointPresence.unknown;
+        foreach(FreeTypeFontFile f; _files)
+            if (f.getCodepointIndex(ch) != 0)
+                return CodepointPresence.present;
+        return CodepointPresence.missing;
+    }
+
     /// override to allow kerning
     override @property bool allowKerning() {
         return _allowKerning;
@@ -429,9 +466,12 @@ class FreeTypeFont : Font {
         //Log.v("Glyph ", ch, " is not found in cache, getting from font");
         uint index;
         FreeTypeFontFile file;
-        if (!findGlyph(ch, 0, index, file)) {
-            if (!findGlyph(ch, '?', index, file))
-                return null;
+        // the codepoint itself, then replacement characters, then '?'
+        if (!findCodepointGlyph(ch, index, file)) {
+            if (!findGlyph(ch, 0, index, file)) {
+                if (!findGlyph(ch, '?', index, file))
+                    return null;
+            }
         }
         Glyph * glyph = new Glyph;
         if (!file.getGlyphInfo(ch, *glyph, 0, withImage))
