@@ -292,7 +292,10 @@ class Win32Font : Font {
         Glyph * found = _glyphCache.find(ch);
         if (found !is null)
             return found;
-        uint glyphIndex = getGlyphIndex(ch);
+        // characters in the font's character map are drawn (#899): getGlyphIndex() (GetCharacterPlacementW) shapes
+        // the character and returns no glyph for a lone combining mark, e.g. Devanagari and Bengali vowel signs;
+        // it is still used for characters not in the font: it gives glyphs of GDI font linking
+        uint glyphIndex = hasCodepoint(ch) ? 1 : getGlyphIndex(ch);
         if (!glyphIndex) {
             ch = getReplacementChar(ch);
             if (!ch)
