@@ -1394,13 +1394,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         int w = 0;
         if (_fixedFont) {
             int tabw = tabSize * _spaceWidth;
+            FontRef fnt = font;
             // version optimized for fixed font
             for (int i = 0; i < s.length; i++) {
                 if (s[i] == '\t') {
                     w += _spaceWidth;
                     w = (w + tabw - 1) / tabw * tabw;
                 } else {
-                    w += _spaceWidth;
+                    w += _spaceWidth * fnt.charCells(s[i]); // East Asian wide: 2 cells (#888)
                 }
             }
         } else {

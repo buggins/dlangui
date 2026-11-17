@@ -443,6 +443,7 @@ class Font : RefCountedObject {
     ~this() {
         clear();
         _fallbackFonts.clear();
+        clearFallbackIndex();
     }
 
 
@@ -579,6 +580,7 @@ class Font : RefCountedObject {
         if (tabOffset < 0)
             tabOffset += tabWidth;
         dchar prevChar = 0;
+        bool prevOwn = false; // prevChar is drawn with a glyph of this font, not of a fallback font
         foreach(int i; 0 .. len) {
             //auto measureStart = std.datetime.Clock.currAppTick;
             dchar ch = pstr[i];
@@ -600,12 +602,13 @@ class Font : RefCountedObject {
                 continue; // skip '&' in hot key when measuring
             }
             if (fixed) {
-                // fast calculation for fixed pitch
-                x += fixedCharWidth;
+                // fast calculation for fixed pitch: whole cells, 2 for East Asian wide characters (#888)
+                x += fixedCharWidth * charCells(ch);
                 x64 = x << 6;
                 pwidths[i] = x;
                 charsMeasured = i + 1;
             } else {
+                _lastGlyphFromFallback = false;
                 Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
                 //auto measureEnd = std.datetime.Clock.currAppTick;
                 //auto duration = measureEnd - measureStart;
@@ -619,7 +622,9 @@ class Font : RefCountedObject {
                 }
                 // kerning between the previous character and this one moves this one (#863): glyph i is drawn
                 // at widths[i - 1], so that boundary (also the caret position between them) is moved
-                if (useKerning && prevChar) {
+                // no kerning with glyphs of fallback fonts (#888)
+                bool own = !_lastGlyphFromFallback;
+                if (useKerning && prevChar && own && prevOwn) {
                     int kerningDelta = getKerningOffset(prevChar, ch); // 1/64 pixel
                     if (kerningDelta) {
                         x64 += kerningDelta;
@@ -641,6 +646,7 @@ class Font : RefCountedObject {
                 x = roundPosition(x64);
                 pwidths[i] = x;
                 charsMeasured = i + 1;
+                prevOwn = own;
             }
             if (x > maxWidth)
                 break;
@@ -659,6 +665,11 @@ class Font : RefCountedObject {
     /// draw glyph of the character measured at index i by the last measureText() call at x + xx (in pixels);
     /// subpixel glyphs are placed with 1/3 pixel precision from the unrounded pen position (#878)
     protected final void drawMeasuredGlyph(DrawBuf buf, int x, int y, int i, int xx, Glyph * glyph, uint color) {
+        // fixed pitch: glyph centered in its cells, e.g. a glyph of a fallback font (#888)
+        if (isFixed && glyph.widthPixels) { // not zero width glyphs like combining marks
+            int cellsWidth = _textSizeBuffer[i] - xx;
+            x += (cellsWidth - glyph.widthPixels) / 2;
+        }
         if (glyph.subpixelMode && _textPos64Valid) {
             // pen position in subpixels: whole pixels and a phase of 0..2 subpixels
             int sub = (_textPos64Buffer[i] * 3 + 32) >> 6;
@@ -975,8 +986,95 @@ class Font : RefCountedObject {
     }
 
 
-    /// get character glyph information
-    abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
+    /**
+        Returns glyph for character ch: the font's own glyph; if the font has no glyph for it, a glyph of the first
+        fallback font that has one (#888); otherwise what getOwnCharGlyph() returns for missing characters
+        (a replacement character, or the font's missing glyph).
+
+        A glyph of a fallback font is owned by the fallback font (its glyph cache); it is drawn on the baseline
+        of this font.
+    */
+    Glyph * getCharGlyph(dchar ch, bool withImage = true) {
+        // control characters (C0, DEL, C1) and characters beyond Unicode are never looked up in fallback fonts;
+        // no lookup if there are no fallback fonts
+        if (ch >= 0x20 && (ch < 0x7F || ch > 0x9F) && ch < MAX_UNICODE_CODEPOINTS
+                && !(_fallbackFontsCreated && _fallbackFonts.length == 0) && !hasCodepoint(ch)) {
+            Glyph * glyph = getFallbackGlyph(ch, withImage);
+            if (glyph) {
+                _lastGlyphFromFallback = true;
+                return glyph;
+            }
+        }
+        return getOwnCharGlyph(ch, withImage);
+    }
+
+    /// set by getCharGlyph() when it returns a glyph of a fallback font: measureText() doesn't apply kerning to it
+    private bool _lastGlyphFromFallback;
+
+    /// returns number of cells character ch takes in a fixed pitch font: 2 for East Asian wide characters, else 1
+    int charCells(dchar ch) {
+        return isWideChar(ch) ? 2 : 1;
+    }
+
+    /// override to return glyph of this font only, without fallback fonts (#888); for characters the font has no
+    /// glyph for, return a glyph of a replacement character, the font's missing glyph, or null
+    protected Glyph * getOwnCharGlyph(dchar ch, bool withImage) {
+        return null;
+    }
+
+    private alias FallbackIndexArray = EnumArray!(ubyte, MAX_UNICODE_CODEPOINTS, MAX_UNICODE_CODEPOINTS / 0x1000);
+    static assert(__traits(isZeroInit, FallbackIndexArray));
+    /// for characters this font has no glyph for: 0 = not looked up yet, FALLBACK_NONE = no fallback font has it,
+    /// FALLBACK_FIRST + i = fallback font i (#888); allocated on first use, about 4 KB per 4096 characters used
+    private FallbackIndexArray * _fallbackIndex;
+    private enum ubyte FALLBACK_NONE = 1;
+    private enum ubyte FALLBACK_FIRST = 2;
+    /// max number of fallback fonts used
+    private enum MAX_FALLBACK_FONTS = 255 - FALLBACK_FIRST;
+
+    /// returns glyph of the first fallback font that has a glyph for ch, null if there is none (#888)
+    private Glyph * getFallbackGlyph(dchar ch, bool withImage) {
+        ubyte found = _fallbackIndex ? _fallbackIndex.get(ch) : 0;
+        if (found == FALLBACK_NONE)
+            return null;
+        if (found >= FALLBACK_FIRST) {
+            // only the fallback font's own glyphs: its fallback fonts are not used
+            Font f = _fallbackFonts.get(found - FALLBACK_FIRST);
+            return f ? f.getOwnCharGlyph(ch, withImage) : null;
+        }
+        // first lookup: the first fallback font that has the character and returns a glyph for it (a font may
+        // have the character but return no glyph, e.g. FreeType above U+FFFF, #779)
+        FallbackFontList * list = &fallbackFonts();
+        size_t n = list.length < MAX_FALLBACK_FONTS ? list.length : MAX_FALLBACK_FONTS;
+        Glyph * glyph = null;
+        found = FALLBACK_NONE;
+        foreach (i; 0 .. n) {
+            Font f = list.get(i);
+            if (f && f.hasCodepoint(ch)) {
+                glyph = f.getOwnCharGlyph(ch, withImage);
+                if (glyph) {
+                    found = cast(ubyte)(FALLBACK_FIRST + i);
+                    break;
+                }
+            }
+        }
+        if (!_fallbackIndex) {
+            _fallbackIndex = cast(FallbackIndexArray *)calloc(1, FallbackIndexArray.sizeof);
+            if (!_fallbackIndex)
+                onOutOfMemoryError();
+        }
+        _fallbackIndex.set(ch, found);
+        return glyph;
+    }
+
+    /// frees the fallback font index of characters
+    private void clearFallbackIndex() {
+        if (_fallbackIndex) {
+            _fallbackIndex.clear();
+            free(_fallbackIndex);
+            _fallbackIndex = null;
+        }
+    }
 
     /// returns true if this font instance has a glyph for codepoint ch (replacement characters and fallback fonts
     /// are not used); characters >= MAX_UNICODE_CODEPOINTS are missing in any font (#886)
@@ -1038,6 +1136,7 @@ class Font : RefCountedObject {
     private void clearFallbackFonts() {
         _fallbackFonts.clear();
         _fallbackFontsCreated = false;
+        clearFallbackIndex();
     }
 
     /// clear usage flags for all entries
@@ -1277,6 +1376,165 @@ unittest {
     }
     FontManager.instance = null;
     assert(GCTestFont.alive == 0);
+    FontManager._fallbackFaces[FontFamily.SansSerif] = oldFallbackFaces;
+}
+
+unittest {
+    // glyph lookup in fallback fonts (#888)
+    static class LookupTestFont : Font {
+        static int alive;
+        string _face;
+        int _size;
+        bool _fixed;
+        Glyph*[dchar] _glyphs; // characters the font has
+        Glyph _missing; // missing glyph
+        this(string face, int size) {
+            _face = face;
+            _size = size;
+            alive++;
+            void add(dchar ch, int width) {
+                Glyph * g = new Glyph;
+                g.blackBoxX = cast(ushort)width;
+                g.blackBoxY = 8;
+                g.widthPixels = cast(ubyte)width;
+                g.widthScaled = cast(ushort)(width << 6);
+                _glyphs[ch] = g;
+            }
+            if (face == "A" || face == "M") {
+                _fixed = face == "M";
+                foreach (dchar ch; ' ' .. '\x7F')
+                    add(ch, _fixed ? 6 : (ch == 'i' ? 3 : 5));
+            } else if (face == "B") {
+                add(0x4E2D, 10);
+                add(0x0416, 7);
+                add('x', 9);
+            } else if (face == "C") {
+                add(0x2605, 8);
+            }
+            _missing.blackBoxX = 3;
+            _missing.blackBoxY = 8;
+            _missing.widthPixels = 4;
+            _missing.widthScaled = 4 << 6;
+        }
+        ~this() { alive--; }
+        override @property int size() { return _size; }
+        override @property int height() { return _size + 2; }
+        override @property int weight() { return 400; }
+        override @property int baseline() { return _size; }
+        override @property bool italic() { return false; }
+        override @property string face() { return _face; }
+        override @property FontFamily family() { return FontFamily.SansSerif; }
+        override @property bool isNull() { return false; }
+        override protected Glyph * getOwnCharGlyph(dchar ch, bool withImage) {
+            if (auto p = ch in _glyphs)
+                return *p;
+            return &_missing;
+        }
+        override protected CodepointPresence loadCodepointPresence(dchar ch) {
+            return (ch in _glyphs) ? CodepointPresence.present : CodepointPresence.missing;
+        }
+        override @property bool allowKerning() { return !_fixed; }
+        override int getKerningOffset(dchar prevChar, dchar currentChar) {
+            assert(prevChar in _glyphs && currentChar in _glyphs); // only pairs of own glyphs
+            return -64; // 1 pixel closer
+        }
+        override void checkpoint() {}
+        override void cleanup() {}
+        override void clearGlyphCache() {}
+    }
+    static class LookupTestFontManager : FontManager {
+        FontList _fonts;
+        FontRef _nullFont;
+        ~this() {
+            releaseFallbackFonts();
+            _fonts.clear();
+        }
+        override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
+            string found = findInstalledFace(face);
+            if (!found.length)
+                return _nullFont;
+            int index = _fonts.find(size, weight, italic, family, found);
+            if (index >= 0)
+                return _fonts.get(index);
+            return _fonts.add(new LookupTestFont(found, size));
+        }
+        override FontFaceProps[] getFaces() {
+            return [FontFaceProps("A", FontFamily.SansSerif), FontFaceProps("B", FontFamily.SansSerif),
+                FontFaceProps("C", FontFamily.SansSerif), FontFaceProps("M", FontFamily.SansSerif)];
+        }
+        override void checkpoint() {}
+        override protected void forEachFontList(scope void delegate(ref FontList list) callback) {
+            callback(_fonts);
+        }
+    }
+    static class RecordingDrawBuf : ColorDrawBuf {
+        int[] xs; // x of drawn glyphs
+        this() { super(100, 20); }
+        override void drawGlyph(int x, int y, Glyph * glyph, uint color) { xs ~= x; }
+    }
+    if (FontManager.instance !is null)
+        return; // the test needs its own font manager
+    string[] oldFallbackFaces = FontManager.fallbackFaces(FontFamily.SansSerif);
+    auto manager = new LookupTestFontManager();
+    FontManager.instance = manager;
+    FontManager.setFallbackFaces(FontFamily.SansSerif, "B, C");
+    {
+        FontRef a = manager.getFont(12, 400, false, FontFamily.SansSerif, "A");
+        LookupTestFont la = cast(LookupTestFont)a.get;
+        assert(a.getCharGlyph('x') is la._glyphs['x']);
+        assert(!a._fallbackFontsCreated && LookupTestFont.alive == 1); // only own characters: no fallback fonts yet
+        // the first fallback font with the character; fallback fonts are created when needed
+        Glyph * g = a.getCharGlyph(0x4E2D);
+        assert(LookupTestFont.alive == 2);
+        LookupTestFont lb = cast(LookupTestFont)a.fallbackFonts.get(0);
+        assert(lb._face == "B" && g is lb._glyphs[0x4E2D]);
+        assert(a.getCharGlyph(0x2605) is (cast(LookupTestFont)a.fallbackFonts.get(1))._glyphs[0x2605]);
+        assert(LookupTestFont.alive == 3);
+        // no fallback font has it: the font's missing glyph; control characters are not looked up
+        assert(a.getCharGlyph(0xE000) is &la._missing && a._fallbackIndex.get(0xE000) == Font.FALLBACK_NONE);
+        assert(a._fallbackIndex.get(0x4E2D) == Font.FALLBACK_FIRST && a._fallbackIndex.get(0x2605) == Font.FALLBACK_FIRST + 1);
+        foreach (dchar c; "\n\u007F\u0085\u009F"d)
+            assert(a.getCharGlyph(c) is &la._missing && a._fallbackIndex.get(c) == 0);
+        assert(a.getCharGlyph(cast(dchar)0x110000) is &la._missing);
+        // a fallback font that has the character but returns no glyph: the next one is used
+        a.clearFallbackFonts();
+        lb = cast(LookupTestFont)a.fallbackFonts.get(0);
+        lb._glyphs[0x2605] = null; // B "has" U+2605, without a glyph
+        assert(a.getCharGlyph(0x2605) is (cast(LookupTestFont)a.fallbackFonts.get(1))._glyphs[0x2605]);
+        lb._glyphs.remove(0x2605);
+        // fallback glyph advances; kerning only between own glyphs (getKerningOffset asserts it)
+        int[] w;
+        assert(a.measureText("xx"d, w) == 2 && w[0] == 4 && w[1] == 9); // kerning moves the boundary (#863)
+        assert(a.measureText("x中x"d, w) == 3 && w[0] == 5 && w[1] == 15 && w[2] == 20);
+        // fixed pitch: whole cells, 2 for wide characters; glyphs centered in their cells
+        FontRef m = manager.getFont(12, 400, false, FontFamily.SansSerif, "M");
+        assert(m.isFixed);
+        assert(m.measureText("x中Жx"d, w) == 4 && w[0] == 6 && w[1] == 18 && w[2] == 24 && w[3] == 30);
+        auto buf = new RecordingDrawBuf();
+        m.drawText(buf, 0, 0, "x中Жx"d, 0);
+        // 中: 10 px glyph in 12 px (2 cells) at 6; Ж: 7 px glyph in 6 px at 18 (overhangs); x: own glyph at 24
+        assert(buf.xs == [0, 7, 18, 24]);
+        destroy(buf);
+        // changed fallback faces: lookups are done again
+        FontManager.setFallbackFaces(FontFamily.SansSerif, "C, B");
+        assert(!a._fallbackFontsCreated && a._fallbackIndex is null);
+        // combining marks (zero width) are not centered in fixed pitch cells
+        auto mark = new Glyph;
+        mark.blackBoxX = 3;
+        mark.blackBoxY = 3;
+        mark.originX = -4;
+        (cast(LookupTestFont)m.get)._glyphs[0x0301] = mark;
+        buf = new RecordingDrawBuf();
+        m.drawText(buf, 0, 0, "x\u0301"d, 0);
+        assert(buf.xs == [0, 6 - 4]);
+        destroy(buf);
+        assert(a.getCharGlyph(0x2605) is (cast(LookupTestFont)a.fallbackFonts.get(0))._glyphs[0x2605]);
+        // no fallback faces: missing glyph, and no more presence lookups
+        FontManager.setFallbackFaces(FontFamily.SansSerif, "");
+        assert(a.getCharGlyph(0x4E2D) is &la._missing && a._fallbackFontsCreated && a.fallbackFonts.length == 0);
+    }
+    FontManager.instance = null;
+    assert(LookupTestFont.alive == 0);
     FontManager._fallbackFaces[FontFamily.SansSerif] = oldFallbackFaces;
 }
 
@@ -2078,6 +2336,65 @@ enum CodepointPresence : ubyte {
     present = 1,
     /// font has no glyph for codepoint
     missing = 2
+}
+
+/// East Asian Wide (W) and Fullwidth (F) characters, sorted ranges; generated from Unicode 18.0 EastAsianWidth.txt
+/// (W and F lines, adjacent ranges merged)
+private immutable dchar[2][] WIDE_CHAR_RANGES = [
+    [0x1100, 0x115F], [0x231A, 0x231B], [0x2329, 0x232A], [0x23E9, 0x23EC], [0x23F0, 0x23F0], [0x23F3, 0x23F3],
+    [0x25FD, 0x25FE], [0x2614, 0x2615], [0x2630, 0x2637], [0x2648, 0x2653], [0x267F, 0x267F], [0x268A, 0x268F],
+    [0x2693, 0x2693], [0x26A1, 0x26A1], [0x26AA, 0x26AB], [0x26BD, 0x26BE], [0x26C4, 0x26C5], [0x26CE, 0x26CE],
+    [0x26D4, 0x26D4], [0x26EA, 0x26EA], [0x26F2, 0x26F3], [0x26F5, 0x26F5], [0x26FA, 0x26FA], [0x26FD, 0x26FD],
+    [0x2705, 0x2705], [0x270A, 0x270B], [0x2728, 0x2728], [0x274C, 0x274C], [0x274E, 0x274E], [0x2753, 0x2755],
+    [0x2757, 0x2757], [0x2795, 0x2797], [0x27B0, 0x27B0], [0x27BF, 0x27BF], [0x2B1B, 0x2B1C], [0x2B50, 0x2B50],
+    [0x2B55, 0x2B55], [0x2E80, 0x2E99], [0x2E9B, 0x2EF3], [0x2F00, 0x2FD5], [0x2FF0, 0x303E], [0x3041, 0x3096],
+    [0x3099, 0x30FF], [0x3105, 0x312F], [0x3131, 0x318E], [0x3190, 0x31E5], [0x31EF, 0x321E], [0x3220, 0x3247],
+    [0x3250, 0xA48C], [0xA490, 0xA4C6], [0xA960, 0xA97C], [0xAC00, 0xD7A3], [0xF900, 0xFAFF], [0xFE10, 0xFE19],
+    [0xFE30, 0xFE52], [0xFE54, 0xFE66], [0xFE68, 0xFE6B], [0xFF01, 0xFF60], [0xFFE0, 0xFFE6], [0x16FE0, 0x16FE4],
+    [0x16FF0, 0x16FF6], [0x17000, 0x18CDA], [0x18CFF, 0x18D20], [0x18D80, 0x18DF2], [0x18E00, 0x19191],
+    [0x191A0, 0x191D2], [0x1AFF0, 0x1AFF3], [0x1AFF5, 0x1AFFB], [0x1AFFD, 0x1AFFE], [0x1B000, 0x1B128],
+    [0x1B132, 0x1B132], [0x1B150, 0x1B152], [0x1B155, 0x1B155], [0x1B164, 0x1B168], [0x1B170, 0x1B2FB],
+    [0x1D300, 0x1D356], [0x1D360, 0x1D376], [0x1F004, 0x1F004], [0x1F0CF, 0x1F0CF], [0x1F18E, 0x1F18E],
+    [0x1F191, 0x1F19A], [0x1F1AE, 0x1F1AE], [0x1F200, 0x1F202], [0x1F210, 0x1F23B], [0x1F240, 0x1F248],
+    [0x1F250, 0x1F251], [0x1F260, 0x1F265], [0x1F300, 0x1F320], [0x1F32D, 0x1F335], [0x1F337, 0x1F37C],
+    [0x1F37E, 0x1F393], [0x1F3A0, 0x1F3CA], [0x1F3CF, 0x1F3D3], [0x1F3E0, 0x1F3F0], [0x1F3F4, 0x1F3F4],
+    [0x1F3F8, 0x1F43E], [0x1F440, 0x1F440], [0x1F442, 0x1F4FC], [0x1F4FF, 0x1F53D], [0x1F54B, 0x1F54E],
+    [0x1F550, 0x1F567], [0x1F57A, 0x1F57A], [0x1F595, 0x1F596], [0x1F5A4, 0x1F5A4], [0x1F5FB, 0x1F64F],
+    [0x1F680, 0x1F6C5], [0x1F6CC, 0x1F6CC], [0x1F6D0, 0x1F6D2], [0x1F6D5, 0x1F6D9], [0x1F6DC, 0x1F6DF],
+    [0x1F6EB, 0x1F6EC], [0x1F6F4, 0x1F6FC], [0x1F7DA, 0x1F7DA], [0x1F7E0, 0x1F7EB], [0x1F7F0, 0x1F7F0],
+    [0x1F90C, 0x1F93A], [0x1F93C, 0x1F945], [0x1F947, 0x1F9FF], [0x1FA70, 0x1FA7C], [0x1FA80, 0x1FAC6],
+    [0x1FAC8, 0x1FAC8], [0x1FACC, 0x1FADD], [0x1FADF, 0x1FAEB], [0x1FAEF, 0x1FAFA], [0x20000, 0x2FFFD],
+    [0x30000, 0x3FFFD]
+];
+
+/// returns true for East Asian Wide and Fullwidth characters, which take 2 cells of a fixed pitch font (#888)
+bool isWideChar(dchar ch) pure nothrow @nogc @safe {
+    if (ch < 0x1100)
+        return false;
+    size_t lo = 0, hi = WIDE_CHAR_RANGES.length;
+    while (lo < hi) {
+        size_t mid = (lo + hi) / 2;
+        if (ch < WIDE_CHAR_RANGES[mid][0])
+            hi = mid;
+        else if (ch > WIDE_CHAR_RANGES[mid][1])
+            lo = mid + 1;
+        else
+            return true;
+    }
+    return false;
+}
+
+unittest {
+    foreach (i; 1 .. WIDE_CHAR_RANGES.length)
+        assert(WIDE_CHAR_RANGES[i][0] > WIDE_CHAR_RANGES[i - 1][1]); // sorted, not overlapping
+    assert(!isWideChar('A') && !isWideChar(0x00E9) && !isWideChar(0x0416) && !isWideChar(0x2192));
+    assert(!isWideChar(0x2605) && !isWideChar(0x2713)); // ambiguous / neutral symbols: 1 cell
+    assert(isWideChar(0x4E2D) && isWideChar(0x65E5) && isWideChar(0x3042) && isWideChar(0x30AB)); // CJK, kana
+    assert(isWideChar(0xAC00) && isWideChar(0xD55C) && isWideChar(0xD7A3) && !isWideChar(0xD7A4)); // Hangul
+    assert(isWideChar(0x3000) && !isWideChar(0x303F) && isWideChar(0xFF21) && !isWideChar(0xFF61));
+    assert(isWideChar(0x1F600) && isWideChar(0x20000) && !isWideChar(0xE000));
+    assert(!isWideChar(0x1F321) && !isWideChar(0x1F336) && isWideChar(0x1F335)); // emoji: text presentation ones are N
+    assert(isWideChar(0x16FF0) && isWideChar(0x1D300) && isWideChar(0x2630));
 }
 
 /// smallest number of bits, a power of two, enough to store values 0..maxValue
