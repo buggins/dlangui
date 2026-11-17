@@ -83,6 +83,9 @@ class TextExample : VerticalLayout
             fallback.addChild(new TextWidget(null, "Sans serif: "d ~ fallbackText));
             fallback.addChild(new TextWidget(null, "Serif: "d ~ fallbackText).fontFamily(FontFamily.Serif)
                 .fontFace("Times New Roman,DejaVu Serif,Liberation Serif,Georgia"));
+            // other scripts (#899); no text shaping and bidi yet (#316): Indic vowel signs are not reordered,
+            // Arabic and Hebrew are shown left to right, Arabic letters unjoined
+            fallback.addChild(new TextWidget(null, "Other scripts: ไทย हिन्दी বাংলা தமிழ் עברית العربية አማርኛ ⌘ ∑ ♫"d));
             fallback.addChild(new TextWidget(null, "|中文|abcd|日本語|ab|한국어|★→✓|"d)
                 .fontFamily(FontFamily.MonoSpace).fontFace(monoFaces));
             fallback.addChild(new TextWidget(null, "|abcd|efgh|ijklmn|op|qrstuv|wxy|"d)

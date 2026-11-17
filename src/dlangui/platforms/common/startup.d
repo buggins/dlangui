@@ -171,12 +171,24 @@ version (Windows) {
                 ftfontMan.registerFont(fontsPath ~ "verdanai.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "verdanaz.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Bold);
 
-                // CJK and symbol fonts of the default fallback faces (#888): all faces of the files, with names
-                // and weights read from them (.ttc collections have several faces); missing files are skipped
-                // (Windows 7 has msyh.ttf instead of msyh.ttc)
-                foreach (file; ["msyh.ttc", "msyhbd.ttc", "msyh.ttf", "msyhbd.ttf", "msjh.ttc", "msjhbd.ttc",
+                // fonts of the default fallback faces (#888, #899): all faces of the files, with names and weights
+                // read from them (.ttc collections have several faces); missing files are skipped (Windows 7 has
+                // msyh.ttf instead of msyh.ttc, Nirmala.ttf instead of Nirmala.ttc, and fonts of its own)
+                foreach (file; [
+                        // symbols, Cambria Math (cambria.ttc face 1)
+                        "seguisym.ttf", "cambria.ttc", "seguihis.ttf", "seguiemj.ttf",
+                        // CJK
+                        "msyh.ttc", "msyhbd.ttc", "msyh.ttf", "msyhbd.ttf", "simhei.ttf", "msjh.ttc", "msjhbd.ttc",
                         "mingliu.ttc", "YuGothR.ttc", "YuGothB.ttc", "msgothic.ttc", "yumin.ttf", "msmincho.ttc",
-                        "gulim.ttc", "batang.ttc", "seguisym.ttf", "seguiemj.ttf"])
+                        "gulim.ttc", "batang.ttc",
+                        // other scripts: UI fonts of Windows 8 and later
+                        "Nirmala.ttc", "Nirmala.ttf", "LeelawUI.ttf", "ebrima.ttf", "gadugi.ttf", "mmrtext.ttf",
+                        "javatext.ttf", "himalaya.ttf", "monbaiti.ttf", "msyi.ttf", "ntailu.ttf", "taile.ttf",
+                        "phagspa.ttf", "mvboli.ttf", "sylfaen.ttf", "estre.ttf",
+                        // other scripts: Windows 7 and optional language font packages
+                        "mangal.ttf", "kokila.ttf", "vrinda.ttf", "shruti.ttf", "raavi.ttf", "tunga.ttf",
+                        "kartika.ttf", "kalinga.ttf", "latha.ttf", "gautami.ttf", "iskpota.ttf", "KhmerUI.ttf",
+                        "daunpenh.ttf", "LaoUI.ttf", "dokchamp.ttf", "nyala.ttf", "euphemia.ttf", "plantc.ttf"])
                     ftfontMan.registerFontFaces(fontsPath ~ file, FontFamily.SansSerif);
 
                 if (ftfontMan.registeredFontCount()) {

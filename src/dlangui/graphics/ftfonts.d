@@ -595,17 +595,12 @@ class FreeTypeFontManager : FontManager {
     /// override to return list of font faces available
     override FontFaceProps[] getFaces() {
         FontFaceProps[] res;
-        for (int i = 0; i < _fontFiles.length; i++) {
-            FontFaceProps item = FontFaceProps(_fontFiles[i].def.face, _fontFiles[i].def.family);
-            bool found = false;
-            for (int j = 0; j < res.length; j++) {
-                if (res[j].face == item.face) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                res ~= item;
+        bool[string] added;
+        foreach (ff; _fontFiles) {
+            if (ff.def.face in added)
+                continue;
+            added[ff.def.face] = true;
+            res ~= FontFaceProps(ff.def.face, ff.def.family);
         }
         return res;
     }
@@ -752,14 +747,6 @@ class FreeTypeFontManager : FontManager {
     override protected void forEachFontList(scope void delegate(ref FontList list) callback) {
         foreach(ff; _fontFiles)
             callback(ff._activeFonts);
-    }
-
-    /// returns name of the registered font face matching face (case insensitive), null if not registered (#888)
-    override protected string findInstalledFace(string face) {
-        foreach(ff; _fontFiles)
-            if (ff.def.face.icmp(face) == 0)
-                return ff.def.face;
-        return null;
     }
 
     /// clears glyph cache

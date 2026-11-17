@@ -758,16 +758,6 @@ class Win32FontManager : FontManager {
         callback(_activeFonts);
     }
 
-    /// returns name of the installed font face matching face (case insensitive), null if not installed (#888)
-    override protected string findInstalledFace(string face) {
-        if (auto p = face in _faceByName)
-            return (*p).face;
-        foreach (ref def; _fontFaces)
-            if (def.face.icmp(face) == 0)
-                return def.face;
-        return null;
-    }
-
     /// clears glyph cache
     override void clearGlyphCaches() {
         _activeFonts.clearGlyphCache();
