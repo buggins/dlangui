@@ -2069,12 +2069,55 @@ class FontManager {
         });
     }
 
-    /// fallback faces for font families (#888)
-    private static __gshared string[][FontFamily.max + 1] _fallbackFaces;
+    /**
+        Returns the platform's default fallback faces for a font family (#888): comma separated, in order of
+        preference. Faces that are not installed are skipped when fallback fonts are created.
 
-    /// sets fallback faces for a font family: comma separated list, in order of preference (#888). Fonts of the
-    /// family use installed faces of the list for characters they have no glyphs for.
-    static void setFallbackFaces(FontFamily family, string faces) {
+        CJK fonts come in the order Chinese (Simplified), Japanese, Korean: a Han character takes the forms of the
+        first installed font that has it.
+    */
+    static string defaultFallbackFaces(FontFamily family) pure nothrow @nogc @safe {
+        version (Windows) {
+            enum cjkAndSymbols = "Microsoft YaHei, Meiryo, Yu Gothic, Malgun Gothic, SimSun, MS Gothic, "
+                ~ "Segoe UI Symbol, Segoe UI Emoji, Arial Unicode MS";
+            switch (family) {
+                case FontFamily.MonoSpace:
+                    return "Consolas, Courier New, " ~ cjkAndSymbols;
+                case FontFamily.Serif:
+                    return "Times New Roman, Segoe UI, " ~ cjkAndSymbols;
+                default:
+                    return "Segoe UI, Arial, " ~ cjkAndSymbols;
+            }
+        } else version (OSX) {
+            enum cjkAndSymbols = "PingFang SC, Hiragino Sans GB, STHeiti, Hiragino Sans, Apple SD Gothic Neo, "
+                ~ "Apple Symbols, Arial Unicode MS";
+            switch (family) {
+                case FontFamily.MonoSpace:
+                    return "Menlo, Courier New, " ~ cjkAndSymbols;
+                case FontFamily.Serif:
+                    return "Times New Roman, Helvetica Neue, " ~ cjkAndSymbols;
+                default:
+                    return "Helvetica Neue, Arial, " ~ cjkAndSymbols;
+            }
+        } else {
+            enum cjk = "Noto Sans CJK SC, Noto Sans CJK JP, Noto Sans CJK KR, Source Han Sans SC, "
+                ~ "Droid Sans Fallback, WenQuanYi Micro Hei, WenQuanYi Zen Hei";
+            enum symbols = "DejaVu Sans, Noto Sans Symbols, Noto Sans Symbols2, Symbola, Noto Emoji";
+            switch (family) {
+                case FontFamily.MonoSpace:
+                    return "DejaVu Sans Mono, Noto Sans Mono, Liberation Mono, "
+                        ~ "Noto Sans Mono CJK SC, Noto Sans Mono CJK JP, Noto Sans Mono CJK KR, WenQuanYi Zen Hei Mono, "
+                        ~ cjk ~ ", " ~ symbols;
+                case FontFamily.Serif:
+                    return "DejaVu Serif, Noto Serif, Liberation Serif, "
+                        ~ "Noto Serif CJK SC, Noto Serif CJK JP, Noto Serif CJK KR, " ~ cjk ~ ", " ~ symbols;
+                default:
+                    return "Noto Sans, Liberation Sans, " ~ cjk ~ ", " ~ symbols;
+            }
+        }
+    }
+
+    private static string[] splitFaces(string faces) pure @safe {
         import std.array : split;
         import std.string : strip;
         string[] list;
@@ -2083,7 +2126,24 @@ class FontManager {
             if (name.length)
                 list ~= name;
         }
-        _fallbackFaces[family] = list;
+        return list;
+    }
+
+    private static string[][FontFamily.max + 1] defaultFallbackFaceLists() pure @safe {
+        string[][FontFamily.max + 1] res;
+        foreach (i, ref list; res)
+            list = splitFaces(defaultFallbackFaces(cast(FontFamily)i));
+        return res;
+    }
+
+    /// fallback faces for font families (#888)
+    private static __gshared string[][FontFamily.max + 1] _fallbackFaces = defaultFallbackFaceLists();
+
+    /// sets fallback faces for a font family: comma separated list, in order of preference (#888). Fonts of the
+    /// family use installed faces of the list for characters they have no glyphs for. An empty string disables
+    /// fallback fonts for the family. The default is defaultFallbackFaces(family).
+    static void setFallbackFaces(FontFamily family, string faces) {
+        _fallbackFaces[family] = splitFaces(faces);
         _glyphSettingsGeneration++; // text sizes may change
         if (_instance)
             _instance.releaseFallbackFonts();

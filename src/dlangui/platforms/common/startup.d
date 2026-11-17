@@ -170,6 +170,15 @@ version (Windows) {
                 ftfontMan.registerFont(fontsPath ~ "verdanab.ttf",  FontFamily.SansSerif, "Verdana", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "verdanai.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "verdanaz.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Bold);
+
+                // CJK and symbol fonts of the default fallback faces (#888)
+                ftfontMan.registerFont(fontsPath ~ "msyh.ttc",      FontFamily.SansSerif, "Microsoft YaHei", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "msyhbd.ttc",    FontFamily.SansSerif, "Microsoft YaHei", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "YuGothR.ttc",   FontFamily.SansSerif, "Yu Gothic", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "YuGothB.ttc",   FontFamily.SansSerif, "Yu Gothic", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "msgothic.ttc",  FontFamily.MonoSpace, "MS Gothic", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "seguisym.ttf",  FontFamily.SansSerif, "Segoe UI Symbol", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "seguiemj.ttf",  FontFamily.SansSerif, "Segoe UI Emoji", false, FontWeight.Normal);
                 if (ftfontMan.registeredFontCount()) {
                     FontManager.instance = ftfontMan;
                 } else {
@@ -295,6 +304,14 @@ version (Windows) {
                 ft.registerFont("/Library/Fonts/Microsoft/Consolas Bold Italic.ttf", FontFamily.MonoSpace, "Consolas", true, FontWeight.Bold, true);
 
                 ft.registerFont("/System/Library/Fonts/Menlo.ttc", FontFamily.MonoSpace, "Menlo", false, FontWeight.Normal, true);
+
+                // CJK and symbol fonts of the default fallback faces (#888)
+                ft.registerFont("/System/Library/Fonts/PingFang.ttc", FontFamily.SansSerif, "PingFang SC", false, FontWeight.Normal, true);
+                ft.registerFont("/System/Library/Fonts/Hiragino Sans GB.ttc", FontFamily.SansSerif, "Hiragino Sans GB", false, FontWeight.Normal, true);
+                ft.registerFont("/System/Library/Fonts/STHeiti Light.ttc", FontFamily.SansSerif, "STHeiti", false, FontWeight.Normal, true);
+                ft.registerFont("/System/Library/Fonts/AppleSDGothicNeo.ttc", FontFamily.SansSerif, "Apple SD Gothic Neo", false, FontWeight.Normal, true);
+                ft.registerFont("/System/Library/Fonts/Apple Symbols.ttf", FontFamily.SansSerif, "Apple Symbols", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Arial Unicode.ttf", FontFamily.SansSerif, "Arial Unicode MS", false, FontWeight.Normal, true);
             }
         }
 
