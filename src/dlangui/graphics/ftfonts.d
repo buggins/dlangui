@@ -103,9 +103,6 @@ private class FontFileItem {
     void checkpoint() {
         _activeFonts.checkpoint();
     }
-    void cleanup() {
-        _activeFonts.cleanup();
-    }
 }
 
 class FreeTypeFontFile {
@@ -680,6 +677,7 @@ class FreeTypeFontManager : FontManager {
     }
     ~this() {
         debug(FontResources) Log.d("FreeTypeFontManager ~this()");
+        releaseFallbackFonts(); // fallback references may form cycles (#888)
         //_activeFonts.clear();
         foreach(ref FontFileItem item; _fontFiles) {
             destroy(item);
@@ -709,10 +707,18 @@ class FreeTypeFontManager : FontManager {
     }
 
     /// removes entries not used after last call of checkpoint() or cleanup()
-    override void cleanup() {
-        foreach(ref ff; _fontFiles) {
-            ff.cleanup();
-        }
+    /// lists of cached fonts, for cleanup() (#888)
+    override protected void forEachFontList(scope void delegate(ref FontList list) callback) {
+        foreach(ff; _fontFiles)
+            callback(ff._activeFonts);
+    }
+
+    /// returns name of the registered font face matching face (case insensitive), null if not registered (#888)
+    override protected string findInstalledFace(string face) {
+        foreach(ff; _fontFiles)
+            if (ff.def.face.icmp(face) == 0)
+                return ff.def.face;
+        return null;
     }
 
     /// clears glyph cache

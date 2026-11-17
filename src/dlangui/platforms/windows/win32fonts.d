@@ -601,6 +601,7 @@ class Win32FontManager : FontManager {
     }
     ~this() {
         debug Log.i("Destroying Win32FontManager");
+        releaseFallbackFonts(); // fallback references may form cycles (#888)
         foreach (cache; _codepointPresence)
             cache.clear();
         _codepointPresence = null;
@@ -749,10 +750,19 @@ class Win32FontManager : FontManager {
         _activeFonts.checkpoint();
     }
 
-    /// removes entries not used after last call of checkpoint() or cleanup()
-    override void cleanup() {
-        _activeFonts.cleanup();
-        //_list.cleanup();
+    /// list of cached fonts, for cleanup() (#888)
+    override protected void forEachFontList(scope void delegate(ref FontList list) callback) {
+        callback(_activeFonts);
+    }
+
+    /// returns name of the installed font face matching face (case insensitive), null if not installed (#888)
+    override protected string findInstalledFace(string face) {
+        if (auto p = face in _faceByName)
+            return (*p).face;
+        foreach (ref def; _fontFaces)
+            if (def.face.icmp(face) == 0)
+                return def.face;
+        return null;
     }
 
     /// clears glyph cache
