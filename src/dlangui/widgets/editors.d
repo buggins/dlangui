@@ -1400,7 +1400,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     w += _spaceWidth;
                     w = (w + tabw - 1) / tabw * tabw;
                 } else {
-                    w += _spaceWidth;
+                    w += isWideChar(s[i]) ? _spaceWidth * 2 : _spaceWidth; // East Asian wide: 2 cells (#888)
                 }
             }
         } else {

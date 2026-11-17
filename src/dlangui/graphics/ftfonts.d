@@ -248,10 +248,18 @@ class FreeTypeFontFile {
             flags |= FT_LOAD_FORCE_AUTOHINT;
         else if (FontManager.instance.hintingMode == HintingMode.Disabled)
             flags |= FT_LOAD_NO_AUTOHINT | FT_LOAD_NO_HINTING;
+        // embedded bitmaps (e.g. MS Gothic, used as a fallback font, #888) are 1 bit per pixel: render the outlines
+        if (!_drawMonochrome)
+            flags |= FT_LOAD_NO_BITMAP;
         int error = FT_Load_Glyph(
                                   _face,          /* handle to face object */
                                   glyph_index,   /* glyph index           */
                                   flags );  /* load flags, see below */
+        if (error && (flags & FT_LOAD_NO_BITMAP)) {
+            // font without outlines
+            flags &= ~FT_LOAD_NO_BITMAP;
+            error = FT_Load_Glyph(_face, glyph_index, flags);
+        }
         if ( error )
             return false;
         glyph.lastUsage = 1;
@@ -277,10 +285,14 @@ class FreeTypeFontFile {
             glyph.blackBoxY = h;
             glyph.originX =   cast(byte)(_slot.bitmap_left);
             glyph.originY =   cast(byte)(_slot.bitmap_top);
+            // a bitmap of a font without outlines is 1 bit per pixel, also when antialiasing was requested
+            bool monoBitmap = _drawMonochrome || bitmap.pixel_mode == FT_PIXEL_MODE_MONO;
+            if (monoBitmap)
+                glyph.subpixelMode = SubpixelRenderingMode.None;
             int sz = w * cast(int)h;
             if (sz > 0) {
                 glyph.glyph = new ubyte[sz];
-                if (_drawMonochrome) {
+                if (monoBitmap) {
                     // monochrome bitmap
                     ubyte mask = 0x80;
                     ubyte * ptr = bitmap.buffer;
@@ -448,7 +460,9 @@ class FreeTypeFont : Font {
         return file1.getKerningOffset(index1, index2);
     }
 
-    override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
+    /// glyph of this font, without fallback fonts (#888): for characters the font has no glyph for, a replacement
+    /// character or the missing glyph
+    override protected Glyph * getOwnCharGlyph(dchar ch, bool withImage) {
         if (ch > 0xFFFF) // do not support unicode chars above 0xFFFF - due to cache limitations
             return null;
         //long measureStart = std.datetime.Clock.currStdTime;

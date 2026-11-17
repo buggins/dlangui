@@ -286,7 +286,9 @@ class Win32Font : Font {
         return index == 0xFFFF ? CodepointPresence.missing : CodepointPresence.present;
     }
 
-    override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
+    /// glyph of this font, without fallback fonts (#888): for characters the font has no glyph for, a replacement
+    /// character or the missing glyph
+    override protected Glyph * getOwnCharGlyph(dchar ch, bool withImage) {
         Glyph * found = _glyphCache.find(ch);
         if (found !is null)
             return found;
