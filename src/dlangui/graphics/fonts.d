@@ -443,7 +443,6 @@ class Font : RefCountedObject {
     ~this() {
         clear();
         _fallbackFonts.clear();
-        clearFallbackIndex();
     }
 
 
@@ -1022,58 +1021,26 @@ class Font : RefCountedObject {
         return null;
     }
 
-    private alias FallbackIndexArray = EnumArray!(ubyte, MAX_UNICODE_CODEPOINTS, MAX_UNICODE_CODEPOINTS / 0x1000);
-    static assert(__traits(isZeroInit, FallbackIndexArray));
-    /// for characters this font has no glyph for: 0 = not looked up yet, FALLBACK_NONE = no fallback font has it,
-    /// FALLBACK_FIRST + i = fallback font i (#888); allocated on first use, about 4 KB per 4096 characters used
-    private FallbackIndexArray * _fallbackIndex;
-    private enum ubyte FALLBACK_NONE = 1;
-    private enum ubyte FALLBACK_FIRST = 2;
-    /// max number of fallback fonts used
-    private enum MAX_FALLBACK_FONTS = 255 - FALLBACK_FIRST;
+    /**
+        Returns glyph of the first fallback font that has a glyph for ch, null if there is none (#888); only
+        the fallback font's own glyphs: its fallback fonts are not used.
 
-    /// returns glyph of the first fallback font that has a glyph for ch, null if there is none (#888)
+        Fallback fonts are checked in list order with hasCodepoint(), which uses the presence cache shared by all
+        sizes of a face: a few nanoseconds per fallback font (#897).
+    */
     private Glyph * getFallbackGlyph(dchar ch, bool withImage) {
-        ubyte found = _fallbackIndex ? _fallbackIndex.get(ch) : 0;
-        if (found == FALLBACK_NONE)
-            return null;
-        if (found >= FALLBACK_FIRST) {
-            // only the fallback font's own glyphs: its fallback fonts are not used
-            Font f = _fallbackFonts.get(found - FALLBACK_FIRST);
-            return f ? f.getOwnCharGlyph(ch, withImage) : null;
-        }
-        // first lookup: the first fallback font that has the character and returns a glyph for it (a font may
-        // have the character but return no glyph, e.g. FreeType above U+FFFF, #779)
         FallbackFontList * list = &fallbackFonts();
-        size_t n = list.length < MAX_FALLBACK_FONTS ? list.length : MAX_FALLBACK_FONTS;
-        Glyph * glyph = null;
-        found = FALLBACK_NONE;
-        foreach (i; 0 .. n) {
+        foreach (i; 0 .. list.length) {
             Font f = list.get(i);
             if (f && f.hasCodepoint(ch)) {
-                glyph = f.getOwnCharGlyph(ch, withImage);
-                if (glyph) {
-                    found = cast(ubyte)(FALLBACK_FIRST + i);
-                    break;
-                }
+                Glyph * glyph = f.getOwnCharGlyph(ch, withImage);
+                if (glyph)
+                    return glyph;
+                // the face has the character but returns no glyph for it: not looked up in it again
+                f.cacheCodepointPresence(ch, CodepointPresence.missing);
             }
         }
-        if (!_fallbackIndex) {
-            _fallbackIndex = cast(FallbackIndexArray *)calloc(1, FallbackIndexArray.sizeof);
-            if (!_fallbackIndex)
-                onOutOfMemoryError();
-        }
-        _fallbackIndex.set(ch, found);
-        return glyph;
-    }
-
-    /// frees the fallback font index of characters
-    private void clearFallbackIndex() {
-        if (_fallbackIndex) {
-            _fallbackIndex.clear();
-            free(_fallbackIndex);
-            _fallbackIndex = null;
-        }
+        return null;
     }
 
     /// returns true if this font instance has a glyph for codepoint ch (replacement characters and fallback fonts
@@ -1136,7 +1103,6 @@ class Font : RefCountedObject {
     private void clearFallbackFonts() {
         _fallbackFonts.clear();
         _fallbackFontsCreated = false;
-        clearFallbackIndex();
     }
 
     /// clear usage flags for all entries
@@ -1460,6 +1426,8 @@ unittest {
                 add('x', 9);
             } else if (face == "C") {
                 add(0x2605, 8);
+                foreach (dchar ch; "\n\u007F\u0085\u009F\U0001F600"d)
+                    add(ch, 8); // must not be looked up in fallback fonts
             }
             _missing.blackBoxX = 3;
             _missing.blackBoxY = 8;
@@ -1540,17 +1508,23 @@ unittest {
         assert(lb._face == "B" && g is lb._glyphs[0x4E2D]);
         assert(a.getCharGlyph(0x2605) is (cast(LookupTestFont)a.fallbackFonts.get(1))._glyphs[0x2605]);
         assert(LookupTestFont.alive == 3);
-        // no fallback font has it: the font's missing glyph; control characters are not looked up
-        assert(a.getCharGlyph(0xE000) is &la._missing && a._fallbackIndex.get(0xE000) == Font.FALLBACK_NONE);
-        assert(a._fallbackIndex.get(0x4E2D) == Font.FALLBACK_FIRST && a._fallbackIndex.get(0x2605) == Font.FALLBACK_FIRST + 1);
-        foreach (dchar c; "\n\u007F\u0085\u009F"d)
-            assert(a.getCharGlyph(c) is &la._missing && a._fallbackIndex.get(c) == 0);
+        // no fallback font has it: the font's missing glyph; control characters and characters above U+FFFF
+        // (#779) are not looked up, though C has glyphs for them
+        assert(a.getCharGlyph(0xE000) is &la._missing);
+        foreach (dchar c; "\n\u007F\u0085\u009F\U0001F600"d)
+            assert(a.getCharGlyph(c) is &la._missing);
         assert(a.getCharGlyph(cast(dchar)0x110000) is &la._missing);
-        // a fallback font that has the character but returns no glyph: the next one is used
+        // a fallback font that has the character but returns no glyph: the next one is used, and the character
+        // is marked missing in the face's presence cache
         a.clearFallbackFonts();
         lb = cast(LookupTestFont)a.fallbackFonts.get(0);
+        CodepointPresenceCache bPresence;
+        lb.codepointPresenceCache = &bPresence;
         lb._glyphs[0x2605] = null; // B "has" U+2605, without a glyph
+        assert(lb.hasCodepoint(0x2605));
         assert(a.getCharGlyph(0x2605) is (cast(LookupTestFont)a.fallbackFonts.get(1))._glyphs[0x2605]);
+        assert(!lb.hasCodepoint(0x2605));
+        lb.codepointPresenceCache = null;
         lb._glyphs.remove(0x2605);
         // fallback glyph advances; kerning only between own glyphs (getKerningOffset asserts it)
         int[] w;
@@ -1567,7 +1541,7 @@ unittest {
         destroy(buf);
         // changed fallback faces: lookups are done again
         FontManager.setFallbackFaces(FontFamily.SansSerif, "C, B");
-        assert(!a._fallbackFontsCreated && a._fallbackIndex is null);
+        assert(!a._fallbackFontsCreated);
         // combining marks (zero width) are not centered in fixed pitch cells
         auto mark = new Glyph;
         mark.blackBoxX = 3;
