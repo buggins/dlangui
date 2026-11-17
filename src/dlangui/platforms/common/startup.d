@@ -171,14 +171,14 @@ version (Windows) {
                 ftfontMan.registerFont(fontsPath ~ "verdanai.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "verdanaz.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Bold);
 
-                // CJK and symbol fonts of the default fallback faces (#888)
-                ftfontMan.registerFont(fontsPath ~ "msyh.ttc",      FontFamily.SansSerif, "Microsoft YaHei", false, FontWeight.Normal);
-                ftfontMan.registerFont(fontsPath ~ "msyhbd.ttc",    FontFamily.SansSerif, "Microsoft YaHei", false, FontWeight.Bold);
-                ftfontMan.registerFont(fontsPath ~ "YuGothR.ttc",   FontFamily.SansSerif, "Yu Gothic", false, FontWeight.Normal);
-                ftfontMan.registerFont(fontsPath ~ "YuGothB.ttc",   FontFamily.SansSerif, "Yu Gothic", false, FontWeight.Bold);
-                ftfontMan.registerFont(fontsPath ~ "msgothic.ttc",  FontFamily.MonoSpace, "MS Gothic", false, FontWeight.Normal);
-                ftfontMan.registerFont(fontsPath ~ "seguisym.ttf",  FontFamily.SansSerif, "Segoe UI Symbol", false, FontWeight.Normal);
-                ftfontMan.registerFont(fontsPath ~ "seguiemj.ttf",  FontFamily.SansSerif, "Segoe UI Emoji", false, FontWeight.Normal);
+                // CJK and symbol fonts of the default fallback faces (#888): all faces of the files, with names
+                // and weights read from them (.ttc collections have several faces); missing files are skipped
+                // (Windows 7 has msyh.ttf instead of msyh.ttc)
+                foreach (file; ["msyh.ttc", "msyhbd.ttc", "msyh.ttf", "msyhbd.ttf", "msjh.ttc", "msjhbd.ttc",
+                        "mingliu.ttc", "YuGothR.ttc", "YuGothB.ttc", "msgothic.ttc", "yumin.ttf", "msmincho.ttc",
+                        "gulim.ttc", "batang.ttc", "seguisym.ttf", "seguiemj.ttf"])
+                    ftfontMan.registerFontFaces(fontsPath ~ file, FontFamily.SansSerif);
+
                 if (ftfontMan.registeredFontCount()) {
                     FontManager.instance = ftfontMan;
                 } else {
@@ -305,13 +305,16 @@ version (Windows) {
 
                 ft.registerFont("/System/Library/Fonts/Menlo.ttc", FontFamily.MonoSpace, "Menlo", false, FontWeight.Normal, true);
 
-                // CJK and symbol fonts of the default fallback faces (#888)
-                ft.registerFont("/System/Library/Fonts/PingFang.ttc", FontFamily.SansSerif, "PingFang SC", false, FontWeight.Normal, true);
-                ft.registerFont("/System/Library/Fonts/Hiragino Sans GB.ttc", FontFamily.SansSerif, "Hiragino Sans GB", false, FontWeight.Normal, true);
-                ft.registerFont("/System/Library/Fonts/STHeiti Light.ttc", FontFamily.SansSerif, "STHeiti", false, FontWeight.Normal, true);
-                ft.registerFont("/System/Library/Fonts/AppleSDGothicNeo.ttc", FontFamily.SansSerif, "Apple SD Gothic Neo", false, FontWeight.Normal, true);
-                ft.registerFont("/System/Library/Fonts/Apple Symbols.ttf", FontFamily.SansSerif, "Apple Symbols", false, FontWeight.Normal, true);
-                ft.registerFont("/Library/Fonts/Arial Unicode.ttf", FontFamily.SansSerif, "Arial Unicode MS", false, FontWeight.Normal, true);
+                // CJK and symbol fonts of the default fallback faces (#888): all faces of the files, with names
+                // and weights read from them (.ttc collections have several faces); missing files are skipped
+                foreach (file; ["/System/Library/Fonts/PingFang.ttc", "/System/Library/Fonts/Hiragino Sans GB.ttc",
+                        "/System/Library/Fonts/STHeiti Light.ttc", "/System/Library/Fonts/STHeiti Medium.ttc",
+                        "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc", "/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
+                        "/System/Library/Fonts/ヒラギノ明朝 ProN.ttc", "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+                        "/System/Library/Fonts/Apple Symbols.ttf", "/System/Library/Fonts/HelveticaNeue.ttc",
+                        "/System/Library/Fonts/Supplemental/Songti.ttc", "/System/Library/Fonts/Supplemental/AppleMyungjo.ttf",
+                        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf", "/Library/Fonts/Arial Unicode.ttf"])
+                    ft.registerFontFaces(file, FontFamily.SansSerif);
             }
         }
 

@@ -744,6 +744,7 @@ class Win32FontManager : FontManager {
         Log.d("registerFont(", family, ",", fontFace, ")");
         _fontFaces ~= FontDef(family, fontFace, pitchAndFamily);
         _faceByName[fontFace] = &_fontFaces[$ - 1];
+        installedFacesChanged();
         return true;
     }
 

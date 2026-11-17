@@ -995,9 +995,9 @@ class Font : RefCountedObject {
         of this font.
     */
     Glyph * getCharGlyph(dchar ch, bool withImage = true) {
-        // control characters (C0, DEL, C1) and characters beyond Unicode are never looked up in fallback fonts;
-        // no lookup if there are no fallback fonts
-        if (ch >= 0x20 && (ch < 0x7F || ch > 0x9F) && ch < MAX_UNICODE_CODEPOINTS
+        // control characters (C0, DEL, C1) are never looked up in fallback fonts, nor characters above U+FFFF:
+        // the engines can't draw them yet (#779). No lookup if there are no fallback fonts.
+        if (ch >= 0x20 && (ch < 0x7F || ch > 0x9F) && ch <= 0xFFFF
                 && !(_fallbackFontsCreated && _fallbackFonts.length == 0) && !hasCodepoint(ch)) {
             Glyph * glyph = getFallbackGlyph(ch, withImage);
             if (glyph) {
@@ -1266,15 +1266,53 @@ unittest {
 }
 
 unittest {
-    // default fallback faces (#888): set for every family, parsed into trimmed names
+    // default fallback faces (#888)
+    alias CJK = FontManager.CjkLanguage;
+    FontManager.CjkLanguage cjk;
+    assert(FontManager.parseCjkLanguage("ja", cjk) && cjk == CJK.japanese);
+    assert(FontManager.parseCjkLanguage("ja_JP.UTF-8", cjk) && cjk == CJK.japanese);
+    assert(FontManager.parseCjkLanguage("ko:en", cjk) && cjk == CJK.korean);
+    assert(FontManager.parseCjkLanguage("zh_CN.UTF-8", cjk) && cjk == CJK.simplifiedChinese);
+    assert(FontManager.parseCjkLanguage("zh.UTF-8", cjk) && cjk == CJK.simplifiedChinese);
+    assert(FontManager.parseCjkLanguage("zh_TW.UTF-8", cjk) && cjk == CJK.traditionalChinese);
+    assert(FontManager.parseCjkLanguage("zh-Hant-SG", cjk) && cjk == CJK.traditionalChinese);
+    assert(FontManager.parseCjkLanguage("zh_HK", cjk) && cjk == CJK.traditionalChinese);
+    assert(FontManager.parseCjkLanguage("zh:zh_TW", cjk) && cjk == CJK.simplifiedChinese); // first language only
+    assert(!FontManager.parseCjkLanguage("en_US.UTF-8", cjk));
+    assert(!FontManager.parseCjkLanguage("jav", cjk));
+    assert(!FontManager.parseCjkLanguage("C", cjk));
+    assert(!FontManager.parseCjkLanguage(null, cjk));
+
+    assert(FontManager.splitFaces(" A, ,B ,") == ["A", "B"]);
     foreach (i; 0 .. FontFamily.max + 1) {
         FontFamily family = cast(FontFamily)i;
+        foreach (lang; [CJK.simplifiedChinese, CJK.traditionalChinese, CJK.japanese, CJK.korean]) {
+            string[] faces = FontManager.splitFaces(FontManager.defaultFallbackFaces(family, lang));
+            assert(faces.length > 0);
+            foreach (face; faces)
+                assert(faces.count(face) == 1); // no duplicates
+        }
+        // the lists start as the defaults; disabling and restoring
         string[] defaults = FontManager.splitFaces(FontManager.defaultFallbackFaces(family));
-        assert(defaults.length > 0);
-        foreach (face; defaults)
-            assert(face.length && face[0] != ' ' && face[$ - 1] != ' ');
+        assert(FontManager.fallbackFaces(family) == defaults);
+        FontManager.setFallbackFaces(family, "");
+        assert(FontManager.fallbackFaces(family).length == 0);
+        FontManager.setFallbackFaces(family, FontManager.defaultFallbackFaces(family));
+        assert(FontManager.fallbackFaces(family) == defaults);
     }
-    assert(FontManager.splitFaces(" A, ,B ,") == ["A", "B"]);
+    // CJK fonts of the language come first
+    version (Windows) {
+        enum ja = "Meiryo", sc = "Microsoft YaHei";
+    } else version (OSX) {
+        enum ja = "Hiragino Sans", sc = "PingFang SC";
+    } else {
+        enum ja = "Noto Sans CJK JP", sc = "Noto Sans CJK SC";
+    }
+    import std.algorithm : countUntil;
+    string[] jaFaces = FontManager.splitFaces(FontManager.defaultFallbackFaces(FontFamily.SansSerif, CJK.japanese));
+    string[] scFaces = FontManager.splitFaces(FontManager.defaultFallbackFaces(FontFamily.SansSerif, CJK.simplifiedChinese));
+    assert(jaFaces.countUntil(ja) < jaFaces.countUntil(sc));
+    assert(scFaces.countUntil(sc) < scFaces.countUntil(ja));
 }
 
 unittest {
@@ -2081,52 +2119,163 @@ class FontManager {
         });
     }
 
+    /// language whose forms Han characters take: fallback faces list CJK fonts of this language first (#888)
+    enum CjkLanguage : ubyte {
+        simplifiedChinese,
+        traditionalChinese,
+        japanese,
+        korean,
+    }
+
+    /**
+        Parses a language tag such as "ja", "ja_JP.UTF-8", "zh-TW", "zh_Hant" or a LANGUAGE list ("ko:en").
+        Returns: true and the CJK language if the (first) language is Chinese, Japanese or Korean.
+    */
+    static bool parseCjkLanguage(string lang, out CjkLanguage res) pure nothrow @nogc @safe {
+        static char lower(char c) { return c >= 'A' && c <= 'Z' ? cast(char)(c + 32) : c; }
+        static bool isSeparator(char c) { return c == '_' || c == '-' || c == '.' || c == '@' || c == ':'; }
+        if (lang.length < 2 || (lang.length > 2 && !isSeparator(lang[2])))
+            return false;
+        char a = lower(lang[0]), b = lower(lang[1]);
+        if (a == 'j' && b == 'a') {
+            res = CjkLanguage.japanese;
+            return true;
+        }
+        if (a == 'k' && b == 'o') {
+            res = CjkLanguage.korean;
+            return true;
+        }
+        if (a != 'z' || b != 'h')
+            return false;
+        // region or script of the first language: TW, HK, MO, Hant
+        size_t end = 2;
+        while (end < lang.length && lang[end] != '.' && lang[end] != ':' && lang[end] != '@')
+            end++;
+        res = CjkLanguage.simplifiedChinese;
+        size_t i = 3;
+        while (i < end) {
+            size_t j = i;
+            while (j < end && !isSeparator(lang[j]))
+                j++;
+            if (j - i == 2 || j - i == 4) {
+                char[4] buf;
+                foreach (k, c; lang[i .. j])
+                    buf[k] = lower(c);
+                const(char)[] part = buf[0 .. j - i];
+                if (part == "tw" || part == "hk" || part == "mo" || part == "hant")
+                    res = CjkLanguage.traditionalChinese;
+            }
+            i = j + 1;
+        }
+        return true;
+    }
+
+    /// CJK language of the system: the first Chinese, Japanese or Korean language of the user's UI language,
+    /// locale and system locale (Windows) or of the LANGUAGE, LC_ALL, LC_MESSAGES, LC_CTYPE and LANG variables;
+    /// simplifiedChinese if there is none
+    static CjkLanguage systemCjkLanguage() {
+        CjkLanguage res;
+        version (Windows) {
+            import core.sys.windows.winnls : GetUserDefaultUILanguage, GetUserDefaultLangID, GetSystemDefaultLangID;
+            foreach (id; [GetUserDefaultUILanguage(), GetUserDefaultLangID(), GetSystemDefaultLangID()]) {
+                uint primary = id & 0x3FF, sub = id >> 10;
+                if (primary == 0x11) // LANG_JAPANESE
+                    return CjkLanguage.japanese;
+                if (primary == 0x12) // LANG_KOREAN
+                    return CjkLanguage.korean;
+                if (primary == 0x04) // LANG_CHINESE: Taiwan, Hong Kong, Macao, zh-Hant
+                    return sub == 1 || sub == 3 || sub == 5 || sub == 0x1F
+                        ? CjkLanguage.traditionalChinese : CjkLanguage.simplifiedChinese;
+            }
+        } else {
+            import std.process : environment;
+            foreach (name; ["LANGUAGE", "LC_ALL", "LC_MESSAGES", "LC_CTYPE", "LANG"])
+                if (parseCjkLanguage(environment.get(name), res))
+                    return res;
+        }
+        return CjkLanguage.simplifiedChinese;
+    }
+
+    // joins comma separated face lists of the 4 CJK languages, the preferred language first
+    private static string cjkFaces(CjkLanguage lang, string sc, string tc, string ja, string ko) pure @safe {
+        string[4] order;
+        final switch (lang) {
+            case CjkLanguage.simplifiedChinese: order = [sc, ja, ko, tc]; break;
+            case CjkLanguage.traditionalChinese: order = [tc, sc, ja, ko]; break;
+            case CjkLanguage.japanese: order = [ja, sc, tc, ko]; break;
+            case CjkLanguage.korean: order = [ko, tc, sc, ja]; break;
+        }
+        string res;
+        foreach (part; order)
+            res ~= (res.length ? ", " : "") ~ part;
+        return res;
+    }
+
     /**
         Returns the platform's default fallback faces for a font family (#888): comma separated, in order of
         preference. Faces that are not installed are skipped when fallback fonts are created.
 
-        CJK fonts come in the order Chinese (Simplified), Japanese, Korean: a Han character takes the forms of the
-        first installed font that has it.
+        CJK fonts of the language cjk come first: a Han character takes the forms of the first installed font
+        that has it.
     */
-    static string defaultFallbackFaces(FontFamily family) pure nothrow @nogc @safe {
+    static string defaultFallbackFaces(FontFamily family, CjkLanguage cjk) pure @safe {
         version (Windows) {
-            enum cjkAndSymbols = "Microsoft YaHei, Meiryo, Yu Gothic, Malgun Gothic, SimSun, MS Gothic, "
-                ~ "Segoe UI Symbol, Segoe UI Emoji, Arial Unicode MS";
+            string sans = cjkFaces(cjk, "Microsoft YaHei", "Microsoft JhengHei", "Meiryo, Yu Gothic, MS Gothic",
+                "Malgun Gothic, Gulim");
+            string serif = cjkFaces(cjk, "SimSun", "PMingLiU, MingLiU", "Yu Mincho, MS Mincho", "Batang");
+            enum symbols = "Segoe UI Symbol, Segoe UI Emoji, Arial Unicode MS";
             switch (family) {
                 case FontFamily.MonoSpace:
-                    return "Consolas, Courier New, " ~ cjkAndSymbols;
+                    return "Consolas, Courier New, " ~ sans ~ ", " ~ serif ~ ", " ~ symbols;
                 case FontFamily.Serif:
-                    return "Times New Roman, Segoe UI, " ~ cjkAndSymbols;
+                    return "Times New Roman, Segoe UI, " ~ serif ~ ", " ~ sans ~ ", " ~ symbols;
                 default:
-                    return "Segoe UI, Arial, " ~ cjkAndSymbols;
+                    return "Segoe UI, Arial, " ~ sans ~ ", " ~ serif ~ ", " ~ symbols;
             }
         } else version (OSX) {
-            enum cjkAndSymbols = "PingFang SC, Hiragino Sans GB, STHeiti, Hiragino Sans, Apple SD Gothic Neo, "
-                ~ "Apple Symbols, Arial Unicode MS";
+            string sans = cjkFaces(cjk, "PingFang SC, Hiragino Sans GB, STHeiti", "PingFang TC, PingFang HK",
+                "Hiragino Sans, Hiragino Kaku Gothic ProN", "Apple SD Gothic Neo");
+            enum symbols = "Apple Symbols, Arial Unicode MS";
             switch (family) {
                 case FontFamily.MonoSpace:
-                    return "Menlo, Courier New, " ~ cjkAndSymbols;
+                    return "Menlo, Courier New, " ~ sans ~ ", " ~ symbols;
                 case FontFamily.Serif:
-                    return "Times New Roman, Helvetica Neue, " ~ cjkAndSymbols;
+                    return "Times New Roman, Helvetica Neue, " ~ cjkFaces(cjk, "Songti SC, STSong", "Songti TC",
+                        "Hiragino Mincho ProN", "AppleMyungjo") ~ ", " ~ sans ~ ", " ~ symbols;
                 default:
-                    return "Helvetica Neue, Arial, " ~ cjkAndSymbols;
+                    return "Helvetica Neue, Arial, " ~ sans ~ ", " ~ symbols;
             }
         } else {
-            enum cjk = "Noto Sans CJK SC, Noto Sans CJK JP, Noto Sans CJK KR, Source Han Sans SC, "
-                ~ "Droid Sans Fallback, WenQuanYi Micro Hei, WenQuanYi Zen Hei";
+            string sans = cjkFaces(cjk,
+                "Noto Sans CJK SC, Source Han Sans SC, Source Han Sans CN, Droid Sans Fallback, WenQuanYi Micro Hei, "
+                    ~ "WenQuanYi Zen Hei",
+                "Noto Sans CJK TC, Noto Sans CJK HK, Source Han Sans TC, Source Han Sans TW, AR PL UKai TW",
+                "Noto Sans CJK JP, Source Han Sans JP, Source Han Sans, IPAGothic, IPAexGothic, TakaoGothic, VL Gothic",
+                "Noto Sans CJK KR, Source Han Sans KR, Source Han Sans K, NanumGothic, UnDotum, Baekmuk Gulim");
             enum symbols = "DejaVu Sans, Noto Sans Symbols, Noto Sans Symbols2, Symbola, Noto Emoji";
             switch (family) {
                 case FontFamily.MonoSpace:
                     return "DejaVu Sans Mono, Noto Sans Mono, Liberation Mono, "
-                        ~ "Noto Sans Mono CJK SC, Noto Sans Mono CJK JP, Noto Sans Mono CJK KR, WenQuanYi Zen Hei Mono, "
-                        ~ cjk ~ ", " ~ symbols;
+                        ~ cjkFaces(cjk, "Noto Sans Mono CJK SC, WenQuanYi Zen Hei Mono, WenQuanYi Micro Hei Mono",
+                            "Noto Sans Mono CJK TC, Noto Sans Mono CJK HK", "Noto Sans Mono CJK JP",
+                            "Noto Sans Mono CJK KR, NanumGothicCoding")
+                        ~ ", " ~ sans ~ ", " ~ symbols;
                 case FontFamily.Serif:
                     return "DejaVu Serif, Noto Serif, Liberation Serif, "
-                        ~ "Noto Serif CJK SC, Noto Serif CJK JP, Noto Serif CJK KR, " ~ cjk ~ ", " ~ symbols;
+                        ~ cjkFaces(cjk, "Noto Serif CJK SC, Source Han Serif SC, AR PL UMing CN",
+                            "Noto Serif CJK TC, Source Han Serif TC, AR PL UMing TW",
+                            "Noto Serif CJK JP, Source Han Serif JP, IPAMincho, IPAexMincho",
+                            "Noto Serif CJK KR, Source Han Serif KR, UnBatang, NanumMyeongjo")
+                        ~ ", " ~ sans ~ ", " ~ symbols;
                 default:
-                    return "Noto Sans, Liberation Sans, " ~ cjk ~ ", " ~ symbols;
+                    return "Noto Sans, Liberation Sans, " ~ sans ~ ", " ~ symbols;
             }
         }
+    }
+
+    /// returns the platform's default fallback faces for a font family, CJK fonts in the order of systemCjkLanguage()
+    static string defaultFallbackFaces(FontFamily family) {
+        return defaultFallbackFaces(family, systemCjkLanguage());
     }
 
     private static string[] splitFaces(string faces) pure @safe {
@@ -2141,49 +2290,76 @@ class FontManager {
         return list;
     }
 
-    private static string[][FontFamily.max + 1] defaultFallbackFaceLists() pure @safe {
-        string[][FontFamily.max + 1] res;
-        foreach (i, ref list; res)
-            list = splitFaces(defaultFallbackFaces(cast(FontFamily)i));
-        return res;
-    }
+    /// fallback faces for font families (#888); set to defaults on first use
+    private static __gshared string[][FontFamily.max + 1] _fallbackFaces;
+    private static __gshared bool _fallbackFacesInitialized;
 
-    /// fallback faces for font families (#888)
-    private static __gshared string[][FontFamily.max + 1] _fallbackFaces = defaultFallbackFaceLists();
+    private static void initFallbackFaces() {
+        if (_fallbackFacesInitialized)
+            return;
+        _fallbackFacesInitialized = true;
+        CjkLanguage cjk = systemCjkLanguage();
+        foreach (i, ref list; _fallbackFaces)
+            list = splitFaces(defaultFallbackFaces(cast(FontFamily)i, cjk));
+    }
 
     /// sets fallback faces for a font family: comma separated list, in order of preference (#888). Fonts of the
     /// family use installed faces of the list for characters they have no glyphs for. An empty string disables
     /// fallback fonts for the family. The default is defaultFallbackFaces(family).
     static void setFallbackFaces(FontFamily family, string faces) {
+        initFallbackFaces();
         _fallbackFaces[family] = splitFaces(faces);
         _glyphSettingsGeneration++; // text sizes may change
-        if (_instance)
+        if (_instance) {
+            _instance._installedFallbackFacesValid[] = false;
             _instance.releaseFallbackFonts();
+        }
     }
 
     /// returns fallback faces for a font family, as set by setFallbackFaces()
     static string[] fallbackFaces(FontFamily family) {
+        initFallbackFaces();
         return _fallbackFaces[family];
     }
 
     /**
         Returns fallback fonts for a font, not created yet (#888): installed faces of fallbackFaces(primary.family)
-        except the primary face and duplicates, with size, weight and italic of the primary font.
+        except the primary face, with size, weight and italic of the primary font.
 
         Override to use other faces (e.g. the platform's font fallback). May return an empty list.
     */
     FallbackFontList getFallbackFonts(Font primary) {
         import std.uni : icmp;
         FallbackFontList list = FallbackFontList(this, primary);
-        string[] added = [primary.face];
-        foreach (face; fallbackFaces(primary.family)) {
-            string installed = findInstalledFace(face);
-            if (!installed.length || added.canFind!((a, b) => icmp(a, b) == 0)(installed))
-                continue;
-            added ~= installed;
-            list.add(installed, primary.family, primary.weight, primary.italic, primary.size);
-        }
+        foreach (installed; installedFallbackFaces(primary.family))
+            if (icmp(installed, primary.face) != 0)
+                list.add(installed, primary.family, primary.weight, primary.italic, primary.size);
         return list;
+    }
+
+    private string[][FontFamily.max + 1] _installedFallbackFaces;
+    private bool[FontFamily.max + 1] _installedFallbackFacesValid;
+
+    /// installed faces of fallbackFaces(family), without duplicates (case insensitive); cached until fallback
+    /// faces or installed faces change
+    protected string[] installedFallbackFaces(FontFamily family) {
+        import std.uni : icmp;
+        if (!_installedFallbackFacesValid[family]) {
+            string[] res;
+            foreach (face; fallbackFaces(family)) {
+                string installed = findInstalledFace(face);
+                if (installed.length && !res.canFind!((a, b) => icmp(a, b) == 0)(installed))
+                    res ~= installed;
+            }
+            _installedFallbackFaces[family] = res;
+            _installedFallbackFacesValid[family] = true;
+        }
+        return _installedFallbackFaces[family];
+    }
+
+    /// call when fonts are registered or removed: fallback faces are looked up again (#888)
+    protected void installedFacesChanged() {
+        _installedFallbackFacesValid[] = false;
     }
 
     /// returns name of the installed font face matching face (case insensitive), null if it's not installed;
