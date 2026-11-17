@@ -1266,6 +1266,18 @@ unittest {
 }
 
 unittest {
+    // default fallback faces (#888): set for every family, parsed into trimmed names
+    foreach (i; 0 .. FontFamily.max + 1) {
+        FontFamily family = cast(FontFamily)i;
+        string[] defaults = FontManager.splitFaces(FontManager.defaultFallbackFaces(family));
+        assert(defaults.length > 0);
+        foreach (face; defaults)
+            assert(face.length && face[0] != ' ' && face[$ - 1] != ' ');
+    }
+    assert(FontManager.splitFaces(" A, ,B ,") == ["A", "B"]);
+}
+
+unittest {
     // fallback font lists and the font cache GC (#888)
     static class GCTestFont : Font {
         static int alive; // instances not destroyed yet
