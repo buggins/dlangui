@@ -455,6 +455,7 @@ class Font : RefCountedObject {
     protected int _capHeight = -1;
     /// height of the capital letters above the baseline (top of 'H'), in pixels (#856); between 0 and baseline
     @property int capHeight() {
+        checkMetricsCache();
         if (_capHeight < 0) {
             int b = baseline;
             Glyph * g = getCharGlyph('H', false);
@@ -495,6 +496,7 @@ class Font : RefCountedObject {
 
     /// returns true if font is fixed
     @property int spaceWidth() {
+        checkMetricsCache();
         if (_spaceWidth < 0) {
             _spaceWidth = charWidth(' ');
             if (_spaceWidth <= 0)
@@ -518,7 +520,10 @@ class Font : RefCountedObject {
     }
     /// override to enable kerning support
     @property void allowKerning(bool allow) {
-        _allowKerning = allow;
+        if (_allowKerning != allow) {
+            _allowKerning = allow;
+            clearMetricsCache();
+        }
     }
 
     /// override to implement kerning offset calculation
@@ -544,6 +549,7 @@ class Font : RefCountedObject {
     int measureText(const dchar[] text, ref int[] widths, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (text.length == 0)
             return 0;
+        checkMetricsCache();
         const dchar * pstr = text.ptr;
         uint len = cast(uint)text.length;
         if (widths.length < len) {
@@ -686,11 +692,46 @@ class Font : RefCountedObject {
      *          textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
      ************************************************************************/
     Point textSize(dstring text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
-        return textSizeMemoized(this, text, maxWidth, tabSize, tabOffset, textFlags);
+        checkMetricsCache();
+        TextSizeKey key = TextSizeKey(text, maxWidth, tabSize, tabOffset, textFlags);
+        if (auto p = key in _textSizeCache)
+            return *p;
+        Point res = textSizeImpl(this, text, maxWidth, tabSize, tabOffset, textFlags);
+        if (_textSizeCache.length >= TEXT_SIZE_CACHE_MAX_ITEMS)
+            _textSizeCache.clear();
+        _textSizeCache[key] = res;
+        return res;
     }
 
-    import std.functional;
-    alias textSizeMemoized = memoize!(Font.textSizeImpl);
+    /// max number of text sizes cached by a font; the cache is cleared when full
+    enum TEXT_SIZE_CACHE_MAX_ITEMS = 1024;
+
+    private static struct TextSizeKey {
+        dstring text;
+        int maxWidth;
+        int tabSize;
+        int tabOffset;
+        uint textFlags;
+    }
+    /// text sizes measured by textSize(), per font instance (#888)
+    private Point[TextSizeKey] _textSizeCache;
+    /// FontManager._glyphSettingsGeneration the cached text sizes and metrics were measured for
+    private uint _metricsGeneration;
+
+    /// drops cached text sizes and metrics if glyph settings changed since they were measured
+    private void checkMetricsCache() {
+        if (_metricsGeneration != FontManager._glyphSettingsGeneration)
+            clearMetricsCache();
+    }
+
+    /// drops cached text sizes and metrics (space, ellipsis and capitals sizes); call when glyph widths change
+    protected void clearMetricsCache() {
+        _metricsGeneration = FontManager._glyphSettingsGeneration;
+        _textSizeCache.clear();
+        _capHeight = -1;
+        _spaceWidth = -1;
+        _ellipsisWidth = -1;
+    }
 
     static Point textSizeImpl(Font font, const dchar[] text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (font._textSizeBuffer.length < text.length + 1)
@@ -714,6 +755,7 @@ class Font : RefCountedObject {
 
     /// width of ellipsisText, in pixels
     @property int ellipsisWidth() {
+        checkMetricsCache();
         if (_ellipsisWidth < 0) {
             dstring e = ellipsisText;
             int n = measureText(e, _ellipsisWidthsBuffer);
@@ -1044,6 +1086,59 @@ unittest {
     // a subpixel glyph keeps its advance although its bitmap is wider
     font.measureText("ll"d, w);
     assert(w[0] == 7 && w[1] == 14);
+    destroy(font);
+}
+
+unittest {
+    // textSize() cache per font instance (#888)
+    static class TextSizeTestFont : Font {
+        int measures; // calls of measureText
+        int glyphWidth = 5;
+        Glyph _glyph;
+        this() {
+            _glyph.blackBoxX = 4;
+            _glyph.blackBoxY = 8;
+        }
+        override @property int size() { return 12; }
+        override @property int height() { return 14; }
+        override @property int weight() { return 400; }
+        override @property int baseline() { return 11; }
+        override @property bool italic() { return false; }
+        override @property string face() { return "test"; }
+        override @property FontFamily family() { return FontFamily.SansSerif; }
+        override @property bool isNull() { return false; }
+        override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
+            _glyph.widthPixels = cast(ubyte)(ch == 'i' ? 2 : glyphWidth);
+            _glyph.widthScaled = cast(ushort)(_glyph.widthPixels << 6);
+            return &_glyph;
+        }
+        override void checkpoint() {}
+        override void cleanup() {}
+        override void clearGlyphCache() {}
+        override int measureText(const dchar[] text, ref int[] widths, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+            measures++;
+            return super.measureText(text, widths, maxWidth, tabSize, tabOffset, textFlags);
+        }
+    }
+    import std.conv : to;
+    auto font = new TextSizeTestFont();
+    assert(font.textSize("abc"d) == Point(15, 14) && font.measures == 1);
+    assert(font.textSize("abc"d) == Point(15, 14) && font.measures == 1); // cached
+    assert(font.textSize("abcd"d) == Point(20, 14) && font.measures == 2);
+    assert(font.textSize("abc"d, 7) == Point(10, 14) && font.measures == 3); // other parameters: not cached yet
+    assert(font.textSize("abc"d) == Point(15, 14) && font.measures == 3);
+    assert(font.spaceWidth == 5);
+    // a glyph setting changed: cached sizes and metrics are measured again
+    font.glyphWidth = 6;
+    HintingMode oldHinting = FontManager.hintingMode;
+    FontManager.hintingMode = oldHinting == HintingMode.Light ? HintingMode.Normal : HintingMode.Light;
+    FontManager.hintingMode = oldHinting;
+    assert(font.textSize("abc"d) == Point(18, 14) && font.measures == 4);
+    assert(font.spaceWidth == 6);
+    // full cache is cleared
+    foreach (i; 0 .. Font.TEXT_SIZE_CACHE_MAX_ITEMS + 10)
+        font.textSize(to!dstring(i));
+    assert(font._textSizeCache.length <= Font.TEXT_SIZE_CACHE_MAX_ITEMS);
     destroy(font);
 }
 
@@ -1416,8 +1511,7 @@ class FontManager {
     static @property void minAnitialiasedFontSize(int size) {
         if (_minAnitialiasedFontSize != size) {
             _minAnitialiasedFontSize = size;
-            if (_instance)
-                _instance.clearGlyphCaches();
+            glyphSettingsChanged();
         }
     }
 
@@ -1430,8 +1524,7 @@ class FontManager {
     static @property void hintingMode(HintingMode mode) {
         if (_hintingMode != mode) {
             _hintingMode = mode;
-            if (_instance)
-                _instance.clearGlyphCaches();
+            glyphSettingsChanged();
         }
     }
 
@@ -1472,8 +1565,7 @@ class FontManager {
         if (_subpixelRenderingMode != mode) {
             _subpixelRenderingMode = mode;
             // glyphs are rendered for a mode: render them again (#871)
-            if (_instance)
-                _instance.clearGlyphCaches();
+            glyphSettingsChanged();
         }
     }
 
@@ -1487,13 +1579,23 @@ class FontManager {
             _fontGamma = gamma;
             _gamma65.gamma = gamma;
             _gamma256.gamma = gamma;
-            if (_instance)
-                _instance.clearGlyphCaches();
+            glyphSettingsChanged();
         }
     }
 
     void clearGlyphCaches() {
         // override to clear glyph caches
+    }
+
+    /// incremented when a setting that changes glyphs (and maybe their widths) is changed: fonts drop the text sizes
+    /// and metrics they cached (#888)
+    private static __gshared uint _glyphSettingsGeneration;
+
+    /// a setting that changes glyphs is changed: clear glyph caches, invalidate text sizes and metrics cached by fonts
+    private static void glyphSettingsChanged() {
+        _glyphSettingsGeneration++;
+        if (_instance)
+            _instance.clearGlyphCaches();
     }
 
     ~this() {
