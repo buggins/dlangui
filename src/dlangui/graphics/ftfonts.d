@@ -256,9 +256,11 @@ class FreeTypeFontFile {
                                   glyph_index,   /* glyph index           */
                                   flags );  /* load flags, see below */
         if (error && (flags & FT_LOAD_NO_BITMAP)) {
-            // font without outlines
+            // font without outlines: its embedded bitmaps are 1 or 8 bits per pixel, not subpixel; their advance
+            // is in whole pixels
             flags &= ~FT_LOAD_NO_BITMAP;
             error = FT_Load_Glyph(_face, glyph_index, flags);
+            subpixel = SubpixelRenderingMode.None;
         }
         if ( error )
             return false;
@@ -285,10 +287,15 @@ class FreeTypeFontFile {
             glyph.blackBoxY = h;
             glyph.originX =   cast(byte)(_slot.bitmap_left);
             glyph.originY =   cast(byte)(_slot.bitmap_top);
-            // a bitmap of a font without outlines is 1 bit per pixel, also when antialiasing was requested
+            // an embedded bitmap may be 1 bit per pixel also when antialiasing was requested
             bool monoBitmap = _drawMonochrome || bitmap.pixel_mode == FT_PIXEL_MODE_MONO;
-            if (monoBitmap)
-                glyph.subpixelMode = SubpixelRenderingMode.None;
+            // other formats (e.g. BGRA color bitmaps) are not supported: no image
+            if (!monoBitmap && bitmap.pixel_mode != FT_PIXEL_MODE_GRAY && bitmap.pixel_mode != FT_PIXEL_MODE_LCD) {
+                w = 0;
+                h = 0;
+                glyph.blackBoxX = 0;
+                glyph.blackBoxY = 0;
+            }
             int sz = w * cast(int)h;
             if (sz > 0) {
                 glyph.glyph = new ubyte[sz];

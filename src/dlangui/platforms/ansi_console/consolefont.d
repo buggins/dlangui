@@ -58,6 +58,11 @@ class ConsoleFont : Font {
         return 1;
     }
 
+    /// every character takes one cell: measureText() counts one per character (#888)
+    override int charCells(dchar ch) {
+        return 1;
+    }
+
     /*******************************************************************************************
     * Measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
     *
