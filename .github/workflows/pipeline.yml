@@ -25,12 +25,13 @@ jobs:
           # minimum supported frontend (README: DMD frontend 2.100.2 or newer)
           - os: ubuntu-latest
             dc: dmd-2.100.2
-          - os: ubuntu-latest
+          # old LDC binaries need libxml2.so.2, which ubuntu-latest (26.04) doesn't have
+          - os: ubuntu-24.04
             dc: ldc-1.30.0
           - os: windows-latest
             dc: dmd-2.100.2
           # LDC packaged by Ubuntu 24.04 (frontend 2.106)
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             dc: ldc-1.36.0
           # macOS (arm64; DMD doesn't support arm64)
           - os: macos-latest
