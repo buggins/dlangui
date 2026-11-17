@@ -440,7 +440,10 @@ class Font : RefCountedObject {
         _textSizeBuffer.reserve(100);
         _textSizeBuffer.assumeSafeAppend();
     }
-    ~this() { clear(); }
+    ~this() {
+        clear();
+        _fallbackFonts.clear();
+    }
 
 
     /// returns font size (as requested from font engine)
@@ -1016,6 +1019,27 @@ class Font : RefCountedObject {
         return CodepointPresence.unknown;
     }
 
+    /// fallback fonts, asked from the font manager on first use (#888)
+    private FallbackFontList _fallbackFonts;
+    /// true if _fallbackFonts was asked from the font manager
+    private bool _fallbackFontsCreated;
+
+    /// returns fallback fonts of this font; asks the font manager for them on first call (#888)
+    private ref FallbackFontList fallbackFonts() {
+        if (!_fallbackFontsCreated) {
+            _fallbackFontsCreated = true;
+            if (FontManager.instance)
+                _fallbackFonts = FontManager.instance.getFallbackFonts(this);
+        }
+        return _fallbackFonts;
+    }
+
+    /// releases fallback fonts; they are asked from the font manager again on next use
+    private void clearFallbackFonts() {
+        _fallbackFonts.clear();
+        _fallbackFontsCreated = false;
+    }
+
     /// clear usage flags for all entries
     abstract void checkpoint();
     /// removes entries not used after last call of checkpoint() or cleanup()
@@ -1140,6 +1164,120 @@ unittest {
         font.textSize(to!dstring(i));
     assert(font._textSizeCache.length <= Font.TEXT_SIZE_CACHE_MAX_ITEMS);
     destroy(font);
+}
+
+unittest {
+    // fallback font lists and the font cache GC (#888)
+    static class GCTestFont : Font {
+        static int alive; // instances not destroyed yet
+        string _face;
+        int _size;
+        this(string face, int size) { _face = face; _size = size; alive++; }
+        ~this() { alive--; }
+        override @property int size() { return _size; }
+        override @property int height() { return _size + 2; }
+        override @property int weight() { return 400; }
+        override @property int baseline() { return _size; }
+        override @property bool italic() { return false; }
+        override @property string face() { return _face; }
+        override @property FontFamily family() { return FontFamily.SansSerif; }
+        override @property bool isNull() { return false; }
+        override Glyph * getCharGlyph(dchar ch, bool withImage = true) { return null; }
+        override void checkpoint() {}
+        override void cleanup() {}
+        override void clearGlyphCache() {}
+    }
+    static class GCTestFontManager : FontManager {
+        FontList _fonts;
+        string[] _faces = ["A", "B", "C", "D"];
+        FontRef _nullFont;
+        ~this() {
+            releaseFallbackFonts();
+            _fonts.clear();
+        }
+        override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
+            string found = findInstalledFace(face);
+            if (!found.length)
+                return _nullFont;
+            int index = _fonts.find(size, weight, italic, family, found);
+            if (index >= 0)
+                return _fonts.get(index);
+            return _fonts.add(new GCTestFont(found, size));
+        }
+        override FontFaceProps[] getFaces() {
+            FontFaceProps[] res;
+            foreach (f; _faces)
+                res ~= FontFaceProps(f, FontFamily.SansSerif);
+            return res;
+        }
+        override void checkpoint() {}
+        override protected void forEachFontList(scope void delegate(ref FontList list) callback) {
+            callback(_fonts);
+        }
+    }
+    if (FontManager.instance !is null)
+        return; // the test needs its own font manager
+    string[] oldFallbackFaces = FontManager.fallbackFaces(FontFamily.SansSerif);
+    auto manager = new GCTestFontManager();
+    FontManager.instance = manager;
+    // not installed faces, the primary face and duplicates are skipped
+    FontManager.setFallbackFaces(FontFamily.SansSerif, "Missing, b, B, A, , C");
+    {
+        FontRef a = manager.getFont(12, 400, false, FontFamily.SansSerif, "A");
+        assert(!a._fallbackFontsCreated && GCTestFont.alive == 1);
+        assert(a.fallbackFonts.length == 2 && a.fallbackFonts.face(0) == "B" && a.fallbackFonts.face(1) == "C");
+        assert(GCTestFont.alive == 1); // fallback fonts are created on first use
+        FontRef b = a.fallbackFonts.get(0);
+        assert(GCTestFont.alive == 2 && b.face == "B" && b.size == 12);
+        assert(a.fallbackFonts.get(0) is b.get); // created once
+        // B falls back to A: a cycle
+        assert(b.fallbackFonts.face(0) == "A" && b.fallbackFonts.get(0) is a.get);
+        assert(a.refCount == 3 && b.refCount == 3); // cache, local reference, fallback of the other font
+        // fonts used only as fallback fonts of a used font are kept
+        a.clear();
+        manager.cleanup();
+        assert(GCTestFont.alive == 2 && manager._fonts.length == 2);
+        // a font that is not used and not a fallback font is destroyed
+        manager.getFont(20, 400, false, FontFamily.SansSerif, "D");
+        manager.getFont(20, 400, false, FontFamily.SansSerif, "C");
+        assert(GCTestFont.alive == 4);
+        manager.cleanup();
+        assert(GCTestFont.alive == 2 && manager._fonts.length == 2);
+        // a cycle without other references is destroyed
+        b.clear();
+        manager.cleanup();
+        assert(GCTestFont.alive == 0 && manager._fonts.length == 0);
+    }
+    {
+        // a chain: A (used) -> B -> C, D not used; the fallback faces are changed: lists are released
+        FontRef a = manager.getFont(12, 400, false, FontFamily.SansSerif, "A");
+        Font b = a.fallbackFonts.get(0);
+        Font c = b.fallbackFonts.get(1);
+        assert(b.face == "B" && c.face == "C" && GCTestFont.alive == 3);
+        manager.getFont(12, 400, false, FontFamily.SansSerif, "D");
+        manager.cleanup();
+        assert(GCTestFont.alive == 3 && manager._fonts.length == 3);
+        FontManager.setFallbackFaces(FontFamily.SansSerif, "D");
+        assert(!a._fallbackFontsCreated && b.refCount == 1 && c.refCount == 1);
+        manager.cleanup();
+        assert(GCTestFont.alive == 1);
+        assert(a.fallbackFonts.length == 1 && a.fallbackFonts.get(0).face == "D");
+        // a fallback face resolved to the primary font is not used
+        manager._faces = ["A"];
+        FontManager.setFallbackFaces(FontFamily.SansSerif, "A");
+        assert(a.fallbackFonts.length == 0);
+    }
+    {
+        // cycle at font manager destruction: no leaks
+        manager._faces = ["A", "B"];
+        FontManager.setFallbackFaces(FontFamily.SansSerif, "A, B");
+        FontRef a = manager.getFont(12, 400, false, FontFamily.SansSerif, "A");
+        Font b = a.fallbackFonts.get(0);
+        assert(b.fallbackFonts.get(0) is a.get);
+    }
+    FontManager.instance = null;
+    assert(GCTestFont.alive == 0);
+    FontManager._fallbackFaces[FontFamily.SansSerif] = oldFallbackFaces;
 }
 
 unittest {
@@ -1413,20 +1551,35 @@ struct FontList {
         //Log.d("FontList.add() exit");
         return _list[_len - 1];
     }
-    // remove unused items - with reference == 1
+    // remove unused items - with reference == 1; cleanup glyph caches of others
     void cleanup() {
         foreach(i; 0 .. _len)
             if (_list[i].refCount <= 1)
                 _list[i].clear();
-        uint dst = 0;
-        foreach(i; 0 .. _len) {
-            if (!_list[i].isNull)
-                if (i != dst)
-                    _list[dst++] = _list[i];
-        }
-        _len = dst;
+        compact();
         foreach(i; 0 .. _len)
             _list[i].cleanup();
+    }
+    /// removes (releases) items for which shouldRemove returns true
+    void removeFonts(scope bool delegate(Font) shouldRemove) {
+        foreach(i; 0 .. _len)
+            if (shouldRemove(_list[i].get))
+                _list[i].clear();
+        compact();
+    }
+    // move items left over cleared ones; clear the moved items' old slots, which would keep extra references
+    private void compact() {
+        uint dst = 0;
+        foreach(i; 0 .. _len) {
+            if (_list[i].isNull)
+                continue;
+            if (i != dst) {
+                _list[dst] = _list[i];
+                _list[i].clear();
+            }
+            dst++;
+        }
+        _len = dst;
     }
     void checkpoint() {
         foreach(i; 0 .. _len)
@@ -1436,6 +1589,95 @@ struct FontList {
     void clearGlyphCache() {
         foreach(i; 0 .. _len)
             _list[i].clearGlyphCache();
+    }
+}
+
+/// fallback font of a font: parameters to create it, and the instance once created (#888)
+private struct FallbackFontEntry {
+    string face;
+    FontFamily family;
+    int weight;
+    bool italic;
+    int size;
+    FontRef font;
+    /// font could not be created, or it is the primary font itself
+    bool failed;
+}
+
+/**
+    Fallback fonts of a font, for characters it has no glyphs for (#888).
+
+    FontManager.getFallbackFonts() creates the list with the faces to use. Font instances are created on first use
+    by get(), through FontManager.getFont(): they are cached fonts, shared with other fonts and widgets.
+    The list holds references to the instances it created; clear() or the destructor releases them. Not copyable.
+*/
+struct FallbackFontList {
+    private FontManager _manager;
+    /// font the list belongs to (not referenced)
+    private Font _primary;
+    private FallbackFontEntry[] _entries;
+
+    @disable this(this);
+
+    this(FontManager manager, Font primary) {
+        _manager = manager;
+        _primary = primary;
+    }
+
+    /// number of fallback fonts
+    @property size_t length() const {
+        return _entries.length;
+    }
+
+    /// face of fallback font
+    string face(size_t index) const {
+        return _entries[index].face;
+    }
+
+    /// adds fallback font (created on first get())
+    void add(string face, FontFamily family, int weight, bool italic, int size) {
+        FallbackFontEntry entry;
+        entry.face = face;
+        entry.family = family;
+        entry.weight = weight;
+        entry.italic = italic;
+        entry.size = size;
+        _entries ~= entry;
+    }
+
+    /// returns fallback font, creates it on first call; null if it cannot be created
+    Font get(size_t index) {
+        if (index >= _entries.length)
+            return null;
+        FallbackFontEntry * e = &_entries[index];
+        if (e.font.isNull && !e.failed) {
+            if (_manager)
+                e.font = _manager.getFont(e.size, e.weight, e.italic, e.family, e.face);
+            // a face resolved to the primary font itself would be a reference cycle of one font
+            if (e.font.isNull || e.font.get is _primary) {
+                e.font.clear();
+                e.failed = true;
+            }
+        }
+        return e.font.get;
+    }
+
+    /// calls callback for each fallback font created so far
+    void forEachInstance(scope void delegate(Font font) callback) {
+        foreach (ref e; _entries)
+            if (!e.font.isNull)
+                callback(e.font.get);
+    }
+
+    /// releases created fonts and removes all entries
+    void clear() {
+        foreach (ref e; _entries)
+            e.font.clear();
+        _entries = null;
+    }
+
+    ~this() {
+        clear();
     }
 }
 
@@ -1499,8 +1741,130 @@ class FontManager {
     /// clear usage flags for all entries -- for cleanup of unused fonts
     abstract void checkpoint();
 
-    /// removes entries not used after last call of checkpoint() or cleanup()
-    abstract void cleanup();
+    /**
+        Destroys cached fonts that are not used (#888), and glyphs not used since the last call of checkpoint().
+
+        A cached font is used if it is referenced outside of the font cache (e.g. by a widget style), or if it is
+        a fallback font of a used font. Fonts referencing each other only as fallback fonts are destroyed.
+    */
+    void cleanup() {
+        collectUnusedFonts();
+        forEachFontList((ref FontList list) { list.cleanup(); });
+    }
+
+    /// override to call callback for each list of cached fonts; used by cleanup() and releaseFallbackFonts()
+    protected void forEachFontList(scope void delegate(ref FontList list) callback) {
+    }
+
+    /// destroys cached fonts used neither outside of the cache nor as fallback fonts of used fonts (#888)
+    private void collectUnusedFonts() {
+        Font[] fonts;
+        forEachFontList((ref FontList list) {
+            foreach (i; 0 .. list.length)
+                fonts ~= list.get(i).get;
+        });
+        // references from fallback lists of cached fonts
+        int[Font] fallbackRefs;
+        foreach (f; fonts)
+            f._fallbackFonts.forEachInstance((Font fallback) { fallbackRefs[fallback]++; });
+        // roots: fonts with references from outside of the cache and fallback lists; mark fonts reachable from them
+        bool[Font] used;
+        Font[] stack;
+        foreach (f; fonts) {
+            if (f.refCount > 1 + fallbackRefs.get(f, 0)) {
+                used[f] = true;
+                stack ~= f;
+            }
+        }
+        while (stack.length) {
+            Font f = stack[$ - 1];
+            stack = stack[0 .. $ - 1];
+            f._fallbackFonts.forEachInstance((Font fallback) {
+                if (fallback !in used) {
+                    used[fallback] = true;
+                    stack ~= fallback;
+                }
+            });
+        }
+        size_t unused = 0;
+        foreach (f; fonts)
+            if (f !in used)
+                unused++;
+        if (!unused)
+            return;
+        Log.d("Destroying ", unused, " unused fonts of ", fonts.length);
+        // unused fonts may reference each other: release their fallback fonts first, then remove them from the cache
+        foreach (f; fonts)
+            if (f !in used)
+                f.clearFallbackFonts();
+        forEachFontList((ref FontList list) {
+            list.removeFonts((Font f) => f !in used);
+        });
+    }
+
+    /// releases fallback fonts of all cached fonts; they are asked for again on next use.
+    /// Font manager destructors call it before destroying cached fonts: fallback references may form cycles.
+    protected void releaseFallbackFonts() {
+        forEachFontList((ref FontList list) {
+            foreach (i; 0 .. list.length)
+                list.get(i).get.clearFallbackFonts();
+        });
+    }
+
+    /// fallback faces for font families (#888)
+    private static __gshared string[][FontFamily.max + 1] _fallbackFaces;
+
+    /// sets fallback faces for a font family: comma separated list, in order of preference (#888). Fonts of the
+    /// family use installed faces of the list for characters they have no glyphs for.
+    static void setFallbackFaces(FontFamily family, string faces) {
+        import std.array : split;
+        import std.string : strip;
+        string[] list;
+        foreach (f; faces.split(',')) {
+            string name = f.strip;
+            if (name.length)
+                list ~= name;
+        }
+        _fallbackFaces[family] = list;
+        _glyphSettingsGeneration++; // text sizes may change
+        if (_instance)
+            _instance.releaseFallbackFonts();
+    }
+
+    /// returns fallback faces for a font family, as set by setFallbackFaces()
+    static string[] fallbackFaces(FontFamily family) {
+        return _fallbackFaces[family];
+    }
+
+    /**
+        Returns fallback fonts for a font, not created yet (#888): installed faces of fallbackFaces(primary.family)
+        except the primary face and duplicates, with size, weight and italic of the primary font.
+
+        Override to use other faces (e.g. the platform's font fallback). May return an empty list.
+    */
+    FallbackFontList getFallbackFonts(Font primary) {
+        import std.uni : icmp;
+        FallbackFontList list = FallbackFontList(this, primary);
+        string[] added = [primary.face];
+        foreach (face; fallbackFaces(primary.family)) {
+            string installed = findInstalledFace(face);
+            if (!installed.length || added.canFind!((a, b) => icmp(a, b) == 0)(installed))
+                continue;
+            added ~= installed;
+            list.add(installed, primary.family, primary.weight, primary.italic, primary.size);
+        }
+        return list;
+    }
+
+    /// returns name of the installed font face matching face (case insensitive), null if it's not installed;
+    /// override for a faster lookup
+    protected string findInstalledFace(string face) {
+        import std.uni : icmp;
+        foreach (ref props; getFaces())
+            if (icmp(props.face, face) == 0)
+                return props.face;
+        return null;
+    }
 
     /// get min font size for antialiased fonts (0 means antialiasing always on, some big value = always off)
     static @property int minAnitialiasedFontSize() {
