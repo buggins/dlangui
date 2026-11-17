@@ -72,6 +72,27 @@ class TextExample : VerticalLayout
         labelsRow.addChild(labels);
         labelsRow.addChild(new HSpacer());
         addChild(labelsRow);
+
+        static if (!BACKEND_CONSOLE) {
+            // characters missing in the UI fonts are drawn with fallback fonts (#778, #888);
+            // fixed pitch fonts give CJK characters 2 cells
+            enum dstring fallbackText = "Latin 日本語 中文 한국어 ★ → ✓ ½ Ω Ж"d;
+            enum string monoFaces = "Menlo,Consolas,DejaVu Sans Mono,Liberation Mono,Courier New";
+            GroupBox fallback = new GroupBox(null, "Fallback fonts"d);
+            fallback.layoutWidth = FILL_PARENT;
+            fallback.addChild(new TextWidget(null, "Sans serif: "d ~ fallbackText));
+            fallback.addChild(new TextWidget(null, "Serif: "d ~ fallbackText).fontFamily(FontFamily.Serif)
+                .fontFace("Times New Roman,DejaVu Serif,Liberation Serif,Georgia"));
+            fallback.addChild(new TextWidget(null, "|中文|abcd|日本語|ab|한국어|★→✓|"d)
+                .fontFamily(FontFamily.MonoSpace).fontFace(monoFaces));
+            fallback.addChild(new TextWidget(null, "|abcd|efgh|ijklmn|op|qrstuv|wxy|"d)
+                .fontFamily(FontFamily.MonoSpace).fontFace(monoFaces));
+            EditLine edit = new EditLine(null, "Monospace edit: "d ~ fallbackText);
+            edit.fontFamily(FontFamily.MonoSpace).fontFace(monoFaces);
+            edit.layoutWidth = FILL_PARENT;
+            fallback.addChild(edit);
+            addChild(fallback);
+        }
         addChild(new VSpacer());
 
         slider.scrollEvent = delegate(AbstractSlider source, ScrollEvent event) {

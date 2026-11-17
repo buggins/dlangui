@@ -60,23 +60,29 @@ private struct FontDef {
     }
 }
 
+/// font file and index of the face in it (font collections, e.g. .ttc, have several faces)
+private struct FontFileFace {
+    string filename;
+    int index;
+}
+
 private class FontFileItem {
     private FontList _activeFonts;
     private FT_Library _library;
     private FontDef _def;
-    string[] _filenames;
+    private FontFileFace[] _files;
     /// presence of codepoints in the files of this face, shared by fonts of all sizes (#886)
     private CodepointPresenceCache _codepointPresence;
     @property CodepointPresenceCache * codepointPresence() { return &_codepointPresence; }
     @property ref FontDef def() { return _def; }
-    @property string[] filenames() { return _filenames; }
+    @property const(FontFileFace)[] files() { return _files; }
     @property FT_Library library() { return _library; }
-    void addFile(string fn) {
+    void addFile(string fn, int index = 0) {
         // check for duplicate entry
-        foreach (ref string existing; _filenames)
-            if (fn.equal(existing))
+        foreach (ref existing; _files)
+            if (existing.index == index && fn.equal(existing.filename))
                 return;
-        _filenames ~= fn;
+        _files ~= FontFileFace(fn, index);
         _codepointPresence.clear(); // a new file may have more codepoints
     }
     this(FT_Library library, ref FontDef def) {
@@ -152,6 +158,20 @@ class FreeTypeFontFile {
         debug(FontResources) Log.d("Destroyed FreeTypeFontFile, count=", _instanceCount);
     }
 
+    /// weight of a face: usWeightClass of the OS/2 table if present, otherwise the bold style flag
+    private static int faceWeight(FT_Face face) {
+        int weight = face.style_flags & FT_STYLE_FLAG_BOLD ? FontWeight.Bold : FontWeight.Normal;
+        TT_OS2 * os2 = cast(TT_OS2 *)FT_Get_Sfnt_Table(face, FT_SFNT_OS2);
+        if (os2 && os2._version != 0xFFFF) {
+            int w = os2.usWeightClass;
+            if (w >= 1 && w <= 9)
+                w *= 100; // old fonts use 1..9
+            if (w >= 100 && w <= 1000)
+                weight = w;
+        }
+        return weight;
+    }
+
     private static string familyName(FT_Face face)
     {
         string faceName = fromStringz(face.family_name).dup;
@@ -194,7 +214,7 @@ class FreeTypeFontFile {
         _height = cast(int)((_face.size.metrics.height + 63) >> 6);
         _size = size;
         _baseline = _height + cast(int)(_face.size.metrics.descender >> 6);
-        _weight = _face.style_flags & FT_STYLE_FLAG_BOLD ? FontWeight.Bold : FontWeight.Normal;
+        _weight = faceWeight(_face);
         _italic = _face.style_flags & FT_STYLE_FLAG_ITALIC ? true : false;
         debug(FontResources) Log.d("Opened font face=", _faceName, " height=", _height, " size=", size, " weight=", weight, " italic=", italic);
         return true; // successfully opened
@@ -503,9 +523,9 @@ class FreeTypeFont : Font {
     bool create() {
         if (!isNull())
             clear();
-        foreach (string filename; _fontItem.filenames) {
-            FreeTypeFontFile file = new FreeTypeFontFile(_fontItem.library, filename);
-            if (file.open(_size, 0)) {
+        foreach (ref f; _fontItem.files) {
+            FreeTypeFontFile file = new FreeTypeFontFile(_fontItem.library, f.filename);
+            if (file.open(_size, f.index)) {
                 _files.add(file);
             } else {
                 destroy(file);
@@ -548,7 +568,7 @@ private void ftCheckMissingSymFunc(const(loader.ErrorInfo)[] errors) {
     import std.string : fromStringz;
     immutable names = ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
             "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face",
-            "FT_Init_FreeType", "FT_Done_FreeType", "FT_Get_Kerning"];
+            "FT_Init_FreeType", "FT_Done_FreeType", "FT_Get_Kerning", "FT_Get_Sfnt_Table"];
     foreach(info; errors) {
         // errors also hold failed attempts to load other library names
         if (info.error is null || info.message is null || fromStringz(info.error) != "Missing Symbol")
@@ -771,8 +791,31 @@ class FreeTypeFontManager : FontManager {
 		return registerFont(filename, FontFamily.SansSerif, face, italic, weight);
 	}
 
+    /**
+        Registers all faces of a font file, with properties read from the file: a font collection (e.g. .ttc)
+        has several faces, often of different families or weights.
+        Returns: number of registered faces.
+    */
+    int registerFontFaces(string filename, FontFamily family) {
+        if (_library is null || !exists(filename) || !isFile(filename))
+            return 0;
+        // a negative face index only reads the number of faces
+        FT_Face ftface;
+        if (FT_New_Face(_library, filename.toStringz, -1, &ftface))
+            return 0;
+        int count = cast(int)ftface.num_faces;
+        FT_Done_Face(ftface);
+        int registered = 0;
+        foreach (index; 0 .. count)
+            if (registerFont(filename, family, null, false, 0, false, index))
+                registered++;
+        return registered;
+    }
+
     /// register freetype font by filename - optinally font properties can be passed if known (e.g. from libfontconfig).
-    bool registerFont(string filename, FontFamily family, string face = null, bool italic = false, int weight = 0, bool dontLoadFile = false) {
+    /// faceIndex: face in a font collection (e.g. .ttc)
+    bool registerFont(string filename, FontFamily family, string face = null, bool italic = false, int weight = 0,
+            bool dontLoadFile = false, int faceIndex = 0) {
         if (_library is null)
             return false;
         //Log.v("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
@@ -783,7 +826,7 @@ class FreeTypeFontManager : FontManager {
 
         if (!dontLoadFile) {
             FreeTypeFontFile font = new FreeTypeFontFile(_library, filename);
-            if (!font.open(24)) {
+            if (!font.open(24, faceIndex)) {
                 Log.e("Failed to open font ", filename);
                 destroy(font);
                 return false;
@@ -806,7 +849,8 @@ class FreeTypeFontManager : FontManager {
             item = new FontFileItem(_library, def);
             _fontFiles ~= item;
         }
-        item.addFile(filename);
+        item.addFile(filename, faceIndex);
+        installedFacesChanged();
 
         // registered
         return true;
@@ -896,6 +940,11 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
             weight = 200;
             break;
         case FC_WEIGHT_LIGHT:         //    50
+            weight = 300;
+            break;
+        case 55:                      //    FC_WEIGHT_DEMILIGHT, FC_WEIGHT_SEMILIGHT
+            weight = 350;
+            break;
         case FC_WEIGHT_BOOK:          //    75
         case FC_WEIGHT_REGULAR:       //    80
         //case FC_WEIGHT_NORMAL:            FC_WEIGHT_REGULAR
@@ -991,7 +1040,7 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
         else if (style16.indexOf("extralight") >= 0)
             face ~= " Extra Light";
 
-        if (fontMan.registerFont(fn, fontFamily, face, italic, weight, true))
+        if (fontMan.registerFont(fn, fontFamily, face, italic, weight, true, index))
             facesFound++;
 /*
         LVFontDef def(
