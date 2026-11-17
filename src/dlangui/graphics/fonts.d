@@ -1853,7 +1853,14 @@ struct FontList {
     ref FontRef add(Font item) {
         //Log.d("FontList.add() enter");
         if (_len >= _list.length) {
-            _list.length = _len < 16 ? 16 : _list.length * 2;
+            // not _list.length = n: reallocation copies the references (postblit) and leaves the old copies in the
+            // old block until the GC finalizes it, so fonts would be destroyed only by the GC (#900)
+            FontRef[] list = new FontRef[_list.length < 16 ? 16 : _list.length * 2];
+            foreach (i; 0 .. _len) {
+                list[i] = _list[i];
+                _list[i].clear();
+            }
+            _list = list;
         }
         _list[_len++] = item;
         //Log.d("FontList.add() exit");
@@ -1897,6 +1904,36 @@ struct FontList {
     void clearGlyphCache() {
         foreach(i; 0 .. _len)
             _list[i].clearGlyphCache();
+    }
+}
+
+unittest {
+    // growing the list keeps one reference per font (#900)
+    static class ListTestFont : Font {
+        static int alive;
+        int _size;
+        this(int size) { _size = size; alive++; }
+        ~this() { alive--; }
+        override @property int size() { return _size; }
+        override @property int height() { return _size; }
+        override @property int weight() { return 400; }
+        override @property int baseline() { return _size; }
+        override @property bool italic() { return false; }
+        override @property string face() { return "T"; }
+        override @property FontFamily family() { return FontFamily.SansSerif; }
+        override @property bool isNull() { return false; }
+        override void checkpoint() {}
+        override void cleanup() {}
+        override void clearGlyphCache() {}
+    }
+    {
+        FontList list;
+        foreach (i; 0 .. 70)
+            list.add(new ListTestFont(i));
+        foreach (i; 0 .. 70)
+            assert(list.get(i).refCount == 1);
+        list.clear();
+        assert(ListTestFont.alive == 0); // destroyed by clear(), not by the GC
     }
 }
 
