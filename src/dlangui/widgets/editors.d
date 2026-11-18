@@ -1539,6 +1539,35 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         handleEditorStateChange();
     }
 
+    /// what dragging with the left button selects: set by the click count of the last button press (#958)
+    protected enum MouseSelectionMode { characters, words, lines }
+    protected MouseSelectionMode _mouseSelectionMode;
+    /// the word or line selected by the double or triple click: dragging keeps it selected
+    protected TextRange _mouseSelectionAnchor;
+
+    /// drag after a double or triple click: extend the selection by whole words or lines, keeping the anchor
+    protected void extendSelectionByMouse(int x, int y) {
+        TextPosition pos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
+        TextRange r = _mouseSelectionMode == MouseSelectionMode.lines ? content.lineRange(pos.line) : content.wordBounds(pos);
+        if (!(r.start < r.end))
+            r = TextRange(pos, pos); // between words: up to the mouse position
+        TextRange sel = _mouseSelectionAnchor;
+        if (r.start < sel.start) {
+            sel.start = r.start;
+            _caretPos = sel.start;
+        } else {
+            if (sel.end < r.end)
+                sel.end = r.end;
+            _caretPos = sel.end;
+        }
+        if (_selectionRange != sel) {
+            _selectionRange = sel;
+            invalidate();
+            requestActionsUpdate();
+        }
+        handleEditorStateChange();
+    }
+
     protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
         TextPosition oldCaretPos = _caretPos;
         TextPosition newPos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
@@ -2191,10 +2220,19 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
             cancelHoverTimer();
+            _mouseSelectionMode = MouseSelectionMode.characters;
             if (event.tripleClick) {
                 selectLineByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
+                if (!_selectionRange.empty) {
+                    _mouseSelectionMode = MouseSelectionMode.lines;
+                    _mouseSelectionAnchor = _selectionRange;
+                }
             } else if (event.doubleClick) {
                 selectWordByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
+                if (!_selectionRange.empty) {
+                    _mouseSelectionMode = MouseSelectionMode.words;
+                    _mouseSelectionAnchor = _selectionRange;
+                }
             } else {
                 auto doSelect = cast(bool)(event.keyFlags & MouseFlag.Shift);
                 updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, doSelect);
@@ -2207,7 +2245,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             return true;
         }
         if (event.action == MouseAction.Move && (event.flags & MouseButton.Left) != 0) {
-            updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, true);
+            if (_mouseSelectionMode == MouseSelectionMode.characters)
+                updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, true);
+            else
+                extendSelectionByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
             ensureCaretVisible();
             return true;
         }
