@@ -65,7 +65,7 @@ struct Token {
         int intvalue;
         double floatvalue;
     }
-    public @property string toString() const {
+    public @property string toString() const @safe {
         if (type == TokenType.integer)
             return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(intvalue);
         else if (type == TokenType.floating)
@@ -73,7 +73,7 @@ struct Token {
         else
             return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " \"" ~ text ~ "\"";
     }
-    @property bool isMultilineComment() {
+    @property bool isMultilineComment() const @safe pure nothrow @nogc {
         return type == TokenType.comment && multiline;
     }
 }
@@ -89,7 +89,7 @@ class ParserException : Exception {
     @property int line() { return _line; }
     @property int pos() { return _pos; }
 
-    this(string msg, string file, int line, int pos) {
+    this(string msg, string file, int line, int pos) @safe {
         super(msg ~ " at " ~ file ~ " line " ~ to!string(line) ~ " column " ~ to!string(pos));
         _msg = msg;
         _file = file;
@@ -99,7 +99,8 @@ class ParserException : Exception {
 }
 
 /// simple tokenizer for DlangUI ML
-class Tokenizer {
+// final: nothing overrides its methods, which are @safe (#913)
+final class Tokenizer {
 
     protected string[] _singleLineCommentPrefixes;
     protected LineStream  _lines;
@@ -116,20 +117,30 @@ class Tokenizer {
         EOL_CHAR = 0x000A
     }
 
+    ~this() {
+        destroy(_lines);
+        _lines = null;
+    }
+
+@safe:
+    // LineStream reads through an InputStream, whose methods have no attributes; the stream is created here from
+    // a string (MemoryInputStream and the decoders of the linestream module), so these calls are memory safe
+    private static LineStream createLines(string source, string filename) @trusted {
+        return LineStream.create(source, filename);
+    }
+    private dchar[] readLine() @trusted {
+        return _lines.readLine();
+    }
+
     this(string source, string filename = "", string[] singleLineCommentPrefixes = ["//"]) {
         _singleLineCommentPrefixes = singleLineCommentPrefixes;
         _filename = filename;
-        _lines = LineStream.create(source, filename);
-        _lineText = _lines.readLine();
+        _lines = createLines(source, filename);
+        _lineText = readLine();
         _len = cast(int)_lineText.length;
         _line = 0;
         _pos = 0;
         _prevChar = 0;
-    }
-
-    ~this() {
-        destroy(_lines);
-        _lines = null;
     }
 
     protected dchar peekChar() {
@@ -154,7 +165,7 @@ class Tokenizer {
         else if (_lineText is null)
             _prevChar = EOF_CHAR;
         else {
-            _lineText = _lines.readLine();
+            _lineText = readLine();
             _len = cast(int)_lineText.length;
             _line++;
             _pos = 0;
@@ -450,16 +461,17 @@ class Tokenizer {
     }
 
     string getContextSource() {
-        string s = toUTF8(cast(dstring)_lineText);
+        // sliced by character (it sliced the UTF-8 string by character positions, cutting multibyte characters)
+        alias s = _lineText;
         if (_pos == 0)
-            return " near `^^^" ~ s[0..min($,30)] ~ "`";
+            return " near `^^^" ~ to!string(s[0..min($,30)]) ~ "`";
         if (_pos >= _len)
-            return " near `" ~ s[max(_len - 30, 0) .. $] ~ "^^^`";
-        return " near `" ~ s[max(_pos - 15, 0) .. _pos] ~ "^^^" ~ s[_pos .. min(_pos + 15, $)] ~ "`";
+            return " near `" ~ to!string(s[max(_len - 30, 0) .. $]) ~ "^^^`";
+        return " near `" ~ to!string(s[max(_pos - 15, 0) .. _pos]) ~ "^^^" ~ to!string(s[_pos .. min(_pos + 15, $)]) ~ "`";
     }
 
     @property string filename() {
-        return filename;
+        return _filename; // returned filename: infinite recursion
     }
     @property int line() {
         return _token.line;
@@ -478,7 +490,7 @@ class Tokenizer {
 }
 
 /// tokenize source into array of tokens (excluding EOF)
-public Token[] tokenize(string code, string[] _singleLineCommentPrefixes = ["//"], bool skipSpace = false, bool skipEols = false, bool skipComments = false) {
+public Token[] tokenize(string code, string[] _singleLineCommentPrefixes = ["//"], bool skipSpace = false, bool skipEols = false, bool skipComments = false) @safe {
     Token[] res;
     auto tokenizer = new Tokenizer(code, "", _singleLineCommentPrefixes);
     for (;;) {
@@ -497,7 +509,7 @@ public Token[] tokenize(string code, string[] _singleLineCommentPrefixes = ["//"
 }
 
 /// exclude whitespace tokens at beginning and end of token sequence
-Token[] trimSpaceTokens(Token[] tokens, bool trimBeginning = true, bool trimEnd = true) {
+Token[] trimSpaceTokens(Token[] tokens, bool trimBeginning = true, bool trimEnd = true) @safe pure nothrow @nogc {
     if (trimBeginning)
         while(tokens.length > 0 && tokens[0].type == TokenType.whitespace)
             tokens = tokens[1 .. $];
@@ -506,3 +518,36 @@ Token[] trimSpaceTokens(Token[] tokens, bool trimBeginning = true, bool trimEnd 
             tokens = tokens[0 .. $ - 1];
     return tokens;
 }
+
+// tokens of DML, malformed input (#913)
+@safe unittest {
+    import std.algorithm : map, canFind;
+    import std.array : array;
+    import std.utf : validate;
+    with (TokenType) {
+        Token[] t = tokenize(`Button { text: "a\"b"; margins: 5pt; x: 0x1F; c: #F00; f: .5%; } // end`, ["//"], true);
+        assert(t.map!(tk => tk.type).array == [ident, curlyOpen, ident, colon, str, semicolon, ident, colon, integer,
+                semicolon, ident, colon, integer, semicolon, ident, colon, integer, semicolon, ident, colon, floating,
+                semicolon, curlyClose, comment, eol]);
+        assert(t[0].text == "Button" && t[4].text == `a"b`);
+        assert(t[8].intvalue == 5 && t[8].text == "pt" && t[12].intvalue == 0x1F && t[16].intvalue == 0xF00);
+        assert(t[20].floatvalue == 0.5 && t[20].text == "%");
+        // malformed: a number with a bad suffix, 0x without digits, an unknown character
+        assert(tokenize("12Ab")[0].type == error);
+        assert(tokenize("0x ")[0].type == error);
+        assert(tokenize("@")[0].type == error);
+        // unterminated string (ends at the line end) and block comment (ends at the end of the text)
+        t = tokenize("\"abc\nx");
+        assert(t[0].type == str && t[0].text == "abc" && t[1].type == ident);
+        t = tokenize("a /* b\nc");
+        assert(t[$ - 1].type == comment && t[$ - 1].multiline);
+    }
+    // the error context is sliced by character: valid UTF-8 around non-ASCII text
+    auto tokenizer = new Tokenizer(`Button { text: "Кнопка"; @ }`, "test.dml");
+    assert(tokenizer.filename == "test.dml"); // returned filename: infinite recursion
+    while (tokenizer.nextToken().type != TokenType.error) {}
+    string context = tokenizer.getContextSource();
+    validate(context);
+    assert(context.canFind(`"Кнопка"; @^^^`));
+}
+
