@@ -208,12 +208,8 @@ final class Setting {
         SettingArray array;
         SettingMap * map;
     }
-    // Log is @system (__gshared state and a mutex); logging a string is memory safe
-    private static void logError(string message) @trusted {
-        Log.e(message);
-    }
-    // Throwable.toString is @system (virtual); the exceptions logged here come from std.file and the parser
-    // (Exception, FileException, UTFException), which use druntime's toString
+    // Throwable.toString is @system (virtual), so logging an exception isn't @safe; the exceptions logged here come
+    // from std.file and the parser (Exception, FileException, UTFException), which use druntime's toString
     private static void logError(string message, Exception e) @trusted {
         Log.e(message, e);
     }
@@ -1896,7 +1892,7 @@ final class Setting {
         char ch = parser.peek;
         parser.nextChar; // skip initial {
         if (ch != '{') {
-            logError("expected { at " ~ parser.currentContext);
+            Log.e("expected { at ", parser.currentContext);
         }
         for(;;) {
             ch = parser.skipSpaces;
