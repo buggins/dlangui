@@ -704,7 +704,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc);
+        auto _ = ClipRectSaver(buf, rc);
         // draw all items except selected
         for (int i = _children.count - 1; i >= 0; i--) {
             Widget item = _children.get(i);

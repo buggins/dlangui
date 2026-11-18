@@ -377,7 +377,7 @@ class CupWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         applyPadding(rc);
 
         Rect topLeft = cellRect(rc, 0, _rows - 1);

@@ -94,6 +94,7 @@ class Effect : GLProgram {
         return buf.dup;
     }
 
+    /// load the source of a vertex or fragment shader (.vert or .frag) or of an included file
     protected string loadVertexSource(string resourceId) {
         import dlangui.graphics.resources;
         import std.string : endsWith;
@@ -223,7 +224,7 @@ struct EffectId {
 
     /// returns true if ID is not assigned
     @property bool empty() {
-        return !vertexShaderName.length || !vertexShaderName.length;
+        return !vertexShaderName.length || !fragmentShaderName.length;
     }
 
     size_t toHash() const @safe pure nothrow

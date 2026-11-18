@@ -155,7 +155,6 @@ class PopupWidget : LinearLayout {
             anchorrc = rc;
 
         Rect r;
-        Point anchorPt;
 
         if (anchor.alignment & PopupAlign.Point) {
             r.left = anchor.x;

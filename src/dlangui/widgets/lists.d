@@ -1152,13 +1152,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             _scrollPosition = _maxScrollPosition;
         if (_scrollPosition < 0)
             _scrollPosition = 0;
-        if (_needScrollbar) {
-            if (_orientation == Orientation.Vertical) { // FIXME:
-                _scrollbar.position = _scrollPosition;
-            } else {
-                _scrollbar.position = _scrollPosition;
-            }
-        }
+        if (_needScrollbar)
+            _scrollbar.position = _scrollPosition;
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
@@ -1221,7 +1216,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         // draw scrollbar
         if (_needScrollbar)
             _scrollbar.onDraw(buf);

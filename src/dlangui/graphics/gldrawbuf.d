@@ -605,8 +605,6 @@ private class GLImageCache : GLCache
             if (_needUpdateTexture)
                 updateTexture();
             if (_texture && _texture.ID != 0) {
-                int rx = dstrc.middlex;
-                int ry = dstrc.middley;
                 // convert coordinates to cached texture
                 srcrc.offset(item._rc.left, item._rc.top);
                 if (clip) {

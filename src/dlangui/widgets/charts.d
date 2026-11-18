@@ -297,8 +297,6 @@ class SimpleBarChart : Widget {
     override void measure(int parentWidth, int parentHeight) {
         FontRef font = font();
 
-        int mWidth = minWidth;
-        int mHeight = minHeight;
 
         int chartW = 0;
         int chartH = 0;
@@ -416,7 +414,7 @@ class SimpleBarChart : Widget {
         applyMargins(rc);
         applyPadding(rc);
 
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
 
         FontRef font = font();
         if (_showTitle)

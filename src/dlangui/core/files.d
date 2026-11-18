@@ -298,7 +298,7 @@ private:
         char[MFSNAMELEN] f_fstypename; /* filesystem type name */
         char[MNAMELEN] f_mntfromname;  /* mounted filesystem */
         char[MNAMELEN] f_mntonname;    /* directory on which mounted */
-    };
+    }
 
     extern(C) @nogc nothrow
     {
@@ -318,7 +318,7 @@ private:
         char *mnt_opts;     /* Comma-separated options for fs.  */
         int mnt_freq;       /* Dump frequency (in days).  */
         int mnt_passno;     /* Pass number for `fsck'.  */
-    };
+    }
 
     extern(C) @nogc nothrow
     {

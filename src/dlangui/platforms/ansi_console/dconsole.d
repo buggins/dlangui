@@ -942,7 +942,6 @@ class Console {
                     Sleep(1);
                 }
             } else {
-                DWORD err = GetLastError();
                 _stopped = true;
                 return false;
             }

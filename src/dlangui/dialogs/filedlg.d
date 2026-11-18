@@ -444,7 +444,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected bool openDirectory(string dir, string selectedItemPath) {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
-        DirEntry[] entries;
 
         auto attrFilter = (showHiddenFiles ? AttrFilter.all : AttrFilter.allVisible) | AttrFilter.special | AttrFilter.parent;
         if (executableFilterSelected()) {
@@ -469,7 +468,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _path = dir;
         _isRoot = isRoot(dir);
         _edPath.path = _path; //toUTF32(_path);
-        int selectionIndex = entriesToCells(selectedItemPath);
+        entriesToCells(selectedItemPath);
         return true;
     }
 
@@ -533,10 +532,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 rc.right--;
             FontRef fnt = _fileList.font;
             dstring txt = _fileList.cellText(col, row);
-            Point sz = fnt.textSize(txt);
-            Align ha = Align.Left;
-            //if (sz.y < rc.height)
-            //    applyAlign(rc, sz, ha, Align.VCenter);
             int offset = WIDGET_STYLE_CONSOLE ? 0 : 1;
             uint cl = _fileList.textColor;
             if (_entries[row].isDir)
@@ -987,7 +982,6 @@ class FilePathPanelItem : HorizontalLayout {
     }
     private bool onButtonClick(Widget src) {
         // show popup menu with subdirs
-        string[] filters;
         DirEntry[] entries;
         try {
             AttrFilter attrFilter = AttrFilter.dirs | AttrFilter.parent;

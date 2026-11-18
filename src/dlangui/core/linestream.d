@@ -143,30 +143,30 @@ class OutputLineStream {
         {
             case UTF8:
             default:
-                char[4] d;
+                char[4] utf8;
                 foreach(i; 0 .. s.length) {
-                    int bytes = cast(int)encode(d, s[i]);
+                    int bytes = cast(int)encode(utf8, s[i]);
                     foreach(j; 0 .. bytes)
-                        _buf[_len++] = d[j];
+                        _buf[_len++] = utf8[j];
                 }
                 break;
             case UTF16BE:
-                wchar[2] d;
+                wchar[2] utf16be;
                 foreach(i; 0 .. s.length) {
-                    int n = cast(int)encode(d, s[i]);
+                    int n = cast(int)encode(utf16be, s[i]);
                     foreach(j; 0 .. n) {
-                        _buf[_len++] = cast(char)(d[j] >> 8);
-                        _buf[_len++] = cast(char)(d[j] & 0xFF);
+                        _buf[_len++] = cast(char)(utf16be[j] >> 8);
+                        _buf[_len++] = cast(char)(utf16be[j] & 0xFF);
                     }
                 }
                 break;
             case UTF16LE:
-                wchar[2] d;
+                wchar[2] utf16le;
                 foreach(i; 0 .. s.length) {
-                    int n = cast(int)encode(d, s[i]);
+                    int n = cast(int)encode(utf16le, s[i]);
                     foreach(j; 0 .. n) {
-                        _buf[_len++] = cast(char)(d[j] & 0xFF);
-                        _buf[_len++] = cast(char)(d[j] >> 8);
+                        _buf[_len++] = cast(char)(utf16le[j] & 0xFF);
+                        _buf[_len++] = cast(char)(utf16le[j] >> 8);
                     }
                 }
                 break;

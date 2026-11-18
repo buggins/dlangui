@@ -1506,7 +1506,7 @@ public:
             return;
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         DrawableRef bg = backgroundDrawable;
         if (!bg.isNull) {
             bg.drawTo(buf, rc, state);
@@ -1987,7 +1987,7 @@ class WidgetGroupDefaultDrawing : WidgetGroup {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc);
+        auto _ = ClipRectSaver(buf, rc);
         for (int i = 0; i < _children.count; i++) {
             Widget item = _children.get(i);
             item.onDraw(buf);

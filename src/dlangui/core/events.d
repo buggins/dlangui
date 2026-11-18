@@ -563,6 +563,11 @@ class Action {
     bool opEquals(const Action action) const {
         return _id == action._id;
     }
+    /// identity hash, as in Object: hash tables compare class keys with Object.opEquals (identity);
+    /// opEquals(const Action) is an overload that compares ids, and the id can change
+    override size_t toHash() @trusted nothrow {
+        return super.toHash();
+    }
     /// sets label string resource id
     @property Action label(string resourceId) {
         _label = resourceId;

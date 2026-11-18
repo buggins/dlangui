@@ -682,8 +682,6 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// converts client rect relative coordinates to cell coordinates
     bool pointToCell(int x, int y, ref int col, ref int row, ref Rect cellRect) {
         if (_changedSize) updateCumulativeSizes();
-        int nscols = nonScrollCols;
-        int nsrows = nonScrollRows;
         Point ns = nonScrollAreaPixels;
         col = colByAbsoluteX(x < ns.x ? x : x + _scrollX);
         row = rowByAbsoluteY(y < ns.y ? y : y + _scrollY);
@@ -760,7 +758,6 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         if (_changedSize) updateCumulativeSizes();
         int x = nonScrollAreaPixels.x + _scrollX + _visibleScrollableArea.width - 1;
         int col = colByAbsoluteX(x);
-        int start = col ? _colCumulativeWidths[col - 1] : 0;
         int end = _colCumulativeWidths[col];
         if (x >= end - 1) // fully visible
             return col;
@@ -787,7 +784,6 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         if (_changedSize) updateCumulativeSizes();
         int y = nonScrollAreaPixels.y + _scrollY + _visibleScrollableArea.height - 1;
         int row = rowByAbsoluteY(y);
-        int start = row ? _rowCumulativeHeights[row - 1] : 0;
         int end = _rowCumulativeHeights[row];
         if (y >= end - 1) // fully visible
             return row;
@@ -888,7 +884,6 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// ensure that cell is visible (scroll if necessary)
     void makeCellVisible(int col, int row) {
         if (_changedSize) updateCumulativeSizes();
-        bool scrolled = false;
         int newx = _scrollX;
         int newy = _scrollY;
         Rect rc = cellRectNoScroll(col, row);
@@ -1248,7 +1243,6 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             _scrollY = 0;
         // calculate _fullScrollableArea, _visibleScrollableArea relative to clientRect
         Point nonscrollPixels = nonScrollAreaPixels;
-        Point scrollPixels = scrollAreaPixels;
         Point fullPixels = fullAreaPixels;
         Point clientPixels = _clientRect.size;
         Point scrollableClient = clientPixels - nonscrollPixels;
@@ -1654,7 +1648,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     override protected void drawClient(DrawBuf buf) {
         if (!_cols || !_rows)
             return; // no cells
-        auto saver = ClipRectSaver(buf, _clientRect, 0);
+        auto _ = ClipRectSaver(buf, _clientRect, 0);
 
         int nscols = nonScrollCols;
         int nsrows = nonScrollRows;
@@ -1683,21 +1677,26 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                     cellRect.moveBy(_clientRect.left, _clientRect.top);
                     clippedCellRect.moveBy(_clientRect.left, _clientRect.top);
 
-                    auto cellSaver = ClipRectSaver(buf, clippedCellRect, 0);
-                    bool isHeader = x < _headerCols || y < _headerRows;
-                    if (phase == 0) {
-                        if (isHeader)
-                            drawHeaderCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
-                        else
-                            drawCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
-                    } else {
-                        if (isHeader)
-                            drawHeaderCell(buf, cellRect, x - _headerCols, y - _headerRows);
-                        else
-                            drawCell(buf, cellRect, x - _headerCols, y - _headerRows);
-                    }
+                    drawCellClipped(buf, phase, x, y, cellRect, clippedCellRect);
                 }
             }
+        }
+    }
+
+    // draws cell background (phase 0) or content (phase 1) clipped to clippedCellRect
+    private void drawCellClipped(DrawBuf buf, int phase, int x, int y, Rect cellRect, Rect clippedCellRect) {
+        auto _ = ClipRectSaver(buf, clippedCellRect, 0);
+        bool isHeader = x < _headerCols || y < _headerRows;
+        if (phase == 0) {
+            if (isHeader)
+                drawHeaderCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
+            else
+                drawCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
+        } else {
+            if (isHeader)
+                drawHeaderCell(buf, cellRect, x - _headerCols, y - _headerRows);
+            else
+                drawCell(buf, cellRect, x - _headerCols, y - _headerRows);
         }
     }
 
@@ -1925,8 +1924,6 @@ class StringGridWidget : StringGridWidgetBase {
     override void resize(int c, int r) {
         if (c == cols && r == rows)
             return;
-        int oldcols = cols;
-        int oldrows = rows;
         super.resize(c, r);
         _data.length = r;
         for (int y = 0; y < r; y++)
@@ -1999,10 +1996,6 @@ class StringGridWidget : StringGridWidgetBase {
             rc.right--;
         FontRef fnt = font;
         dstring txt = cellText(col, row);
-        Point sz = fnt.textSize(txt);
-        Align ha = Align.Left;
-        //if (sz.y < rc.height)
-        //    applyAlign(rc, sz, ha, Align.VCenter);
         int offset = WIDGET_STYLE_CONSOLE ? 0 : 1;
         fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, textColor);
     }
@@ -2064,7 +2057,6 @@ class StringGridWidget : StringGridWidgetBase {
         else
             buf.fillRect(rc, cl);
         static if (BACKEND_GUI) {
-            uint borderColor = _cellHeaderBorderColor;
             buf.drawLine(Point(rc.right - 1, rc.bottom), Point(rc.right - 1, rc.top), _cellHeaderBorderColor); // vertical
             buf.drawLine(Point(rc.left, rc.bottom - 1), Point(rc.right - 1, rc.bottom - 1), _cellHeaderBorderColor); // horizontal
         }

@@ -84,13 +84,8 @@ class SettingsFile {
     this(string filename = null) {
         _setting = new Setting();
         _filename = filename;
-        if (_filename) {
-            string dir = dirName(_filename);
-            if (load()) {
-                // loaded ok
-            } else {
-            }
-        }
+        if (_filename)
+            load();
     }
 
     static int limitInt(long value, int minvalue, int maxvalue) {
@@ -2105,7 +2100,7 @@ final class Setting {
                     break;
                 }
             } else if (ch == '\"' || ch == '`') {
-                string str = parser.parseString;
+                parser.parseString(); // skip the string
             } else if (ch == '=') {
                 parser.nextChar;
                 continue;
@@ -2127,7 +2122,7 @@ final class Setting {
                 if (ch == '=') {
                     parser.nextChar;
                     ch = parser.skipSpaces;
-                    string value = parser.parseString;
+                    parser.parseString(); // skip the value
                     return; // skipped platform attribute
                 }
             }

@@ -516,7 +516,7 @@ class Win32Window : Window {
         private void paintUsingOpenGL() {
             // hack to stop infinite WM_PAINT loop
             PAINTSTRUCT ps;
-            HDC hdc2 = BeginPaint(_hwnd, &ps);
+            BeginPaint(_hwnd, &ps);
             EndPaint(_hwnd, &ps);
 
             import bindbc.opengl; //3.gl3;
@@ -1595,7 +1595,6 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     initLogs();
 
     Log.d("myWinMain()");
-    string basePath = exePath();
     Log.i("Current executable: ", exePath());
     string cmdline = fromStringz(lpCmdLine).dup;
     Log.i("Command line: ", cmdline);
@@ -1673,7 +1672,6 @@ int myWinMainProfile(string[] args)
     initLogs();
 
     Log.d("myWinMain()");
-    string basePath = exePath();
     Log.i("Current executable: ", exePath());
     Log.i("Command line params: ", args);
 
@@ -1747,7 +1745,6 @@ int myWinMainProfile(string[] args)
 extern(Windows)
 LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    HDC hdc;
     RECT rect;
 
     void * p = cast(void*)GetWindowLongPtr(hwnd, GWLP_USERDATA);

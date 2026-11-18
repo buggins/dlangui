@@ -261,7 +261,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         Rect rc = _pos;
         applyMargins(rc);
         {
-            auto saver = ClipRectSaver(buf, rc, alpha);
+            auto _ = ClipRectSaver(buf, rc, alpha);
             DrawableRef bg = backgroundDrawable;
             if (!bg.isNull) {
                 bg.drawTo(buf, rc, state);
@@ -271,21 +271,25 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
                 _hscrollbar.onDraw(buf);
             if (_vscrollbar)
                 _vscrollbar.onDraw(buf);
-            // apply clipping
-            {
-                auto saver2 = ClipRectSaver(buf, _clientRect, alpha);
-                drawClient(buf);
-            }
-            {
-                // no clipping for drawing of extended area
-                Rect clipr = rc;
-                clipr.bottom = _clientRect.bottom;
-                auto saver3 = ClipRectSaver(buf, clipr, alpha);
-                drawExtendedArea(buf);
-            }
+            drawClientClipped(buf, alpha);
+            drawExtendedAreaClipped(buf, rc, alpha);
         }
 
         _needDraw = false;
+    }
+
+    // draws the client area clipped to it
+    private void drawClientClipped(DrawBuf buf, uint alpha) {
+        auto _ = ClipRectSaver(buf, _clientRect, alpha);
+        drawClient(buf);
+    }
+
+    // draws the extended area: no clipping, except at the bottom of the client area
+    private void drawExtendedAreaClipped(DrawBuf buf, Rect rc, uint alpha) {
+        Rect clipr = rc;
+        clipr.bottom = _clientRect.bottom;
+        auto _ = ClipRectSaver(buf, clipr, alpha);
+        drawExtendedArea(buf);
     }
 
     /// calculate full content size in pixels
@@ -514,7 +518,7 @@ class ScrollWidget :  ScrollWidgetBase {
 
     /// update scrollbar positions
     override protected void updateScrollBars() {
-        Point sz = fullContentSize();
+        fullContentSize(); // measures the content widget
         _visibleScrollableArea.right = _visibleScrollableArea.left + _clientRect.width;
         _visibleScrollableArea.bottom = _visibleScrollableArea.top + _clientRect.height;
         // move back if scroll is too big after window resize

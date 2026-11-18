@@ -41,7 +41,6 @@ void showSoftKeyboard(android_app* app, bool shouldShow)
 {
     // The code is based on https://stackoverflow.com/questions/5864790/how-to-show-the-soft-keyboard-on-native-activity
     // Attaches the current thread to the JVM.
-    jint result;
     IMMFlags flags;
 
     auto javaVM = app.activity.vm;
@@ -97,7 +96,7 @@ void showSoftKeyboard(android_app* app, bool shouldShow)
         // Runs imm.showSoftInput(...).
         jmethodID MethodShowSoftInput = (*env).GetMethodID(
             env, immClass, "showSoftInput", "(Landroid/view/View;I)Z");
-        jboolean res = (*env).CallBooleanMethod(
+        (*env).CallBooleanMethod(
             env, imm, MethodShowSoftInput, decorView, flags);
     } else {
         // Runs lWindow.getViewToken()
@@ -112,7 +111,7 @@ void showSoftKeyboard(android_app* app, bool shouldShow)
         jmethodID MethodHideSoftInput = (*env).GetMethodID(
             env, immClass, "hideSoftInputFromWindow",
             "(Landroid/os/IBinder;I)Z");
-        jboolean res = (*env).CallBooleanMethod(
+        (*env).CallBooleanMethod(
             env, imm, MethodHideSoftInput, binder, flags);
     }
 

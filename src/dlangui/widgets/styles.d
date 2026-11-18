@@ -1290,7 +1290,7 @@ Theme createDefaultTheme() {
         button.createState(State.Focused|State.Hovered, State.Focused|State.Hovered).textColor(0x800000).backgroundColor(0xFFFFFF);
         button.createState(State.Focused, State.Focused).backgroundColor(0xFFFFFF).textColor(0x000080);
         button.createState(State.Hovered, State.Hovered).textColor(0x800000);
-        Style buttonLabel = res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
+        res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
         //buttonLabel.createState(State.Hovered, State.Hovered).textColor(0x800000);
         //buttonLabel.createState(State.Focused, State.Focused).textColor(0x000080);
         res.createSubstyle(STYLE_BUTTON_TRANSPARENT).backgroundImageId("btn_background_transparent").alignment(Align.Center);
@@ -1313,8 +1313,8 @@ Theme createDefaultTheme() {
 
         Style scrollbar = res.createSubstyle(STYLE_SCROLLBAR);
         scrollbar.backgroundColor(0xC0808080);
-        Style scrollbarButton = button.createSubstyle(STYLE_SCROLLBAR_BUTTON);
-        Style scrollbarSlider = res.createSubstyle(STYLE_SLIDER);
+        button.createSubstyle(STYLE_SCROLLBAR_BUTTON);
+        res.createSubstyle(STYLE_SLIDER);
         Style scrollbarPage = res.createSubstyle(STYLE_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
         scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
         scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
@@ -1344,8 +1344,8 @@ Theme createDefaultTheme() {
         //tabWidget.backgroundImageId("frame_blue");
         //res.dumpStats();
 
-        Style mainMenu = res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-        Style mainMenuItem = res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
+        res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
         Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
         menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
         menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
@@ -1356,19 +1356,19 @@ Theme createDefaultTheme() {
         res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
         res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
 
-        Style transparentButtonBackground = res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+        res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
         //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
         //transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
         //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
         //transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xD0FFFF00);
 
-        Style poopupMenu = res.createSubstyle(STYLE_POPUP_MENU).backgroundImageId("popup_menu_background_normal");
+        res.createSubstyle(STYLE_POPUP_MENU).backgroundImageId("popup_menu_background_normal");
 
-        Style listItem = res.createSubstyle(STYLE_LIST_ITEM).backgroundImageId("list_item_background");
+        res.createSubstyle(STYLE_LIST_ITEM).backgroundImageId("list_item_background");
         //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
         //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
-        Style editLine = res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId(q{
+        res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId(q{
                 {
                     text: [
                        "╔═╗",
@@ -1381,7 +1381,7 @@ Theme createDefaultTheme() {
             })
             .setPadding(0,0,0,0).setMargins(0,0,0,0).minWidth(20)
             .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(1);
-        Style editBox = res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
+        res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
             .setPadding(0,0,0,0).setMargins(0,0,0,0).minWidth(30).minHeight(8).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
             .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(1);
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundColor(0x000080).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
@@ -1413,8 +1413,8 @@ Theme createDefaultTheme() {
 
         Style scrollbar = res.createSubstyle(STYLE_SCROLLBAR);
         scrollbar.backgroundColor(0xC0808080);
-        Style scrollbarButton = button.createSubstyle(STYLE_SCROLLBAR_BUTTON);
-        Style scrollbarSlider = res.createSubstyle(STYLE_SLIDER);
+        button.createSubstyle(STYLE_SCROLLBAR_BUTTON);
+        res.createSubstyle(STYLE_SLIDER);
         Style scrollbarPage = res.createSubstyle(STYLE_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
         scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
         scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
@@ -1444,8 +1444,8 @@ Theme createDefaultTheme() {
         //tabWidget.backgroundImageId("frame_blue");
         //res.dumpStats();
 
-        Style mainMenu = res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-        Style mainMenuItem = res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
+        res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
         Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
         menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
         menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
@@ -1456,22 +1456,22 @@ Theme createDefaultTheme() {
         res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
         res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
 
-        Style transparentButtonBackground = res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+        res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
         //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
         //transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
         //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
         //transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xD0FFFF00);
 
-        Style poopupMenu = res.createSubstyle(STYLE_POPUP_MENU).backgroundImageId("popup_menu_background_normal");
+        res.createSubstyle(STYLE_POPUP_MENU).backgroundImageId("popup_menu_background_normal");
 
-        Style listItem = res.createSubstyle(STYLE_LIST_ITEM).backgroundImageId("list_item_background");
+        res.createSubstyle(STYLE_LIST_ITEM).backgroundImageId("list_item_background");
         //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
         //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
-        Style editLine = res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId("editbox_background")
+        res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId("editbox_background")
             .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(40)
             .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(16);
-        Style editBox = res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
+        res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
             .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
             .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundImageId("#border,#90CAF9,0,1px,0,1px,#E3F2FD").setPadding(5,2,2,2).layoutWidth(FILL_PARENT);

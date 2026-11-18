@@ -997,26 +997,26 @@ struct mat4 {
         vec3 side = vec3.crossProduct(forward, up).normalized();
         vec3 upVector = vec3.crossProduct(side, forward);
 
-        mat4 m;
-        m.setIdentity();
-        m[0*4 + 0] = side.x;
-        m[1*4 + 0] = side.y;
-        m[2*4 + 0] = side.z;
-        m[3*4 + 0] = 0.0f;
-        m[0*4 + 1] = upVector.x;
-        m[1*4 + 1] = upVector.y;
-        m[2*4 + 1] = upVector.z;
-        m[3*4 + 1] = 0.0f;
-        m[0*4 + 2] = -forward.x;
-        m[1*4 + 2] = -forward.y;
-        m[2*4 + 2] = -forward.z;
-        m[3*4 + 2] = 0.0f;
-        m[0*4 + 3] = 0.0f;
-        m[1*4 + 3] = 0.0f;
-        m[2*4 + 3] = 0.0f;
-        m[3*4 + 3] = 1.0f;
+        mat4 view;
+        view.setIdentity();
+        view[0*4 + 0] = side.x;
+        view[1*4 + 0] = side.y;
+        view[2*4 + 0] = side.z;
+        view[3*4 + 0] = 0.0f;
+        view[0*4 + 1] = upVector.x;
+        view[1*4 + 1] = upVector.y;
+        view[2*4 + 1] = upVector.z;
+        view[3*4 + 1] = 0.0f;
+        view[0*4 + 2] = -forward.x;
+        view[1*4 + 2] = -forward.y;
+        view[2*4 + 2] = -forward.z;
+        view[3*4 + 2] = 0.0f;
+        view[0*4 + 3] = 0.0f;
+        view[1*4 + 3] = 0.0f;
+        view[2*4 + 3] = 0.0f;
+        view[3*4 + 3] = 1.0f;
 
-        this *= m;
+        this *= view;
         translate(-eye);
         return this;
     }
@@ -1140,88 +1140,88 @@ struct mat4 {
 
     /// multiply two matrices
     static mat4 mul(const ref mat4 m1, const ref mat4 m2) {
-        mat4 m;
-        m.m[0*4 + 0] =
+        mat4 res;
+        res.m[0*4 + 0] =
             m1.m[0*4 + 0] * m2.m[0*4 + 0] +
             m1.m[1*4 + 0] * m2.m[0*4 + 1] +
             m1.m[2*4 + 0] * m2.m[0*4 + 2] +
             m1.m[3*4 + 0] * m2.m[0*4 + 3];
-        m.m[0*4 + 1] =
+        res.m[0*4 + 1] =
             m1.m[0*4 + 1] * m2.m[0*4 + 0] +
             m1.m[1*4 + 1] * m2.m[0*4 + 1] +
             m1.m[2*4 + 1] * m2.m[0*4 + 2] +
             m1.m[3*4 + 1] * m2.m[0*4 + 3];
-        m.m[0*4 + 2] =
+        res.m[0*4 + 2] =
             m1.m[0*4 + 2] * m2.m[0*4 + 0] +
             m1.m[1*4 + 2] * m2.m[0*4 + 1] +
             m1.m[2*4 + 2] * m2.m[0*4 + 2] +
             m1.m[3*4 + 2] * m2.m[0*4 + 3];
-        m.m[0*4 + 3] =
+        res.m[0*4 + 3] =
             m1.m[0*4 + 3] * m2.m[0*4 + 0] +
             m1.m[1*4 + 3] * m2.m[0*4 + 1] +
             m1.m[2*4 + 3] * m2.m[0*4 + 2] +
             m1.m[3*4 + 3] * m2.m[0*4 + 3];
-        m.m[1*4 + 0] =
+        res.m[1*4 + 0] =
             m1.m[0*4 + 0] * m2.m[1*4 + 0] +
             m1.m[1*4 + 0] * m2.m[1*4 + 1] +
             m1.m[2*4 + 0] * m2.m[1*4 + 2] +
             m1.m[3*4 + 0] * m2.m[1*4 + 3];
-        m.m[1*4 + 1] =
+        res.m[1*4 + 1] =
             m1.m[0*4 + 1] * m2.m[1*4 + 0] +
             m1.m[1*4 + 1] * m2.m[1*4 + 1] +
             m1.m[2*4 + 1] * m2.m[1*4 + 2] +
             m1.m[3*4 + 1] * m2.m[1*4 + 3];
-        m.m[1*4 + 2] =
+        res.m[1*4 + 2] =
             m1.m[0*4 + 2] * m2.m[1*4 + 0] +
             m1.m[1*4 + 2] * m2.m[1*4 + 1] +
             m1.m[2*4 + 2] * m2.m[1*4 + 2] +
             m1.m[3*4 + 2] * m2.m[1*4 + 3];
-        m.m[1*4 + 3] =
+        res.m[1*4 + 3] =
             m1.m[0*4 + 3] * m2.m[1*4 + 0] +
             m1.m[1*4 + 3] * m2.m[1*4 + 1] +
             m1.m[2*4 + 3] * m2.m[1*4 + 2] +
             m1.m[3*4 + 3] * m2.m[1*4 + 3];
-        m.m[2*4 + 0] =
+        res.m[2*4 + 0] =
             m1.m[0*4 + 0] * m2.m[2*4 + 0] +
             m1.m[1*4 + 0] * m2.m[2*4 + 1] +
             m1.m[2*4 + 0] * m2.m[2*4 + 2] +
             m1.m[3*4 + 0] * m2.m[2*4 + 3];
-        m.m[2*4 + 1] =
+        res.m[2*4 + 1] =
             m1.m[0*4 + 1] * m2.m[2*4 + 0] +
             m1.m[1*4 + 1] * m2.m[2*4 + 1] +
             m1.m[2*4 + 1] * m2.m[2*4 + 2] +
             m1.m[3*4 + 1] * m2.m[2*4 + 3];
-        m.m[2*4 + 2] =
+        res.m[2*4 + 2] =
             m1.m[0*4 + 2] * m2.m[2*4 + 0] +
             m1.m[1*4 + 2] * m2.m[2*4 + 1] +
             m1.m[2*4 + 2] * m2.m[2*4 + 2] +
             m1.m[3*4 + 2] * m2.m[2*4 + 3];
-        m.m[2*4 + 3] =
+        res.m[2*4 + 3] =
             m1.m[0*4 + 3] * m2.m[2*4 + 0] +
             m1.m[1*4 + 3] * m2.m[2*4 + 1] +
             m1.m[2*4 + 3] * m2.m[2*4 + 2] +
             m1.m[3*4 + 3] * m2.m[2*4 + 3];
-        m.m[3*4 + 0] =
+        res.m[3*4 + 0] =
             m1.m[0*4 + 0] * m2.m[3*4 + 0] +
             m1.m[1*4 + 0] * m2.m[3*4 + 1] +
             m1.m[2*4 + 0] * m2.m[3*4 + 2] +
             m1.m[3*4 + 0] * m2.m[3*4 + 3];
-        m.m[3*4 + 1] =
+        res.m[3*4 + 1] =
             m1.m[0*4 + 1] * m2.m[3*4 + 0] +
             m1.m[1*4 + 1] * m2.m[3*4 + 1] +
             m1.m[2*4 + 1] * m2.m[3*4 + 2] +
             m1.m[3*4 + 1] * m2.m[3*4 + 3];
-        m.m[3*4 + 2] =
+        res.m[3*4 + 2] =
             m1.m[0*4 + 2] * m2.m[3*4 + 0] +
             m1.m[1*4 + 2] * m2.m[3*4 + 1] +
             m1.m[2*4 + 2] * m2.m[3*4 + 2] +
             m1.m[3*4 + 2] * m2.m[3*4 + 3];
-        m.m[3*4 + 3] =
+        res.m[3*4 + 3] =
             m1.m[0*4 + 3] * m2.m[3*4 + 0] +
             m1.m[1*4 + 3] * m2.m[3*4 + 1] +
             m1.m[2*4 + 3] * m2.m[3*4 + 2] +
             m1.m[3*4 + 3] * m2.m[3*4 + 3];
-        return m;
+        return res;
     }
 
     /// multiply matrix by vec3
@@ -1376,7 +1376,7 @@ struct mat4 {
     ref mat4 rotate(float angle, float x, float y, float z) return {
         if (angle == 0.0f)
             return this;
-        mat4 m;
+        mat4 rot;
         float c, s, ic;
         if (angle == 90.0f || angle == -270.0f) {
             s = 1.0f;
@@ -1397,43 +1397,43 @@ struct mat4 {
             if (y == 0.0f) {
                 if (z != 0.0f) {
                     // Rotate around the Z axis.
-                    m.setIdentity();
-                    m.m[0*4 + 0] = c;
-                    m.m[1*4 + 1] = c;
+                    rot.setIdentity();
+                    rot.m[0*4 + 0] = c;
+                    rot.m[1*4 + 1] = c;
                     if (z < 0.0f) {
-                        m.m[1*4 + 0] = s;
-                        m.m[0*4 + 1] = -s;
+                        rot.m[1*4 + 0] = s;
+                        rot.m[0*4 + 1] = -s;
                     } else {
-                        m.m[1*4 + 0] = -s;
-                        m.m[0*4 + 1] = s;
+                        rot.m[1*4 + 0] = -s;
+                        rot.m[0*4 + 1] = s;
                     }
                     quick = true;
                 }
             } else if (z == 0.0f) {
                 // Rotate around the Y axis.
-                m.setIdentity();
-                m.m[0*4 + 0] = c;
-                m.m[2*4 + 2] = c;
+                rot.setIdentity();
+                rot.m[0*4 + 0] = c;
+                rot.m[2*4 + 2] = c;
                 if (y < 0.0f) {
-                    m.m[2*4 + 0] = -s;
-                    m.m[0*4 + 2] = s;
+                    rot.m[2*4 + 0] = -s;
+                    rot.m[0*4 + 2] = s;
                 } else {
-                    m.m[2*4 + 0] = s;
-                    m.m[0*4 + 2] = -s;
+                    rot.m[2*4 + 0] = s;
+                    rot.m[0*4 + 2] = -s;
                 }
                 quick = true;
             }
         } else if (y == 0.0f && z == 0.0f) {
             // Rotate around the X axis.
-            m.setIdentity();
-            m.m[1*4 + 1] = c;
-            m.m[2*4 + 2] = c;
+            rot.setIdentity();
+            rot.m[1*4 + 1] = c;
+            rot.m[2*4 + 2] = c;
             if (x < 0.0f) {
-                m.m[2*4 + 1] = s;
-                m.m[1*4 + 2] = -s;
+                rot.m[2*4 + 1] = s;
+                rot.m[1*4 + 2] = -s;
             } else {
-                m.m[2*4 + 1] = -s;
-                m.m[1*4 + 2] = s;
+                rot.m[2*4 + 1] = -s;
+                rot.m[1*4 + 2] = s;
             }
             quick = true;
         }
@@ -1446,24 +1446,24 @@ struct mat4 {
                 z /= len;
             }
             ic = 1.0f - c;
-            m.m[0*4 + 0] = x * x * ic + c;
-            m.m[1*4 + 0] = x * y * ic - z * s;
-            m.m[2*4 + 0] = x * z * ic + y * s;
-            m.m[3*4 + 0] = 0.0f;
-            m.m[0*4 + 1] = y * x * ic + z * s;
-            m.m[1*4 + 1] = y * y * ic + c;
-            m.m[2*4 + 1] = y * z * ic - x * s;
-            m.m[3*4 + 1] = 0.0f;
-            m.m[0*4 + 2] = x * z * ic - y * s;
-            m.m[1*4 + 2] = y * z * ic + x * s;
-            m.m[2*4 + 2] = z * z * ic + c;
-            m.m[3*4 + 2] = 0.0f;
-            m.m[0*4 + 3] = 0.0f;
-            m.m[1*4 + 3] = 0.0f;
-            m.m[2*4 + 3] = 0.0f;
-            m.m[3*4 + 3] = 1.0f;
+            rot.m[0*4 + 0] = x * x * ic + c;
+            rot.m[1*4 + 0] = x * y * ic - z * s;
+            rot.m[2*4 + 0] = x * z * ic + y * s;
+            rot.m[3*4 + 0] = 0.0f;
+            rot.m[0*4 + 1] = y * x * ic + z * s;
+            rot.m[1*4 + 1] = y * y * ic + c;
+            rot.m[2*4 + 1] = y * z * ic - x * s;
+            rot.m[3*4 + 1] = 0.0f;
+            rot.m[0*4 + 2] = x * z * ic - y * s;
+            rot.m[1*4 + 2] = y * z * ic + x * s;
+            rot.m[2*4 + 2] = z * z * ic + c;
+            rot.m[3*4 + 2] = 0.0f;
+            rot.m[0*4 + 3] = 0.0f;
+            rot.m[1*4 + 3] = 0.0f;
+            rot.m[2*4 + 3] = 0.0f;
+            rot.m[3*4 + 3] = 1.0f;
         }
-        this *= m;
+        this *= rot;
         return this;
     }
 
@@ -1653,9 +1653,9 @@ unittest {
     vec3 a, b, c;
     a.clear(5);
     b.clear(2);
-    float d = a * b;
-    auto r1 = a + b;
-    auto r2 = a - b;
+    assert(a * b == 30); // dot product
+    assert(a + b == vec3(7, 7, 7));
+    assert(a - b == vec3(3, 3, 3));
     c = a; c += b;
     c = a; c -= b;
     c = a; c *= b;
@@ -1667,7 +1667,7 @@ unittest {
     a.x += 0.5f;
     a.y += 0.5f;
     a.z += 0.5f;
-    auto v = b.vec;
+    assert(b.vec == [2.0f, 2.0f, 2.0f]);
     a = [0.1f, 0.2f, 0.3f];
     a.normalize();
     c = b.normalized;
@@ -1677,9 +1677,9 @@ unittest {
     vec4 a, b, c;
     a.clear(5);
     b.clear(2);
-    float d = a * b;
-    auto r1 = a + b;
-    auto r2 = a - b;
+    assert(a * b == 40); // dot product
+    assert(a + b == vec4(7, 7, 7, 7));
+    assert(a - b == vec4(3, 3, 3, 3));
     c = a; c += b;
     c = a; c -= b;
     c = a; c *= b;
@@ -1691,7 +1691,7 @@ unittest {
     a.x += 0.5f;
     a.y += 0.5f;
     a.z += 0.5f;
-    auto v = b.vec;
+    assert(b.vec == [2.0f, 2.0f, 2.0f, 2.0f]);
     a = [0.1f, 0.2f, 0.3f, 0.4f];
     a.normalize();
     c = b.normalized;
@@ -1715,12 +1715,42 @@ unittest {
     m.scale(2,3,4);
     m.scale(vec3(2,3,4));
 
+    // multiplication by the identity matrix keeps vectors
+    mat4 id;
+    id.setIdentity();
     vec3 vv1 = vec3(1,2,3);
-    auto p1 = m * vv1;
+    assert(id * vv1 == vv1);
     vec3 vv2 = vec3(3,4,5);
-    auto p2 = vv2 * m;
-    auto p3 = vec4(1,2,3,4) * m;
-    auto p4 = m * vec4(1,2,3,4);
+    assert(vv2 * id == vv2);
+    assert(vec4(1,2,3,4) * id == vec4(1,2,3,4));
+    assert(id * vec4(1,2,3,4) == vec4(1,2,3,4));
+
+    // column-major matrices, applied to column vectors: translate() and scale() post-multiply
+    mat4 t;
+    t.setIdentity();
+    t.translate(1, 2, 3);
+    assert(t * vec3(1, 1, 1) == vec3(2, 3, 4));
+    assert(t * vec4(1, 1, 1, 1) == vec4(2, 3, 4, 1));
+    assert(t * vec4(1, 1, 1, 0) == vec4(1, 1, 1, 0)); // directions are not translated
+    mat4 s;
+    s.setIdentity();
+    s.scale(2, 3, 4);
+    assert(s * vec3(1, 1, 1) == vec3(2, 3, 4));
+    mat4 ts = t;
+    ts.scale(2, 3, 4); // = t * s: scale, then translate
+    assert(ts * vec3(1, 1, 1) == vec3(3, 5, 7));
+    assert(t * s == ts);
+    mat4 st = s;
+    st.translate(1, 2, 3); // = s * t: translate, then scale
+    assert(st * vec3(1, 1, 1) == vec3(4, 9, 16));
+    assert(s * t == st);
+    // a row vector times a matrix is the transposed matrix times the column vector
+    mat4 tt = t;
+    tt.transpose();
+    assert(vec4(1, 1, 1, 1) * tt == vec4(2, 3, 4, 1));
+    mat4 tst = ts;
+    tst.transpose();
+    assert(vec4(1, 2, 3, 4) * ts == tst * vec4(1, 2, 3, 4));
 
     m.rotate(30, 1, 1, 1);
     m.rotateX(10);

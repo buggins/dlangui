@@ -1600,13 +1600,15 @@ unittest {
     assert(font20.hasCodepoint('A') && !font20.hasCodepoint(0x4E2D) && font20.hasCodepoint(0x1F600) && font20.loads == 0);
     assert(cache.getPresence(0x4E2D) == CodepointPresence.missing);
     // unknown: assumed present, not cached
-    assert(font20.hasCodepoint('?') && font20.hasCodepoint('?') && font20.loads == 2);
+    assert(font20.hasCodepoint('?'));
+    assert(font20.hasCodepoint('?') && font20.loads == 2); // asked the engine again
     assert(cache.getPresence('?') == CodepointPresence.unknown);
     // beyond Unicode: missing, the engine is not asked
     assert(!font20.hasCodepoint(cast(dchar)0x110000) && font20.loads == 2);
     // no cache: every call asks the engine
     auto font30 = new PresenceTestFont(30);
-    assert(font30.hasCodepoint('A') && font30.hasCodepoint('A') && font30.loads == 2);
+    assert(font30.hasCodepoint('A'));
+    assert(font30.hasCodepoint('A') && font30.loads == 2); // asked the engine again
     destroy(font12);
     destroy(font20);
     destroy(font30);
