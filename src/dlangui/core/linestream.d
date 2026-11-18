@@ -233,11 +233,14 @@ class OutputLineStream {
 */
 class LineStream {
 
-    /// Error codes
+    /// Error codes (0 means no error)
     public enum ErrorCodes {
-        /// invalid character for current encoding
-        INVALID_CHARACTER
+        /// invalid character for current encoding (not used: invalid characters are replaced, see invalidCharCount)
+        INVALID_CHARACTER = 1
     }
+
+    /// replaces invalid and incomplete byte sequences in decoded text (U+FFFD)
+    enum dchar REPLACEMENT_CHAR = 0xFFFD;
 
     private InputStream _stream;
     private string _filename;
@@ -282,7 +285,14 @@ class LineStream {
     }
 
 
-    /// Returns error code
+    /// Returns the number of invalid or incomplete characters (byte sequences) replaced by REPLACEMENT_CHAR so far
+    @property uint invalidCharCount() { return _invalidCharCount; }
+    protected uint _invalidCharCount;
+
+    // The error properties are kept for compatibility: decoding doesn't fail any more since invalid characters
+    // are replaced (#924), so errorCode is always 0 and the others are empty.
+
+    /// Returns error code (0: no error)
     @property int errorCode() { return _errorCode; }
     /// Returns error message
     @property string errorMessage() { return _errorMessage; }
@@ -303,6 +313,8 @@ class LineStream {
         _filename = filename;
         _stream = stream;
         _encoding = encoding;
+        // create() detects a BOM only in bytes that were read (the buffer is zeroed, 4-byte BOMs need len >= 4)
+        assert(offset <= len, "BOM longer than the data");
         _buf = buf;
         _len = len;
         _pos = offset;
@@ -502,9 +514,10 @@ class LineStream {
         LineStream res = null;
         if (buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) {
             res = new Utf8LineStream(stream, filename, buf, len, 3);
-        } else if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF) {
+        } else if (len >= 4 && buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF) {
             res = new Utf32beLineStream(stream, filename, buf, len);
-        } else if (buf[0] == 0xFF && buf[1] == 0xFE && buf[2] == 0x00 && buf[3] == 0x00) {
+        } else if (len >= 4 && buf[0] == 0xFF && buf[1] == 0xFE && buf[2] == 0x00 && buf[3] == 0x00) {
+            // (len >= 4: an empty UTF-16LE file is just FF FE, and the buffer is zeroed, #933)
             res = new Utf32leLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFE && buf[1] == 0xFF) {
             res =  new Utf16beLineStream(stream, filename, buf, len);
@@ -522,12 +535,6 @@ class LineStream {
         }
         return res;
     }
-
-    protected bool invalidCharFlag;
-    protected final void invalidCharError() @safe {
-        uint pos = _textLen - _textPos + 1;
-        setError(ErrorCodes.INVALID_CHARACTER, "Invalid character in line " ~ to!string(_line) ~ ":" ~ to!string(pos), _line, pos);
-    }
 }
 
 
@@ -536,10 +543,6 @@ private class AsciiLineStream : LineStream {
         super(stream, filename, EncodingType.ASCII, buf, 0, len);
     }
     override uint decodeText() {
-        if (invalidCharFlag) {
-            invalidCharError();
-            return 0;
-        }
         uint len = readBytes();
         if (len == 0)
             return 0; // nothing to decode
@@ -550,18 +553,18 @@ private class AsciiLineStream : LineStream {
     private uint decodeBuffer(uint len) @safe {
         const(ubyte)[] b = _buf[_pos .. _pos + len];
         dchar[] text = reserveTextBuf(len);
-        uint i = 0;
-        for (; i < len; i++) {
+        foreach (i; 0 .. len) {
             ubyte ch = b[i];
             if (ch & 0x80) {
-                // invalid character
-                invalidCharFlag = true;
-                break;
+                // not ASCII
+                text[i] = REPLACEMENT_CHAR;
+                _invalidCharCount++;
+            } else {
+                text[i] = ch;
             }
-            text[i] = ch;
         }
-        consumedBytes(i);
-        appendedText(i);
+        consumedBytes(len);
+        appendedText(len);
         return len;
     }
 
@@ -595,6 +598,8 @@ private class Utf8LineStream : LineStream {
                 return 0;
             }
             ch = ((ch0 & 0x1F) << 6) | (ch1 & 0x3F);
+            if (ch < 0x80)
+                return 0; // overlong encoding
             bread = 2;
         } else if ((ch0 & 0xF0) == 0xE0) {
             // three bytes 1110xxxx 10xxxxxx 10xxxxxx
@@ -608,6 +613,8 @@ private class Utf8LineStream : LineStream {
                 return 0;
             }
             ch = ((ch0 & 0x0F) << 12) | ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
+            if (ch < 0x800)
+                return 0; // overlong encoding
             bread = 3;
         } else if ((ch0 & 0xF8) == 0xF0) {
             // four bytes 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
@@ -622,44 +629,36 @@ private class Utf8LineStream : LineStream {
                 return 0;
             }
             ch = ((ch0 & 0x07) << 18) | ((ch1 & 0x3F) << 12) | ((ch2 & 0x3F) << 6) | (ch3 & 0x3F);
+            if (ch < 0x10000)
+                return 0; // overlong encoding
             bread = 4;
-        } else if ((ch0 & 0xFC) == 0xF8) {
-            // five bytes 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-            if (bleft < 5) {
-                needMoreFlag = true;
-                return 0;
-            }
-            uint ch1 = b[1];
-            uint ch2 = b[2];
-            uint ch3 = b[3];
-            uint ch4 = b[4];
-            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80) {
-                return 0;
-            }
-            ch = ((ch0 & 0x03) << 24) | ((ch1 & 0x3F) << 18) | ((ch2 & 0x3F) << 12) | ((ch3 & 0x3F) << 6) | (ch4 & 0x3F);
-            bread = 5;
-        } else if ((ch0 & 0xFE) == 0xFC) {
-            // six bytes 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-            if (bleft < 6){
-                needMoreFlag = true;
-                return 0;
-            }
-
-            uint ch1 = b[1];
-            uint ch2 = b[2];
-            uint ch3 = b[3];
-            uint ch4 = b[4];
-            uint ch5 = b[5];
-            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80 || (ch5 & 0xC0) != 0x80) {
-                return 0;
-            }
-            ch = ((ch0 & 0x01) << 30) | ((ch1 & 0x3F) << 24) | ((ch2 & 0x3F) << 18) | ((ch3 & 0x3F) << 12) | ((ch4 & 0x3F) << 6) | (ch5 & 0x3F);
-            bread = 6;
         }
+        // other lead bytes (continuation bytes 0x80..0xBF, 0xF8..0xFF: the old 5- and 6-byte forms) are invalid:
+        // bread stays 0
         if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
             return 0;
         }
         return bread;
+    }
+
+    /// length of an invalid or incomplete sequence at the start of b (not empty), replaced by one REPLACEMENT_CHAR:
+    /// its maximal subpart (Unicode, "U+FFFD substitution of maximal subparts"): the longest start of a valid
+    /// sequence, at least 1 byte. C0, C1 and F5..FF are never valid; the second byte has a narrower range after
+    /// E0 (overlong), ED (surrogates), F0 (overlong) and F4 (over U+10FFFF).
+    static uint invalidSequenceLength(scope const(ubyte)[] b) @safe pure nothrow @nogc {
+        uint lead = b[0];
+        uint expected = (lead >= 0xC2 && lead <= 0xDF) ? 2 : (lead >= 0xE0 && lead <= 0xEF) ? 3 : (lead >= 0xF0 && lead <= 0xF4) ? 4 : 1;
+        if (expected == 1 || b.length < 2)
+            return 1;
+        uint second = b[1];
+        uint lo = lead == 0xE0 ? 0xA0 : lead == 0xF0 ? 0x90 : 0x80;
+        uint hi = lead == 0xED ? 0x9F : lead == 0xF4 ? 0x8F : 0xBF;
+        if (second < lo || second > hi)
+            return 1;
+        uint n = 2;
+        while (n < expected && n < b.length && (b[n] & 0xC0) == 0x80)
+            n++;
+        return n;
     }
 
     @safe unittest {
@@ -718,6 +717,23 @@ private class Utf8LineStream : LineStream {
         buffer[1] = 0xA0;
         buffer[2] = 0x80;
         assert(decodeBytes(buffer[0 .. 3],ch,needMoreFlag) == 0 && !needMoreFlag);
+        // overlong encodings
+        buffer[0] = 0xC0;
+        buffer[1] = 0x80;
+        assert(decodeBytes(buffer[0 .. 2],ch,needMoreFlag) == 0 && !needMoreFlag);
+        buffer[0] = 0xE0;
+        buffer[1] = 0x80;
+        buffer[2] = 0xAF;
+        assert(decodeBytes(buffer[0 .. 3],ch,needMoreFlag) == 0 && !needMoreFlag);
+        assert(invalidSequenceLength(buffer[0 .. 3]) == 1); // E0 80: overlong, E0 alone is the maximal subpart
+        buffer[0] = 0x84;
+        assert(invalidSequenceLength(buffer[0 .. 3]) == 1);
+        // 5-byte form (F8 is never valid)
+        ubyte[] five = [0xF8, 0x80, 0x80, 0x80, 0x80];
+        assert(decodeBytes(five,ch,needMoreFlag) == 0 && !needMoreFlag && invalidSequenceLength(five) == 1);
+        // cut 3-byte sequence: lead + valid second byte
+        ubyte[] cut = [0xE2, 0x82, 0x41];
+        assert(decodeBytes(cut,ch,needMoreFlag) == 0 && invalidSequenceLength(cut) == 2);
     }
 
     override uint decodeText() {
@@ -725,11 +741,6 @@ private class Utf8LineStream : LineStream {
         uint len = readBytes();
         if (len == 0)
             return 0; // nothing to decode
-
-        if (invalidCharFlag) {
-            invalidCharError();
-            return 0;
-        }
         return decodeBuffer(len);
     }
 
@@ -741,20 +752,22 @@ private class Utf8LineStream : LineStream {
         dchar[] text = reserveTextBuf(maxResultingBytes);
         uint i = 0;
 
-        bool needMoreFlag = false;
-        for (; i < len; i++) {
+        while (i < len) {
             uint ch = 0;
+            bool needMoreFlag = false;
             uint bread = decodeBytes(b[i .. len],ch,needMoreFlag);
 
-            if(needMoreFlag){
-                //decodeBytes needs more bytes, but nore more bytes left in the buffer
+            if (needMoreFlag && !_streamEof) {
+                // incomplete character at the end of the buffer: decode it when more bytes are read
                 break;
             }
 
             if (bread == 0) {
-                //decodeBytes could not read any charater. stop procesing
-                invalidCharFlag = true;
-                break;
+                // invalid or (at the end of the stream) incomplete character
+                text[chars++] = REPLACEMENT_CHAR;
+                _invalidCharCount++;
+                i += invalidSequenceLength(b[i .. len]);
+                continue;
             }
 
             if (ch < 0x10000) {
@@ -765,13 +778,10 @@ private class Utf8LineStream : LineStream {
                 text[chars++] = (0xd800 | hi);
                 text[chars++] = (0xdc00 | lo);
             }
-            i += bread - 1;
+            i += bread;
         }
         consumedBytes(i);
         appendedText(chars);
-        uint bleft = len - i;
-        if (_streamEof && bleft > 0)
-            invalidCharFlag = true; // incomplete character at end of stream
         return chars;
     }
 }
@@ -781,10 +791,6 @@ private class Utf16beLineStream : LineStream {
         super(stream, filename, EncodingType.UTF16BE, buf, 2, len);
     }
     override uint decodeText() {
-        if (invalidCharFlag) {
-            invalidCharError();
-            return 0;
-        }
         uint len = readBytes();
         if (len == 0)
             return 0; // nothing to decode
@@ -804,11 +810,14 @@ private class Utf16beLineStream : LineStream {
             // TODO: check special cases
             text[chars++] = ch;
         }
+        if (_streamEof && i < len) {
+            // odd byte at the end of the stream
+            text[chars++] = REPLACEMENT_CHAR;
+            _invalidCharCount++;
+            i = len;
+        }
         consumedBytes(i);
         appendedText(chars);
-        uint bleft = len - i;
-        if (_streamEof && bleft > 0)
-            invalidCharFlag = true; // incomplete character at end of stream
         return chars;
     }
 }
@@ -818,10 +827,6 @@ private class Utf16leLineStream : LineStream {
         super(stream, filename, EncodingType.UTF16LE, buf, 2, len);
     }
     override uint decodeText() {
-        if (invalidCharFlag) {
-            invalidCharError();
-            return 0;
-        }
         uint len = readBytes();
         if (len == 0)
             return 0; // nothing to decode
@@ -841,11 +846,14 @@ private class Utf16leLineStream : LineStream {
             // TODO: check special cases
             text[chars++] = ch;
         }
+        if (_streamEof && i < len) {
+            // odd byte at the end of the stream
+            text[chars++] = REPLACEMENT_CHAR;
+            _invalidCharCount++;
+            i = len;
+        }
         consumedBytes(i);
         appendedText(chars);
-        uint bleft = len - i;
-        if (_streamEof && bleft > 0)
-            invalidCharFlag = true; // incomplete character at end of stream
         return chars;
     }
 }
@@ -855,10 +863,6 @@ private class Utf32beLineStream : LineStream {
         super(stream, filename, EncodingType.UTF32BE, buf, 4, len);
     }
     override uint decodeText() {
-        if (invalidCharFlag) {
-            invalidCharError();
-            return 0;
-        }
         uint len = readBytes();
         if (len == 0)
             return 0; // nothing to decode
@@ -879,16 +883,19 @@ private class Utf32beLineStream : LineStream {
             uint ch3 = b[i + 3];
             uint ch = (ch0 << 24) | (ch1 << 16) | (ch2 << 8) | ch3;
             if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
-                invalidCharFlag = true;
-                break;
+                ch = REPLACEMENT_CHAR;
+                _invalidCharCount++;
             }
             text[chars++] = ch;
         }
+        if (_streamEof && i < len) {
+            // 1 to 3 bytes left at the end of the stream
+            text[chars++] = REPLACEMENT_CHAR;
+            _invalidCharCount++;
+            i = len;
+        }
         consumedBytes(i);
         appendedText(chars);
-        uint bleft = len - i;
-        if (_streamEof && bleft > 0)
-            invalidCharFlag = true; // incomplete character at end of stream
         return chars;
     }
 }
@@ -898,10 +905,6 @@ private class Utf32leLineStream : LineStream {
         super(stream, filename, EncodingType.UTF32LE, buf, 4, len);
     }
     override uint decodeText() {
-        if (invalidCharFlag) {
-            invalidCharError();
-            return 0;
-        }
         uint len = readBytes();
         if (len == 0)
             return 0; // nothing to decode
@@ -922,26 +925,29 @@ private class Utf32leLineStream : LineStream {
             uint ch0 = b[i + 3];
             uint ch = (ch0 << 24) | (ch1 << 16) | (ch2 << 8) | ch3;
             if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
-                invalidCharFlag = true;
-                break;
+                ch = REPLACEMENT_CHAR;
+                _invalidCharCount++;
             }
             text[chars++] = ch;
         }
+        if (_streamEof && i < len) {
+            // 1 to 3 bytes left at the end of the stream
+            text[chars++] = REPLACEMENT_CHAR;
+            _invalidCharCount++;
+            i = len;
+        }
         consumedBytes(i);
         appendedText(chars);
-        uint bleft = len - i;
-        if (_streamEof && bleft > 0)
-            invalidCharFlag = true; // incomplete character at end of stream
         return chars;
     }
 }
 
 
-// decoding of complete, truncated and invalid input; the error is checked by errorMessage because errorCode is
-// 0 for invalid characters (#924)
+// decoding of complete, truncated and invalid input: invalid and incomplete characters are replaced by U+FFFD,
+// counted in invalidCharCount, and decoding continues (#924)
 unittest {
-    static dstring[] readAll(const(ubyte)[] data, out string error) {
-        LineStream ls = LineStream.create(new MemoryInputStream(data.dup), "test");
+    static dstring[] readAll(const(ubyte)[] data, out uint invalid, bool autodetectUTF = true) {
+        LineStream ls = LineStream.create(new MemoryInputStream(data.dup), "test", autodetectUTF);
         dstring[] lines;
         foreach (n; 0 .. 1000) {
             dchar[] line = ls.readLine();
@@ -949,34 +955,56 @@ unittest {
                 break;
             lines ~= line.idup;
         }
-        error = ls.errorMessage;
+        invalid = ls.invalidCharCount;
         return lines;
     }
-    string error;
+    uint invalid;
     // complete input in every encoding (with BOM), CR LF and LF line ends
-    assert(readAll(cast(const(ubyte)[])"\xEF\xBB\xBFab\r\nc\xC3\x84\n", error) == ["ab"d, "cÄ"d] && !error);
-    assert(readAll(cast(const(ubyte)[])"ab\nc", error) == ["ab"d, "c"d] && !error);
-    assert(readAll([0xFE, 0xFF, 0, 'a', 0, '\n', 0x09, 0x34], error) == ["a"d, "ऴ"d] && !error);
-    assert(readAll([0xFF, 0xFE, 'a', 0, '\n', 0, 0x34, 0x09], error) == ["a"d, "ऴ"d] && !error);
-    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0x09, 0x34], error) == ["a"d, "ऴ"d] && !error);
-    assert(readAll([0xFF, 0xFE, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0, 0x34, 0x09, 0, 0], error) == ["a"d, "ऴ"d] && !error);
-    // UTF-32 with 1 or 2 bytes left: no read past the input (#922), the incomplete character is an error
-    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 'B', 0, 0, 0, 'C', 0], error) == ["AB"d] && error);
-    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'A', 0], error) == ["A"d] && error);
-    // UTF-32 code point out of range
-    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 0, 0, 0x11, 0], error) == ["A"d] && error);
+    assert(readAll(cast(const(ubyte)[])"\xEF\xBB\xBFab\r\nc\xC3\x84\n", invalid) == ["ab"d, "cÄ"d] && !invalid);
+    assert(readAll(cast(const(ubyte)[])"ab\nc", invalid) == ["ab"d, "c"d] && !invalid);
+    assert(readAll([0xFE, 0xFF, 0, 'a', 0, '\n', 0x09, 0x34], invalid) == ["a"d, "ऴ"d] && !invalid);
+    assert(readAll([0xFF, 0xFE, 'a', 0, '\n', 0, 0x34, 0x09], invalid) == ["a"d, "ऴ"d] && !invalid);
+    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0x09, 0x34], invalid) == ["a"d, "ऴ"d] && !invalid);
+    assert(readAll([0xFF, 0xFE, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0, 0x34, 0x09, 0, 0], invalid) == ["a"d, "ऴ"d] && !invalid);
+    // UTF-32 with 1 or 2 bytes left: no read past the input (#922), one replacement for the incomplete character
+    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 'B', 0, 0, 0, 'C', 0], invalid) == ["AB\uFFFD"d] && invalid == 1);
+    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'A', 0], invalid) == ["A\uFFFD"d] && invalid == 1);
+    // UTF-32 code point out of range, decoding continues
+    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 0, 0, 0x11, 0, 'B', 0, 0, 0], invalid) == ["A\uFFFDB"d] && invalid == 1);
     // UTF-16 with an odd byte count
-    assert(readAll([0xFF, 0xFE, 'A', 0, 'B'], error) == ["A"d] && error);
-    assert(readAll([0xFE, 0xFF, 0, 'A', 0], error) == ["A"d] && error);
-    // UTF-8: invalid byte (decoding stops there), cut sequence at the end
-    assert(readAll(cast(const(ubyte)[])"one\ncaf\xE9 two\nthree\n", error) == ["one"d, "caf"d] && error == "Invalid character in line 2:4");
-    assert(readAll(cast(const(ubyte)[])"ab\xC3", error) == ["ab"d] && error);
-    // text longer than the buffers (512 bytes, 1024 characters)
+    assert(readAll([0xFF, 0xFE, 'A', 0, 'B'], invalid) == ["A\uFFFD"d] && invalid == 1);
+    assert(readAll([0xFE, 0xFF, 0, 'A', 0], invalid) == ["A\uFFFD"d] && invalid == 1);
+    // UTF-8: invalid byte (e.g. Latin-1), the rest of the file is decoded
+    assert(readAll(cast(const(ubyte)[])"one\ncaf\xE9 two\nthree\n", invalid) == ["one"d, "caf\uFFFD two"d, "three"d] && invalid == 1);
+    // cut sequence (lead byte and its continuation bytes: one replacement) at the end and in the middle
+    assert(readAll(cast(const(ubyte)[])"ab\xC3", invalid) == ["ab\uFFFD"d] && invalid == 1);
+    assert(readAll(cast(const(ubyte)[])"a\xE2\x82", invalid) == ["a\uFFFD"d] && invalid == 1);
+    assert(readAll(cast(const(ubyte)[])"x\xE2\x82y\xF0\x9F\x98z", invalid) == ["x\uFFFDy\uFFFDz"d] && invalid == 2);
+    // stray continuation bytes: one replacement each; overlong encodings (C0 80 was decoded as 0, i.e. end of file)
+    assert(readAll(cast(const(ubyte)[])"\x84\x85a", invalid) == ["\uFFFD\uFFFDa"d] && invalid == 2);
+    // (each byte is a maximal subpart: C0 is never valid, 80 doesn't follow E0)
+    assert(readAll(cast(const(ubyte)[])"a\xC0\x80b\xE0\x80\xAFc", invalid) == ["a\uFFFD\uFFFDb\uFFFD\uFFFD\uFFFDc"d] && invalid == 5);
+    // the old 5-byte form of U+0000 (decoded as 0, i.e. end of file), FF with continuation bytes, encoded surrogate
+    assert(readAll(cast(const(ubyte)[])"a\xF8\x80\x80\x80\x80b\nc", invalid) == ["a\uFFFD\uFFFD\uFFFD\uFFFD\uFFFDb"d, "c"d] && invalid == 5);
+    assert(readAll(cast(const(ubyte)[])"a\xFF\x80\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFDb"d] && invalid == 3);
+    assert(readAll(cast(const(ubyte)[])"a\xED\xA0\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFDb"d] && invalid == 3);
+    // lead bytes F5..F7 (over U+10FFFF) and F4 90 (over U+10FFFF): each byte is replaced
+    assert(readAll(cast(const(ubyte)[])"a\xF5\x80\x80\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFD\uFFFDb"d] && invalid == 4);
+    assert(readAll(cast(const(ubyte)[])"a\xF4\x90\x80\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFD\uFFFDb"d] && invalid == 4);
+    // empty files with a BOM: UTF-16LE (FF FE, was detected as UTF-32LE and crashed, #933), UTF-16BE, UTF-8, UTF-32LE
+    assert(readAll([0xFF, 0xFE], invalid) == [] && !invalid);
+    assert(readAll([0xFE, 0xFF], invalid) == [] && !invalid);
+    assert(readAll([0xEF, 0xBB, 0xBF], invalid) == [] && !invalid);
+    assert(readAll([0xFF, 0xFE, 0, 0], invalid) == [] && !invalid);
+    assert(readAll([0xFF, 0xFE, 'a', 0], invalid) == ["a"d] && !invalid);
+    // ASCII (no UTF autodetection): bytes over 0x7F
+    assert(readAll(cast(const(ubyte)[])"a\xE9b", invalid, false) == ["a\uFFFDb"d] && invalid == 1);
+    // text longer than the buffers (512 bytes, 1024 characters), with invalid bytes across buffer boundaries
     char[] big;
     foreach (i; 0 .. 300)
-        big ~= "line \xC3\x84\n";
-    dstring[] lines = readAll(cast(const(ubyte)[])big, error);
-    assert(lines.length == 300 && lines[299] == "line Ä"d && !error);
+        big ~= "line \xC3\x84 \xFF\n";
+    dstring[] lines = readAll(cast(const(ubyte)[])big, invalid);
+    assert(lines.length == 300 && lines[299] == "line Ä \uFFFD"d && invalid == 300);
 }
 
 unittest {

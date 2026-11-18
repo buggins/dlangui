@@ -787,6 +787,7 @@ class EditableContent {
     @property EditableContent text(dstring newContent) {
         clearUndo();
         _lines.length = 0;
+        _invalidCharCount = 0;
         if (_multiline) {
             _lines = splitDString(newContent);
             _tokenProps.length = _lines.length;
@@ -807,6 +808,7 @@ class EditableContent {
         clearUndo();
         clearEditMarks();
         _lines.length = 0;
+        _invalidCharCount = 0;
     }
 
     /// content must have at least one (possibly empty) line, like after `text = ""`
@@ -1423,6 +1425,14 @@ class EditableContent {
 
     protected string _filename;
     protected TextFileFormat _format;
+    protected uint _invalidCharCount;
+
+    /// number of invalid characters (byte sequences) replaced by U+FFFD when the content was loaded from a file
+    /// (#924): saving writes U+FFFD instead of the original bytes, so an application may warn after loading.
+    /// 0 after clear(), setting the text and a successful save (the saved file has no invalid bytes).
+    @property uint invalidCharCount() {
+        return _invalidCharCount;
+    }
 
     /// file used to load editor content
     @property string filename() {
@@ -1457,6 +1467,10 @@ class EditableContent {
             // EOF; an empty file has no lines, but content needs at least one
             ensureLineExists();
             _format = lines.textFormat;
+            _invalidCharCount = lines.invalidCharCount;
+            if (_invalidCharCount)
+                Log.w("File ", fname, ": ", _invalidCharCount, " invalid characters for ", _format.encoding,
+                        " replaced by U+FFFD");
             _undoBuffer.clear();
             debug(FileFormats)Log.d("loaded file:", filename, " format detected:", _format);
             notifyContentReplaced();
@@ -1511,6 +1525,7 @@ class EditableContent {
                 writer.writeLine(_lines[i]);
             }
             _undoBuffer.saved();
+            _invalidCharCount = 0; // the saved file has U+FFFD instead of the invalid bytes
             notifyContentSaved();
             return true;
         } catch (Exception e) {
@@ -1774,4 +1789,32 @@ unittest {
     auto content2 = new EditableContent(true);
     assert(!content2.load(fn ~ ".does-not-exist"));
     assert(content2.length == 1);
+}
+
+/// a file with invalid bytes for its encoding loads completely, with U+FFFD for them (#924)
+unittest {
+    import std.file : write, remove, tempDir;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    string fn = buildPath(tempDir, "dlangui-invalid-chars-test-" ~ to!string(thisProcessID) ~ ".txt");
+    write(fn, "line one\ncaf\xE9 two\nline three\n");
+    scope(exit) remove(fn);
+    auto content = new EditableContent(true);
+    assert(content.load(fn));
+    assert(content.length == 3 && content.line(1) == "caf\uFFFD two"d && content.line(2) == "line three"d);
+    assert(content.invalidCharCount == 1);
+    write(fn, "valid\n");
+    assert(content.load(fn) && content.invalidCharCount == 0);
+    // the count belongs to the loaded content: reset by a failed load and by setting the text
+    write(fn, "\xFF\n");
+    assert(content.load(fn) && content.invalidCharCount == 1);
+    assert(!content.load(fn ~ ".does-not-exist") && content.invalidCharCount == 0);
+    assert(content.load(fn) && content.invalidCharCount == 1);
+    content.text = "new text"d;
+    assert(content.invalidCharCount == 0);
+    // saving writes U+FFFD (valid UTF-8), so the saved file loads without replacements
+    assert(content.load(fn) && content.invalidCharCount == 1);
+    assert(content.save(fn) && content.invalidCharCount == 0);
+    assert(content.load(fn) && content.invalidCharCount == 0 && content.line(0) == "\uFFFD"d);
 }
