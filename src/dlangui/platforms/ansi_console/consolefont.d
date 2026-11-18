@@ -147,10 +147,7 @@ class ConsoleFont : Font {
             return; // not visible - clipped out
         if (y + height < clip.top || y >= clip.bottom)
             return; // not visible - fully above or below clipping rectangle
-        int _baseline = baseline;
         bool underline = (textFlags & TextFlag.Underline) != 0;
-        int underlineHeight = 1;
-        int underlineY = y + _baseline + underlineHeight * 2;
         buf.console.textColor = ANSIConsoleDrawBuf.toConsoleColor(color);
         buf.console.backgroundColor = CONSOLE_TRANSPARENT_BACKGROUND;
         //Log.d("drawText: (", x, ',', y, ") '", text, "', color=", buf.console.textColor);
@@ -217,11 +214,8 @@ class ConsoleFont : Font {
             return; // not visible - clipped out
         if (y + height < clip.top || y >= clip.bottom)
             return; // not visible - fully above or below clipping rectangle
-        int _baseline = baseline;
         uint customizedTextFlags = (charProps.length ? charProps[0].textFlags : 0) | textFlags;
         bool underline = (customizedTextFlags & TextFlag.Underline) != 0;
-        int underlineHeight = 1;
-        int underlineY = y + _baseline + underlineHeight * 2;
         buf.console.backgroundColor = CONSOLE_TRANSPARENT_BACKGROUND;
         foreach(int i; 0 .. charsMeasured) {
             dchar ch = text[i];

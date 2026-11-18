@@ -238,7 +238,7 @@ static if (!WIDGET_STYLE_CONSOLE) {
             SIID_MEDIABDRE          = 139,
             SIID_CLUSTEREDDRIVE     = 140,
             SIID_MAX_ICONS          = 175
-        };
+        }
 
         private struct SHSTOCKICONINFO {
             DWORD cbSize;
@@ -246,7 +246,7 @@ static if (!WIDGET_STYLE_CONSOLE) {
             int   iSysImageIndex;
             int   iIcon;
             WCHAR[MAX_PATH] szPath;
-        };
+        }
 
         private extern(Windows) HRESULT _dummy_SHGetStockIconInfo(SHSTOCKICONID siid, UINT uFlags, SHSTOCKICONINFO *psii);
 

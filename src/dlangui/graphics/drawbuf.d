@@ -959,7 +959,11 @@ class DrawBuf : RefCountedObject {
 
 alias DrawBufRef = Ref!DrawBuf;
 
-/// RAII setting/restoring of a DrawBuf clip rectangle
+/// RAII setting/restoring of a DrawBuf clip rectangle and alpha
+///
+/// Keep the guard in a variable until the end of the scope: `auto _ = ClipRectSaver(buf, rc, alpha);`
+/// (a temporary without a variable restores the clip rectangle at once). The name `_` tells D-Scanner
+/// that the variable is intentionally not used; nested guards need a helper function or another name.
 struct ClipRectSaver {
     private DrawBuf _buf;
     private Rect _oldClipRect;
@@ -1393,7 +1397,6 @@ class GrayDrawBuf : DrawBuf {
                     ubyte * dstrow = scanLine(dstrect.top + y) + dstrect.left;
                     foreach(x; 0 .. dx) {
                         ubyte srcpixel = srcrow[xmap[x]];
-                        ubyte dstpixel = dstrow[x];
                         dstrow[x] = srcpixel;
                     }
                 }

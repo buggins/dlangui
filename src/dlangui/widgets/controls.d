@@ -236,7 +236,7 @@ class TextWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         applyPadding(rc);
 
         FontRef font = font();
@@ -309,7 +309,7 @@ class SwitchButton : Widget {
             return;
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         DrawableRef img = backgroundDrawable;
         if (!img.isNull) {
             Point sz;
@@ -399,7 +399,7 @@ class ImageWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         applyPadding(rc);
         DrawableRef img = drawable;
         if (!img.isNull) {
@@ -730,7 +730,7 @@ class Button : Widget {
         applyMargins(rc);
         //buf.fillRect(_pos, backgroundColor);
         applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         FontRef font = font();
         Point sz = font.textSize(text);
         applyTextAlign(rc, sz, font.get);
@@ -769,7 +769,7 @@ class CanvasWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         applyPadding(rc);
         doDraw(buf, rc);
     }

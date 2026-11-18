@@ -116,12 +116,12 @@ struct Collection(T, bool ownItems = false) {
             // append item to end of collection
             add(item);
             return this;
-        } else if (op.equal("-")) {
+        } else static if (op.equal("-")) {
             // remove item from collection, if present
             removeValue(item);
             return this;
         } else {
-            assert(false, "not supported opOpAssign " ~ op);
+            static assert(false, "not supported opOpAssign " ~ op);
         }
     }
     /// returns index of first occurence of item, size_t.max if not found

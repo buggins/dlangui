@@ -79,10 +79,6 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
 
         glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, _dx, _dy);
-        float a = 1.0f;
-        float r = ((_backgroundColor >> 16) & 255) / 255.0f;
-        float g = ((_backgroundColor >> 8) & 255) / 255.0f;
-        float b = ((_backgroundColor >> 0) & 255) / 255.0f;
         //glClearColor(r, g, b, a);
         //glClear(GL_COLOR_BUFFER_BIT);
 

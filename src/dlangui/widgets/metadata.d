@@ -232,8 +232,6 @@ string generateMetadataClass(alias t)() if (is(t : Widget)) {
 }
 
 string generateRegisterMetadataClass(alias t)() if (is(t : Widget)) {
-    immutable string metadataClassName = t.stringof ~ "Metadata";
-    //pragma(msg, metadataClassName);
     return "registerWidgetMetadata(\"" ~ t.stringof ~ "\", new " ~ t.stringof ~ "Metadata" ~ "());\n";
 }
 

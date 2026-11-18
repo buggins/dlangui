@@ -117,3 +117,26 @@ jobs:
           for example in example1 dmledit tetris; do
             dub build -b=release -c x11 --root=examples/$example
           done
+
+  # Static analysis with D-Scanner, checks configured in dscanner.ini (#906). Fails on any warning.
+  dscanner:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Setup D compiler
+        uses: dlang-community/setup-dlang@v2
+        with:
+          # builds D-Scanner 0.16.0-beta.5
+          compiler: ldc-1.36.0
+
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Cache DUB packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.dub/packages
+          key: dub-dscanner-0.16.0-beta.5-ldc-1.36.0
+
+      - name: 'D-Scanner'
+        run: dub run -q dscanner@0.16.0-beta.5 -- --styleCheck --config dscanner.ini src

@@ -290,12 +290,11 @@ struct VertexFormat {
     }
     /// compare
     bool opEquals(immutable ref VertexFormat fmt) const {
-        if (_vertexSize != fmt._vertexSize)
-            return false;
-        for(int i = 0; i < _elements.length; i++)
-            if (_elements[i] != fmt._elements[i])
-                return false;
-        return true;
+        return _vertexSize == fmt._vertexSize && _elements == fmt._elements;
+    }
+    /// hash consistent with opEquals
+    size_t toHash() const nothrow @safe {
+        return hashOf(_elements, hashOf(_vertexSize));
     }
     string dump(float * data) {
         import std.conv : to;

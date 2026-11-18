@@ -176,6 +176,10 @@ struct TextPosition {
     bool opEquals(ref inout TextPosition v) inout {
         return line == v.line && pos == v.pos;
     }
+    /// hash consistent with opEquals
+    size_t toHash() const @safe pure nothrow {
+        return hashOf(pos, hashOf(line));
+    }
     @property string toString() const {
         return to!string(line) ~ ":" ~ to!string(pos);
     }
@@ -1388,11 +1392,10 @@ class EditableContent {
             throw new Exception("content is readonly");
         EditOperation op = _undoBuffer.undo();
         TextRange rangeBefore = op.newRange;
-        dstring[] oldcontent = op.content;
         dstring[] newcontent = op.oldContent;
         EditStateMark[] newmarks = op.oldEditMarks; //_undoBuffer.savedInUndo() ?  : null;
         TextRange rangeAfter = op.range;
-        //Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
+        //Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", op.content, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent, newmarks);
         handleContentChange(op, rangeBefore, rangeAfter, source ? source : this);
         return true;
@@ -1406,10 +1409,9 @@ class EditableContent {
             throw new Exception("content is readonly");
         EditOperation op = _undoBuffer.redo();
         TextRange rangeBefore = op.range;
-        dstring[] oldcontent = op.oldContent;
         dstring[] newcontent = op.content;
         TextRange rangeAfter = op.newRange;
-        //Log.d("Redoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
+        //Log.d("Redoing op rangeBefore=", rangeBefore, " contentBefore=`", op.oldContent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent);
         handleContentChange(op, rangeBefore, rangeAfter, source ? source : this);
         return true;

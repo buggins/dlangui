@@ -1231,7 +1231,7 @@ class SDLWindow : Window {
 
         debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
         if (action == KeyAction.KeyDown || action == KeyAction.KeyUp) {
-            if ((keyCodeIn >= SDLK_KP_1 && keyCodeIn <= SDLK_KP_0
+            if (((keyCodeIn >= SDLK_KP_1 && keyCodeIn <= SDLK_KP_0)
                  || keyCodeIn == SDLK_KP_PERIOD
                  //|| keyCodeIn >= 0x40000059 && keyCodeIn
                  ) && isNumLockEnabled)
@@ -1714,6 +1714,8 @@ version (Windows) {
     import dlangui.platforms.windows.win32fonts;
     pragma(lib, "gdi32.lib");
     pragma(lib, "user32.lib");
+    // catches Throwable to show uncaught errors in a message box (GUI apps have no console)
+    @("nolint(dscanner.suspicious.catch_em_all)")
     extern(Windows)
         int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                 LPSTR lpCmdLine, int nCmdShow)
@@ -1786,7 +1788,6 @@ version (Windows) {
     int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
     {
         //Log.d("myWinMain()");
-        string basePath = exePath();
         //Log.i("Current executable: ", exePath());
         string cmdline = fromStringz(lpCmdLine).dup;
         //Log.i("Command line: ", cmdline);
@@ -1890,7 +1891,6 @@ int sdlmain(string[] args) {
         return 1;
     }
 
-    SDL_DisplayMode displayMode;
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
         Log.e("Cannot init SDL2: ", SDL_GetError().to!string());
         return 2;
@@ -1901,7 +1901,6 @@ int sdlmain(string[] args) {
     TIMER_EVENT_ID = cast(SDL_EventType)SDL_RegisterEvents(1);
     WINDOW_CLOSE_EVENT_ID = cast(SDL_EventType)SDL_RegisterEvents(1);
 
-    int request = SDL_GetDesktopDisplayMode(0, &displayMode);
 
     static if (ENABLE_OPENGL) {
         // Set OpenGL attributes

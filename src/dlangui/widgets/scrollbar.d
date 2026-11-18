@@ -120,7 +120,7 @@ class AbstractSlider : WidgetGroup {
         if (!scrollEvent.assigned)
             return false;
         ScrollEvent event = new ScrollEvent(action, _minValue, _maxValue, _pageSize, position);
-        bool res = scrollEvent(this, event);
+        scrollEvent(this, event);
         if (event.positionChanged) {
             _position = event.position;
             if (_position > _maxValue)
@@ -461,14 +461,14 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         if (_orientation == Orientation.Vertical) {
             // vertical
             int spaceBackSize, spaceForwardSize, indicatorSize;
-            bool indicatorVisible = calcButtonSizes(_scrollArea.height, spaceBackSize, spaceForwardSize, indicatorSize);
+            calcButtonSizes(_scrollArea.height, spaceBackSize, spaceForwardSize, indicatorSize);
             irc.top += spaceBackSize;
             irc.bottom -= spaceForwardSize;
             layoutButtons(irc);
         } else {
             // horizontal
             int spaceBackSize, spaceForwardSize, indicatorSize;
-            bool indicatorVisible = calcButtonSizes(_scrollArea.width, spaceBackSize, spaceForwardSize, indicatorSize);
+            calcButtonSizes(_scrollArea.width, spaceBackSize, spaceForwardSize, indicatorSize);
             irc.left += spaceBackSize;
             irc.right -= spaceForwardSize;
             layoutButtons(irc);
@@ -597,7 +597,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         _btnForward.onDraw(buf);
         _btnBack.onDraw(buf);
         _pageUp.onDraw(buf);
@@ -875,14 +875,14 @@ class SliderWidget : AbstractSlider, OnClickHandler {
         if (_orientation == Orientation.Vertical) {
             // vertical
             int spaceBackSize, spaceForwardSize, indicatorSize;
-            bool indicatorVisible = calcButtonSizes(_scrollArea.height, spaceBackSize, spaceForwardSize, indicatorSize);
+            calcButtonSizes(_scrollArea.height, spaceBackSize, spaceForwardSize, indicatorSize);
             irc.top += spaceBackSize;
             irc.bottom -= spaceForwardSize;
             layoutButtons(irc);
         } else {
             // horizontal
             int spaceBackSize, spaceForwardSize, indicatorSize;
-            bool indicatorVisible = calcButtonSizes(_scrollArea.width, spaceBackSize, spaceForwardSize, indicatorSize);
+            calcButtonSizes(_scrollArea.width, spaceBackSize, spaceForwardSize, indicatorSize);
             irc.left += spaceBackSize;
             irc.right -= spaceForwardSize;
             layoutButtons(irc);
@@ -937,19 +937,7 @@ class SliderWidget : AbstractSlider, OnClickHandler {
         _needLayout = false;
         applyMargins(rc);
         applyPadding(rc);
-        Rect r;
-        if (_orientation == Orientation.Vertical) {
-            // vertical
-            // buttons
-            // indicator
-            r = rc;
-            _scrollArea = r;
-        } else {
-            // horizontal
-            // indicator
-            r = rc;
-            _scrollArea = r;
-        }
+        _scrollArea = rc; // buttons and indicator: layoutButtons()
         layoutButtons();
         _pos = rc;
     }
@@ -984,7 +972,7 @@ class SliderWidget : AbstractSlider, OnClickHandler {
             return;
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
         DrawableRef bg = backgroundDrawable;
         if (!bg.isNull) {
             Rect r = rc;

@@ -1210,7 +1210,7 @@ final class GLSupport {
     }
 }
 
-enum GLObjectTypes { Buffer, VertexArray, Texture, Framebuffer };
+enum GLObjectTypes { Buffer, VertexArray, Texture, Framebuffer }
 /** RAII OpenGL object template.
   * Note: on construction it binds itself to the target, and it binds 0 to target on destruction.
   * All methods (except ctor, dtor, bind(), unbind() and setup()) does not perform binding.
@@ -1655,8 +1655,7 @@ private final class OpenGLQueue {
 
         float[2 * 4] texCoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy0, srcx1,srcy1];
 
-        enum verts = 4;
-        mixin(add);
+        addVertices!4(colors, vertices, texCoords);
     }
 
     /// add solid rectangle to queue
@@ -1689,8 +1688,7 @@ private final class OpenGLQueue {
         // fill texture coords buffer with zeros
         float[2 * 4] texCoords = 0;
 
-        enum verts = 4;
-        mixin(add);
+        addVertices!4(colors, vertices, texCoords);
     }
 
     /// add triangle to queue
@@ -1719,8 +1717,7 @@ private final class OpenGLQueue {
         // fill texture coords buffer with zeros
         float[2 * 3] texCoords = 0;
 
-        enum verts = 3;
-        mixin(add);
+        addVertices!3(colors, vertices, texCoords);
     }
 
     /// add line to queue
@@ -1747,11 +1744,11 @@ private final class OpenGLQueue {
         // fill texture coords buffer with zeros
         float[2 * 2] texCoords = 0;
 
-        enum verts = 2;
-        mixin(add);
+        addVertices!2(colors, vertices, texCoords);
     }
 
-    enum add = q{
+    // appends the vertices of a rectangle (verts = 4), triangle (3) or line (2) to the current batch
+    private void addVertices(int verts)(const float[] colors, const float[] vertices, const float[] texCoords) {
         int offset = cast(int)_vertices.data.length / 3;
         static if(verts == 4) {
             // make indices for rectangle (2 triangles == 6 vertexes per rect)
@@ -1780,10 +1777,10 @@ private final class OpenGLQueue {
 
         batches.data[$-1].length += cast(int)indices.length;
 
-        _vertices ~= cast(float[])vertices;
-        _colors ~= cast(float[])colors;
-        _texCoords ~= cast(float[])texCoords;
-        _indices ~= cast(int[])indices;
-    };
+        _vertices ~= vertices;
+        _colors ~= colors;
+        _texCoords ~= texCoords;
+        _indices ~= indices[];
+    }
 }
 }

@@ -178,7 +178,7 @@ class AndroidWindow : Window {
             Log.d("AINPUT_EVENT_TYPE_KEY");
             KeyEvent evt;
             auto app = (cast(AndroidPlatform)platform)._appstate;
-            int _keyFlags = AKeyEvent_getMetaState(event).toKeyFlag();
+            int keyFlags = AKeyEvent_getMetaState(event).toKeyFlag();
             int sysKeyCode = AKeyEvent_getKeyCode(event);
             int sysMeta = AKeyEvent_getMetaState(event);
             int keyCode = androidKeyMap.get(sysKeyCode, KeyCode.init);
@@ -199,11 +199,11 @@ class AndroidWindow : Window {
                     action = KeyAction.Text;
                 }
             }
-            Log.d("ACTION: ", action, " syskeyCode: ", sysKeyCode, " sysMeta: ", sysMeta, "meta: ", _keyFlags, " char '", cast(dchar)char_, "' str:", cast(dstring)text);
+            Log.d("ACTION: ", action, " syskeyCode: ", sysKeyCode, " sysMeta: ", sysMeta, "meta: ", keyFlags, " char '", cast(dchar)char_, "' str:", cast(dstring)text);
             if (action == KeyAction.Text)
                 evt = new KeyEvent(KeyAction.Text, 0, 0, cast(dstring)text);
             else
-                evt = new KeyEvent(action, keyCode, _keyFlags);
+                evt = new KeyEvent(action, keyCode, keyFlags);
             if (evt && dispatchKeyEvent(evt))
                 update();
             return 1;
@@ -283,7 +283,7 @@ class AndroidPlatform : Platform {
             EGL_RED_SIZE, 8,
             EGL_NONE
         ];
-        EGLint w, h, dummy, format;
+        EGLint w, h, format;
         EGLint numConfigs;
         EGLConfig config;
         EGLSurface surface;

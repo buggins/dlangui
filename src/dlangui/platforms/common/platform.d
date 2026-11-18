@@ -248,12 +248,6 @@ class TimerInfo {
     protected long _nextTimestamp;
     protected Widget _targetWidget;
 
-    override bool opEquals(Object obj) const {
-        TimerInfo b = cast(TimerInfo)obj;
-        if (!b)
-            return false;
-        return b._nextTimestamp == _nextTimestamp;
-    }
     override int opCmp(Object obj) {
         TimerInfo b = cast(TimerInfo)obj;
         if (!b)

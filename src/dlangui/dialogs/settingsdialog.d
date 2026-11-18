@@ -224,8 +224,7 @@ class StringEditItem : SettingsItem {
         setting.str = value;
         ed.text = toUTF32(value);
         ed.contentChange = delegate(EditableContent content) {
-            string value = toUTF8(content.text);
-            setting.str = value;
+            setting.str = toUTF8(content.text);
         };
         return [lbl, ed];
     }
@@ -248,8 +247,7 @@ class FileNameEditItem : SettingsItem {
         setting.str = value;
         ed.text = toUTF32(value);
         ed.contentChange = delegate(EditableContent content) {
-            string value = toUTF8(content.text);
-            setting.str = value;
+            setting.str = toUTF8(content.text);
         };
         return [lbl, ed];
     }
@@ -274,8 +272,7 @@ class ExecutableFileNameEditItem : SettingsItem {
         setting.str = value;
         ed.text = toUTF32(value);
         ed.contentChange = delegate(EditableContent content) {
-            string value = toUTF8(content.text);
-            setting.str = value;
+            setting.str = toUTF8(content.text);
         };
         return [lbl, ed];
     }
@@ -300,8 +297,7 @@ class PathNameEditItem : SettingsItem {
         setting.str = value;
         ed.text = toUTF32(value);
         ed.contentChange = delegate(EditableContent content) {
-            string value = toUTF8(content.text);
-            setting.str = value;
+            setting.str = toUTF8(content.text);
         };
         return [lbl, ed];
     }

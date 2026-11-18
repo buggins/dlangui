@@ -104,7 +104,6 @@ struct ObjModelImport {
         return false;
     }
     static protected bool parseFaceIndex(ref Token[] tokens, ref FaceIndex data) {
-        int i = 0;
         if (tokens.length == 0)
             return false;
         if (!parseIndex(tokens, data[0]))

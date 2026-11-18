@@ -160,7 +160,6 @@ class LayoutItems {
         if (_measureParentSize.x != rc.width || _measureParentSize.y != rc.height)
             measure(rc.width, rc.height);
         int contentSecondarySize = 0;
-        int contentHeight = 0;
         int totalSize = 0;
         int delta = 0;
         int resizableSize = 0;
@@ -230,7 +229,6 @@ class LayoutItems {
         //Log.d("VerticalLayout delta=", delta, ", nonres=", nonresizableWeight, ", res=", resizableWeight, ", scale=", scaleFactor);
         // find last resized - to allow fill space 1 pixel accurate
         int lastResized = -1;
-        ResizerWidget resizer = null;
         int resizerIndex = -1;
         int resizerDelta = 0;
         for (int i = 0; i < _count; i++) {
@@ -692,7 +690,7 @@ class FrameLayout : WidgetGroupDefaultDrawing {
 /// layout children as table with rows and columns
 class TableLayout : WidgetGroupDefaultDrawing {
 
-    this(string ID = null) {
+    this(string ID) {
         super(ID);
     }
 
@@ -898,7 +896,6 @@ class TableLayout : WidgetGroupDefaultDrawing {
             for (int y = 0; y < rowCount; y++) {
                 int x0 = 0;
                 for (int x = 0; x < colCount; x++) {
-                    int index = y * colCount + x;
                     Rect r;
                     r.left = rc.left + x0;
                     r.top = rc.top + y0;

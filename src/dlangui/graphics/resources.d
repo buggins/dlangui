@@ -635,7 +635,7 @@ class BoxShadowDrawable : Drawable {
         rc.bottom += _offsetY + b;
 
         // apply new clipping to the DrawBuf to draw outside of the widget
-        auto saver = ClipRectSaver(buf, rc, 0, false);
+        auto _ = ClipRectSaver(buf, rc, 0, false);
 
         if (_blurSize > 0) {
             // Manual nine-patch
@@ -901,8 +901,6 @@ static if (WIDGET_STYLE_CONSOLE) {
                 NinePatch,
             }
             Mode mode = Mode.Text;
-            uint[] bg;
-            uint[] col;
             uint[] pad;
             uint[] nine;
             for (int i; i < tokens.length; i++) {

@@ -218,6 +218,10 @@ struct Rect {
     bool opEquals(Rect rc) const {
         return left == rc.left && right == rc.right && top == rc.top && bottom == rc.bottom;
     }
+    /// hash consistent with opEquals
+    size_t toHash() const @safe pure nothrow {
+        return hashOf(bottom, hashOf(right, hashOf(top, hashOf(left))));
+    }
 }
 
 // Rect unittests

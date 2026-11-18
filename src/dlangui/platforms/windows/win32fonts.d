@@ -106,7 +106,7 @@ private:
     ubyte[maxv] m_primary;
     ubyte[maxv] m_secondary;
     ubyte[maxv] m_tertiary;
-};
+}
 
 private __gshared lcd_distribution_lut!65 lut;
 void initWin32FontsTables() {

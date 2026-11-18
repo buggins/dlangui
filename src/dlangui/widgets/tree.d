@@ -398,13 +398,11 @@ class TreeItem {
     }
     /// removes child by reference, returns removed item
     TreeItem removeChild(TreeItem child) {
-        TreeItem res = null;
         int index = _children.indexOf(child);
         return removeChild(index);
     }
     /// removes child by ID, returns removed item
     TreeItem removeChild(string ID) {
-        TreeItem res = null;
         int index = _children.indexOf(ID);
         return removeChild(index);
     }
@@ -792,7 +790,6 @@ class TreeItemWidget : HorizontalLayout {
             return false;
         if (event.action != KeyAction.KeyDown)
             return false;
-        int action = 0;
         switch (event.keyCode) with(KeyCode) {
             case SPACE:
             case RETURN:

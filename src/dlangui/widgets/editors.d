@@ -530,7 +530,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         int[] measuredWidths;
         measuredWidths.length = text.length;
         //DO NOT REMOVE THIS
-        int boggle = font.measureText(text, measuredWidths);
+        font.measureText(text, measuredWidths);
         if (measuredWidths.length > 0)
             return measuredWidths[$-1];
         return 0;
@@ -1471,7 +1471,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             return clientToTextPos(Point(x,y));
 
         int selectedVisibleLine = y / _lineHeight;
-        LineSpan _curSpan;
         int wrapLine = 0;
         int curLine = 0;
         bool foundWrap = false;
@@ -2549,7 +2548,7 @@ class EditLine : EditWidgetBase {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc, alpha);
+        auto _ = ClipRectSaver(buf, rc, alpha);
 
         FontRef font = font();
         dstring txt = applyPasswordChar(text);
@@ -2735,7 +2734,6 @@ class EditBox : EditWidgetBase {
     override protected void updateMaxLineWidth() {
         // find max line width. TODO: optimize!!!
         int maxw;
-        int[] buf;
         for (int i = 0; i < _content.length; i++) {
             dstring s = _content[i];
             int w = calcLineWidth(s);
@@ -3097,7 +3095,6 @@ class EditBox : EditWidgetBase {
 
     override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
-        dstring currentLine = _content[_caretPos.line];
         switch (a.id) with(EditorActions)
         {
             case PrependNewLine:
@@ -3467,7 +3464,6 @@ class EditBox : EditWidgetBase {
         import std.typecons : Flag;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
-        bool selectionOnly = (options & TextSearchFlag.SelectionOnly) != 0;
         for (;;) {
             ptrdiff_t pos = lineText[start .. $].indexOf(pattern, caseSensitive ? Yes.caseSensitive : No.caseSensitive);
             if (pos < 0)
@@ -3515,7 +3511,6 @@ class EditBox : EditWidgetBase {
         import std.string : indexOf, CaseSensitive;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
-        bool selectionOnly = (options & TextSearchFlag.SelectionOnly) != 0;
         for (int i = 0; i < _content.length; i++) {
             dstring lineText = _content.line(i);
             if (lineText.length < pattern.length)
@@ -3832,7 +3827,6 @@ class EditBox : EditWidgetBase {
             ts = 1;
         if (ts > 8)
             ts = 8;
-        int spaceIndex = 0;
         for (int i = 0; i < txt.length && i < charsMeasured; i++) {
             dchar ch = txt[i];
             bool outsideText = (i < firstNonSpace || i >= lastNonSpace || spacesOnly);
@@ -3992,7 +3986,6 @@ class EditBox : EditWidgetBase {
         Rect rc = _clientRect;
         FontRef font = font();
         int i = _firstVisibleLine;
-        int lc = lineCount;
         for (;;) {
             Rect lineRect = rc;
             lineRect.left = _clientRect.left - _leftPaneWidth;
@@ -4014,7 +4007,7 @@ class EditBox : EditWidgetBase {
         Action toggleBookmarkAction = ACTION_EDITOR_TOGGLE_BOOKMARK.clone();
         toggleBookmarkAction.longParam = line;
         toggleBookmarkAction.objectParam = this;
-        MenuItem item = menu.add(toggleBookmarkAction);
+        menu.add(toggleBookmarkAction);
         return menu;
     }
 
