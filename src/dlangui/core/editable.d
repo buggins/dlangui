@@ -790,6 +790,7 @@ class EditableContent {
         clearUndo();
         _lines.length = 0;
         _invalidCharCount = 0;
+        _invalidCharPositions = null;
         if (_multiline) {
             _lines = splitDString(newContent);
             _tokenProps.length = _lines.length;
@@ -811,6 +812,7 @@ class EditableContent {
         clearEditMarks();
         _lines.length = 0;
         _invalidCharCount = 0;
+        _invalidCharPositions = null;
     }
 
     /// content must have at least one (possibly empty) line, like after `text = ""`
@@ -1435,6 +1437,22 @@ class EditableContent {
     @property uint invalidCharCount() {
         return _invalidCharCount;
     }
+    /// line and character (1-based) of the first invalid characters (at most 3) when the content was loaded (#944)
+    @property const(LineStream.InvalidCharPosition)[] invalidCharPositions() {
+        return _invalidCharPositions;
+    }
+    protected LineStream.InvalidCharPosition[] _invalidCharPositions;
+    /// the warning logged after loading a file with invalid characters: one message, also for millions of them
+    static string invalidCharsMessage(string filename, uint count, const(LineStream.InvalidCharPosition)[] positions,
+            EncodingType encoding) {
+        string res = "File " ~ filename ~ ": " ~ to!string(count) ~ (count == 1 ? " invalid character" : " invalid characters")
+            ~ " for " ~ to!string(encoding) ~ " replaced by U+FFFD";
+        foreach (i, p; positions)
+            res ~= (i ? ", " : count == 1 ? ", at " : ", first at ") ~ to!string(p.line) ~ ":" ~ to!string(p.pos);
+        if (positions.length && count > positions.length)
+            res ~= " (and " ~ to!string(count - positions.length) ~ " more)";
+        return res;
+    }
 
     /// file used to load editor content
     @property string filename() {
@@ -1470,9 +1488,9 @@ class EditableContent {
             ensureLineExists();
             _format = lines.textFormat;
             _invalidCharCount = lines.invalidCharCount;
+            _invalidCharPositions = lines.invalidCharPositions.dup;
             if (_invalidCharCount)
-                Log.w("File ", fname, ": ", _invalidCharCount, " invalid characters for ", _format.encoding,
-                        " replaced by U+FFFD");
+                Log.w(invalidCharsMessage(fname, _invalidCharCount, _invalidCharPositions, _format.encoding));
             _undoBuffer.clear();
             debug(FileFormats)Log.d("loaded file:", filename, " format detected:", _format);
             notifyContentReplaced();
@@ -1528,6 +1546,7 @@ class EditableContent {
             }
             _undoBuffer.saved();
             _invalidCharCount = 0; // the saved file has U+FFFD instead of the invalid bytes
+            _invalidCharPositions = null;
             notifyContentSaved();
             return true;
         } catch (Exception e) {
@@ -1816,6 +1835,18 @@ unittest {
     assert(content.load(fn) && content.invalidCharCount == 1);
     content.text = "new text"d;
     assert(content.invalidCharCount == 0);
+    // positions of the first invalid characters, in one warning message (#944)
+    write(fn, "ab\xFF\nc\xFEd\n\x80\n\x81\n");
+    assert(content.load(fn) && content.invalidCharCount == 4);
+    alias P = LineStream.InvalidCharPosition;
+    assert(content.invalidCharPositions == [P(1, 3), P(2, 2), P(3, 1)]);
+    assert(EditableContent.invalidCharsMessage("f.txt", 4, content.invalidCharPositions, EncodingType.UTF8)
+            == "File f.txt: 4 invalid characters for UTF8 replaced by U+FFFD, first at 1:3, 2:2, 3:1 (and 1 more)");
+    assert(EditableContent.invalidCharsMessage("f.txt", 1, [P(2, 4)], EncodingType.UTF16LE)
+            == "File f.txt: 1 invalid character for UTF16LE replaced by U+FFFD, at 2:4");
+    content.text = "x"d;
+    assert(content.invalidCharPositions.length == 0);
+    write(fn, "\xFF\n"); // the content the following checks expect
     // saving writes U+FFFD (valid UTF-8), so the saved file loads without replacements
     assert(content.load(fn) && content.invalidCharCount == 1);
     assert(content.save(fn) && content.invalidCharCount == 0);

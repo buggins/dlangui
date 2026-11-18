@@ -34,7 +34,6 @@ import std.range;
 import std.algorithm : equal;
 import std.conv : to;
 import std.utf : encode;
-import std.math : pow;
 import std.file;
 import std.path;
 import std.datetime : SysTime;
@@ -1621,26 +1620,25 @@ final class Setting {
         }
         void error(string msg) {
             string context;
-            // calculate error position line and column
+            // calculate error position line and column (#929: the column was always 1, and CR LF counted two lines)
             int line = 1;
-            int col = 1;
             int lineStart = 0;
-            foreach(int i; 0 .. pos) {
-                char ch = json[i];
-                if (ch == '\r') {
-                    if (i < json.length - 1 && json[i + 1] == '\n')
-                        i++;
+            int end = pos < json.length ? pos : cast(int)json.length;
+            int k = 0;
+            while (k < end) {
+                char ch = json[k++];
+                if (ch == '\r' || ch == '\n') {
+                    char other = ch == '\r' ? '\n' : '\r';
+                    if (k < end && json[k] == other)
+                        k++; // CR LF or LF CR: one line end
                     line++;
-                    col = 1;
-                    lineStart = i + 1;
-                } else if (ch == '\n') {
-                    if (i < json.length - 1 && json[i + 1] == '\r')
-                        i++;
-                    line++;
-                    col = 1;
-                    lineStart = i + 1;
+                    lineStart = k;
                 }
             }
+            int col = 1; // in characters: count UTF-8 lead bytes
+            foreach (c; json[lineStart .. end])
+                if ((c & 0xC0) != 0x80)
+                    col++;
             int contextStart = pos;
             int contextEnd = pos;
             for (; contextEnd < json.length; contextEnd++) {
@@ -1816,6 +1814,8 @@ final class Setting {
         // parse long, ulong or double
         void parseNumber(Setting res) {
             import std.ascii : isDigit;
+            import std.math : isInfinity;
+            immutable int start = pos;
             char ch = peek;
             int sign = 1;
             if (ch == '-') {
@@ -1825,59 +1825,55 @@ final class Setting {
             if (!isDigit(ch))
                 error("cannot parse number");
             ulong n = 0;
+            bool overflow = false; // too big for ulong (#929: it wrapped around)
             while (isDigit(ch)) {
-                n = n * 10 + (ch - '0');
+                uint digit = ch - '0';
+                if (n > (ulong.max - digit) / 10)
+                    overflow = true;
+                else
+                    n = n * 10 + digit;
                 ch = nextChar;
+            }
+            // the number as double, converted from its text (any number of digits, correct rounding)
+            double toDouble() {
+                double v;
+                try
+                    v = to!double(json[start .. pos]);
+                catch (Exception e)
+                    error("number out of range");
+                if (isInfinity(v))
+                    error("number out of range");
+                return v;
             }
             if (ch == '.' || ch == 'e' || ch == 'E') {
                 // floating
-                ulong n2 = 0;
-                ulong n2_div = 1;
                 if (ch == '.') {
                     ch = nextChar;
-                    while(isDigit(ch)) {
-                        n2 = n2 * 10 + (ch - '0');
-                        n2_div *= 10;
+                    while(isDigit(ch))
                         ch = nextChar;
-                    }
                     if (isAlpha(ch) && ch != 'e' && ch != 'E')
                         error("error while parsing number");
                 }
-                int shift = 0;
-                int shiftSign = 1;
                 if (ch == 'e' || ch == 'E') {
                     ch = nextChar;
-                    if (ch == '-') {
-                        shiftSign = -1;
+                    if (ch == '-')
                         ch = nextChar;
-                    }
                     if (!isDigit(ch))
                         error("error while parsing number");
-                    while(isDigit(ch)) {
-                        shift = shift * 10 + (ch - '0');
+                    while(isDigit(ch))
                         ch = nextChar;
-                    }
                 }
                 if (isAlpha(ch))
                     error("error while parsing number");
-                double v = cast(double)n;
-                if (n2) // part after period
-                    v += cast(double)n2 / n2_div;
-                if (sign < 0)
-                    v = -v;
-                if (shift) { // E part - pow10
-                    double p = pow(10.0, shift);
-                    if (shiftSign > 0)
-                        v *= p;
-                    else
-                        v /= p;
-                }
-                res.floating = v;
+                // (the digits after the period and the exponent overflowed with many digits, #929)
+                res.floating = toDouble();
             } else {
                 // integer
                 if (isAlpha(ch))
                     error("cannot parse number");
-                if (sign < 0 || !(n & 0x8000000000000000L))
+                if (overflow || (sign < 0 && n > 0x8000000000000000UL))
+                    res.floating = toDouble(); // doesn't fit in long / ulong: FLOAT, as JSON readers do (#929)
+                else if (sign < 0 || !(n & 0x8000000000000000L))
                     res.integer = cast(long)(n * sign); // signed
                 else
                     res.uinteger = n; // unsigned
@@ -2384,6 +2380,35 @@ final class Setting {
     assert(sdl["name"].str == "dlangui");
     assert(sdl.objectByPath("dependencies/arsd/version").str == "~>12.1");
     assert(sdl["configurations"][0]["targetType"].str == "library");
+}
+
+// parse error positions; integers too big for long/ulong, many digits, big exponents (#929)
+@safe unittest {
+    static string errorOf(string json) {
+        try
+            (new Setting()).parseJSON(json);
+        catch (Exception e)
+            return e.msg;
+        return null;
+    }
+    import std.algorithm : canFind;
+    // line and column (the column was always 1, CR LF counted as two lines); column in characters
+    assert(errorOf("{\n  \"a\": 1,\n  \"b\" 2\n}").canFind("(3:7)"));
+    assert(errorOf("{\r\n  \"a\": 1,\r\n  \"b\" 2\r\n}").canFind("(3:7)"));
+    assert(errorOf("{\"äöü\": tru}").canFind("(1:9)"));
+    assert(errorOf("{\"a\" 1}").canFind("(1:6)"));
+    // integers: too big for ulong, or below long.min: FLOAT (it wrapped around); the limits stay integers
+    Setting s = new Setting();
+    s.parseJSON(`{"big": 99999999999999999999, "neg": -9223372036854775809, "min": -9223372036854775808,
+        "max": 18446744073709551615, "frac": 0.12345678901234567890123, "exp": 1.5e-300, "e": 2E3}`);
+    assert(s["big"].type == SettingType.FLOAT && s["big"].floating == 1e20);
+    assert(s["neg"].type == SettingType.FLOAT && s["neg"].floating == -9223372036854775809.0);
+    assert(s["min"].type == SettingType.INTEGER && s["min"].integer == long.min);
+    assert(s["max"].type == SettingType.UINTEGER && s["max"].uinteger == ulong.max);
+    assert(s["frac"].floating == 0.12345678901234567890123); // digits after the period overflowed
+    assert(s["exp"].floating == 1.5e-300 && s["e"].floating == 2000);
+    // out of the double range: an error (one compiler's to!double throws, another returns infinity)
+    assert(errorOf(`{"a": 1e400}`).canFind("number out of range"));
 }
 
 // SettingsFile: save and load through a file
