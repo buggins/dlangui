@@ -313,8 +313,9 @@ class EditOperation {
             _newRange.end.pos++;
             return true;
         }
-        // removing single character
-        if (_newRange.empty && op._newRange.empty && op._oldContent[0].length == 1) {
+        // removing single character (both removed texts within one line: a line break isn't a character here, #954)
+        if (_newRange.empty && op._newRange.empty && _oldContent.length == 1 && op._oldContent.length == 1
+                && op._oldContent[0].length == 1) {
             if (_newRange.end.pos == op.range.end.pos) {
                 // removed char before
                 _range.start.pos--;
@@ -1915,6 +1916,78 @@ unittest {
     // undo back to the saved state: not modified; redo: modified
     assert(content.undo(null) && !content.modified && content.text == "abcde"d);
     assert(content.redo(null) && content.modified && content.text == "abcd"d);
+}
+
+/// undo after deleting a character and then a character with the following line break (#954)
+unittest {
+    auto content = new EditableContent(true);
+    content.text = "abcd\nef"d;
+    void del(int l1, int p1, int l2, int p2) {
+        assert(content.performOperation(new EditOperation(EditAction.Replace,
+                TextRange(TextPosition(l1, p1), TextPosition(l2, p2)), [""d]), null));
+    }
+    del(0, 2, 0, 3); // "c" (Delete key)
+    del(0, 2, 1, 0); // "d" and the line break: was merged with the previous delete as one character
+    assert(content.text == "abef"d);
+    assert(content.undo(null) && content.text == "abd\nef"d);
+    assert(content.undo(null) && content.text == "abcd\nef"d);
+    assert(!content.undo(null));
+    assert(content.redo(null) && content.text == "abd\nef"d);
+    assert(content.redo(null) && content.text == "abef"d);
+}
+
+/// typing and deleting around a caret, with undo and redo: no range errors, and undoing everything restores the
+/// original text (#954; adjacent small deletes are merged into one undo operation)
+unittest {
+    import std.random : Random, uniform;
+    auto rnd = Random(954);
+    immutable dstring original = "first line\nsecond\n\nfourth line here"d;
+    foreach (round; 0 .. 50) {
+        auto content = new EditableContent(true);
+        content.text = original;
+        TextPosition caret = TextPosition(0, 0);
+        // the position n characters after (n > 0) or before (n < 0) p, a line break counting as one character
+        TextPosition move(TextPosition p, int n) {
+            for (; n > 0; n--) {
+                if (p.pos < content.line(p.line).length)
+                    p.pos++;
+                else if (p.line + 1 < content.length)
+                    p = TextPosition(p.line + 1, 0);
+            }
+            for (; n < 0; n++) {
+                if (p.pos > 0)
+                    p.pos--;
+                else if (p.line > 0)
+                    p = TextPosition(p.line - 1, cast(int)content.line(p.line - 1).length);
+            }
+            return p;
+        }
+        foreach (step; 0 .. 200) {
+            int r = uniform(0, 20, rnd);
+            if (r < 2) {
+                caret.line = uniform(0, content.length, rnd);
+                caret.pos = uniform(0, cast(int)content.line(caret.line).length + 1, rnd);
+            } else if (r < 7) {
+                dstring[] text = r == 6 ? [""d, ""d] : ["x"d];
+                content.performOperation(new EditOperation(EditAction.Replace, TextRange(caret, caret), text), null);
+                caret = r == 6 ? TextPosition(caret.line + 1, 0) : TextPosition(caret.line, caret.pos + 1);
+            } else if (r < 17) {
+                int n = uniform(1, 3, rnd);
+                TextPosition other = move(caret, r < 12 ? n : -n);
+                TextRange range = r < 12 ? TextRange(caret, other) : TextRange(other, caret);
+                content.performOperation(new EditOperation(EditAction.Replace, range, [""d]), null);
+                caret = range.start;
+            } else {
+                if (r < 19)
+                    content.undo(null);
+                else
+                    content.redo(null);
+                caret = TextPosition(0, 0);
+            }
+        }
+        while (content.undo(null)) {}
+        assert(content.text == original);
+    }
 }
 
 // text helpers, positions and ranges (#914); LineIcons.remove when the array is full (#941)
