@@ -1427,8 +1427,9 @@ class EditableContent {
     protected TextFileFormat _format;
     protected uint _invalidCharCount;
 
-    /// number of invalid characters (byte sequences) replaced by U+FFFD when the content was loaded (#924);
-    /// saving writes U+FFFD instead of the original bytes
+    /// number of invalid characters (byte sequences) replaced by U+FFFD when the content was loaded from a file
+    /// (#924): saving writes U+FFFD instead of the original bytes, so an application may warn after loading.
+    /// 0 after clear(), setting the text and a successful save (the saved file has no invalid bytes).
     @property uint invalidCharCount() {
         return _invalidCharCount;
     }
@@ -1524,6 +1525,7 @@ class EditableContent {
                 writer.writeLine(_lines[i]);
             }
             _undoBuffer.saved();
+            _invalidCharCount = 0; // the saved file has U+FFFD instead of the invalid bytes
             notifyContentSaved();
             return true;
         } catch (Exception e) {
@@ -1811,4 +1813,8 @@ unittest {
     assert(content.load(fn) && content.invalidCharCount == 1);
     content.text = "new text"d;
     assert(content.invalidCharCount == 0);
+    // saving writes U+FFFD (valid UTF-8), so the saved file loads without replacements
+    assert(content.load(fn) && content.invalidCharCount == 1);
+    assert(content.save(fn) && content.invalidCharCount == 0);
+    assert(content.load(fn) && content.invalidCharCount == 0 && content.line(0) == "\uFFFD"d);
 }

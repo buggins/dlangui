@@ -313,9 +313,11 @@ class LineStream {
         _filename = filename;
         _stream = stream;
         _encoding = encoding;
+        // create() detects a BOM only in bytes that were read (the buffer is zeroed, 4-byte BOMs need len >= 4)
+        assert(offset <= len, "BOM longer than the data");
         _buf = buf;
         _len = len;
-        _pos = offset <= len ? offset : len; // a BOM longer than the data must not start past it
+        _pos = offset;
         _streamEof = _stream.eof;
     }
 
