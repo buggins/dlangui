@@ -121,6 +121,8 @@ jobs:
   # DIP1000 (scoped pointers, -preview=dip1000) for the dlangui sources, so that they stay compatible (#907).
   # The flag is added to the root dub.json for this job only: dub passes it to dlangui and to the packages
   # that depend on it (tests, examples), not to the dependencies (arsd, bindbc, ...).
+  # -allinst: the flag changes the mangled names of some template instances, so dlangui can't link to the
+  # instances compiled into the dependencies (e.g. inilike's IniLikeReader); emit all of them in dlangui.
   dip1000:
     strategy:
       fail-fast: false
@@ -163,7 +165,7 @@ jobs:
       - name: 'Add -preview=dip1000 to dub.json'
         shell: bash
         run: |
-          sed -i '1a\    "dflags": ["-preview=dip1000"],' dub.json
+          sed -i '1a\    "dflags": ["-preview=dip1000", "-allinst"],' dub.json
           head -3 dub.json
           dub describe --data=dflags | grep -q -- -preview=dip1000
 
