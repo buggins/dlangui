@@ -294,6 +294,44 @@ class LineStream {
     @property uint invalidCharCount() { return _invalidCharCount; }
     protected uint _invalidCharCount;
 
+    /// position of an invalid character: line and character in the line, both 1-based
+    static struct InvalidCharPosition {
+        uint line;
+        uint pos;
+    }
+    /// number of invalid characters whose position is recorded (#944)
+    enum MAX_INVALID_CHAR_POSITIONS = 3;
+    /// positions of the first (up to MAX_INVALID_CHAR_POSITIONS) invalid characters in the lines read so far
+    @property const(InvalidCharPosition)[] invalidCharPositions() { return _invalidPositions[0 .. _invalidPositionCount]; }
+    private InvalidCharPosition[MAX_INVALID_CHAR_POSITIONS] _invalidPositions;
+    private uint _invalidPositionCount;
+    // absolute (from the start of the text) indexes of the first invalid characters, not yet in a returned line
+    private ulong[MAX_INVALID_CHAR_POSITIONS] _invalidIndexes;
+    private uint _invalidIndexCount;
+    private ulong _appendedTotal; // characters appended to the text buffer so far
+    private ulong _consumedTotal; // absolute index of the character at _textPos
+
+    /// counts a replaced character, at text[index] of the text being appended (before appendedText())
+    protected final void noteInvalidChar(uint index) @safe nothrow @nogc {
+        _invalidCharCount++;
+        if (_invalidIndexCount + _invalidPositionCount < MAX_INVALID_CHAR_POSITIONS)
+            _invalidIndexes[_invalidIndexCount++] = _appendedTotal + index;
+    }
+
+    /// records the positions of pending invalid characters in the line of length len that starts at the absolute
+    /// index start
+    private void resolveInvalidPositions(ulong start, uint len) @safe nothrow @nogc {
+        uint kept = 0;
+        foreach (i; 0 .. _invalidIndexCount) {
+            ulong index = _invalidIndexes[i];
+            if (index >= start && index < start + len)
+                _invalidPositions[_invalidPositionCount++] = InvalidCharPosition(_line, cast(uint)(index - start + 1));
+            else
+                _invalidIndexes[kept++] = index; // in a later line
+        }
+        _invalidIndexCount = kept;
+    }
+
     // The error properties are kept for compatibility: decoding doesn't fail any more since invalid characters
     // are replaced (#924), so errorCode is always 0 and the others are empty.
 
@@ -384,6 +422,7 @@ class LineStream {
     }
 
     protected final void appendedText(uint len) @safe {
+        _appendedTotal += len;
         //writeln("appended ", len, " chars of text"); //:", _textBuf[_textLen .. _textLen + len]);
         _textLen += len;
     }
@@ -500,6 +539,9 @@ class LineStream {
         } while (eol == LINE_POSITION_UNDEFINED);
         uint lineStart = _textPos;
         uint lineEnd = _textPos + lastchar;
+        if (_invalidIndexCount)
+            resolveInvalidPositions(_consumedTotal, lineEnd > lineStart ? lineEnd - lineStart : 0);
+        _consumedTotal += eol;
         _textPos += eol; // consume text
         if (eof != LINE_POSITION_UNDEFINED) {
             _eof = true;
@@ -629,7 +671,7 @@ private class AsciiLineStream : LineStream {
             if (ch & 0x80) {
                 // not ASCII
                 text[i] = REPLACEMENT_CHAR;
-                _invalidCharCount++;
+                noteInvalidChar(i);
             } else {
                 text[i] = ch;
             }
@@ -835,7 +877,7 @@ private class Utf8LineStream : LineStream {
             if (bread == 0) {
                 // invalid or (at the end of the stream) incomplete character
                 text[chars++] = REPLACEMENT_CHAR;
-                _invalidCharCount++;
+                noteInvalidChar(chars - 1);
                 i += invalidSequenceLength(b[i .. len]);
                 continue;
             }
@@ -888,14 +930,14 @@ private class Utf16LineStream(bool bigEndian) : LineStream {
                     i += 4;
                 } else {
                     ch = REPLACEMENT_CHAR;
-                    _invalidCharCount++;
+                    noteInvalidChar(chars);
                     i += 2;
                 }
             } else {
                 if (ch >= 0xDC00 && ch < 0xE000) {
                     // low surrogate without a high one
                     ch = REPLACEMENT_CHAR;
-                    _invalidCharCount++;
+                    noteInvalidChar(chars);
                 }
                 i += 2;
             }
@@ -904,7 +946,7 @@ private class Utf16LineStream(bool bigEndian) : LineStream {
         if (_streamEof && i < len) {
             // odd byte at the end of the stream
             text[chars++] = REPLACEMENT_CHAR;
-            _invalidCharCount++;
+            noteInvalidChar(chars - 1);
             i = len;
         }
         consumedBytes(i);
@@ -942,14 +984,14 @@ private class Utf32beLineStream : LineStream {
             uint ch = (ch0 << 24) | (ch1 << 16) | (ch2 << 8) | ch3;
             if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
                 ch = REPLACEMENT_CHAR;
-                _invalidCharCount++;
+                noteInvalidChar(chars);
             }
             text[chars++] = ch;
         }
         if (_streamEof && i < len) {
             // 1 to 3 bytes left at the end of the stream
             text[chars++] = REPLACEMENT_CHAR;
-            _invalidCharCount++;
+            noteInvalidChar(chars - 1);
             i = len;
         }
         consumedBytes(i);
@@ -984,14 +1026,14 @@ private class Utf32leLineStream : LineStream {
             uint ch = (ch0 << 24) | (ch1 << 16) | (ch2 << 8) | ch3;
             if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
                 ch = REPLACEMENT_CHAR;
-                _invalidCharCount++;
+                noteInvalidChar(chars);
             }
             text[chars++] = ch;
         }
         if (_streamEof && i < len) {
             // 1 to 3 bytes left at the end of the stream
             text[chars++] = REPLACEMENT_CHAR;
-            _invalidCharCount++;
+            noteInvalidChar(chars - 1);
             i = len;
         }
         consumedBytes(i);
@@ -1168,6 +1210,32 @@ unittest {
         assert(read([0xFF, 0xFE, 0, 0, 'A', 0, 'B', 0], f, chunk) == ["\0AB"d] && f.encoding == EncodingType.UTF16LE);
         assert(read(cast(const(ubyte)[])"a\0b\0\n\0c\0", f, chunk) == ["ab"d, "c"d] && f.encoding == EncodingType.UTF16LE);
     }
+}
+
+// positions of the first invalid characters (#944)
+unittest {
+    static LineStream readAll(const(ubyte)[] data) {
+        LineStream ls = LineStream.create(new MemoryInputStream(data.dup), "test");
+        while (ls.readLine() !is null) {}
+        return ls;
+    }
+    alias P = LineStream.InvalidCharPosition;
+    LineStream ls = readAll(cast(const(ubyte)[])"ok\ncaf\xE9 x\xFF\n\nab\x80\x80\n");
+    assert(ls.invalidCharCount == 4);
+    assert(ls.invalidCharPositions == [P(2, 4), P(2, 7), P(4, 3)]); // only the first 3
+    // after 300 two-byte characters (positions in characters, text across the 512-byte buffer)
+    char[] text = "x\n".dup;
+    foreach (i; 0 .. 300)
+        text ~= "\xC3\xA9";
+    text ~= "\xFF\n";
+    ls = readAll(cast(const(ubyte)[])text);
+    assert(ls.invalidCharCount == 1 && ls.invalidCharPositions == [P(2, 301)]);
+    // UTF-16LE: unpaired surrogate and an odd byte at the end of the last line
+    ls = readAll([0xFF, 0xFE, 'a', 0, 0x00, 0xDE, '\n', 0, 'b', 0, 'c']);
+    assert(ls.invalidCharCount == 2 && ls.invalidCharPositions == [P(1, 2), P(2, 2)]);
+    // no invalid characters
+    ls = readAll(cast(const(ubyte)[])"ok\n");
+    assert(ls.invalidCharCount == 0 && ls.invalidCharPositions.length == 0);
 }
 
 unittest {
