@@ -1423,6 +1423,13 @@ class EditableContent {
 
     protected string _filename;
     protected TextFileFormat _format;
+    protected uint _invalidCharCount;
+
+    /// number of invalid characters (byte sequences) replaced by U+FFFD when the content was loaded (#924);
+    /// saving writes U+FFFD instead of the original bytes
+    @property uint invalidCharCount() {
+        return _invalidCharCount;
+    }
 
     /// file used to load editor content
     @property string filename() {
@@ -1436,6 +1443,7 @@ class EditableContent {
         clear();
         _filename = fname;
         _format = TextFileFormat.init;
+        _invalidCharCount = 0;
         try {
             LineStream lines = LineStream.create(f, fname);
             for (;;) {
@@ -1457,6 +1465,10 @@ class EditableContent {
             // EOF; an empty file has no lines, but content needs at least one
             ensureLineExists();
             _format = lines.textFormat;
+            _invalidCharCount = lines.invalidCharCount;
+            if (_invalidCharCount)
+                Log.w("File ", fname, ": ", _invalidCharCount, " invalid characters for ", _format.encoding,
+                        " replaced by U+FFFD");
             _undoBuffer.clear();
             debug(FileFormats)Log.d("loaded file:", filename, " format detected:", _format);
             notifyContentReplaced();
@@ -1774,4 +1786,21 @@ unittest {
     auto content2 = new EditableContent(true);
     assert(!content2.load(fn ~ ".does-not-exist"));
     assert(content2.length == 1);
+}
+
+/// a file with invalid bytes for its encoding loads completely, with U+FFFD for them (#924)
+unittest {
+    import std.file : write, remove, tempDir;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    string fn = buildPath(tempDir, "dlangui-invalid-chars-test-" ~ to!string(thisProcessID) ~ ".txt");
+    write(fn, "line one\ncaf\xE9 two\nline three\n");
+    scope(exit) remove(fn);
+    auto content = new EditableContent(true);
+    assert(content.load(fn));
+    assert(content.length == 3 && content.line(1) == "caf\uFFFD two"d && content.line(2) == "line three"d);
+    assert(content.invalidCharCount == 1);
+    write(fn, "valid\n");
+    assert(content.load(fn) && content.invalidCharCount == 0);
 }
