@@ -292,7 +292,10 @@ class Win32Font : Font {
         Glyph * found = _glyphCache.find(ch);
         if (found !is null)
             return found;
-        uint glyphIndex = getGlyphIndex(ch);
+        // characters in the font's character map are drawn (#899): getGlyphIndex() (GetCharacterPlacementW) shapes
+        // the character and returns no glyph for a lone combining mark, e.g. Devanagari and Bengali vowel signs;
+        // it is still used for characters not in the font: it gives glyphs of GDI font linking
+        uint glyphIndex = hasCodepoint(ch) ? 1 : getGlyphIndex(ch);
         if (!glyphIndex) {
             ch = getReplacementChar(ch);
             if (!ch)
@@ -756,16 +759,6 @@ class Win32FontManager : FontManager {
     /// list of cached fonts, for cleanup() (#888)
     override protected void forEachFontList(scope void delegate(ref FontList list) callback) {
         callback(_activeFonts);
-    }
-
-    /// returns name of the installed font face matching face (case insensitive), null if not installed (#888)
-    override protected string findInstalledFace(string face) {
-        if (auto p = face in _faceByName)
-            return (*p).face;
-        foreach (ref def; _fontFaces)
-            if (def.face.icmp(face) == 0)
-                return def.face;
-        return null;
     }
 
     /// clears glyph cache

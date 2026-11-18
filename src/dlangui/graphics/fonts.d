@@ -2222,64 +2222,123 @@ class FontManager {
         return res;
     }
 
+    // joins comma separated face lists, skipping empty ones
+    private static string joinFaces(string[] lists...) pure @safe {
+        string res;
+        foreach (list; lists)
+            if (list.length)
+                res ~= (res.length ? ", " : "") ~ list;
+        return res;
+    }
+
     /**
-        Returns the platform's default fallback faces for a font family (#888): comma separated, in order of
+        Returns the platform's default fallback faces for a font family (#888, #899): comma separated, in order of
         preference. Faces that are not installed are skipped when fallback fonts are created.
 
-        CJK fonts of the language cjk come first: a Han character takes the forms of the first installed font
-        that has it.
+        The lists have the same structure on all platforms: Latin fonts of the family and of sans serif, symbol
+        fonts, CJK fonts with those of the language cjk first (a Han character takes the forms of the first
+        installed font that has it), fonts of other living scripts, and last resort fonts. Symbol fonts come
+        before CJK fonts, so that symbols don't take the forms of a CJK font. Historic and rare scripts are left to
+        platform font discovery (#896).
+
+        Sources: Firefox (GetCommonFallbackFonts and font.name-list prefs), Microsoft "Script and font support in
+        Windows" and the Windows 11 font list, Android fonts.xml, fontconfig 65-nonlatin.conf.
     */
     static string defaultFallbackFaces(FontFamily family, CjkLanguage cjk) pure @safe {
         version (Windows) {
-            string sans = cjkFaces(cjk, "Microsoft YaHei", "Microsoft JhengHei", "Meiryo, Yu Gothic, MS Gothic",
-                "Malgun Gothic, Gulim");
-            string serif = cjkFaces(cjk, "SimSun", "PMingLiU, MingLiU", "Yu Mincho, MS Mincho", "Batang");
-            enum symbols = "Segoe UI Symbol, Segoe UI Emoji, Arial Unicode MS";
+            enum latinSans = "Segoe UI, Arial, Tahoma";
+            enum symbols = "Segoe UI Symbol, Cambria Math";
+            string cjkSans = cjkFaces(cjk, "Microsoft YaHei, SimHei, Noto Sans CJK SC",
+                "Microsoft JhengHei, Noto Sans CJK TC, Noto Sans CJK HK",
+                "Meiryo, Yu Gothic, MS PGothic, MS Gothic, Noto Sans CJK JP",
+                "Malgun Gothic, Gulim, Noto Sans CJK KR");
+            string cjkSerif = cjkFaces(cjk, "SimSun, Noto Serif CJK SC",
+                "PMingLiU, MingLiU, MingLiU_HKSCS, Noto Serif CJK TC",
+                "Yu Mincho, MS PMincho, MS Mincho, Noto Serif CJK JP", "Batang, Noto Serif CJK KR");
+            // UI fonts of Windows 8 and later, then fonts of Windows 7 and of optional language font packages
+            enum scripts = "Nirmala UI, Leelawadee UI, Ebrima, Gadugi, Myanmar Text, Javanese Text, "
+                ~ "Microsoft Himalaya, Mongolian Baiti, Microsoft Yi Baiti, Microsoft New Tai Lue, Microsoft Tai Le, "
+                ~ "Microsoft PhagsPa, MV Boli, Sylfaen, Estrangelo Edessa, "
+                ~ "Mangal, Kokila, Vrinda, Shruti, Raavi, Tunga, Kartika, Kalinga, Latha, Gautami, Iskoola Pota, "
+                ~ "Khmer UI, DaunPenh, Lao UI, DokChampa, Nyala, Euphemia, Plantagenet Cherokee, Segoe UI Historic";
+            enum lastResort = "Arial Unicode MS, Segoe UI Emoji";
             switch (family) {
                 case FontFamily.MonoSpace:
-                    return "Consolas, Courier New, " ~ sans ~ ", " ~ serif ~ ", " ~ symbols;
+                    return joinFaces("Consolas, Courier New, Lucida Console", latinSans, symbols, cjkSans, cjkSerif,
+                        scripts, lastResort);
                 case FontFamily.Serif:
-                    return "Times New Roman, Segoe UI, " ~ serif ~ ", " ~ sans ~ ", " ~ symbols;
+                    return joinFaces("Times New Roman, Cambria", latinSans, symbols, cjkSerif, cjkSans, scripts,
+                        lastResort);
                 default:
-                    return "Segoe UI, Arial, " ~ sans ~ ", " ~ serif ~ ", " ~ symbols;
+                    return joinFaces(latinSans, symbols, cjkSans, cjkSerif, scripts, lastResort);
             }
         } else version (OSX) {
-            string sans = cjkFaces(cjk, "PingFang SC, Hiragino Sans GB, STHeiti", "PingFang TC, PingFang HK",
-                "Hiragino Sans, Hiragino Kaku Gothic ProN", "Apple SD Gothic Neo");
-            enum symbols = "Apple Symbols, Arial Unicode MS";
+            enum latinSans = "Helvetica Neue, Helvetica, Arial, Lucida Grande";
+            enum symbols = "Geneva, STIXGeneral, Apple Symbols, Zapf Dingbats";
+            string cjkSans = cjkFaces(cjk, "PingFang SC, Hiragino Sans GB, STHeiti, Heiti SC",
+                "PingFang TC, PingFang HK, Heiti TC, LiHei Pro",
+                "Hiragino Sans, Hiragino Kaku Gothic ProN, Hiragino Kaku Gothic Pro, Osaka",
+                "Apple SD Gothic Neo, Nanum Gothic, AppleGothic");
+            string cjkSerif = cjkFaces(cjk, "Songti SC, STSong", "Songti TC, LiSong Pro",
+                "Hiragino Mincho ProN, Hiragino Mincho Pro", "AppleMyungjo");
+            enum scripts = "Geeza Pro, Mshtakan, Kefa, Thonburi, Lao MN, Khmer MN, Myanmar MN, Devanagari Sangam MN, "
+                ~ "Bangla Sangam MN, Gurmukhi MN, Gujarati Sangam MN, Oriya Sangam MN, Tamil MN, Telugu MN, "
+                ~ "Kannada MN, Malayalam Sangam MN, Sinhala Sangam MN, Kailasa, Plantagenet Cherokee, Euphemia UCAS, "
+                ~ "Noto Sans Mongolian, Noto Sans Thaana, Noto Sans Syriac, Noto Sans Yi, Apple Braille";
+            enum lastResort = "Arial Unicode MS";
             switch (family) {
                 case FontFamily.MonoSpace:
-                    return "Menlo, Courier New, " ~ sans ~ ", " ~ symbols;
+                    return joinFaces("Menlo, Monaco, Courier New", latinSans, symbols, cjkSans, cjkSerif, scripts,
+                        lastResort);
                 case FontFamily.Serif:
-                    return "Times New Roman, Helvetica Neue, " ~ cjkFaces(cjk, "Songti SC, STSong", "Songti TC",
-                        "Hiragino Mincho ProN", "AppleMyungjo") ~ ", " ~ sans ~ ", " ~ symbols;
+                    return joinFaces("Times New Roman, Times", latinSans, symbols, cjkSerif, cjkSans, scripts,
+                        lastResort);
                 default:
-                    return "Helvetica Neue, Arial, " ~ sans ~ ", " ~ symbols;
+                    return joinFaces(latinSans, symbols, cjkSans, cjkSerif, scripts, lastResort);
             }
         } else {
-            string sans = cjkFaces(cjk,
+            enum latinSans = "Noto Sans, DejaVu Sans, Liberation Sans, FreeSans";
+            enum symbols = "Noto Sans Math, Noto Sans Symbols, Noto Sans Symbols2, Noto Sans Symbols 2, Symbola";
+            string cjkSans = cjkFaces(cjk,
                 "Noto Sans CJK SC, Source Han Sans SC, Source Han Sans CN, Droid Sans Fallback, WenQuanYi Micro Hei, "
                     ~ "WenQuanYi Zen Hei",
-                "Noto Sans CJK TC, Noto Sans CJK HK, Source Han Sans TC, Source Han Sans TW, AR PL UKai TW",
-                "Noto Sans CJK JP, Source Han Sans JP, Source Han Sans, IPAGothic, IPAexGothic, TakaoGothic, VL Gothic",
-                "Noto Sans CJK KR, Source Han Sans KR, Source Han Sans K, NanumGothic, UnDotum, Baekmuk Gulim");
-            enum symbols = "DejaVu Sans, Noto Sans Symbols, Noto Sans Symbols2, Symbola, Noto Emoji";
+                "Noto Sans CJK TC, Noto Sans CJK HK, Source Han Sans TC, Source Han Sans TW, Source Han Sans HK",
+                "Noto Sans CJK JP, Source Han Sans JP, Source Han Sans, IPAGothic, IPAexGothic, IPAPGothic, "
+                    ~ "TakaoPGothic, TakaoGothic, VL Gothic, UmePlus P Gothic",
+                "Noto Sans CJK KR, Source Han Sans KR, Source Han Sans K, NanumGothic, UnDotum, Baekmuk Dotum");
+            string cjkSerif = cjkFaces(cjk, "Noto Serif CJK SC, Source Han Serif SC, AR PL UMing CN",
+                "Noto Serif CJK TC, Source Han Serif TC, AR PL UMing TW",
+                "Noto Serif CJK JP, Source Han Serif JP, IPAMincho, IPAexMincho",
+                "Noto Serif CJK KR, Source Han Serif KR, UnBatang, NanumMyeongjo");
+            string cjkMono = cjkFaces(cjk, "Noto Sans Mono CJK SC, WenQuanYi Zen Hei Mono, WenQuanYi Micro Hei Mono",
+                "Noto Sans Mono CJK TC, Noto Sans Mono CJK HK", "Noto Sans Mono CJK JP",
+                "Noto Sans Mono CJK KR, NanumGothicCoding");
+            // Noto fonts of living scripts (as in Android), then fonts of distributions (fontconfig 65-nonlatin)
+            enum scripts = "Noto Sans Arabic, Noto Naskh Arabic, Noto Sans Hebrew, Noto Sans Armenian, "
+                ~ "Noto Sans Georgian, Noto Sans Thai, Noto Sans Lao, Noto Sans Khmer, Noto Sans Myanmar, "
+                ~ "Noto Sans Devanagari, Noto Sans Bengali, Noto Sans Gurmukhi, Noto Sans Gujarati, Noto Sans Oriya, "
+                ~ "Noto Sans Tamil, Noto Sans Telugu, Noto Sans Kannada, Noto Sans Malayalam, Noto Sans Sinhala, "
+                ~ "Noto Serif Tibetan, Noto Sans Ethiopic, Noto Sans Thaana, Noto Sans Syriac, Noto Sans Mongolian, "
+                ~ "Noto Sans Yi, Noto Sans Cherokee, Noto Sans Canadian Aboriginal, Noto Sans Tifinagh, Noto Sans NKo, "
+                ~ "Noto Sans Adlam, Noto Sans Javanese, Noto Sans Balinese, Noto Sans Sundanese, Noto Sans Tai Le, "
+                ~ "Noto Sans New Tai Lue, Noto Sans Tai Tham, Noto Sans Tai Viet, Noto Sans Cham, Noto Sans Vai, "
+                ~ "Noto Sans Ol Chiki, Noto Sans Meetei Mayek, Noto Sans Chakma, Noto Sans Lisu, "
+                ~ "Lohit Devanagari, Lohit Bengali, Lohit Gurmukhi, Lohit Gujarati, Lohit Odia, Lohit Tamil, "
+                ~ "Lohit Telugu, Lohit Kannada, Lohit Malayalam, LKLUG, Loma, Garuda, Waree, Umpush, Abyssinica SIL, "
+                ~ "Khmer OS, Phetsarath OT, Padauk, Jomolhari, KacstOne";
+            enum serifScripts = "Noto Serif Armenian, Noto Serif Georgian, Noto Serif Hebrew, Noto Serif Thai, "
+                ~ "Noto Serif Lao, Noto Serif Khmer, Noto Serif Myanmar, Noto Serif Devanagari, Noto Serif Bengali, "
+                ~ "Noto Serif Gurmukhi, Noto Serif Gujarati, Noto Serif Tamil, Noto Serif Telugu, Noto Serif Kannada, "
+                ~ "Noto Serif Malayalam, Noto Serif Sinhala, Noto Serif Ethiopic";
             switch (family) {
                 case FontFamily.MonoSpace:
-                    return "DejaVu Sans Mono, Noto Sans Mono, Liberation Mono, "
-                        ~ cjkFaces(cjk, "Noto Sans Mono CJK SC, WenQuanYi Zen Hei Mono, WenQuanYi Micro Hei Mono",
-                            "Noto Sans Mono CJK TC, Noto Sans Mono CJK HK", "Noto Sans Mono CJK JP",
-                            "Noto Sans Mono CJK KR, NanumGothicCoding")
-                        ~ ", " ~ sans ~ ", " ~ symbols;
+                    return joinFaces("DejaVu Sans Mono, Noto Sans Mono, Liberation Mono, FreeMono", latinSans, symbols,
+                        cjkMono, cjkSans, cjkSerif, scripts, "DejaVu Serif, FreeSerif");
                 case FontFamily.Serif:
-                    return "DejaVu Serif, Noto Serif, Liberation Serif, "
-                        ~ cjkFaces(cjk, "Noto Serif CJK SC, Source Han Serif SC, AR PL UMing CN",
-                            "Noto Serif CJK TC, Source Han Serif TC, AR PL UMing TW",
-                            "Noto Serif CJK JP, Source Han Serif JP, IPAMincho, IPAexMincho",
-                            "Noto Serif CJK KR, Source Han Serif KR, UnBatang, NanumMyeongjo")
-                        ~ ", " ~ sans ~ ", " ~ symbols;
+                    return joinFaces("DejaVu Serif, Noto Serif, Liberation Serif, FreeSerif", latinSans, symbols,
+                        cjkSerif, cjkSans, serifScripts, scripts);
                 default:
-                    return "Noto Sans, Liberation Sans, " ~ sans ~ ", " ~ symbols;
+                    return joinFaces(latinSans, symbols, cjkSans, cjkSerif, scripts, "DejaVu Serif, FreeSerif");
             }
         }
     }
@@ -2371,15 +2430,27 @@ class FontManager {
     /// call when fonts are registered or removed: fallback faces are looked up again (#888)
     protected void installedFacesChanged() {
         _installedFallbackFacesValid[] = false;
+        _installedFaceByLowerNameValid = false;
     }
 
+    private string[string] _installedFaceByLowerName;
+    private bool _installedFaceByLowerNameValid;
+
     /// returns name of the installed font face matching face (case insensitive), null if it's not installed;
-    /// override for a faster lookup
+    /// looked up in a table of getFaces(), built on first use after installedFacesChanged()
     protected string findInstalledFace(string face) {
-        import std.uni : icmp;
-        foreach (ref props; getFaces())
-            if (icmp(props.face, face) == 0)
-                return props.face;
+        import std.uni : toLower;
+        if (!_installedFaceByLowerNameValid) {
+            _installedFaceByLowerName = null;
+            foreach (ref props; getFaces()) {
+                string key = props.face.toLower;
+                if (key !in _installedFaceByLowerName)
+                    _installedFaceByLowerName[key] = props.face;
+            }
+            _installedFaceByLowerNameValid = true;
+        }
+        if (auto p = face.toLower in _installedFaceByLowerName)
+            return *p;
         return null;
     }
 
