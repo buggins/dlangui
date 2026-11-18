@@ -221,8 +221,7 @@ class Node3d : Transform {
     */
     @property ref const(mat4) inverseTransposeWorldMatrix() {
         static __gshared mat4 invTransWorld;
-        invTransWorld = worldMatrix;
-        invTransWorld.invert();
+        invTransWorld = worldMatrix.invert(); // invert() returns the inverse
         invTransWorld.transpose();
         return invTransWorld;
     }
@@ -236,8 +235,7 @@ class Node3d : Transform {
     */
     @property ref const(mat4) inverseTransposeWorldViewMatrix() {
         static __gshared mat4 invTransWorldView;
-        invTransWorldView = viewMatrix * worldMatrix;
-        invTransWorldView.invert();
+        invTransWorldView = (viewMatrix * worldMatrix).invert();
         invTransWorldView.transpose();
         return invTransWorldView;
     }
@@ -261,4 +259,17 @@ class Node3d : Transform {
         viewMatrix.transformVector(vector);
         return vector;
     }
+}
+
+// the normal matrix is the inverse transpose (#926): for a scale of (2, 1, 1) it's a scale of (0.5, 1, 1)
+unittest {
+    import dlangui.core.math3d;
+    Node3d node = new Node3d("test");
+    node.scalingX = 2;
+    mat4 expected;
+    expected.setIdentity();
+    expected.scale(0.5f, 1, 1);
+    assert(node.inverseTransposeWorldMatrix == expected);
+    assert(node.inverseTransposeWorldViewMatrix == expected); // no camera: view matrix is the identity
+    destroy(node);
 }
