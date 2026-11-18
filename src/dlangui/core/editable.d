@@ -96,12 +96,12 @@ enum TokenCategory : ubyte {
 }
 
 /// extracts token category, clearing subcategory
-ubyte tokenCategory(ubyte t) {
+ubyte tokenCategory(ubyte t) @safe pure nothrow @nogc {
     return t & 0xF0;
 }
 
 /// split dstring by delimiters
-dstring[] splitDString(dstring source, dchar delimiter = EOL) {
+dstring[] splitDString(dstring source, dchar delimiter = EOL) @safe pure nothrow {
     int start = 0;
     dstring[] res;
     for (int i = 0; i <= source.length; i++) {
@@ -111,7 +111,7 @@ dstring[] splitDString(dstring source, dchar delimiter = EOL) {
                 int end = i;
                 if (delimiter == EOL && prevchar == '\r') // windows CR/LF
                     end--;
-                dstring line = i > start ? cast(dstring)(source[start .. end].dup) : ""d;
+                dstring line = i > start ? source[start .. end].idup : ""d;
                 res ~= line;
             }
             start = i + 1;
@@ -127,18 +127,18 @@ version (Windows) {
 }
 
 /// concat strings from array using delimiter
-dstring concatDStrings(dstring[] lines, dstring delimiter = SYSTEM_DEFAULT_EOL) {
+dstring concatDStrings(dstring[] lines, dstring delimiter = SYSTEM_DEFAULT_EOL) @safe pure nothrow {
     dchar[] buf;
     foreach(i, line; lines) {
         if(i > 0)
             buf ~= delimiter;
         buf ~= line;
     }
-    return cast(dstring)buf;
+    return (() @trusted => cast(dstring)buf)(); // buf is a new array, not referenced elsewhere
 }
 
 /// replace end of lines with spaces
-dstring replaceEolsWithSpaces(dstring source) {
+dstring replaceEolsWithSpaces(dstring source) @safe pure nothrow {
     dchar[] buf;
     dchar lastch;
     foreach(ch; source) {
@@ -152,7 +152,7 @@ dstring replaceEolsWithSpaces(dstring source) {
         }
         lastch = ch;
     }
-    return cast(dstring)buf;
+    return (() @trusted => cast(dstring)buf)(); // buf is a new array, not referenced elsewhere
 }
 
 /// text content position
@@ -161,8 +161,9 @@ struct TextPosition {
     int line;
     /// character position in line (0 == before first character)
     int pos;
+@safe:
     /// compares two positions
-    int opCmp(ref const TextPosition v) const {
+    int opCmp(ref const TextPosition v) const pure nothrow @nogc {
         if (line < v.line)
             return -1;
         if (line > v.line)
@@ -173,7 +174,7 @@ struct TextPosition {
             return 1;
         return 0;
     }
-    bool opEquals(ref inout TextPosition v) inout {
+    bool opEquals(ref inout TextPosition v) inout pure nothrow @nogc {
         return line == v.line && pos == v.pos;
     }
     /// hash consistent with opEquals
@@ -184,7 +185,7 @@ struct TextPosition {
         return to!string(line) ~ ":" ~ to!string(pos);
     }
     /// adds deltaPos to position and returns result
-    TextPosition offset(int deltaPos) {
+    TextPosition offset(int deltaPos) const pure nothrow @nogc {
         return TextPosition(line, pos + deltaPos);
     }
 }
@@ -193,7 +194,8 @@ struct TextPosition {
 struct TextRange {
     TextPosition start;
     TextPosition end;
-    bool intersects(const ref TextRange v) const {
+@safe:
+    bool intersects(const ref TextRange v) const pure nothrow @nogc {
         if (start >= v.end)
             return false;
         if (end <= v.start)
@@ -201,23 +203,23 @@ struct TextRange {
         return true;
     }
     /// returns true if position is inside this range
-    bool isInside(TextPosition p) const {
+    bool isInside(TextPosition p) const pure nothrow @nogc {
         return start <= p && end > p;
     }
     /// returns true if position is inside this range or right after this range
-    bool isInsideOrNext(TextPosition p) const {
+    bool isInsideOrNext(TextPosition p) const pure nothrow @nogc {
         return start <= p && end >= p;
     }
     /// returns true if range is empty
-    @property bool empty() const {
+    @property bool empty() const pure nothrow @nogc {
         return end <= start;
     }
     /// returns true if start and end located at the same line
-    @property bool singleLine() const {
+    @property bool singleLine() const pure nothrow @nogc {
         return end.line == start.line;
     }
     /// returns count of lines in range
-    @property int lines() const {
+    @property int lines() const pure nothrow @nogc {
         return end.line - start.line + 1;
     }
     @property string toString() const {
@@ -466,7 +468,7 @@ struct LineSpan {
     }
     
     ///Adds up either positions or widths to a wrapLine
-    int accumulation(int wrapLine, bool wrapPointInfo)
+    int accumulation(int wrapLine, bool wrapPointInfo) @safe pure nothrow @nogc
     {
         int total;
         for (int i; i < wrapLine; i++)
@@ -537,7 +539,7 @@ struct TextLineMeasure {
     /// last non-space position based on tab size
     int lastNonSpaceX;
     /// true if line has zero length or consists of spaces and tabs only
-    @property bool empty() { return len == 0 || firstNonSpace < 0; }
+    @property bool empty() const @safe pure nothrow @nogc { return len == 0 || firstNonSpace < 0; }
 }
 
 /// editable plain text (singleline/multiline)
@@ -1575,9 +1577,9 @@ class LineIcon {
     /// arbitrary parameter
     Object objectParam;
     /// empty
-    this() {
+    this() @safe pure nothrow @nogc {
     }
-    this(LineIconType type, int line, Object obj = null) {
+    this(LineIconType type, int line, Object obj = null) @safe pure nothrow @nogc {
         this.type = type;
         this.line = line;
         this.objectParam = obj;
@@ -1588,6 +1590,7 @@ class LineIcon {
 struct LineIcons {
     private LineIcon[] _items;
     private int _len;
+@safe:
 
     /// returns count of items
     @property int length() { return _len; }
@@ -1637,8 +1640,8 @@ struct LineIcons {
         LineIcon res = _items[index];
         for (int i = index; i < _len - 1; i++)
             _items[i] = _items[i + 1];
-        _items[_len] = null;
         _len--;
+        _items[_len] = null; // the vacated last slot (it cleared _items[_len], past the last item, #941)
         return res;
     }
 
@@ -1844,4 +1847,29 @@ unittest {
         assert(content.save(fn, TextFileFormat(enc, LineEnding.LF, true)), to!string(enc));
         assert(loaded.load(fn) && loaded.line(0) == "x\uFFFDy"d, to!string(enc));
     }
+}
+
+// text helpers, positions and ranges (#914); LineIcons.remove when the array is full (#941)
+@safe unittest {
+    assert(splitDString("a\r\nb\nc"d) == ["a"d, "b"d, "c"d]);
+    assert(splitDString("a;;b"d, ';') == ["a"d, ""d, "b"d]);
+    assert(concatDStrings(["a"d, "b"d], "\n"d) == "a\nb"d);
+    assert(replaceEolsWithSpaces("a\r\nb\nc\rd"d) == "a b c d"d);
+    TextPosition p1 = TextPosition(1, 5), p2 = TextPosition(2, 0);
+    TextPosition p3 = p1.offset(2);
+    assert(p1 < p2 && p3.line == 1 && p3.pos == 7 && p1.toString == "1:5");
+    TextRange range = TextRange(p1, p2);
+    assert(!range.empty && !range.singleLine && range.lines == 2);
+    assert(range.isInside(TextPosition(1, 9)) && !range.isInside(p2) && range.isInsideOrNext(p2));
+    TextRange after = TextRange(p2, TextPosition(3, 0));
+    TextRange overlapping = TextRange(TextPosition(1, 0), TextPosition(1, 6));
+    assert(!range.intersects(after) && range.intersects(overlapping));
+    // 16 icons fill the array exactly: removing one cleared _items[16], past the end
+    LineIcons icons;
+    foreach (i; 0 .. 16)
+        icons.add(new LineIcon(LineIconType.bookmark, i));
+    assert(icons.length == 16 && icons._items.length == 16);
+    assert(icons.remove(0).line == 0 && icons.length == 15 && icons[0].line == 1);
+    assert(icons._items[15] is null); // the vacated slot keeps no reference
+    assert(icons.findByLineAndType(15, LineIconType.bookmark).line == 15 && icons.findByType(LineIconType.bookmark).length == 15);
 }
