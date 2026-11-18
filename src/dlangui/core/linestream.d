@@ -314,8 +314,9 @@ class LineStream {
         _encoding = EncodingType.UTF8;
     }
 
-    /// returns slice of bytes available in buffer
-    protected uint readBytes() {
+    /// reads more bytes into the buffer if needed; returns the number of bytes available from _pos
+    /// (not @safe: calls the InputStream, whose methods have no attributes)
+    protected final uint readBytes() {
         uint bytesLeft = _len - _pos;
         if (_streamEof || bytesLeft > QUARTER_BYTE_BUFFER_SIZE)
             return bytesLeft;
@@ -332,28 +333,25 @@ class LineStream {
     }
 
     // when bytes consumed from byte buffer, call this method to update position
-    protected void consumedBytes(uint count) {
+    protected final void consumedBytes(uint count) @safe {
         _pos += count;
     }
 
-    // reserve text buffer for specified number of characters, and return pointer to first free character in buffer
-    protected dchar * reserveTextBuf(uint len) {
+    // reserve text buffer for specified number of characters, and return the free space (at least len characters)
+    protected final dchar[] reserveTextBuf(uint len) @safe {
         // create new text buffer if necessary
         if (_textBuf == null) {
-            if (len < TEXT_BUFFER_SIZE)
-                len = TEXT_BUFFER_SIZE;
-            _textBuf = new dchar[len];
-            return _textBuf.ptr;
+            _textBuf = new dchar[len < TEXT_BUFFER_SIZE ? TEXT_BUFFER_SIZE : len];
+            return _textBuf;
         }
         uint spaceLeft = cast(uint)_textBuf.length - _textLen;
         if (spaceLeft >= len)
-            return _textBuf.ptr + _textLen;
+            return _textBuf[_textLen .. $];
         // move text to beginning of buffer, if necessary
         if (_textPos > _textBuf.length / 2) {
             uint charCount = _textLen - _textPos;
-            dchar * p = _textBuf.ptr;
             foreach(i; 0 .. charCount)
-                p[i] = p[i + _textPos];
+                _textBuf[i] = _textBuf[i + _textPos];
             _textLen = charCount;
             _textPos = 0;
         }
@@ -365,15 +363,15 @@ class LineStream {
                 newsize = _textLen + len;
             _textBuf.length = newsize;
         }
-        return _textBuf.ptr + _textLen;
+        return _textBuf[_textLen .. $];
     }
 
-    protected void appendedText(uint len) {
+    protected final void appendedText(uint len) @safe {
         //writeln("appended ", len, " chars of text"); //:", _textBuf[_textLen .. _textLen + len]);
         _textLen += len;
     }
 
-    protected void setError(int code, string message, uint errorLine, uint errorPos) {
+    protected final void setError(int code, string message, uint errorLine, uint errorPos) @safe {
         _errorCode = code;
         _errorMessage = message;
         _errorLine = errorLine;
@@ -526,7 +524,7 @@ class LineStream {
     }
 
     protected bool invalidCharFlag;
-    protected void invalidCharError() {
+    protected final void invalidCharError() @safe {
         uint pos = _textLen - _textPos + 1;
         setError(ErrorCodes.INVALID_CHARACTER, "Invalid character in line " ~ to!string(_line) ~ ":" ~ to!string(pos), _line, pos);
     }
@@ -542,13 +540,16 @@ private class AsciiLineStream : LineStream {
             invalidCharError();
             return 0;
         }
-        uint bytesAvailable = readBytes();
-        ubyte * bytes = _buf.ptr + _pos;
-        if (bytesAvailable == 0)
+        uint len = readBytes();
+        if (len == 0)
             return 0; // nothing to decode
-        uint len = bytesAvailable;
-        ubyte* b = bytes;
-        dchar* text = reserveTextBuf(len);
+        return decodeBuffer(len);
+    }
+
+    /// decodes the len bytes available in the buffer
+    private uint decodeBuffer(uint len) @safe {
+        const(ubyte)[] b = _buf[_pos .. _pos + len];
+        dchar[] text = reserveTextBuf(len);
         uint i = 0;
         for (; i < len; i++) {
             ubyte ch = b[i];
@@ -571,7 +572,10 @@ private class Utf8LineStream : LineStream {
         super(stream, filename, EncodingType.UTF8, buf, skip, len);
     }
 
-    uint decodeBytes(ubyte* b,in uint bleft, out uint ch, out bool needMoreFlag){
+    /// decodes one character from the start of b (not empty); returns the number of bytes used, 0 if the bytes
+    /// are invalid or incomplete (then needMoreFlag is set)
+    static uint decodeBytes(scope const(ubyte)[] b, out uint ch, out bool needMoreFlag) @safe pure nothrow @nogc {
+        immutable size_t bleft = b.length;
         uint bread = 0;
         uint ch0 = b[0];
         if (!(ch0 & 0x80)) {
@@ -650,7 +654,7 @@ private class Utf8LineStream : LineStream {
                 return 0;
             }
             ch = ((ch0 & 0x01) << 30) | ((ch1 & 0x3F) << 24) | ((ch2 & 0x3F) << 18) | ((ch3 & 0x3F) << 12) | ((ch4 & 0x3F) << 6) | (ch5 & 0x3F);
-            bread = 5;
+            bread = 6;
         }
         if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
             return 0;
@@ -658,62 +662,62 @@ private class Utf8LineStream : LineStream {
         return bread;
     }
 
-    /// this constructor was created for unittests only
-    protected this(){
-
-    }
-
-    unittest {
-        auto o = new Utf8LineStream();
+    @safe unittest {
         ubyte[] buffer =  new ubyte[4];
-        ubyte * bytes  = buffer.ptr;
         uint ch;
         bool needMoreFlag;
         uint bread;
 
         //convert simple character
         buffer[0] = '/';
-        bread = o.decodeBytes(bytes,1,ch,needMoreFlag);
+        bread = decodeBytes(buffer[0 .. 1],ch,needMoreFlag);
         assert(!needMoreFlag);
         assert(bread == 1);
         assert(ch == '/');
-        //writefln("/ as hex: 0x%32x,0x%32x", ch,'/');
 
 
         //convert 2byte character
         buffer[0] = 0xc3;
         buffer[1] = 0x84;
-        bread = o.decodeBytes(bytes,1,ch,needMoreFlag);
+        bread = decodeBytes(buffer[0 .. 1],ch,needMoreFlag);
         assert(needMoreFlag);
 
-        bread = o.decodeBytes(bytes,2,ch,needMoreFlag);
+        bread = decodeBytes(buffer[0 .. 2],ch,needMoreFlag);
         assert(!needMoreFlag);
         assert(bread == 2);
         assert(ch == 'Ä');
-        //writefln("Ä as hex: 0x%32x,0x%32x", ch,'Ä');
 
         //convert 3byte character
         buffer[0] = 0xe0;
         buffer[1] = 0xa4;
         buffer[2] = 0xb4;
-        bread = o.decodeBytes(bytes,2,ch,needMoreFlag);
+        bread = decodeBytes(buffer[0 .. 2],ch,needMoreFlag);
         assert(needMoreFlag);
 
-        bread = o.decodeBytes(bytes,3,ch,needMoreFlag);
+        bread = decodeBytes(buffer[0 .. 3],ch,needMoreFlag);
         assert(!needMoreFlag);
         assert(bread == 3);
-        //writefln("ऴ as hex: 0x%32x,0x%32x", ch,'ऴ');
         assert(ch == 'ऴ');
 
         //regression test for https://github.com/buggins/dlangide/issues/65
         buffer[0] = 0xEB;
         buffer[1] = 0xB8;
         buffer[2] = 0x94;
-        bread = o.decodeBytes(bytes,3,ch,needMoreFlag);
+        bread = decodeBytes(buffer[0 .. 3],ch,needMoreFlag);
         assert(!needMoreFlag);
         assert(bread == 3);
-        //writefln("블 as hex: 0x%32x,0x%32x", ch,'블');
         assert(ch == '블');
+
+        // invalid: continuation byte first, bad continuation byte, surrogate code point
+        buffer[0] = 0x84;
+        assert(decodeBytes(buffer[0 .. 1],ch,needMoreFlag) == 0 && !needMoreFlag);
+        buffer[0] = 0xc3;
+        buffer[1] = 0x41;
+        assert(decodeBytes(buffer[0 .. 2],ch,needMoreFlag) == 0 && !needMoreFlag);
+        buffer[0] = 0xED;
+        buffer[1] = 0xA0;
+        buffer[2] = 0x80;
+        assert(decodeBytes(buffer[0 .. 3],ch,needMoreFlag) == 0 && !needMoreFlag);
     }
 
     override uint decodeText() {
@@ -726,18 +730,21 @@ private class Utf8LineStream : LineStream {
             invalidCharError();
             return 0;
         }
-        ubyte * bytes = _buf.ptr + _pos;
-        ubyte* b = bytes;
+        return decodeBuffer(len);
+    }
+
+    /// decodes the len bytes available in the buffer
+    private uint decodeBuffer(uint len) @safe {
+        const(ubyte)[] b = _buf[_pos .. _pos + len];
         uint chars = 0;
         uint maxResultingBytes = len*2; //len*2 because worst case is if all input chars are singelbyte and resulting in two bytes
-        dchar* text = reserveTextBuf(maxResultingBytes);
+        dchar[] text = reserveTextBuf(maxResultingBytes);
         uint i = 0;
 
         bool needMoreFlag = false;
         for (; i < len; i++) {
             uint ch = 0;
-            uint bleft = len - i;
-            uint bread = decodeBytes(b+i,bleft,ch,needMoreFlag);
+            uint bread = decodeBytes(b[i .. len],ch,needMoreFlag);
 
             if(needMoreFlag){
                 //decodeBytes needs more bytes, but nore more bytes left in the buffer
@@ -778,16 +785,19 @@ private class Utf16beLineStream : LineStream {
             invalidCharError();
             return 0;
         }
-        uint bytesAvailable = readBytes();
-        ubyte * bytes = _buf.ptr + _pos;
-        if (bytesAvailable == 0)
+        uint len = readBytes();
+        if (len == 0)
             return 0; // nothing to decode
-        uint len = bytesAvailable;
+        return decodeBuffer(len);
+    }
+
+    /// decodes the len bytes available in the buffer
+    private uint decodeBuffer(uint len) @safe {
+        const(ubyte)[] b = _buf[_pos .. _pos + len];
         uint chars = 0;
-        ubyte* b = bytes;
-        dchar* text = reserveTextBuf(len / 2 + 1);
+        dchar[] text = reserveTextBuf(len / 2 + 1);
         uint i = 0;
-        for (; i < len - 1; i += 2) {
+        for (; i + 1 < len; i += 2) {
             uint ch0 = b[i];
             uint ch1 = b[i + 1];
             uint ch = (ch0 << 8) | ch1;
@@ -812,16 +822,19 @@ private class Utf16leLineStream : LineStream {
             invalidCharError();
             return 0;
         }
-        uint bytesAvailable = readBytes();
-        ubyte * bytes = _buf.ptr + _pos;
-        if (bytesAvailable == 0)
+        uint len = readBytes();
+        if (len == 0)
             return 0; // nothing to decode
-        uint len = bytesAvailable;
+        return decodeBuffer(len);
+    }
+
+    /// decodes the len bytes available in the buffer
+    private uint decodeBuffer(uint len) @safe {
+        const(ubyte)[] b = _buf[_pos .. _pos + len];
         uint chars = 0;
-        ubyte* b = bytes;
-        dchar* text = reserveTextBuf(len / 2 + 1);
+        dchar[] text = reserveTextBuf(len / 2 + 1);
         uint i = 0;
-        for (; i < len - 1; i += 2) {
+        for (; i + 1 < len; i += 2) {
             uint ch0 = b[i];
             uint ch1 = b[i + 1];
             uint ch = (ch1 << 8) | ch0;
@@ -846,16 +859,20 @@ private class Utf32beLineStream : LineStream {
             invalidCharError();
             return 0;
         }
-        uint bytesAvailable = readBytes();
-        ubyte * bytes = _buf.ptr + _pos;
-        if (bytesAvailable == 0)
+        uint len = readBytes();
+        if (len == 0)
             return 0; // nothing to decode
-        uint len = bytesAvailable;
+        return decodeBuffer(len);
+    }
+
+    /// decodes the len bytes available in the buffer
+    private uint decodeBuffer(uint len) @safe {
+        const(ubyte)[] b = _buf[_pos .. _pos + len];
         uint chars = 0;
-        ubyte* b = bytes;
-        dchar* text = reserveTextBuf(len / 2 + 1);
+        dchar[] text = reserveTextBuf(len / 4 + 1);
         uint i = 0;
-        for (; i < len - 3; i += 4) {
+        // i + 3 < len: len - 3 wrapped around with 1 or 2 bytes left (#922)
+        for (; i + 3 < len; i += 4) {
             uint ch0 = b[i];
             uint ch1 = b[i + 1];
             uint ch2 = b[i + 2];
@@ -885,16 +902,20 @@ private class Utf32leLineStream : LineStream {
             invalidCharError();
             return 0;
         }
-        uint bytesAvailable = readBytes();
-        ubyte * bytes = _buf.ptr + _pos;
-        if (bytesAvailable == 0)
+        uint len = readBytes();
+        if (len == 0)
             return 0; // nothing to decode
-        uint len = bytesAvailable;
+        return decodeBuffer(len);
+    }
+
+    /// decodes the len bytes available in the buffer
+    private uint decodeBuffer(uint len) @safe {
+        const(ubyte)[] b = _buf[_pos .. _pos + len];
         uint chars = 0;
-        ubyte* b = bytes;
-        dchar* text = reserveTextBuf(len / 2 + 1);
+        dchar[] text = reserveTextBuf(len / 4 + 1);
         uint i = 0;
-        for (; i < len - 3; i += 4) {
+        // i + 3 < len: len - 3 wrapped around with 1 or 2 bytes left (#922)
+        for (; i + 3 < len; i += 4) {
             uint ch3 = b[i];
             uint ch2 = b[i + 1];
             uint ch1 = b[i + 2];
@@ -915,6 +936,48 @@ private class Utf32leLineStream : LineStream {
     }
 }
 
+
+// decoding of complete, truncated and invalid input; the error is checked by errorMessage because errorCode is
+// 0 for invalid characters (#924)
+unittest {
+    static dstring[] readAll(const(ubyte)[] data, out string error) {
+        LineStream ls = LineStream.create(new MemoryInputStream(data.dup), "test");
+        dstring[] lines;
+        foreach (n; 0 .. 1000) {
+            dchar[] line = ls.readLine();
+            if (line is null)
+                break;
+            lines ~= line.idup;
+        }
+        error = ls.errorMessage;
+        return lines;
+    }
+    string error;
+    // complete input in every encoding (with BOM), CR LF and LF line ends
+    assert(readAll(cast(const(ubyte)[])"\xEF\xBB\xBFab\r\nc\xC3\x84\n", error) == ["ab"d, "cÄ"d] && !error);
+    assert(readAll(cast(const(ubyte)[])"ab\nc", error) == ["ab"d, "c"d] && !error);
+    assert(readAll([0xFE, 0xFF, 0, 'a', 0, '\n', 0x09, 0x34], error) == ["a"d, "ऴ"d] && !error);
+    assert(readAll([0xFF, 0xFE, 'a', 0, '\n', 0, 0x34, 0x09], error) == ["a"d, "ऴ"d] && !error);
+    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0x09, 0x34], error) == ["a"d, "ऴ"d] && !error);
+    assert(readAll([0xFF, 0xFE, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0, 0x34, 0x09, 0, 0], error) == ["a"d, "ऴ"d] && !error);
+    // UTF-32 with 1 or 2 bytes left: no read past the input (#922), the incomplete character is an error
+    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 'B', 0, 0, 0, 'C', 0], error) == ["AB"d] && error);
+    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'A', 0], error) == ["A"d] && error);
+    // UTF-32 code point out of range
+    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 0, 0, 0x11, 0], error) == ["A"d] && error);
+    // UTF-16 with an odd byte count
+    assert(readAll([0xFF, 0xFE, 'A', 0, 'B'], error) == ["A"d] && error);
+    assert(readAll([0xFE, 0xFF, 0, 'A', 0], error) == ["A"d] && error);
+    // UTF-8: invalid byte (decoding stops there), cut sequence at the end
+    assert(readAll(cast(const(ubyte)[])"one\ncaf\xE9 two\nthree\n", error) == ["one"d, "caf"d] && error == "Invalid character in line 2:4");
+    assert(readAll(cast(const(ubyte)[])"ab\xC3", error) == ["ab"d] && error);
+    // text longer than the buffers (512 bytes, 1024 characters)
+    char[] big;
+    foreach (i; 0 .. 300)
+        big ~= "line \xC3\x84\n";
+    dstring[] lines = readAll(cast(const(ubyte)[])big, error);
+    assert(lines.length == 300 && lines[299] == "line Ä"d && !error);
+}
 
 unittest {
     static if (false) {
