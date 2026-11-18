@@ -386,3 +386,43 @@ unittest
     d.replace(new Dummy(456), 0);
     assert(d[0].a == 456);
 }
+
+// Collection of values and of non-owned class references: the inferred attributes allow @safe, pure and nothrow
+// code (owning collections and ObjectList destroy their items: @system)
+@safe pure nothrow unittest
+{
+    Collection!int c;
+    assert(c.empty);
+    c ~= 1;
+    c += 2;
+    c.add(0, 0);
+    c.pushBack(3);
+    c.pushFront(-1);
+    assert(c.length == 5 && c[0] == -1 && c[4] == 3);
+    assert(c.indexOf(2) == 3 && c.indexOf(42) == size_t.max);
+    c -= 2;
+    assert(c.length == 4 && c.indexOf(2) == size_t.max);
+    assert(c.removeValue(1) && !c.removeValue(1));
+    assert(c.peekFront == -1 && c.peekBack == 3 && c.front == -1 && c.back == 3);
+    assert(c.popFront == -1 && c.popBack == 3 && c.length == 1 && c.remove(0) == 0);
+    assert(c.empty && c.popFront == 0);
+    c.size = 10;
+    assert(c.size == 10 && c.length == 0);
+    c.length = 2;
+    assert(c[1] == 0);
+    Collection!int other;
+    other ~= 7;
+    c.addAll(other);
+    assert(c.length == 3 && c[2] == 7);
+    c.clear();
+    assert(c.empty);
+
+    static class Item { int v; this(int v) pure nothrow @safe { this.v = v; } }
+    Collection!Item items;
+    auto a = new Item(1);
+    items ~= a;
+    items ~= new Item(2);
+    items.length = 1; // clears the removed slot
+    assert(items.length == 1 && items[0] is a);
+    items.clear();
+}
