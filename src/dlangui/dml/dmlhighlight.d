@@ -76,10 +76,10 @@ class DMLSyntaxSupport : SyntaxSupport {
         }
     }
     BracketStack _bracketStack;
-    static bool isBracket(dchar ch) {
+    static bool isBracket(dchar ch) @safe pure nothrow @nogc {
         return pairedBracket(ch) != 0;
     }
-    static dchar pairedBracket(dchar ch) {
+    static dchar pairedBracket(dchar ch) @safe pure nothrow @nogc {
         switch (ch) {
             case '(':
                 return ')';
@@ -97,7 +97,7 @@ class DMLSyntaxSupport : SyntaxSupport {
                 return 0; // not a bracket
         }
     }
-    static bool isOpenBracket(dchar ch) {
+    static bool isOpenBracket(dchar ch) @safe pure nothrow @nogc {
         switch (ch) {
             case '(':
             case '{':
@@ -107,7 +107,7 @@ class DMLSyntaxSupport : SyntaxSupport {
                 return false;
         }
     }
-    static bool isCloseBracket(dchar ch) {
+    static bool isCloseBracket(dchar ch) @safe pure nothrow @nogc {
         switch (ch) {
             case ')':
             case '}':

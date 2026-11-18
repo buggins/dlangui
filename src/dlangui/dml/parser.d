@@ -42,7 +42,7 @@ class UnknownWidgetException : ParserException {
 
     @property string objectName() { return _objectName; }
 
-    this(string msg, string objectName, string file, int line, int pos) {
+    this(string msg, string objectName, string file, int line, int pos) @safe {
         super(msg is null ? "Unknown widget name: " ~ objectName : msg, file, line, pos);
         _objectName = objectName;
     }
@@ -54,12 +54,14 @@ class UnknownPropertyException : UnknownWidgetException {
 
     @property string propName() { return _propName; }
 
-    this(string msg, string objectName, string propName, string file, int line, int pos) {
+    this(string msg, string objectName, string propName, string file, int line, int pos) @safe {
         super(msg is null ? "Unknown property " ~ objectName ~ "." ~ propName : msg, objectName, file, line, pos);
     }
 }
 
-class MLParser {
+// final: nothing overrides its methods (#913). Token handling is @safe; the methods that create widgets and set
+// their properties stay @system (the widget hierarchy is out of scope of #907)
+final class MLParser {
     protected string _code;
     protected string _filename;
     protected bool _ownContext;
@@ -78,24 +80,24 @@ class MLParser {
     protected Token _token;
 
     /// move to next token
-    protected void nextToken() {
+    protected void nextToken() @safe {
         _token = _tokenizer.nextToken();
         //Log.d("parsed token: ", _token.type, " ", _token.line, ":", _token.pos, " ", _token.text);
     }
 
     /// throw exception if current token is eof
-    protected void checkNoEof() {
+    protected void checkNoEof() @safe {
         if (_token.type == TokenType.eof)
             error("unexpected end of file");
     }
 
     /// move to next token, throw exception if eof
-    protected void nextTokenNoEof() {
+    protected void nextTokenNoEof() @safe {
         nextToken();
         checkNoEof();
     }
 
-    protected void skipWhitespaceAndEols() {
+    protected void skipWhitespaceAndEols() @safe {
         for (;;) {
             if (_token.type != TokenType.eol && _token.type != TokenType.whitespace && _token.type != TokenType.comment)
                 break;
@@ -105,17 +107,17 @@ class MLParser {
             error("error while parsing ML code");
     }
 
-    protected void skipWhitespaceAndEolsNoEof() {
+    protected void skipWhitespaceAndEolsNoEof() @safe {
         skipWhitespaceAndEols();
         checkNoEof();
     }
 
-    protected void skipWhitespaceNoEof() {
+    protected void skipWhitespaceNoEof() @safe {
         skipWhitespace();
         checkNoEof();
     }
 
-    protected void skipWhitespace() {
+    protected void skipWhitespace() @safe {
         for (;;) {
             if (_token.type != TokenType.whitespace && _token.type != TokenType.comment)
                 break;
@@ -125,15 +127,15 @@ class MLParser {
             error("error while parsing ML code");
     }
 
-    protected void error(string msg) {
+    protected void error(string msg) @safe {
         _tokenizer.emitError(msg);
     }
 
-    protected void unknownObjectError(string objectName) {
+    protected void unknownObjectError(string objectName) @safe {
         throw new UnknownWidgetException("Unknown widget type " ~ objectName ~ _tokenizer.getContextSource(), objectName, _tokenizer.filename, _tokenizer.line, _tokenizer.pos);
     }
 
-    protected void unknownPropertyError(string objectName, string propName) {
+    protected void unknownPropertyError(string objectName, string propName) @safe {
         throw new UnknownPropertyException("Unknown property " ~ objectName ~ "." ~ propName ~ _tokenizer.getContextSource(), objectName, propName, _tokenizer.filename, _tokenizer.line, _tokenizer.pos);
     }
 
@@ -151,7 +153,7 @@ class MLParser {
         _ownContext = true;
     }
 
-    protected int applySuffix(int value, string suffix) {
+    protected int applySuffix(int value, string suffix) @safe {
         if (suffix.length > 0) {
             if (suffix.equal("px")) {
                 // do nothing, value is in px by default
@@ -516,19 +518,19 @@ public T parseML(T = Widget)(string code, string filename = "", Widget context =
 }
 
 /// tokenize source into array of tokens (excluding EOF)
-public Token[] tokenizeML(const(dstring[]) lines) {
+public Token[] tokenizeML(const(dstring[]) lines) @safe {
     string code = toUTF8(join(lines, "\n"));
     return tokenizeML(code);
 }
 
 /// tokenize source into array of tokens (excluding EOF)
-public Token[] tokenizeML(const(string[]) lines) {
+public Token[] tokenizeML(const(string[]) lines) @safe {
     string code = join(lines, "\n");
     return tokenizeML(code);
 }
 
 /// tokenize source into array of tokens (excluding EOF)
-public Token[] tokenizeML(string code) {
+public Token[] tokenizeML(string code) @safe {
     Token[] res;
     auto tokenizer = new Tokenizer(code, "");
     for (;;) {
@@ -541,3 +543,16 @@ public Token[] tokenizeML(string code) {
 }
 
 //pragma(msg, tokenizeML("Widget {}"));
+
+// malformed DML throws ParserException (cases that fail before any widget is created)
+unittest {
+    foreach (bad; ["", "  \n", "123", "{ }", "{", "Unknown { }", "Unknown", "/* x"]) {
+        bool thrown;
+        try
+            parseML(bad);
+        catch (ParserException e)
+            thrown = true;
+        assert(thrown, bad);
+    }
+}
+

@@ -1822,6 +1822,33 @@ unittest {
     assert(content.load(fn) && content.invalidCharCount == 0 && content.line(0) == "\uFFFD"d);
 }
 
+/// characters above U+FFFF are saved and loaded in every encoding; a lone surrogate in the text is saved as
+/// U+FFFD instead of throwing (#923)
+unittest {
+    import std.file : remove, tempDir, exists;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    import dlangui.core.linestream : TextFileFormat, EncodingType, LineEnding;
+    string fn = buildPath(tempDir, "dlangui-surrogates-test-" ~ to!string(thisProcessID) ~ ".txt");
+    scope(exit) if (exists(fn)) remove(fn);
+    foreach (enc; [EncodingType.UTF8, EncodingType.UTF16LE, EncodingType.UTF16BE, EncodingType.UTF32LE, EncodingType.UTF32BE]) {
+        auto content = new EditableContent(true);
+        content.text = "a\U0001F600b\nline 2"d;
+        assert(content.save(fn, TextFileFormat(enc, LineEnding.LF, true)), to!string(enc));
+        auto loaded = new EditableContent(true);
+        assert(loaded.load(fn) && loaded.invalidCharCount == 0, to!string(enc));
+        assert(loaded.line(0) == "a\U0001F600b"d && loaded.line(1) == "line 2"d, to!string(enc));
+        assert(loaded._format.encoding == enc, to!string(enc));
+        // a lone surrogate (not from a file: set as text) can't be encoded: saved as U+FFFD
+        // built at run time: DMD 2.100 on Windows rejects a string literal with a surrogate ("invalid UCS-32 char")
+        dchar surrogate = 0xD800;
+        content.text = ("x"d ~ surrogate ~ "y"d).idup;
+        assert(content.save(fn, TextFileFormat(enc, LineEnding.LF, true)), to!string(enc));
+        assert(loaded.load(fn) && loaded.line(0) == "x\uFFFDy"d, to!string(enc));
+    }
+}
+
 // text helpers, positions and ranges (#914); LineIcons.remove when the array is full (#941)
 @safe unittest {
     assert(splitDString("a\r\nb\nc"d) == ["a"d, "b"d, "c"d]);
@@ -1846,4 +1873,3 @@ unittest {
     assert(icons._items[15] is null); // the vacated slot keeps no reference
     assert(icons.findByLineAndType(15, LineIconType.bookmark).line == 15 && icons.findByType(LineIconType.bookmark).length == 15);
 }
-
