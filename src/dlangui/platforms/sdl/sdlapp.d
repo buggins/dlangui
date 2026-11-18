@@ -1714,6 +1714,8 @@ version (Windows) {
     import dlangui.platforms.windows.win32fonts;
     pragma(lib, "gdi32.lib");
     pragma(lib, "user32.lib");
+    // catches Throwable to show uncaught errors in a message box (GUI apps have no console)
+    @("nolint(dscanner.suspicious.catch_em_all)")
     extern(Windows)
         int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                 LPSTR lpCmdLine, int nCmdShow)

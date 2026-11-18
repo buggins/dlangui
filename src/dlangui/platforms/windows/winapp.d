@@ -1474,6 +1474,8 @@ class Win32Platform : Platform {
     }
 }
 
+// catches Throwable to show uncaught errors in a message box (GUI apps have no console)
+@("nolint(dscanner.suspicious.catch_em_all)")
 extern(Windows)
 int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
             char* lpCmdLine, int nCmdShow) {
@@ -1503,6 +1505,8 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
     return result;
 }
 
+// catches Throwable to show uncaught errors in a message box (GUI apps have no console)
+@("nolint(dscanner.suspicious.catch_em_all)")
 extern(Windows)
 int DLANGUIWinMainProfile(string[] args)
 {

@@ -126,7 +126,7 @@ jobs:
       - name: Setup D compiler
         uses: dlang-community/setup-dlang@v2
         with:
-          # builds D-Scanner 0.15.2
+          # builds D-Scanner 0.16.0-beta.5
           compiler: ldc-1.36.0
 
       - name: Checkout source
@@ -136,7 +136,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.dub/packages
-          key: dub-dscanner-0.15.2-ldc-1.36.0
+          key: dub-dscanner-0.16.0-beta.5-ldc-1.36.0
 
       - name: 'D-Scanner'
-        run: dub run -q dscanner@0.15.2 -- --styleCheck --config dscanner.ini src
+        run: dub run -q dscanner@0.16.0-beta.5 -- --styleCheck --config dscanner.ini src
