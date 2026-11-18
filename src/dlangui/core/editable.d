@@ -1542,10 +1542,14 @@ class EditableContent {
         try {
             debug(FileFormats)Log.d("creating output stream, file=", filename, " format=", format);
             OutputLineStream writer = new OutputLineStream(stream, filename, format);
-            scope(exit) { writer.close(); }
+            bool closed = false;
+            scope(exit) if (!closed) writer.close();
             for (int i = 0; i < _lines.length; i++) {
                 writer.writeLine(_lines[i]);
             }
+            // flush and close before marking the content saved: write errors (e.g. a full disk) show up here (#956)
+            closed = true;
+            writer.close();
             _undoBuffer.saved();
             _invalidCharCount = 0; // the saved file has U+FFFD instead of the invalid bytes
             _invalidCharPositions = null;
@@ -1916,6 +1920,20 @@ unittest {
     // undo back to the saved state: not modified; redo: modified
     assert(content.undo(null) && !content.modified && content.text == "abcde"d);
     assert(content.redo(null) && content.modified && content.text == "abcd"d);
+}
+
+/// a failed save (here: a full device) doesn't mark the content saved (#956)
+version (linux) unittest {
+    import std.file : exists;
+    if (!exists("/dev/full"))
+        return;
+    auto content = new EditableContent(true);
+    content.text = "some text"d;
+    auto pos = TextPosition(0, 9);
+    assert(content.performOperation(new EditOperation(EditAction.Replace, TextRange(pos, pos), ["!"d]), null));
+    assert(content.modified);
+    assert(!content.save("/dev/full"));
+    assert(content.modified);
 }
 
 /// undo after deleting a character and then a character with the following line break (#954)
