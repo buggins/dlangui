@@ -28,7 +28,6 @@
     "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.",
         "--ex", "dimage.", "--ex", "fontconfig", "--ex", "src.dlangui"],
 
-    "sourceFiles-windows-x86-dmd": ["$PACKAGE_DIR/src/win_app.def"],
     "excludedSourceFiles-windows": ["3rdparty/fontconfig/*"],
 
     "dependencies": {
