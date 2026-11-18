@@ -1891,6 +1891,9 @@ int sdlmain(string[] args) {
         return 1;
     }
 
+    // SDL asks X11 compositors to turn off for its windows by default (meant for fullscreen games); KWin then
+    // suspends compositing for the whole desktop while the app runs (#952). Ignored by older SDL and elsewhere.
+    SDL_SetHint("SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR", "0"); // SDL_HINT_... (SDL 2.0.8): not declared with SDL_204
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
         Log.e("Cannot init SDL2: ", SDL_GetError().to!string());
         return 2;
