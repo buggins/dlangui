@@ -289,7 +289,10 @@ class LineStream {
     @property uint invalidCharCount() { return _invalidCharCount; }
     protected uint _invalidCharCount;
 
-    /// Returns error code
+    // The error properties are kept for compatibility: decoding doesn't fail any more since invalid characters
+    // are replaced (#924), so errorCode is always 0 and the others are empty.
+
+    /// Returns error code (0: no error)
     @property int errorCode() { return _errorCode; }
     /// Returns error message
     @property string errorMessage() { return _errorMessage; }
@@ -312,7 +315,7 @@ class LineStream {
         _encoding = encoding;
         _buf = buf;
         _len = len;
-        _pos = offset;
+        _pos = offset <= len ? offset : len; // a BOM longer than the data must not start past it
         _streamEof = _stream.eof;
     }
 
@@ -509,9 +512,10 @@ class LineStream {
         LineStream res = null;
         if (buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) {
             res = new Utf8LineStream(stream, filename, buf, len, 3);
-        } else if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF) {
+        } else if (len >= 4 && buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF) {
             res = new Utf32beLineStream(stream, filename, buf, len);
-        } else if (buf[0] == 0xFF && buf[1] == 0xFE && buf[2] == 0x00 && buf[3] == 0x00) {
+        } else if (len >= 4 && buf[0] == 0xFF && buf[1] == 0xFE && buf[2] == 0x00 && buf[3] == 0x00) {
+            // (len >= 4: an empty UTF-16LE file is just FF FE, and the buffer is zeroed, #933)
             res = new Utf32leLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFE && buf[1] == 0xFF) {
             res =  new Utf16beLineStream(stream, filename, buf, len);
@@ -626,39 +630,9 @@ private class Utf8LineStream : LineStream {
             if (ch < 0x10000)
                 return 0; // overlong encoding
             bread = 4;
-        } else if ((ch0 & 0xFC) == 0xF8) {
-            // five bytes 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-            if (bleft < 5) {
-                needMoreFlag = true;
-                return 0;
-            }
-            uint ch1 = b[1];
-            uint ch2 = b[2];
-            uint ch3 = b[3];
-            uint ch4 = b[4];
-            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80) {
-                return 0;
-            }
-            ch = ((ch0 & 0x03) << 24) | ((ch1 & 0x3F) << 18) | ((ch2 & 0x3F) << 12) | ((ch3 & 0x3F) << 6) | (ch4 & 0x3F);
-            bread = 5;
-        } else if ((ch0 & 0xFE) == 0xFC) {
-            // six bytes 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-            if (bleft < 6){
-                needMoreFlag = true;
-                return 0;
-            }
-
-            uint ch1 = b[1];
-            uint ch2 = b[2];
-            uint ch3 = b[3];
-            uint ch4 = b[4];
-            uint ch5 = b[5];
-            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80 || (ch5 & 0xC0) != 0x80) {
-                return 0;
-            }
-            ch = ((ch0 & 0x01) << 30) | ((ch1 & 0x3F) << 24) | ((ch2 & 0x3F) << 18) | ((ch3 & 0x3F) << 12) | ((ch4 & 0x3F) << 6) | (ch5 & 0x3F);
-            bread = 6;
         }
+        // other lead bytes (continuation bytes 0x80..0xBF, 0xF8..0xFF: the old 5- and 6-byte forms) are invalid:
+        // bread stays 0
         if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
             return 0;
         }
@@ -666,11 +640,20 @@ private class Utf8LineStream : LineStream {
     }
 
     /// length of an invalid or incomplete sequence at the start of b (not empty), replaced by one REPLACEMENT_CHAR:
-    /// a lead byte with the continuation bytes that follow it (up to the length the lead byte announces), or 1
+    /// its maximal subpart (Unicode, "U+FFFD substitution of maximal subparts"): the longest start of a valid
+    /// sequence, at least 1 byte. C0, C1 and F5..FF are never valid; the second byte has a narrower range after
+    /// E0 (overlong), ED (surrogates), F0 (overlong) and F4 (over U+10FFFF).
     static uint invalidSequenceLength(scope const(ubyte)[] b) @safe pure nothrow @nogc {
         uint lead = b[0];
-        uint expected = lead >= 0xFC ? 6 : lead >= 0xF8 ? 5 : lead >= 0xF0 ? 4 : lead >= 0xE0 ? 3 : lead >= 0xC0 ? 2 : 1;
-        uint n = 1;
+        uint expected = (lead >= 0xC2 && lead <= 0xDF) ? 2 : (lead >= 0xE0 && lead <= 0xEF) ? 3 : (lead >= 0xF0 && lead <= 0xF4) ? 4 : 1;
+        if (expected == 1 || b.length < 2)
+            return 1;
+        uint second = b[1];
+        uint lo = lead == 0xE0 ? 0xA0 : lead == 0xF0 ? 0x90 : 0x80;
+        uint hi = lead == 0xED ? 0x9F : lead == 0xF4 ? 0x8F : 0xBF;
+        if (second < lo || second > hi)
+            return 1;
+        uint n = 2;
         while (n < expected && n < b.length && (b[n] & 0xC0) == 0x80)
             n++;
         return n;
@@ -740,9 +723,15 @@ private class Utf8LineStream : LineStream {
         buffer[1] = 0x80;
         buffer[2] = 0xAF;
         assert(decodeBytes(buffer[0 .. 3],ch,needMoreFlag) == 0 && !needMoreFlag);
-        assert(invalidSequenceLength(buffer[0 .. 3]) == 3);
+        assert(invalidSequenceLength(buffer[0 .. 3]) == 1); // E0 80: overlong, E0 alone is the maximal subpart
         buffer[0] = 0x84;
         assert(invalidSequenceLength(buffer[0 .. 3]) == 1);
+        // 5-byte form (F8 is never valid)
+        ubyte[] five = [0xF8, 0x80, 0x80, 0x80, 0x80];
+        assert(decodeBytes(five,ch,needMoreFlag) == 0 && !needMoreFlag && invalidSequenceLength(five) == 1);
+        // cut 3-byte sequence: lead + valid second byte
+        ubyte[] cut = [0xE2, 0x82, 0x41];
+        assert(decodeBytes(cut,ch,needMoreFlag) == 0 && invalidSequenceLength(cut) == 2);
     }
 
     override uint decodeText() {
@@ -964,7 +953,6 @@ unittest {
                 break;
             lines ~= line.idup;
         }
-        assert(ls.errorCode == 0 && !ls.errorMessage);
         invalid = ls.invalidCharCount;
         return lines;
     }
@@ -977,30 +965,44 @@ unittest {
     assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0x09, 0x34], invalid) == ["a"d, "ऴ"d] && !invalid);
     assert(readAll([0xFF, 0xFE, 0, 0, 'a', 0, 0, 0, '\n', 0, 0, 0, 0x34, 0x09, 0, 0], invalid) == ["a"d, "ऴ"d] && !invalid);
     // UTF-32 with 1 or 2 bytes left: no read past the input (#922), one replacement for the incomplete character
-    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 'B', 0, 0, 0, 'C', 0], invalid) == ["AB�"d] && invalid == 1);
-    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'A', 0], invalid) == ["A�"d] && invalid == 1);
+    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 'B', 0, 0, 0, 'C', 0], invalid) == ["AB\uFFFD"d] && invalid == 1);
+    assert(readAll([0, 0, 0xFE, 0xFF, 0, 0, 0, 'A', 0], invalid) == ["A\uFFFD"d] && invalid == 1);
     // UTF-32 code point out of range, decoding continues
-    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 0, 0, 0x11, 0, 'B', 0, 0, 0], invalid) == ["A�B"d] && invalid == 1);
+    assert(readAll([0xFF, 0xFE, 0, 0, 'A', 0, 0, 0, 0, 0, 0x11, 0, 'B', 0, 0, 0], invalid) == ["A\uFFFDB"d] && invalid == 1);
     // UTF-16 with an odd byte count
-    assert(readAll([0xFF, 0xFE, 'A', 0, 'B'], invalid) == ["A�"d] && invalid == 1);
-    assert(readAll([0xFE, 0xFF, 0, 'A', 0], invalid) == ["A�"d] && invalid == 1);
+    assert(readAll([0xFF, 0xFE, 'A', 0, 'B'], invalid) == ["A\uFFFD"d] && invalid == 1);
+    assert(readAll([0xFE, 0xFF, 0, 'A', 0], invalid) == ["A\uFFFD"d] && invalid == 1);
     // UTF-8: invalid byte (e.g. Latin-1), the rest of the file is decoded
-    assert(readAll(cast(const(ubyte)[])"one\ncaf\xE9 two\nthree\n", invalid) == ["one"d, "caf� two"d, "three"d] && invalid == 1);
+    assert(readAll(cast(const(ubyte)[])"one\ncaf\xE9 two\nthree\n", invalid) == ["one"d, "caf\uFFFD two"d, "three"d] && invalid == 1);
     // cut sequence (lead byte and its continuation bytes: one replacement) at the end and in the middle
-    assert(readAll(cast(const(ubyte)[])"ab\xC3", invalid) == ["ab�"d] && invalid == 1);
-    assert(readAll(cast(const(ubyte)[])"a\xE2\x82", invalid) == ["a�"d] && invalid == 1);
-    assert(readAll(cast(const(ubyte)[])"x\xE2\x82y\xF0\x9F\x98z", invalid) == ["x�y�z"d] && invalid == 2);
+    assert(readAll(cast(const(ubyte)[])"ab\xC3", invalid) == ["ab\uFFFD"d] && invalid == 1);
+    assert(readAll(cast(const(ubyte)[])"a\xE2\x82", invalid) == ["a\uFFFD"d] && invalid == 1);
+    assert(readAll(cast(const(ubyte)[])"x\xE2\x82y\xF0\x9F\x98z", invalid) == ["x\uFFFDy\uFFFDz"d] && invalid == 2);
     // stray continuation bytes: one replacement each; overlong encodings (C0 80 was decoded as 0, i.e. end of file)
-    assert(readAll(cast(const(ubyte)[])"\x84\x85a", invalid) == ["��a"d] && invalid == 2);
-    assert(readAll(cast(const(ubyte)[])"a\xC0\x80b\xE0\x80\xAFc", invalid) == ["a�b�c"d] && invalid == 2);
+    assert(readAll(cast(const(ubyte)[])"\x84\x85a", invalid) == ["\uFFFD\uFFFDa"d] && invalid == 2);
+    // (each byte is a maximal subpart: C0 is never valid, 80 doesn't follow E0)
+    assert(readAll(cast(const(ubyte)[])"a\xC0\x80b\xE0\x80\xAFc", invalid) == ["a\uFFFD\uFFFDb\uFFFD\uFFFD\uFFFDc"d] && invalid == 5);
+    // the old 5-byte form of U+0000 (decoded as 0, i.e. end of file), FF with continuation bytes, encoded surrogate
+    assert(readAll(cast(const(ubyte)[])"a\xF8\x80\x80\x80\x80b\nc", invalid) == ["a\uFFFD\uFFFD\uFFFD\uFFFD\uFFFDb"d, "c"d] && invalid == 5);
+    assert(readAll(cast(const(ubyte)[])"a\xFF\x80\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFDb"d] && invalid == 3);
+    assert(readAll(cast(const(ubyte)[])"a\xED\xA0\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFDb"d] && invalid == 3);
+    // lead bytes F5..F7 (over U+10FFFF) and F4 90 (over U+10FFFF): each byte is replaced
+    assert(readAll(cast(const(ubyte)[])"a\xF5\x80\x80\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFD\uFFFDb"d] && invalid == 4);
+    assert(readAll(cast(const(ubyte)[])"a\xF4\x90\x80\x80b", invalid) == ["a\uFFFD\uFFFD\uFFFD\uFFFDb"d] && invalid == 4);
+    // empty files with a BOM: UTF-16LE (FF FE, was detected as UTF-32LE and crashed, #933), UTF-16BE, UTF-8, UTF-32LE
+    assert(readAll([0xFF, 0xFE], invalid) == [] && !invalid);
+    assert(readAll([0xFE, 0xFF], invalid) == [] && !invalid);
+    assert(readAll([0xEF, 0xBB, 0xBF], invalid) == [] && !invalid);
+    assert(readAll([0xFF, 0xFE, 0, 0], invalid) == [] && !invalid);
+    assert(readAll([0xFF, 0xFE, 'a', 0], invalid) == ["a"d] && !invalid);
     // ASCII (no UTF autodetection): bytes over 0x7F
-    assert(readAll(cast(const(ubyte)[])"a\xE9b", invalid, false) == ["a�b"d] && invalid == 1);
+    assert(readAll(cast(const(ubyte)[])"a\xE9b", invalid, false) == ["a\uFFFDb"d] && invalid == 1);
     // text longer than the buffers (512 bytes, 1024 characters), with invalid bytes across buffer boundaries
     char[] big;
     foreach (i; 0 .. 300)
         big ~= "line \xC3\x84 \xFF\n";
     dstring[] lines = readAll(cast(const(ubyte)[])big, invalid);
-    assert(lines.length == 300 && lines[299] == "line Ä �"d && invalid == 300);
+    assert(lines.length == 300 && lines[299] == "line Ä \uFFFD"d && invalid == 300);
 }
 
 unittest {

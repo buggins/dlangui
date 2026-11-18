@@ -787,6 +787,7 @@ class EditableContent {
     @property EditableContent text(dstring newContent) {
         clearUndo();
         _lines.length = 0;
+        _invalidCharCount = 0;
         if (_multiline) {
             _lines = splitDString(newContent);
             _tokenProps.length = _lines.length;
@@ -807,6 +808,7 @@ class EditableContent {
         clearUndo();
         clearEditMarks();
         _lines.length = 0;
+        _invalidCharCount = 0;
     }
 
     /// content must have at least one (possibly empty) line, like after `text = ""`
@@ -1443,7 +1445,6 @@ class EditableContent {
         clear();
         _filename = fname;
         _format = TextFileFormat.init;
-        _invalidCharCount = 0;
         try {
             LineStream lines = LineStream.create(f, fname);
             for (;;) {
@@ -1803,4 +1804,11 @@ unittest {
     assert(content.invalidCharCount == 1);
     write(fn, "valid\n");
     assert(content.load(fn) && content.invalidCharCount == 0);
+    // the count belongs to the loaded content: reset by a failed load and by setting the text
+    write(fn, "\xFF\n");
+    assert(content.load(fn) && content.invalidCharCount == 1);
+    assert(!content.load(fn ~ ".does-not-exist") && content.invalidCharCount == 0);
+    assert(content.load(fn) && content.invalidCharCount == 1);
+    content.text = "new text"d;
+    assert(content.invalidCharCount == 0);
 }
