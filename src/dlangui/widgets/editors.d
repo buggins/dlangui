@@ -2838,6 +2838,8 @@ class EditBox : EditWidgetBase {
         }
 
         _pos = rc;
+        if (_pendingEnsureCaretVisible && _clientRect.height > 0 && _lineHeight > 0)
+            ensureCaretVisible(_pendingEnsureCaretVisibleCenter); // requested before the first layout (#966)
     }
 
     override protected Point measureVisibleText() {
@@ -3006,12 +3008,23 @@ class EditBox : EditWidgetBase {
     }
 
     protected bool _enableScrollAfterText = true;
+    /// ensureCaretVisible() requested before the first layout, done in layout() (#966)
+    protected bool _pendingEnsureCaretVisible;
+    protected bool _pendingEnsureCaretVisibleCenter;
+
     override protected void ensureCaretVisible(bool center = false) {
         if (_caretPos.line >= _content.length)
             _caretPos.line = _content.length - 1;
         if (_caretPos.line < 0)
             _caretPos.line = 0;
-        int visibleLines = _lineHeight > 0 ? _clientRect.height / _lineHeight : 1; // fully visible lines
+        if (_clientRect.height <= 0 || _lineHeight <= 0) {
+            // not laid out yet: the number of visible lines is unknown (#966)
+            _pendingEnsureCaretVisible = true;
+            _pendingEnsureCaretVisibleCenter = center;
+            return;
+        }
+        _pendingEnsureCaretVisible = false;
+        int visibleLines = _clientRect.height / _lineHeight; // fully visible lines
         if (visibleLines < 1)
             visibleLines = 1;
         int maxFirstVisibleLine = _content.length - 1;
@@ -3019,6 +3032,11 @@ class EditBox : EditWidgetBase {
             maxFirstVisibleLine = _content.length - visibleLines;
         if (maxFirstVisibleLine < 0)
             maxFirstVisibleLine = 0;
+        // moving the view to show the caret doesn't scroll after the text: a short text starts at its first line
+        // (scrolling after the text by the user stays possible); with word wrap, text lines aren't screen lines
+        int maxRevealFirstLine = maxFirstVisibleLine;
+        if (!_wordWrap && _content.length - visibleLines < maxRevealFirstLine)
+            maxRevealFirstLine = _content.length - visibleLines > 0 ? _content.length - visibleLines : 0;
 
         if (_caretPos.line < _firstVisibleLine) {
             _firstVisibleLine = _caretPos.line;
@@ -3027,8 +3045,8 @@ class EditBox : EditWidgetBase {
                 if (_firstVisibleLine < 0)
                     _firstVisibleLine = 0;
             }
-            if (_firstVisibleLine > maxFirstVisibleLine)
-                _firstVisibleLine = maxFirstVisibleLine;
+            if (_firstVisibleLine > maxRevealFirstLine)
+                _firstVisibleLine = maxRevealFirstLine;
             measureVisibleText();
             invalidate();
         } else if(_wordWrap && !(_firstVisibleLine > maxFirstVisibleLine)) {
@@ -3051,8 +3069,8 @@ class EditBox : EditWidgetBase {
             _firstVisibleLine = _caretPos.line - visibleLines + 1;
             if (center)
                 _firstVisibleLine += visibleLines / 2;
-            if (_firstVisibleLine > maxFirstVisibleLine)
-                _firstVisibleLine = maxFirstVisibleLine;
+            if (_firstVisibleLine > maxRevealFirstLine)
+                _firstVisibleLine = maxRevealFirstLine;
             if (_firstVisibleLine < 0)
                 _firstVisibleLine = 0;
             measureVisibleText();
