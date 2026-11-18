@@ -118,6 +118,67 @@ jobs:
             dub build -b=release -c x11 --root=examples/$example
           done
 
+  # DIP1000 (scoped pointers, -preview=dip1000) for the dlangui sources, so that they stay compatible (#907).
+  # The flag is added to the root dub.json for this job only: dub passes it to dlangui and to the packages
+  # that depend on it (tests, examples), not to the dependencies (arsd, bindbc, ...).
+  dip1000:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            dc: dmd-latest
+          - os: ubuntu-latest
+            dc: ldc-latest
+          # version (Windows) code
+          - os: windows-latest
+            dc: dmd-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Setup D compiler
+        uses: dlang-community/setup-dlang@v2
+        with:
+          compiler: ${{ matrix.dc }}
+
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Get month for DUB cache key
+        id: month
+        shell: bash
+        run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache DUB packages
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.dub/packages
+            ~/AppData/Local/dub/packages
+          key: dub-${{ runner.os }}-${{ matrix.dc }}-${{ hashFiles('**/dub.json') }}-${{ steps.month.outputs.month }}
+          restore-keys: |
+            dub-${{ runner.os }}-${{ matrix.dc }}-
+
+      - name: 'Add -preview=dip1000 to dub.json'
+        shell: bash
+        run: |
+          sed -i '1a\    "dflags": ["-preview=dip1000"],' dub.json
+          head -3 dub.json
+          dub describe --data=dflags | grep -q -- -preview=dip1000
+
+      - name: 'Unittests'
+        run: dub test
+
+      - name: 'Build library configurations and example1'
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then configs="sdl console minimal"; else configs="x11 console minimal"; fi
+          for config in $configs; do
+            dub build -c $config
+          done
+          dub build --root=examples/example1
+
   # Static analysis with D-Scanner, checks configured in dscanner.ini (#906). Fails on any warning.
   dscanner:
     runs-on: ubuntu-24.04
