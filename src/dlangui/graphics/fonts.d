@@ -994,9 +994,14 @@ class Font : RefCountedObject {
         of this font.
     */
     Glyph * getCharGlyph(dchar ch, bool withImage = true) {
-        // control characters (C0, DEL, C1) are never looked up in fallback fonts, nor characters above U+FFFF:
-        // the engines can't draw them yet (#779). No lookup if there are no fallback fonts.
-        if (ch >= 0x20 && (ch < 0x7F || ch > 0x9F) && ch <= 0xFFFF
+        // the engines can't draw characters above U+FFFF yet (#779; Win32 looked them up as wrong characters and
+        // indexed outside its glyph cache above U+3FFFF): they are drawn as U+FFFD, visible and with a width.
+        // Text loaded from files has them since #923.
+        if (ch > 0xFFFF)
+            ch = 0xFFFD;
+        // control characters (C0, DEL, C1) are never looked up in fallback fonts. No lookup if there are no
+        // fallback fonts.
+        if (ch >= 0x20 && (ch < 0x7F || ch > 0x9F)
                 && !(_fallbackFontsCreated && _fallbackFonts.length == 0) && !hasCodepoint(ch)) {
             Glyph * glyph = getFallbackGlyph(ch, withImage);
             if (glyph) {
@@ -1508,12 +1513,13 @@ unittest {
         assert(lb._face == "B" && g is lb._glyphs[0x4E2D]);
         assert(a.getCharGlyph(0x2605) is (cast(LookupTestFont)a.fallbackFonts.get(1))._glyphs[0x2605]);
         assert(LookupTestFont.alive == 3);
-        // no fallback font has it: the font's missing glyph; control characters and characters above U+FFFF
-        // (#779) are not looked up, though C has glyphs for them
+        // no fallback font has it: the font's missing glyph; control characters are not looked up, though C has
+        // glyphs for them; characters above U+FFFF are drawn as U+FFFD (#779, #923), which no font has here
         assert(a.getCharGlyph(0xE000) is &la._missing);
-        foreach (dchar c; "\n\u007F\u0085\u009F\U0001F600"d)
+        foreach (dchar c; "\n\u007F\u0085\u009F"d)
             assert(a.getCharGlyph(c) is &la._missing);
-        assert(a.getCharGlyph(cast(dchar)0x110000) is &la._missing);
+        foreach (dchar c; [cast(dchar)0x1F600, cast(dchar)0xE0100, cast(dchar)0x110000])
+            assert(a.getCharGlyph(c) is a.getCharGlyph(0xFFFD) && a.getCharGlyph(c) is &la._missing);
         // a fallback font that has the character but returns no glyph: the next one is used, and the character
         // is marked missing in the face's presence cache
         a.clearFallbackFonts();
