@@ -50,7 +50,7 @@ struct Point {
     int x;
     int y;
 
-@safe @nogc nothrow:
+@safe pure nothrow @nogc:
     Point opBinary(string op)(Point v) const if (op == "+") {
         return Point(x + v.x, y + v.y);
     }
@@ -74,7 +74,7 @@ struct Point {
 }
 
 // Point unittest
-@safe @nogc unittest
+@safe pure nothrow @nogc unittest
 {
     immutable testA = Point(100, 100);
     immutable testB = Point(50, 50);
@@ -99,7 +99,7 @@ struct Rect {
     /// y coordinate of bottom right corner (non-inclusive)
     int bottom;
 
-@safe @nogc nothrow:
+@safe pure nothrow @nogc:
     /// returns average of left, right
     @property int middlex() const { return (left + right) / 2; }
     /// returns average of top, bottom
@@ -225,7 +225,7 @@ struct Rect {
 }
 
 // Rect unittests
-@safe @nogc unittest
+@safe pure nothrow @nogc unittest
 {
     immutable testA = Rect(0, 0, 100, 100);
     assert(testA.width == 100);
@@ -292,7 +292,7 @@ enum int SIZE_IN_PERCENTS_FLAG = 0x0800_0000;
 
 
 /// convert custom size to pixels (sz can be either pixels, or points if SIZE_IN_POINTS_FLAG bit set)
-int toPixels(int sz) {
+int toPixels(int sz) @safe nothrow @nogc {
     if (sz > 0 && (sz & SIZE_IN_POINTS_FLAG) != 0) {
         return pointsToPixels(sz ^ SIZE_IN_POINTS_FLAG);
     }
@@ -300,43 +300,43 @@ int toPixels(int sz) {
 }
 
 /// convert custom size Point to pixels (sz can be either pixels, or points if SIZE_IN_POINTS_FLAG bit set)
-Point toPixels(const Point sz) {
+Point toPixels(const Point sz) @safe nothrow @nogc {
     return Point(toPixels(sz.x), toPixels(sz.y));
 }
 
 /// convert custom size Rect to pixels (sz can be either pixels, or points if SIZE_IN_POINTS_FLAG bit set)
-Rect toPixels(const Rect sz) {
+Rect toPixels(const Rect sz) @safe nothrow @nogc {
     return Rect(toPixels(sz.left), toPixels(sz.top), toPixels(sz.right), toPixels(sz.bottom));
 }
 
 /// make size value with SIZE_IN_POINTS_FLAG set
-int makePointSize(int pt) {
+int makePointSize(int pt) @safe pure nothrow @nogc {
     return pt | SIZE_IN_POINTS_FLAG;
 }
 
 /// make size value with SIZE_IN_PERCENTS_FLAG set
-int makePercentSize(int percent) {
+int makePercentSize(int percent) @safe pure nothrow @nogc {
     return (percent * 100) | SIZE_IN_PERCENTS_FLAG;
 }
 
 /// make size value with SIZE_IN_PERCENTS_FLAG set
-int makePercentSize(double percent) {
+int makePercentSize(double percent) @safe pure nothrow @nogc {
     return cast(int)(percent * 100) | SIZE_IN_PERCENTS_FLAG;
 }
 
 /// returns true for WRAP_CONTENT, WRAP_CONTENT, SIZE_UNSPECIFIED
-bool isSpecialSize(int sz) {
+bool isSpecialSize(int sz) @safe pure nothrow @nogc {
     // don't forget to update if more special constants added
     return (sz & (WRAP_CONTENT | FILL_PARENT | SIZE_UNSPECIFIED)) != 0;
 }
 
 /// returns true if size has SIZE_IN_PERCENTS_FLAG bit set
-bool isPercentSize(int size) {
+bool isPercentSize(int size) @safe pure nothrow @nogc {
     return (size & SIZE_IN_PERCENTS_FLAG) != 0;
 }
 
 /// if size has SIZE_IN_PERCENTS_FLAG bit set, returns percent of baseSize, otherwise returns size unchanged
-int fromPercentSize(int size, int baseSize) {
+int fromPercentSize(int size, int baseSize) @safe pure nothrow @nogc {
     if (isPercentSize(size))
         return cast(int)(cast(long)(size & ~SIZE_IN_PERCENTS_FLAG) * baseSize / 10000);
     return size;
@@ -347,23 +347,26 @@ int fromPercentSize(int size, int baseSize) {
 /// for this DPI and scaled by SCREEN_DPI / BASE_DPI; 2x (hdpi) images are made for 2 * BASE_DPI.
 enum int BASE_DPI = 96;
 
+// The DPI accessors below are @trusted: @safe code can't access __gshared data (because of data races), and
+// dlangui is used from the UI thread only; each accessor reads or writes a single int.
+
 /// screen dots per inch
 private __gshared int PRIVATE_SCREEN_DPI = BASE_DPI;
 /// value to override detected system DPI, 0 to disable overriding
 private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
 
 /// get current screen DPI used for scaling while drawing
-@property int SCREEN_DPI() {
+@property int SCREEN_DPI() @trusted nothrow @nogc {
     return PRIVATE_SCREEN_DPI_OVERRIDE ? PRIVATE_SCREEN_DPI_OVERRIDE : PRIVATE_SCREEN_DPI;
 }
 
 /// get screen DPI detection override value, if non 0 - this value is used instead of DPI detected by platform, if 0, value detected by platform will be used
-@property int overrideScreenDPI() {
+@property int overrideScreenDPI() @trusted nothrow @nogc {
     return PRIVATE_SCREEN_DPI_OVERRIDE;
 }
 
 /// call to disable automatic screen DPI detection, use provided one instead (pass 0 to disable override and use value detected by platform)
-@property void overrideScreenDPI(int dpi = BASE_DPI) {
+@property void overrideScreenDPI(int dpi = BASE_DPI) @trusted nothrow @nogc {
     static if (WIDGET_STYLE_CONSOLE) {
     } else {
         if ((dpi >= 72 && dpi <= 500) || dpi == 0)
@@ -372,7 +375,7 @@ private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
 }
 
 /// set screen DPI detected by platform
-@property void SCREEN_DPI(int dpi) {
+@property void SCREEN_DPI(int dpi) @trusted nothrow @nogc {
     static if (WIDGET_STYLE_CONSOLE) {
         PRIVATE_SCREEN_DPI = dpi;
     } else {
@@ -386,7 +389,7 @@ private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
 }
 
 /// returns DPI detected by platform w/o override
-@property int systemScreenDPI() {
+@property int systemScreenDPI() @trusted nothrow @nogc {
     return PRIVATE_SCREEN_DPI;
 }
 
@@ -394,7 +397,7 @@ private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
 enum POINTS_PER_INCH = 72;
 
 /// convert length in points (1/72in units) to pixels according to SCREEN_DPI
-int pointsToPixels(int pt) {
+int pointsToPixels(int pt) @safe nothrow @nogc {
     return pt * SCREEN_DPI / POINTS_PER_INCH;
 }
 
@@ -405,13 +408,13 @@ int fontPointsToPixels(int pt, int dpi = SCREEN_DPI) pure nothrow @nogc @safe {
 }
 
 /// font size to pixels: sz in pixels, or in points if SIZE_IN_POINTS_FLAG is set (rounded, see fontPointsToPixels)
-int fontSizeToPixels(int sz) {
+int fontSizeToPixels(int sz) @safe nothrow @nogc {
     if (sz > 0 && (sz & SIZE_IN_POINTS_FLAG) != 0)
         return fontPointsToPixels(sz ^ SIZE_IN_POINTS_FLAG);
     return sz;
 }
 
-unittest {
+@safe unittest {
     // the same pixel sizes as -MulDiv(pt, dpi, 72) in Windows applications
     assert(fontPointsToPixels(9, 96) == 12 && fontPointsToPixels(10, 96) == 13);
     assert(fontPointsToPixels(9, 120) == 15 && fontPointsToPixels(10, 120) == 17); // truncated: 16
@@ -421,12 +424,12 @@ unittest {
 }
 
 /// rectangle coordinates in points (1/72in units) to pixels according to SCREEN_DPI
-Rect pointsToPixels(Rect rc) {
+Rect pointsToPixels(Rect rc) @safe nothrow @nogc {
     return Rect(rc.left.pointsToPixels, rc.top.pointsToPixels, rc.right.pointsToPixels, rc.bottom.pointsToPixels);
 }
 
 /// convert points (1/72in units) to pixels according to SCREEN_DPI
-int pixelsToPoints(int px) {
+int pixelsToPoints(int px) @safe nothrow @nogc {
     return px * POINTS_PER_INCH / SCREEN_DPI;
 }
 
@@ -459,7 +462,7 @@ struct Glyph
     /// 0: width of glyph black box
     ushort   blackBoxX;
 
-    @property ushort correctedBlackBoxX() { return subpixelMode ? (blackBoxX + 2) / 3 : blackBoxX; }
+    @property ushort correctedBlackBoxX() const @safe pure nothrow @nogc { return subpixelMode ? (blackBoxX + 2) / 3 : blackBoxX; }
 
 
     /// 2: height of glyph black box
@@ -610,7 +613,7 @@ struct CalcSaver(Params...) {
 }
 
 ///
-unittest {
+@safe unittest {
 
     class A { }
 
@@ -640,17 +643,17 @@ unittest {
 // some utility functions
 
 /** conversion from wchar z-string */
-wstring fromWStringz(const(wchar[]) s) {
+wstring fromWStringz(const(wchar[]) s) @safe pure nothrow {
     if (s is null)
         return null;
     int i = 0;
     while(s[i])
         i++;
-    return cast(wstring)(s[0..i].dup);
+    return s[0..i].idup;
 }
 
 /** conversion from wchar z-string */
-wstring fromWStringz(const(wchar) * s) {
+wstring fromWStringz(const(wchar) * s) @system pure nothrow {
     if (s is null)
         return null;
     int i = 0;
@@ -668,7 +671,7 @@ deprecated dchar dcharToUpper(dchar ch) {
 }
 
 /// decodes hex digit (0..9, a..f, A..F), returns uint.max if invalid
-uint parseHexDigit(T)(T ch) pure nothrow {
+uint parseHexDigit(T)(T ch) @safe pure nothrow @nogc {
     if (ch >= '0' && ch <= '9')
         return ch - '0';
     else if (ch >= 'a' && ch <= 'f')
@@ -679,19 +682,20 @@ uint parseHexDigit(T)(T ch) pure nothrow {
 }
 
 /// replacement of deprecated std.utf.toUTF8
-string toUTF8(dstring str) {
-    import std.utf : encode, codeLength, byUTF;
+string toUTF8(dstring str) @safe pure nothrow {
+    import std.utf : codeLength, byUTF;
     char[] buf;
     buf.length = codeLength!char(str);
-    int pos = 0;
+    size_t pos = 0;
     foreach(ch; str.byUTF!char) {
-        buf.ptr[pos++] = ch;
+        buf[pos++] = ch;
     }
-    return cast(string)buf;
+    // buf is a new array, not referenced anywhere else
+    return (() @trusted => cast(string)buf)();
 }
 
 /// normalize end of line style - convert to '\n'
-dstring normalizeEndOfLineCharacters(dstring s) {
+dstring normalizeEndOfLineCharacters(dstring s) @safe pure nothrow {
     bool crFound = false;
     foreach(ch; s) {
         if (ch == '\r') {
@@ -715,7 +719,8 @@ dstring normalizeEndOfLineCharacters(dstring s) {
         }
         prevCh = ch;
     }
-    return cast(dstring)res;
+    // res is a new array, not referenced anywhere else
+    return (() @trusted => cast(dstring)res)();
 }
 
 /// C malloc allocated array wrapper
