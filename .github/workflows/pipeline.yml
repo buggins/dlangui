@@ -118,6 +118,67 @@ jobs:
             dub build -b=release -c x11 --root=examples/$example
           done
 
+  # DIP1000 (scoped pointers, -preview=dip1000) for the dlangui sources, so that they stay compatible (#907).
+  # Build types with the flag are added to dub.json for this job only. A build type applies to all packages:
+  # the dependencies must get the flag too, because it changes attribute inference, and with it the mangled
+  # names of template instances shared with them (e.g. inilike's IniLikeReader). dub adds -unittest only to
+  # dlangui, so only its unittests run.
+  dip1000:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            dc: dmd-latest
+          - os: ubuntu-latest
+            dc: ldc-latest
+          # version (Windows) code
+          - os: windows-latest
+            dc: dmd-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Setup D compiler
+        uses: dlang-community/setup-dlang@v2
+        with:
+          compiler: ${{ matrix.dc }}
+
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Get month for DUB cache key
+        id: month
+        shell: bash
+        run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache DUB packages
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.dub/packages
+            ~/AppData/Local/dub/packages
+          key: dub-${{ runner.os }}-${{ matrix.dc }}-${{ hashFiles('**/dub.json') }}-${{ steps.month.outputs.month }}
+          restore-keys: |
+            dub-${{ runner.os }}-${{ matrix.dc }}-
+
+      - name: 'Add build types with -preview=dip1000 to dub.json'
+        shell: bash
+        run: |
+          sed -i '1a\    "buildTypes": {"unittest-dip1000": {"buildOptions": ["unittests", "debugMode", "debugInfo"], "dflags": ["-preview=dip1000"]}, "debug-dip1000": {"buildOptions": ["debugMode", "debugInfo"], "dflags": ["-preview=dip1000"]}},' dub.json
+          head -3 dub.json
+
+      - name: 'Unittests'
+        run: dub test -b unittest-dip1000
+
+      - name: 'Build library configurations'
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then configs="sdl console minimal"; else configs="x11 console minimal"; fi
+          for config in $configs; do
+            dub build -b debug-dip1000 -c $config
+          done
+
   # Static analysis with D-Scanner, checks configured in dscanner.ini (#906). Fails on any warning.
   dscanner:
     runs-on: ubuntu-24.04
