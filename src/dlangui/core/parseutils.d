@@ -1,6 +1,6 @@
 module dlangui.core.parseutils;
 
-long parseLong(inout string v, long defValue = 0) {
+long parseLong(inout string v, long defValue = 0) @safe pure nothrow @nogc {
     int len = cast(int)v.length;
     if (len == 0)
         return defValue;
@@ -23,7 +23,7 @@ long parseLong(inout string v, long defValue = 0) {
     return digits > 0 ? (sign > 0 ? value : -value) : defValue;
 }
 
-ulong parseULong(inout string v, ulong defValue = 0) {
+ulong parseULong(inout string v, ulong defValue = 0) @safe pure nothrow @nogc {
     int len = cast(int)v.length;
     if (len == 0)
         return defValue;

@@ -195,14 +195,29 @@ class SettingsFile {
 
 /// setting object
 final class Setting {
-    union Store {
+@safe:
+    // The value for _type. Only the numbers share memory: members with pointers can't overlap other members
+    // in @safe code (#912); clear() resets the member of the old type when the type changes.
+    struct Store {
+        union {
+            long integer;
+            ulong uinteger;
+            double floating;
+        }
         string str;
-        long integer;
-        ulong uinteger;
-        double floating;
         SettingArray array;
         SettingMap * map;
     }
+    // Log is @system (__gshared state and a mutex); logging a string is memory safe
+    private static void logError(string message) @trusted {
+        Log.e(message);
+    }
+    // Throwable.toString is @system (virtual); the exceptions logged here come from std.file and the parser
+    // (Exception, FileException, UTFException), which use druntime's toString
+    private static void logError(string message, Exception e) @trusted {
+        Log.e(message, e);
+    }
+
     private Setting _parent;
     private Store _store;
     private bool _changed;
@@ -712,8 +727,10 @@ final class Setting {
         return list;
     }
 
+    // opApply/opApplyReverse call the foreach body through a delegate type without attributes: @system
+
     /// to iterate using foreach
-    int opApply(int delegate(ref Setting)dg) {
+    int opApply(int delegate(ref Setting)dg) @system {
         int result = 0;
         if (_type == SettingType.ARRAY) {
             for(int i = 0; i < _store.array.list.length; i++) {
@@ -732,7 +749,7 @@ final class Setting {
     }
 
     /// to iterate over OBJECT using foreach(key, value; map)
-    int opApply(int delegate(ref string, ref Setting)dg) {
+    int opApply(int delegate(ref string, ref Setting)dg) @system {
         int result = 0;
         if (_type == SettingType.OBJECT) {
             for(int i = 0; i < _store.map.list.length; i++) {
@@ -746,7 +763,7 @@ final class Setting {
     }
 
     /// to iterate using foreach_reverse
-    int opApplyReverse(int delegate(ref Setting)dg) {
+    int opApplyReverse(int delegate(ref Setting)dg) @system {
         int result = 0;
         if (_type == SettingType.ARRAY) {
             for(int i = cast(int)_store.array.list.length - 1; i >= 0; i--) {
@@ -1408,7 +1425,7 @@ final class Setting {
         }
         void reserve(size_t size) {
             if (pos + size >= buffer.length)
-                buffer.length = buffer.length ? 4096 : (pos + size + 4096) * 2;
+                buffer.length = (pos + size + 4096) * 2; // was 4096 when growing again: shrank the buffer (#928)
         }
         void append(char ch) {
             buffer[pos++] = ch;
@@ -1569,7 +1586,7 @@ final class Setting {
             write(filename, toJSON(pretty));
             return true;
         } catch (Exception e) {
-            Log.e("exception while saving settings file: ", e);
+            logError("exception while saving settings file: ", e);
             return false;
         }
     }
@@ -1724,7 +1741,7 @@ final class Setting {
                     error("unexpected end of file while parsing string");
                 if (ch == quoteChar) {
                     nextChar;
-                    return cast(string)res;
+                    return (() @trusted => cast(string)res)(); // res is a new array, not referenced elsewhere
                 }
                 if (ch == '\\' && quoteChar != '`') {
                     // escape sequence
@@ -1781,7 +1798,7 @@ final class Setting {
                 }
             } else
                 error("cannot parse ident");
-            return cast(string)res;
+            return (() @trusted => cast(string)res)(); // res is a new array, not referenced elsewhere
         }
         bool parseKeyword(string ident) {
             // returns true if parsed ok
@@ -1879,7 +1896,7 @@ final class Setting {
         char ch = parser.peek;
         parser.nextChar; // skip initial {
         if (ch != '{') {
-            Log.e("expected { at ", parser.currentContext);
+            logError("expected { at " ~ parser.currentContext);
         }
         for(;;) {
             ch = parser.skipSpaces;
@@ -2270,7 +2287,6 @@ final class Setting {
     /// convert CR LF, LF CR, LF, CR to '\n' eol format
     static string convertEols(string src) {
         char[] res;
-        res.assumeSafeAppend;
         for (int i = 0; i < src.length; i++) {
             char ch = src[i];
             if (ch == '\r' || ch == '\n') {
@@ -2302,8 +2318,90 @@ final class Setting {
             return true;
         } catch (Exception e) {
             // Failed
-            Log.e("exception while parsing json: ", e);
+            logError("exception while parsing json: ", e);
             return false;
         }
     }
+}
+
+// JSON parsing and serialization, malformed input, type conversions (#912)
+@safe unittest {
+    Setting s = new Setting();
+    s.parseJSON(`{"s": "x\"y", "i": -3, "u": 18446744073709551615, "f": 2.5, "t": true, "fl": false, "n": null,
+        "arr": [1, "two", [3]], "obj": {"k": {"z": 1}}, "uni": "\u00C4€"}`);
+    assert(s.type == SettingType.OBJECT && s.length == 10);
+    assert(s["s"].str == `x"y`);
+    assert(s["i"].type == SettingType.INTEGER && s["i"].integer == -3);
+    assert(s["u"].uinteger == ulong.max);
+    assert(s["f"].type == SettingType.FLOAT && s["f"].floating == 2.5);
+    assert(s["t"].boolean && !s["fl"].boolean && s["n"].type == SettingType.NULL);
+    assert(s["arr"].length == 3 && s["arr"][0].integer == 1 && s["arr"][1].str == "two" && s["arr"][2][0].integer == 3);
+    assert(s.objectByPath("obj/k/z").integer == 1);
+    assert(s["uni"].str == "Ä€");
+    assert(s["missing"] is null && s["arr"][5] is null);
+    // serialize and parse again, compact and pretty
+    foreach (pretty; [false, true]) {
+        Setting s2 = new Setting();
+        s2.parseJSON(s.toJSON(pretty));
+        assert(s2.toJSON() == s.toJSON());
+    }
+    // malformed input throws (the parser is lenient with trailing commas, comments and unquoted keys)
+    foreach (bad; ["", "  ", `{"a": "x`, `{"a": 1`, `[1, 2`, `{"a" 1}`, `{"a": 1 "b": 2}`, `{"a": tru}`,
+            `{"a": "\q"}`, `{"a": -}`, `{'a': 1}`]) {
+        bool thrown;
+        try
+            (new Setting()).parseJSON(bad);
+        catch (Exception e)
+            thrown = true;
+        assert(thrown, bad);
+    }
+    // values change type on assignment; the old value is cleared
+    Setting v = new Setting();
+    v.str = "123";
+    assert(v.integer == 123 && v.uinteger == 123);
+    v.integer = 5;
+    assert(v.type == SettingType.INTEGER && v.str == "5");
+    v.floating = 1.5;
+    assert(v.type == SettingType.FLOAT && v.integer == 1);
+    v.boolean = true;
+    assert(v.type == SettingType.TRUE && v.boolean);
+    v.strArray = ["a", "b"];
+    assert(v.type == SettingType.ARRAY && v.strArray == ["a", "b"]);
+    v.strMap = ["k": "x"];
+    assert(v.type == SettingType.OBJECT && v.strMap == ["k": "x"]);
+    v.str = "back";
+    assert(v.type == SettingType.STRING && v.length == 0 && v.str == "back");
+    // large output: the buffer grows past 8 KB (#928)
+    Setting big = new Setting();
+    foreach (i; 0 .. 2000)
+        big.setString(i, "value number " ~ i.to!string);
+    foreach (pretty; [false, true]) {
+        string json = big.toJSON(pretty);
+        assert(json.length > 30_000);
+        Setting big2 = new Setting();
+        big2.parseJSON(json);
+        assert(big2.length == 2000 && big2[1999].str == "value number 1999");
+    }
+    // SDL (the dub.sdl subset: quoted values, attributes, blocks)
+    Setting sdl = new Setting();
+    sdl.parseSDL("name \"dlangui\"\r\ndependency \"arsd\" version=\"~>12.1\"\nconfiguration \"default\" {\n  targetType \"library\"\n}\n");
+    assert(sdl["name"].str == "dlangui");
+    assert(sdl.objectByPath("dependencies/arsd/version").str == "~>12.1");
+    assert(sdl["configurations"][0]["targetType"].str == "library");
+}
+
+// SettingsFile: save and load through a file
+unittest {
+    import std.file : tempDir, remove, exists;
+    import std.path : buildPath;
+    string fn = buildPath(tempDir, "dlangui_settings_unittest.json");
+    scope(exit) if (exists(fn)) remove(fn);
+    auto f = new SettingsFile(fn);
+    f.setting.setString("name", "test");
+    f.setting.setInteger("count", 3);
+    assert(f.save());
+    auto g = new SettingsFile(fn);
+    assert(g.load() && g.loaded);
+    assert(g.setting.getString("name") == "test" && g.setting.getInteger("count") == 3);
+    assert(!(new SettingsFile(fn ~ ".does-not-exist")).load());
 }
