@@ -135,6 +135,11 @@ class OutputLineStream {
     }
 
     /// convert character encoding and write to output stream
+    /// ch, or U+FFFD if ch isn't a valid character (a surrogate or over U+10FFFF), which can't be encoded (#923)
+    protected static dchar validChar(dchar ch) @safe pure nothrow @nogc {
+        return (ch < 0xD800 || (ch >= 0xE000 && ch <= 0x10FFFF)) ? ch : 0xFFFD;
+    }
+
     protected void convertAndWrite(dstring s) {
         /// reserve buf space
         if (_buf.length < _len + s.length * 4 + 4)
@@ -145,7 +150,7 @@ class OutputLineStream {
             default:
                 char[4] utf8;
                 foreach(i; 0 .. s.length) {
-                    int bytes = cast(int)encode(utf8, s[i]);
+                    int bytes = cast(int)encode(utf8, validChar(s[i]));
                     foreach(j; 0 .. bytes)
                         _buf[_len++] = utf8[j];
                 }
@@ -153,7 +158,7 @@ class OutputLineStream {
             case UTF16BE:
                 wchar[2] utf16be;
                 foreach(i; 0 .. s.length) {
-                    int n = cast(int)encode(utf16be, s[i]);
+                    int n = cast(int)encode(utf16be, validChar(s[i]));
                     foreach(j; 0 .. n) {
                         _buf[_len++] = cast(char)(utf16be[j] >> 8);
                         _buf[_len++] = cast(char)(utf16be[j] & 0xFF);
@@ -163,7 +168,7 @@ class OutputLineStream {
             case UTF16LE:
                 wchar[2] utf16le;
                 foreach(i; 0 .. s.length) {
-                    int n = cast(int)encode(utf16le, s[i]);
+                    int n = cast(int)encode(utf16le, validChar(s[i]));
                     foreach(j; 0 .. n) {
                         _buf[_len++] = cast(char)(utf16le[j] & 0xFF);
                         _buf[_len++] = cast(char)(utf16le[j] >> 8);
@@ -172,7 +177,7 @@ class OutputLineStream {
                 break;
             case UTF32LE:
                 foreach(i; 0 .. s.length) {
-                    dchar ch = s[i];
+                    dchar ch = validChar(s[i]);
                     _buf[_len++] = cast(char)((ch >> 0) & 0xFF);
                     _buf[_len++] = cast(char)((ch >> 8) & 0xFF);
                     _buf[_len++] = cast(char)((ch >> 16) & 0xFF);
@@ -181,7 +186,7 @@ class OutputLineStream {
                 break;
             case UTF32BE:
                 foreach(i; 0 .. s.length) {
-                    dchar ch = s[i];
+                    dchar ch = validChar(s[i]);
                     _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
                     _buf[_len++] = cast(char)((ch >> 16) & 0xFF);
                     _buf[_len++] = cast(char)((ch >> 8) & 0xFF);
@@ -748,8 +753,7 @@ private class Utf8LineStream : LineStream {
     private uint decodeBuffer(uint len) @safe {
         const(ubyte)[] b = _buf[_pos .. _pos + len];
         uint chars = 0;
-        uint maxResultingBytes = len*2; //len*2 because worst case is if all input chars are singelbyte and resulting in two bytes
-        dchar[] text = reserveTextBuf(maxResultingBytes);
+        dchar[] text = reserveTextBuf(len); // at most one character per byte
         uint i = 0;
 
         while (i < len) {
@@ -770,14 +774,7 @@ private class Utf8LineStream : LineStream {
                 continue;
             }
 
-            if (ch < 0x10000) {
-                text[chars++] = ch;
-            } else {
-                uint lo = ch & 0x3FF;
-                uint hi = ch >> 10;
-                text[chars++] = (0xd800 | hi);
-                text[chars++] = (0xdc00 | lo);
-            }
+            text[chars++] = ch; // one dchar, also above U+FFFF (was split into surrogates, #923)
             i += bread;
         }
         consumedBytes(i);
@@ -786,9 +783,9 @@ private class Utf8LineStream : LineStream {
     }
 }
 
-private class Utf16beLineStream : LineStream {
+private class Utf16LineStream(bool bigEndian) : LineStream {
     this(InputStream stream, string filename, ubyte[] buf, uint len) {
-        super(stream, filename, EncodingType.UTF16BE, buf, 2, len);
+        super(stream, filename, bigEndian ? EncodingType.UTF16BE : EncodingType.UTF16LE, buf, 2, len);
     }
     override uint decodeText() {
         uint len = readBytes();
@@ -797,17 +794,44 @@ private class Utf16beLineStream : LineStream {
         return decodeBuffer(len);
     }
 
-    /// decodes the len bytes available in the buffer
+    /// the 16-bit unit at b[i .. i + 2]
+    private static uint unit(scope const(ubyte)[] b, uint i) @safe pure nothrow @nogc {
+        static if (bigEndian)
+            return (b[i] << 8) | b[i + 1];
+        else
+            return (b[i + 1] << 8) | b[i];
+    }
+
+    /// decodes the len bytes available in the buffer; surrogate pairs are combined into one character, unpaired
+    /// surrogates are replaced (#923)
     private uint decodeBuffer(uint len) @safe {
         const(ubyte)[] b = _buf[_pos .. _pos + len];
         uint chars = 0;
         dchar[] text = reserveTextBuf(len / 2 + 1);
         uint i = 0;
-        for (; i + 1 < len; i += 2) {
-            uint ch0 = b[i];
-            uint ch1 = b[i + 1];
-            uint ch = (ch0 << 8) | ch1;
-            // TODO: check special cases
+        while (i + 1 < len) {
+            uint ch = unit(b, i);
+            if (ch >= 0xD800 && ch < 0xDC00) {
+                // high surrogate: a low surrogate must follow
+                if (i + 3 >= len && !_streamEof)
+                    break; // the low surrogate isn't read yet
+                uint lo = i + 3 < len ? unit(b, i + 2) : 0;
+                if (lo >= 0xDC00 && lo < 0xE000) {
+                    ch = 0x10000 + ((ch - 0xD800) << 10) + (lo - 0xDC00);
+                    i += 4;
+                } else {
+                    ch = REPLACEMENT_CHAR;
+                    _invalidCharCount++;
+                    i += 2;
+                }
+            } else {
+                if (ch >= 0xDC00 && ch < 0xE000) {
+                    // low surrogate without a high one
+                    ch = REPLACEMENT_CHAR;
+                    _invalidCharCount++;
+                }
+                i += 2;
+            }
             text[chars++] = ch;
         }
         if (_streamEof && i < len) {
@@ -822,41 +846,8 @@ private class Utf16beLineStream : LineStream {
     }
 }
 
-private class Utf16leLineStream : LineStream {
-    this(InputStream stream, string filename, ubyte[] buf, uint len) {
-        super(stream, filename, EncodingType.UTF16LE, buf, 2, len);
-    }
-    override uint decodeText() {
-        uint len = readBytes();
-        if (len == 0)
-            return 0; // nothing to decode
-        return decodeBuffer(len);
-    }
-
-    /// decodes the len bytes available in the buffer
-    private uint decodeBuffer(uint len) @safe {
-        const(ubyte)[] b = _buf[_pos .. _pos + len];
-        uint chars = 0;
-        dchar[] text = reserveTextBuf(len / 2 + 1);
-        uint i = 0;
-        for (; i + 1 < len; i += 2) {
-            uint ch0 = b[i];
-            uint ch1 = b[i + 1];
-            uint ch = (ch1 << 8) | ch0;
-            // TODO: check special cases
-            text[chars++] = ch;
-        }
-        if (_streamEof && i < len) {
-            // odd byte at the end of the stream
-            text[chars++] = REPLACEMENT_CHAR;
-            _invalidCharCount++;
-            i = len;
-        }
-        consumedBytes(i);
-        appendedText(chars);
-        return chars;
-    }
-}
+private alias Utf16beLineStream = Utf16LineStream!true;
+private alias Utf16leLineStream = Utf16LineStream!false;
 
 private class Utf32beLineStream : LineStream {
     this(InputStream stream, string filename, ubyte[] buf, uint len) {
@@ -1005,6 +996,44 @@ unittest {
         big ~= "line \xC3\x84 \xFF\n";
     dstring[] lines = readAll(cast(const(ubyte)[])big, invalid);
     assert(lines.length == 300 && lines[299] == "line Ä \uFFFD"d && invalid == 300);
+}
+
+// characters above U+FFFF: one dchar in every encoding, unpaired UTF-16 surrogates replaced (#923)
+unittest {
+    static dstring[] readAll(const(ubyte)[] data, out uint invalid) {
+        LineStream ls = LineStream.create(new MemoryInputStream(data.dup), "test");
+        dstring[] lines;
+        foreach (n; 0 .. 1000) {
+            dchar[] line = ls.readLine();
+            if (line is null)
+                break;
+            lines ~= line.idup;
+        }
+        invalid = ls.invalidCharCount;
+        return lines;
+    }
+    uint invalid;
+    // U+1F600 in UTF-8, UTF-16LE/BE (surrogate pair D83D DE00), UTF-32LE
+    assert(readAll(cast(const(ubyte)[])"a\xF0\x9F\x98\x80b", invalid) == ["a\U0001F600b"d] && !invalid);
+    assert(readAll([0xFF, 0xFE, 'a', 0, 0x3D, 0xD8, 0x00, 0xDE, 'b', 0], invalid) == ["a\U0001F600b"d] && !invalid);
+    assert(readAll([0xFE, 0xFF, 0, 'a', 0xD8, 0x3D, 0xDE, 0x00, 0, 'b'], invalid) == ["a\U0001F600b"d] && !invalid);
+    assert(readAll([0xFF, 0xFE, 0, 0, 0x00, 0xF6, 0x01, 0, 'b', 0, 0, 0], invalid) == ["\U0001F600b"d] && !invalid);
+    // unpaired surrogates: high followed by another character, low alone, high at the end of the file
+    assert(readAll([0xFF, 0xFE, 'a', 0, 0x3D, 0xD8, 'b', 0], invalid) == ["a�b"d] && invalid == 1);
+    assert(readAll([0xFF, 0xFE, 'a', 0, 0x00, 0xDE, 'b', 0], invalid) == ["a�b"d] && invalid == 1);
+    assert(readAll([0xFF, 0xFE, 'a', 0, 0x3D, 0xD8], invalid) == ["a�"d] && invalid == 1);
+    assert(readAll([0xFF, 0xFE, 'a', 0, 0x3D, 0xD8, 0x3D, 0xD8, 0x00, 0xDE], invalid) == ["a�\U0001F600"d] && invalid == 1);
+    // a surrogate pair across the 512-byte buffer boundary (BOM + 254 units, then the pair at bytes 510..513)
+    ubyte[] data = [0xFF, 0xFE];
+    foreach (i; 0 .. 254)
+        data ~= ['x', 0];
+    data ~= [0x3D, 0xD8, 0x00, 0xDE, 'y', 0];
+    dstring[] lines = readAll(data, invalid);
+    dchar[] expected;
+    foreach (i; 0 .. 254)
+        expected ~= 'x';
+    expected ~= "\U0001F600y"d;
+    assert(lines == [expected.idup] && !invalid);
 }
 
 unittest {
