@@ -14,6 +14,8 @@ struct vec2 {
     }
     alias u = x;
     alias v = y;
+
+@safe pure nothrow @nogc:
     /// create with all components filled with specified value
     this(float v) {
         x = v;
@@ -25,7 +27,8 @@ struct vec2 {
     this(float[] v) {
         vec = v[0..2];
     }
-    this(float * v) {
+    /// reads 2 floats from v
+    this(float * v) @system {
         vec = v[0..2];
     }
     this(const vec2 v) {
@@ -271,6 +274,12 @@ struct vec3 {
     alias r = x;
     alias g = y;
     alias b = z;
+
+    @property string toString() {
+        return "(%f,%f,%f)".format(x, y, z);
+    }
+
+@safe pure nothrow @nogc:
     /// create with all components filled with specified value
     this(float v) {
         x = y = z = v;
@@ -281,7 +290,8 @@ struct vec3 {
     this(float[] v) {
         vec = v[0..3];
     }
-    this(float * v) {
+    /// reads 3 floats from v
+    this(float * v) @system {
         vec = v[0..3];
     }
     this(const vec3 v) {
@@ -556,10 +566,6 @@ struct vec3 {
         else
             return vec3(xx / ww, yy / ww, zz / ww);
     }
-
-    @property string toString() {
-        return "(%f,%f,%f)".format(x, y, z);
-    }
 }
 
 /// 4 component vector
@@ -577,6 +583,12 @@ struct vec4 {
     alias g = y;
     alias b = z;
     alias a = w;
+
+    @property string toString() {
+        return "(%f,%f,%f,%f)".format(x, y, z, w);
+    }
+
+@safe pure nothrow @nogc:
     /// create with all components filled with specified value
     this(float v) {
         x = y = z = w = v;
@@ -888,13 +900,9 @@ struct vec4 {
              w * matrix.m[3*4 + 3];
         return vec4(xx, yy, zz, ww);
     }
-
-    @property string toString() {
-        return "(%f,%f,%f,%f)".format(x, y, z, w);
-    }
 }
 
-bool fuzzyNull(float v) {
+bool fuzzyNull(float v) @safe pure nothrow @nogc {
     return v < 0.0000001f && v > -0.0000001f;
 }
 
@@ -906,6 +914,8 @@ struct mat4 {
         import std.conv : to;
         return to!string(m[0..4]) ~ to!string(m[4..8]) ~ to!string(m[8..12]) ~ to!string(m[12..16]);
     }
+
+@safe pure nothrow @nogc:
 
     //alias m this;
 
@@ -1544,7 +1554,7 @@ struct mat4 {
     * @param rotation The rotation.
     * @param translation The translation.
     */
-    bool decompose(vec3 * scale, vec4 * rotation, vec3 * translation) const {
+    bool decompose(scope vec3 * scale, scope vec4 * rotation, scope vec3 * translation) const {
         if (translation)
         {
             // Extract the translation.
@@ -1599,7 +1609,9 @@ struct mat4 {
     */
     void getTranslation(ref vec3 translation) const
     {
-        decompose(null, null, &translation);
+        translation.x = m[12];
+        translation.y = m[13];
+        translation.z = m[14];
     }
 
     @property float determinant() const
@@ -1644,12 +1656,13 @@ struct mat4 {
         dst.z = x * m[2] + y * m[6] + z * m[10] + w * m[14];
     }
 
-    static __gshared const mat4 IDENTITY;
+    /// identity matrix
+    static immutable mat4 IDENTITY = mat4.init;
 }
 
 
 
-unittest {
+@safe pure nothrow @nogc unittest {
     vec3 a, b, c;
     a.clear(5);
     b.clear(2);
@@ -1673,7 +1686,7 @@ unittest {
     c = b.normalized;
 }
 
-unittest {
+@safe pure nothrow @nogc unittest {
     vec4 a, b, c;
     a.clear(5);
     b.clear(2);
@@ -1697,7 +1710,7 @@ unittest {
     c = b.normalized;
 }
 
-unittest {
+@safe pure nothrow @nogc unittest {
     mat4 m;
     m.setIdentity();
     m = [1.0f,2.0f,3.0f,4.0f,5.0f,6.0f,7.0f,8.0f,9.0f,10.0f,11.0f,12.0f,13.0f,14.0f,15.0f,16.0f];
@@ -1732,6 +1745,10 @@ unittest {
     assert(t * vec3(1, 1, 1) == vec3(2, 3, 4));
     assert(t * vec4(1, 1, 1, 1) == vec4(2, 3, 4, 1));
     assert(t * vec4(1, 1, 1, 0) == vec4(1, 1, 1, 0)); // directions are not translated
+    vec3 tr;
+    t.getTranslation(tr);
+    assert(tr == vec3(1, 2, 3));
+    assert(mat4.IDENTITY == mat4.identity());
     mat4 s;
     s.setIdentity();
     s.scale(2, 3, 4);
@@ -1759,12 +1776,12 @@ unittest {
 }
 
 /// calculate normal for triangle
-vec3 triangleNormal(vec3 p1, vec3 p2, vec3 p3) {
+vec3 triangleNormal(vec3 p1, vec3 p2, vec3 p3) @safe pure nothrow @nogc {
     return vec3.crossProduct(p2 - p1, p3 - p2).normalized();
 }
 
 /// calculate normal for triangle
-vec3 triangleNormal(float[3] p1, float[3] p2, float[3] p3) {
+vec3 triangleNormal(float[3] p1, float[3] p2, float[3] p3) @safe pure nothrow @nogc {
     return vec3.crossProduct(vec3(p2) - vec3(p1), vec3(p3) - vec3(p2)).normalized();
 }
 
@@ -1776,7 +1793,7 @@ alias PointF = vec2;
 
 // this form can be used within shaders
 /// cubic bezier curve
-PointF bezierCubic(const PointF[] cp, float t) pure @nogc @safe
+PointF bezierCubic(const PointF[] cp, float t) @safe pure nothrow @nogc
     in { assert(cp.length > 3); } do
 {
     // control points
@@ -1798,7 +1815,7 @@ PointF bezierCubic(const PointF[] cp, float t) pure @nogc @safe
 }
 
 /// quadratic bezier curve (not tested)
-PointF bezierQuadratic(const PointF[] cp, float t) pure @nogc @safe
+PointF bezierQuadratic(const PointF[] cp, float t) @safe pure nothrow @nogc
     in { assert(cp.length > 2); } do
 {
     auto p0 = cp[0];
@@ -1817,7 +1834,7 @@ PointF bezierQuadratic(const PointF[] cp, float t) pure @nogc @safe
 }
 
 /// cubic bezier (first) derivative
-PointF bezierCubicDerivative(const PointF[] cp, float t) pure @nogc @safe 
+PointF bezierCubicDerivative(const PointF[] cp, float t) @safe pure nothrow @nogc
     in { assert(cp.length > 3); } do 
 {
     auto p0 = cp[0];
@@ -1835,7 +1852,7 @@ PointF bezierCubicDerivative(const PointF[] cp, float t) pure @nogc @safe
 }
 
 /// quadratic bezier (first) derivative
-PointF bezierQuadraticDerivative(const PointF[] cp, float t) pure @nogc @safe 
+PointF bezierQuadraticDerivative(const PointF[] cp, float t) @safe pure nothrow @nogc
     in { assert(cp.length > 2); } do 
 {
     auto p0 = cp[0];
@@ -1848,16 +1865,15 @@ PointF bezierQuadraticDerivative(const PointF[] cp, float t) pure @nogc @safe
     return d;
 }
 
-// can't be pure due to normalize & vec2 ctor
 /// evaluates cubic bezier direction(tangent) at point t
-PointF bezierCubicDirection(const PointF[] cp, float t) {
+PointF bezierCubicDirection(const PointF[] cp, float t) @safe pure nothrow @nogc {
     auto d = bezierCubicDerivative(cp,t);
     d.normalize();
     return PointF(tan(d.x), tan(d.y));
 }
 
 /// evaluates quadratic bezier direction(tangent) at point t
-PointF bezierQuadraticDirection(const PointF[] cp, float t) {
+PointF bezierQuadraticDirection(const PointF[] cp, float t) @safe pure nothrow @nogc {
     auto d = bezierQuadraticDerivative(cp,t);
     d.normalize();
     return PointF(tan(d.x), tan(d.y));
@@ -1890,23 +1906,23 @@ void flattenBezier(alias BezierFunc)(const PointF[] cp, int segmentCountInclusiv
 
 
 /// flattens cubic bezier curve, returns PointF[segmentCount+1] array or empty array if <1 segments
-PointF[] flattenBezierCubic(const PointF[] cp, int segmentCount) {
+PointF[] flattenBezierCubic(const PointF[] cp, int segmentCount) @safe pure nothrow {
     return flattenBezier!bezierCubic(cp,segmentCount);
 }
 
 /// flattens quadratic bezier curve, returns PointF[segmentCount+1] array or empty array if <1 segments
-PointF[] flattenBezierQuadratic(const PointF[] cp, int segmentCount) {
+PointF[] flattenBezierQuadratic(const PointF[] cp, int segmentCount) @safe pure nothrow {
     return flattenBezier!bezierQuadratic(cp, segmentCount);
 }
 
 /// calculates normal vector at point t using direction
-PointF bezierCubicNormal(const PointF[] cp, float t) {
+PointF bezierCubicNormal(const PointF[] cp, float t) @safe pure nothrow @nogc {
     auto d = bezierCubicDirection(cp, t);
     return d.rotated90ccw;
 }
 
 /// calculates normal vector at point t using direction
-PointF bezierQuadraticNormal(const PointF[] cp, float t) {
+PointF bezierQuadraticNormal(const PointF[] cp, float t) @safe pure nothrow @nogc {
     auto d = bezierQuadraticDerivative(cp, t);
     return d.rotated90ccw;
 }
