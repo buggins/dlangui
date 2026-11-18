@@ -184,12 +184,12 @@ immutable uint COLOR_TRANSFORM_OFFSET_NONE = 0x80808080;
 immutable uint COLOR_TRANSFORM_MULTIPLY_NONE = 0x40404040;
 
 
-uint makeRGBA(T)(T r, T g, T b, T a) pure nothrow {
+uint makeRGBA(T)(T r, T g, T b, T a) @safe pure nothrow @nogc {
     return (cast(uint)a << 24)|(cast(uint)r << 16)|(cast(uint)g << 8)|(cast(uint)b);
 }
 
 /// blend two RGB pixels using alpha
-uint blendARGB(uint dst, uint src, uint alpha) pure nothrow {
+uint blendARGB(uint dst, uint src, uint alpha) @safe pure nothrow @nogc {
     uint srca = (src >> 24) & 0xFF;
     uint dsta = (dst >> 24) & 0xFF;
 
@@ -219,7 +219,7 @@ immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
 immutable int[3] COMPONENT_OFFSET_RGB = [0, 1, 2];
 immutable int COMPONENT_OFFSET_ALPHA = 3;
 /// byte offset of the color component lit by subpixel x0 (0..2, from the left) of a pixel
-int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) pure nothrow {
+int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) @safe pure nothrow @nogc {
     switch (mode) with(SubpixelRenderingMode) {
         case BGR:
             return COMPONENT_OFFSET_RGB[x0];
@@ -230,7 +230,7 @@ int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) pure nothrow {
 }
 
 /// blend subpixel using alpha
-void blendSubpixel(ubyte * dst, ubyte * src, uint alpha, int x0, SubpixelRenderingMode mode) {
+void blendSubpixel(ubyte * dst, ubyte * src, uint alpha, int x0, SubpixelRenderingMode mode) @system pure nothrow @nogc {
     uint dstalpha = dst[COMPONENT_OFFSET_ALPHA];
     int offset = subpixelComponentIndex(x0, mode);
     uint srcr = src[offset];
@@ -246,7 +246,7 @@ void blendSubpixel(ubyte * dst, ubyte * src, uint alpha, int x0, SubpixelRenderi
 }
 
 /// blend two alpha values 0..255 (255 is fully transparent, 0 is opaque)
-uint blendAlpha(uint a1, uint a2) pure nothrow {
+uint blendAlpha(uint a1, uint a2) @safe pure nothrow @nogc {
     if (!a1)
         return a2;
     if (!a2)
@@ -255,12 +255,12 @@ uint blendAlpha(uint a1, uint a2) pure nothrow {
 }
 
 /// applies additional alpha to color
-uint addAlpha(uint color, uint alpha) pure nothrow {
+uint addAlpha(uint color, uint alpha) @safe pure nothrow @nogc {
     alpha = blendAlpha(color >> 24, alpha);
     return (color & 0xFFFFFF) | (alpha << 24);
 }
 
-ubyte rgbToGray(uint color) pure nothrow {
+ubyte rgbToGray(uint color) @safe pure nothrow @nogc {
     uint srcr = (color >> 16) & 0xFF;
     uint srcg = (color >> 8) & 0xFF;
     uint srcb = (color >> 0) & 0xFF;
@@ -270,15 +270,15 @@ ubyte rgbToGray(uint color) pure nothrow {
 
 // todo
 struct ColorTransformHandler {
-    void initialize(ref ColorTransform transform) {
+    void initialize(ref ColorTransform transform) @safe pure nothrow @nogc {
 
     }
-    uint transform(uint color) {
+    uint transform(uint color) @safe pure nothrow @nogc {
         return color;
     }
 }
 
-uint transformComponent(int src, int addBefore, int multiply, int addAfter) pure nothrow {
+uint transformComponent(int src, int addBefore, int multiply, int addAfter) @safe pure nothrow @nogc {
     int add1 = (cast(int)(addBefore << 1)) - 0x100;
     int add2 = (cast(int)(addAfter << 1)) - 0x100;
     int mul = cast(int)(multiply << 2);
@@ -290,7 +290,7 @@ uint transformComponent(int src, int addBefore, int multiply, int addAfter) pure
     return cast(uint)res;
 }
 
-uint transformRGBA(uint src, uint addBefore, uint multiply, uint addAfter) pure nothrow {
+uint transformRGBA(uint src, uint addBefore, uint multiply, uint addAfter) @safe pure nothrow @nogc {
     uint a = transformComponent(src >> 24, addBefore >> 24, multiply >> 24, addAfter >> 24);
     uint r = transformComponent((src >> 16) & 0xFF, (addBefore >> 16) & 0xFF, (multiply >> 16) & 0xFF, (addAfter >> 16) & 0xFF);
     uint g = transformComponent((src >> 8) & 0xFF, (addBefore >> 8) & 0xFF, (multiply >> 8) & 0xFF, (addAfter >> 8) & 0xFF);
@@ -302,25 +302,25 @@ struct ColorTransform {
     uint addBefore = COLOR_TRANSFORM_OFFSET_NONE;
     uint multiply = COLOR_TRANSFORM_MULTIPLY_NONE;
     uint addAfter = COLOR_TRANSFORM_OFFSET_NONE;
-    @property bool empty() const {
+    @property bool empty() const @safe pure nothrow @nogc {
         return addBefore == COLOR_TRANSFORM_OFFSET_NONE
             && multiply == COLOR_TRANSFORM_MULTIPLY_NONE
             && addAfter == COLOR_TRANSFORM_OFFSET_NONE;
     }
-    uint transform(uint color) {
+    uint transform(uint color) const @safe pure nothrow @nogc {
         return transformRGBA(color, addBefore, multiply, addAfter);
     }
 }
 
 
 /// blend two RGB pixels using alpha
-ubyte blendGray(ubyte dst, ubyte src, uint alpha) pure nothrow {
+ubyte blendGray(ubyte dst, ubyte src, uint alpha) @safe pure nothrow @nogc {
     uint ialpha = 256 - alpha;
     return cast(ubyte)(((src * ialpha + dst * alpha) >> 8) & 0xFF);
 }
 
 /// returns true if color is #FFxxxxxx (color alpha is 255)
-bool isFullyTransparentColor(uint color) pure nothrow {
+bool isFullyTransparentColor(uint color) @safe pure nothrow @nogc {
     return (color >> 24) == 0xFF;
 }
 
