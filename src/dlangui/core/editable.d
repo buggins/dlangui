@@ -374,7 +374,8 @@ class UndoBuffer {
     /// adds undo operation
     void saveForUndo(EditOperation op) {
         _redoList.clear();
-        if (!_undoList.empty) {
+        // don't merge into the operation that marks the saved state: modified would stay false (#948)
+        if (!_undoList.empty && _undoList.back !is _savedState) {
             if (_undoList.back.merge(op)) {
                 //_undoList.back.modified();
                 return; // merged - no need to add new operation
@@ -1878,6 +1879,42 @@ unittest {
         assert(content.save(fn, TextFileFormat(enc, LineEnding.LF, true)), to!string(enc));
         assert(loaded.load(fn) && loaded.line(0) == "x\uFFFDy"d, to!string(enc));
     }
+}
+
+/// typing or deleting on the same line after saving marks the content modified (#948)
+unittest {
+    import std.file : remove, tempDir, exists;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    string fn = buildPath(tempDir, "dlangui-modified-test-" ~ to!string(thisProcessID) ~ ".txt");
+    scope(exit) if (exists(fn)) remove(fn);
+    auto content = new EditableContent(true);
+    content.text = "ab"d;
+    assert(!content.modified);
+    void type(dchar ch) {
+        auto pos = TextPosition(0, cast(int)content.line(0).length);
+        assert(content.performOperation(new EditOperation(EditAction.Replace, TextRange(pos, pos), [[ch]]), null));
+    }
+    void backspace() {
+        int len = cast(int)content.line(0).length;
+        assert(content.performOperation(new EditOperation(EditAction.Replace,
+                TextRange(TextPosition(0, len - 1), TextPosition(0, len)), [""d]), null));
+    }
+    type('c');
+    assert(content.modified);
+    assert(content.save(fn));
+    assert(!content.modified);
+    type('d'); // was merged into the saved operation
+    assert(content.modified && content.text == "abcd"d);
+    type('e'); // merging after the saved state is fine
+    assert(content.modified && content.text == "abcde"d);
+    assert(content.save(fn));
+    backspace();
+    assert(content.modified && content.text == "abcd"d);
+    // undo back to the saved state: not modified; redo: modified
+    assert(content.undo(null) && !content.modified && content.text == "abcde"d);
+    assert(content.redo(null) && content.modified && content.text == "abcd"d);
 }
 
 // text helpers, positions and ranges (#914); LineIcons.remove when the array is full (#941)
