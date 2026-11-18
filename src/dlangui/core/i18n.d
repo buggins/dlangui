@@ -89,6 +89,7 @@ struct UIString {
     private dstring _value;
     /** id to find value in translator */
     private string _id;
+@safe:
 
     deprecated("use UIString.fromId() instead")
     /** create string with i18n resource id */
@@ -115,8 +116,9 @@ struct UIString {
         _id = ID;
         _value = null;
     }
-    /** Get value (either raw or translated by id) */
-    @property dstring value() const {
+    /** Get value (either raw or translated by id); @system: translates through the UIStringTranslator class
+        (virtual methods) */
+    @property dstring value() const @system {
         if (_id !is null) // translate ID to dstring
             return i18n.get(_id, _value); // get from resource, use _value as fallback
         return _value;
@@ -170,6 +172,7 @@ struct UIString {
 struct UIStringCollection {
     private UIString[] _items;
     private int _length;
+@safe:
 
     /** Returns number of items */
     @property int length() const { return _length; }
@@ -198,8 +201,8 @@ struct UIStringCollection {
         _items[index] = value;
         return _items[index];
     }
-    /** Return unicode string for item by index */
-    dstring get(size_t index) const {
+    /** Return unicode string for item by index (@system: translates, see UIString.value) */
+    dstring get(size_t index) const @system {
         return _items[index].value;
     }
     /** Assign UIStringCollection */
@@ -302,8 +305,8 @@ struct UIStringCollection {
             _items[i] = _items[i + 1];
         _length--;
     }
-    /** Return index of first item with specified text or -1 if not found. */
-    int indexOf(dstring str) const {
+    /** Return index of first item with specified text or -1 if not found (@system: translates) */
+    int indexOf(dstring str) const @system {
         foreach(i; 0 .. _length) {
             if (_items[i].value.equal(str))
                 return i;
@@ -318,8 +321,8 @@ struct UIStringCollection {
         }
         return -1;
     }
-    /** Return index of first item with specified string or -1 if not found. */
-    int indexOf(UIString str) const {
+    /** Return index of first item with specified string or -1 if not found (@system: translates) */
+    int indexOf(UIString str) const @system {
         if (str.id !is null)
             return indexOf(str.id);
         return indexOf(str.value);
@@ -337,6 +340,7 @@ struct StringListValue {
     /// label to show for item
     UIString label;
 
+@safe:
     this(string id, dstring name, string iconId = null) {
         this.stringId = id;
         this.label.value = name;
@@ -446,24 +450,25 @@ class UIStringTranslator {
 }
 
 /** UI string translator */
-private class UIStringList {
+// final: parsing the .ini files is @safe (#915); loading the files reads resources (@system)
+private final class UIStringList {
     private dstring[string] _map;
     /// remove all items
-    void clear() {
+    void clear() @safe {
         _map.destroy();
     }
     /// set item value
-    void set(string id, dstring value) {
+    void set(string id, dstring value) @safe {
         _map[id] = value;
     }
     /// get item value, null if translation is not found for id
-    dstring get(string id) const {
+    dstring get(string id) const @safe {
         if (id in _map)
             return _map[id];
         return null;
     }
     /// load strings from stream
-    bool load(dstring[] lines) {
+    bool load(dstring[] lines) @safe {
         int count = 0;
         foreach (s; lines) {
             int eqpos = -1;
@@ -489,7 +494,7 @@ private class UIStringList {
     }
 
     /// convert to utf32 and split by lines (detecting line endings)
-    static dstring[] splitLines(string src) {
+    static dstring[] splitLines(string src) @safe {
         dstring dsrc = toUTF32(src);
         dstring[] split1 = split(dsrc, "\r\n");
         dstring[] split2 = split(dsrc, "\r");
@@ -534,3 +539,24 @@ private UIStringTranslator _i18n;
     }
     return _i18n;
 }
+
+// UIString without translation, UIStringCollection, parsing of translation files (#915)
+@safe unittest {
+    UIString raw = UIString.fromRaw("text"d);
+    assert(raw.id is null && !raw.empty);
+    UIString byId = UIString.fromId("ID_TEST", "fallback"d);
+    assert(byId.id == "ID_TEST");
+    raw = "other"d;
+    byId = "ID_OTHER";
+    assert(byId.id == "ID_OTHER");
+    UIStringCollection items;
+    items = ["a"d, "b"d];
+    assert(items.length == 2 && !items.empty);
+    StringListValue v = StringListValue("id", "name"d);
+    assert(v.stringId == "id" && v.label.id is null);
+    auto list = new UIStringList();
+    assert(list.load(UIStringList.splitLines("KEY_A=value a\r\n  KEY_B = b\r\nno equals sign\r\n=no key\r\n")));
+    assert(list.get("KEY_A") == "value a"d && list.get("KEY_B") == " b"d && list.get("missing") is null);
+    assert(UIStringList.splitLines("a\nb\nc") == ["a"d, "b"d, "c"d] && UIStringList.splitLines("a\rb") == ["a"d, "b"d]);
+}
+

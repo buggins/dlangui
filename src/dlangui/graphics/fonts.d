@@ -212,6 +212,22 @@ struct EllipsisOptions {
  * Returns: the part to replace; result.truncated is false if text fits as is
  */
 EllipsisCut findEllipsisCut(const dchar[] text, const int[] widths, int availWidth, int ellipsisWidth, EllipsisOptions opts, bool forceEllipsis = false) {
+    // opts.cutFinder is a delegate without attributes; the built-in rules are @safe (#915)
+    if (opts.cutFinder) {
+        immutable size_t n = text.length;
+        assert(widths.length >= n);
+        TextEllipsis mode = opts.mode;
+        if (forceEllipsis && mode == TextEllipsis.None)
+            mode = TextEllipsis.End;
+        if (mode == TextEllipsis.None || ((n ? widths[n - 1] : 0) <= availWidth && !forceEllipsis))
+            return EllipsisCut(n, n, false);
+        return opts.cutFinder(text, widths[0 .. n], availWidth, ellipsisWidth);
+    }
+    return builtinEllipsisCut(text, widths, availWidth, ellipsisWidth, opts, forceEllipsis);
+}
+
+/// the built-in rules of findEllipsisCut (no opts.cutFinder)
+private EllipsisCut builtinEllipsisCut(const dchar[] text, const int[] widths, int availWidth, int ellipsisWidth, ref const EllipsisOptions opts, bool forceEllipsis) @safe pure nothrow @nogc {
     immutable size_t n = text.length;
     assert(widths.length >= n);
     // width of text[0 .. k]
@@ -224,8 +240,6 @@ EllipsisCut findEllipsisCut(const dchar[] text, const int[] widths, int availWid
         return EllipsisCut(n, n, false);
     if (total <= availWidth && !forceEllipsis)
         return EllipsisCut(n, n, false);
-    if (opts.cutFinder)
-        return opts.cutFinder(text, widths[0 .. n], availWidth, ellipsisWidth);
     if (forceEllipsis)
         mode = TextEllipsis.End;
     immutable int avail = availWidth - ellipsisWidth;
@@ -364,6 +378,16 @@ EllipsisCut findEllipsisCut(const dchar[] text, const int[] widths, int availWid
             return EllipsisCut(a, b, true);
         }
     }
+}
+
+// the built-in rules are @safe pure nothrow @nogc (#915); findEllipsisCut may call a custom delegate
+@safe pure nothrow @nogc unittest {
+    static immutable int[5] widths = [10, 20, 30, 40, 50];
+    EllipsisOptions opts;
+    EllipsisCut fits = builtinEllipsisCut("abcde"d, widths[], 50, 10, opts, false);
+    assert(!fits.truncated);
+    EllipsisCut cut = builtinEllipsisCut("abcde"d, widths[], 35, 10, opts, false);
+    assert(cut.truncated && cut.start == 2 && cut.end == 5);
 }
 
 unittest {
@@ -2722,7 +2746,7 @@ bool isWideChar(dchar ch) pure nothrow @nogc @safe {
     return false;
 }
 
-unittest {
+@safe unittest {
     foreach (i; 1 .. WIDE_CHAR_RANGES.length)
         assert(WIDE_CHAR_RANGES[i][0] > WIDE_CHAR_RANGES[i - 1][1]); // sorted, not overlapping
     assert(!isWideChar('A') && !isWideChar(0x00E9) && !isWideChar(0x0416) && !isWideChar(0x2192));
@@ -2771,8 +2795,20 @@ struct EnumArray(T, uint size, uint chunkCount) {
 
     @disable this(this);
 
+    // calloc/free are @system: each chunk is allocated here, owned by this (non-copyable) array only, and its
+    // pointer is cleared when it's freed, so no reference to a freed chunk remains
+    private static Chunk* allocChunk() @trusted nothrow @nogc {
+        Chunk* chunk = cast(Chunk*)calloc(1, Chunk.sizeof);
+        if (!chunk)
+            onOutOfMemoryError();
+        return chunk;
+    }
+    private static void freeChunk(Chunk* chunk) @trusted nothrow @nogc {
+        free(chunk);
+    }
+
     /// returns item by index; cast(T)0 if index >= size or its chunk is not allocated
-    T get(uint index) const {
+    T get(uint index) const @safe pure nothrow @nogc {
         if (index >= size)
             return cast(T)0;
         const(Chunk)* chunk = _chunks[index / ITEMS_PER_CHUNK];
@@ -2784,7 +2820,7 @@ struct EnumArray(T, uint size, uint chunkCount) {
     }
 
     /// sets item value, allocates its chunk if needed; ignored if index >= size
-    void set(uint index, T value) {
+    void set(uint index, T value) @safe nothrow @nogc {
         if (index >= size)
             return;
         uint chunkIndex = index / ITEMS_PER_CHUNK;
@@ -2792,9 +2828,7 @@ struct EnumArray(T, uint size, uint chunkCount) {
         if (!chunk) {
             if (value == cast(T)0)
                 return; // default value: nothing to store
-            chunk = cast(Chunk*)calloc(1, Chunk.sizeof);
-            if (!chunk)
-                onOutOfMemoryError();
+            chunk = allocChunk();
             _chunks[chunkIndex] = chunk;
         }
         uint i = index % ITEMS_PER_CHUNK;
@@ -2804,17 +2838,17 @@ struct EnumArray(T, uint size, uint chunkCount) {
     }
 
     /// frees all chunks: all items become 0
-    void clear() {
+    void clear() @safe nothrow @nogc {
         foreach (ref chunk; _chunks) {
             if (chunk) {
-                free(chunk);
+                freeChunk(chunk);
                 chunk = null;
             }
         }
     }
 
     /// frees chunks
-    ~this() {
+    ~this() @safe nothrow @nogc {
         clear();
     }
 }
@@ -2834,40 +2868,49 @@ struct CodepointPresenceCache {
 
     @disable this(this);
 
+    // calloc/free are @system: the array is owned by this (non-copyable) cache only, and the pointer is cleared
+    // when it's freed
+    private static PresenceArray* allocArray() @trusted nothrow @nogc {
+        auto array = cast(PresenceArray*)calloc(1, PresenceArray.sizeof); // zero bytes are PresenceArray.init
+        if (!array)
+            onOutOfMemoryError();
+        return array;
+    }
+    private static void freeArray(PresenceArray* array) @trusted nothrow @nogc {
+        free(array);
+    }
+
     /// returns presence of codepoint ch, unknown if not cached or ch >= MAX_UNICODE_CODEPOINTS
-    CodepointPresence getPresence(dchar ch) const {
+    CodepointPresence getPresence(dchar ch) const @safe pure nothrow @nogc {
         if (ch >= MAX_UNICODE_CODEPOINTS || !_array)
             return CodepointPresence.unknown;
         return _array.get(ch);
     }
 
     /// stores presence of codepoint ch; ignored for ch >= MAX_UNICODE_CODEPOINTS and for unknown presence
-    void setPresence(dchar ch, CodepointPresence presence) {
+    void setPresence(dchar ch, CodepointPresence presence) @safe nothrow @nogc {
         if (ch >= MAX_UNICODE_CODEPOINTS || presence == CodepointPresence.unknown)
             return;
-        if (!_array) {
-            _array = cast(PresenceArray*)calloc(1, PresenceArray.sizeof); // zero bytes are PresenceArray.init
-            if (!_array)
-                onOutOfMemoryError();
-        }
+        if (!_array)
+            _array = allocArray();
         _array.set(ch, presence);
     }
 
     /// clears whole cache
-    void clear() {
+    void clear() @safe nothrow @nogc {
         if (_array) {
             _array.clear();
-            free(_array);
+            freeArray(_array);
             _array = null;
         }
     }
 
-    ~this() {
+    ~this() @safe nothrow @nogc {
         clear();
     }
 }
 
-unittest {
+@safe unittest {
     // EnumArray (#886)
     EnumArray!(CodepointPresence, 0x110000, 0x110) a;
     static assert(a.BITS_PER_ITEM == 2 && a.ITEMS_PER_CHUNK == 0x1000 && a.CHUNK_SIZE_UINTS == 256);
