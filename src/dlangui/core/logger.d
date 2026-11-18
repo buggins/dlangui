@@ -348,7 +348,8 @@ unittest {
     Log.setFileLogger(null); // closes the file
     Log.logFile = oldFile;
     Log.logLevel = oldLevel;
-    string text = readText(fn);
+    import std.array : replace;
+    string text = readText(fn).replace("\r\n", "\n"); // the file is opened in text mode: CR LF on Windows
     remove(fn);
     assert(text.canFind(" D  value 42 [1, 2]\n"));
     assert(text.canFind(" I  key=7\n"));
