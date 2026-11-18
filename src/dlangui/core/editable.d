@@ -1838,7 +1838,9 @@ unittest {
         assert(loaded.line(0) == "a\U0001F600b"d && loaded.line(1) == "line 2"d, to!string(enc));
         assert(loaded._format.encoding == enc, to!string(enc));
         // a lone surrogate (not from a file: set as text) can't be encoded: saved as U+FFFD
-        content.text = "x"d ~ cast(dchar)0xD800 ~ "y"d;
+        // built at run time: DMD 2.100 on Windows rejects a string literal with a surrogate ("invalid UCS-32 char")
+        dchar surrogate = 0xD800;
+        content.text = ("x"d ~ surrogate ~ "y"d).idup;
         assert(content.save(fn, TextFileFormat(enc, LineEnding.LF, true)), to!string(enc));
         assert(loaded.load(fn) && loaded.line(0) == "x\uFFFDy"d, to!string(enc));
     }
