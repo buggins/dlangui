@@ -172,17 +172,9 @@ cd dlangui/examples/example1
 dub run --build=release
 ```
 
-To avoid showing console window, add a `win_app.def` file to your package source directory and add a line to your dub.json.
-
-src/win_app.def:
-```
-EXETYPE NT
-SUBSYSTEM WINDOWS
-```
-dub.json:
-```json
-"sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
-```
+No console window is shown: `mixin APP_ENTRY_POINT` defines `WinMain` on Windows, so the linker makes a GUI program
+(32 and 64 bit, DMD and LDC). A `win_app.def` file is no longer needed; it was only for the old OMF/OPTLINK toolchain
+(`-m32omf`), and the Microsoft linker ignores it with warnings.
 
 Linux builds (DUB)
 ------------------
