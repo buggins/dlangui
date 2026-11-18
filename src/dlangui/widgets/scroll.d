@@ -458,6 +458,14 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         updateScrollBars();
     }
 
+    /// keep the visible area from going above or left of the content (#964)
+    protected void clampScrollToContent() {
+        if (_visibleScrollableArea.left < _fullScrollableArea.left)
+            _visibleScrollableArea.offset(_fullScrollableArea.left - _visibleScrollableArea.left, 0);
+        if (_visibleScrollableArea.top < _fullScrollableArea.top)
+            _visibleScrollableArea.offset(0, _fullScrollableArea.top - _visibleScrollableArea.top);
+    }
+
     void makeRectVisible(Rect rc, bool alignHorizontally = true, bool alignVertically = true) {
         if (rc.isInsideOf(_visibleScrollableArea))
             return;
@@ -470,6 +478,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             _visibleScrollableArea.offset(rc.left - _visibleScrollableArea.left, 0);
         if (alignVertically && rc.top < _visibleScrollableArea.top)
             _visibleScrollableArea.offset(0, rc.top - _visibleScrollableArea.top);
+        clampScrollToContent();
         if (_visibleScrollableArea != oldRect)
             requestLayout();
     }
@@ -533,14 +542,22 @@ class ScrollWidget :  ScrollWidgetBase {
         if (extray < 0)
             extray = 0;
         _visibleScrollableArea.offset(-extrax, -extray);
+        clampScrollToContent();
         super.updateScrollBars();
     }
 
-    override protected void drawClient(DrawBuf buf) {
+    /// lay out the content widget at the current scroll position
+    protected void layoutContent() {
         if (_contentWidget) {
             Point sz = fullContentSize();
             Point p = scrollPos;
             _contentWidget.layout(Rect(_clientRect.left - p.x, _clientRect.top - p.y, _clientRect.left + sz.x - p.x, _clientRect.top + sz.y - p.y));
+        }
+    }
+
+    override protected void drawClient(DrawBuf buf) {
+        if (_contentWidget) {
+            layoutContent();
             _contentWidget.onDraw(buf);
         }
     }
@@ -597,10 +614,12 @@ class ScrollWidget :  ScrollWidgetBase {
     }
 
     void makeWidgetVisible(Widget widget, bool alignHorizontally = true, bool alignVertically = true) {
-        if (!widget || !widget.visibility == Visibility.Gone)
+        if (!widget || widget.visibility == Visibility.Gone)
             return;
         if (!_contentWidget || !_contentWidget.isChild(widget))
             return;
+        // the content is laid out when drawn: a widget shown since the last draw has no position yet (#964)
+        layoutContent();
         Rect wpos = widget.pos;
         Rect cpos = _contentWidget.pos;
         wpos.offset(-cpos.left, -cpos.top);
