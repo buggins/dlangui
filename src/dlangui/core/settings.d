@@ -2405,8 +2405,10 @@ final class Setting {
     assert(s["neg"].type == SettingType.FLOAT && s["neg"].floating == -9223372036854775809.0);
     assert(s["min"].type == SettingType.INTEGER && s["min"].integer == long.min);
     assert(s["max"].type == SettingType.UINTEGER && s["max"].uinteger == ulong.max);
-    assert(s["frac"].floating == 0.12345678901234567890123); // digits after the period overflowed
-    assert(s["exp"].floating == 1.5e-300 && s["e"].floating == 2000);
+    // (the last bit of to!double depends on the platform's real: compare with a tolerance)
+    import std.math : isClose;
+    assert(isClose(s["frac"].floating, 0.12345678901234567890123, 1e-15)); // digits after the period overflowed
+    assert(isClose(s["exp"].floating, 1.5e-300, 1e-15) && s["e"].floating == 2000);
     // out of the double range: an error (one compiler's to!double throws, another returns infinity)
     assert(errorOf(`{"a": 1e400}`).canFind("number out of range"));
 }
