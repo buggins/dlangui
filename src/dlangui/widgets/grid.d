@@ -427,12 +427,12 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         invalidate();
     }
     /// fixed (non-scrollable) data row count
-    @property int fixedRows() { return _gridModelAdapter is null ? _fixedRows : _gridModelAdapter.fixedCols; }
+    @property int fixedRows() { return _gridModelAdapter is null ? _fixedRows : _gridModelAdapter.fixedRows; }
     @property void fixedRows(int r) {
         if (_gridModelAdapter is null)
             _fixedRows = r;
         else
-            _gridModelAdapter.fixedCols = r;
+            _gridModelAdapter.fixedRows = r;
         invalidate();
     }
 
@@ -2136,5 +2136,35 @@ unittest {
             grid.fullRowOnTop = row;
             assert(grid.fullColumnOnLeft == column && grid.fullRowOnTop == row);
         }
+    }
+}
+
+// fixedCols and fixedRows are kept apart, also by an external GridModelAdapter (#990)
+unittest {
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
+    // the currentTheme setter destroys the previous theme: replace only a theme created here
+    immutable bool ownTheme = currentTheme is null;
+    if (ownTheme)
+        currentTheme = createDefaultTheme();
+    scope(exit) if (ownTheme) currentTheme = null;
+
+    static class TestModelAdapter : GridModelAdapter {
+        int cols, rows;
+        @property int fixedCols() { return cols; }
+        @property int fixedRows() { return rows; }
+        @property void fixedCols(int value) { cols = value; }
+        @property void fixedRows(int value) { rows = value; }
+    }
+    auto grid = new StringGridWidget("grid");
+    scope(exit) destroy(grid);
+    auto adapter = new TestModelAdapter;
+    scope(exit) grid.gridModelAdapter = null;
+    foreach (withAdapter; [false, true]) {
+        grid.gridModelAdapter = withAdapter ? adapter : null;
+        grid.fixedCols = 3;
+        grid.fixedRows = 2;
+        assert(grid.fixedCols == 3 && grid.fixedRows == 2);
+        if (withAdapter)
+            assert(adapter.cols == 3 && adapter.rows == 2);
     }
 }
