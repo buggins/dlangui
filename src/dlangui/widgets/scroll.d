@@ -375,7 +375,24 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     protected void handleClientRectLayout(ref Rect rc) {
     }
 
-    /// override to determine if scrollbars are needed or not
+    /// measured width of the vertical scrollbar (x) and height of the horizontal one (y); 0 for a scrollbar not
+    /// created (ScrollBarMode.Invisible, #985)
+    protected Point scrollbarSizes() {
+        return Point(_vscrollbar ? _vscrollbar.measuredWidth : 0, _hscrollbar ? _hscrollbar.measuredHeight : 0);
+    }
+
+    /// Sizes compared by the Auto scrollbar decision in checkIfScrollbarsNeeded(), in any unit (EditBox
+    /// counts lines vertically): the content, the client area without scrollbars, and the client area with the
+    /// other scrollbar shown (#991)
+    protected void autoScrollbarSizes(out Point contentSize, out Point clientSize, out Point clientSizeWithScrollbars) {
+        contentSize = fullContentSize();
+        clientSize = Point(_clientRect.width, _clientRect.height);
+        Point sb = scrollbarSizes();
+        clientSizeWithScrollbars = Point(clientSize.x - sb.x, clientSize.y - sb.y);
+    }
+
+    /// decides which scrollbars are shown: Visible ones always, Auto ones when the content doesn't fit
+    /// (sizes from autoScrollbarSizes())
     protected void checkIfScrollbarsNeeded(ref bool needHScroll, ref bool needVScroll) {
         needHScroll = _hscrollbar && (_hscrollbarMode == ScrollBarMode.Visible || _hscrollbarMode == ScrollBarMode.Auto);
         needVScroll = _vscrollbar && (_vscrollbarMode == ScrollBarMode.Visible || _vscrollbarMode == ScrollBarMode.Auto);
@@ -384,18 +401,14 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         if (_hscrollbarMode != ScrollBarMode.Auto && _vscrollbarMode != ScrollBarMode.Auto)
             return; // no auto scrollbars
         // either h or v scrollbar is in auto mode
-        Point contentSize = fullContentSize();
+        Point contentSize, clientSize, clientSizeWithScrollbars;
+        autoScrollbarSizes(contentSize, clientSize, clientSizeWithScrollbars);
         int contentWidth = contentSize.x;
         int contentHeight = contentSize.y;
-        int clientWidth = _clientRect.width;
-        int clientHeight = _clientRect.height;
-
-        // a scrollbar is null when created with ScrollBarMode.Invisible (#985)
-        int hsbHeight = _hscrollbar ? _hscrollbar.measuredHeight : 0;
-        int vsbWidth = _vscrollbar ? _vscrollbar.measuredWidth : 0;
-
-        int clientWidthWithScrollbar = clientWidth - vsbWidth;
-        int clientHeightWithScrollbar = clientHeight - hsbHeight;
+        int clientWidth = clientSize.x;
+        int clientHeight = clientSize.y;
+        int clientWidthWithScrollbar = clientSizeWithScrollbars.x;
+        int clientHeightWithScrollbar = clientSizeWithScrollbars.y;
 
         if (_hscrollbarMode == ScrollBarMode.Auto && _vscrollbarMode == ScrollBarMode.Auto) {
             // both scrollbars in auto mode
@@ -449,12 +462,13 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         checkIfScrollbarsNeeded(needHscroll, needVscroll);
 
         // scrollbars
+        Point sb = scrollbarSizes();
         Rect vsbrc = rc;
-        vsbrc.left = vsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
-        vsbrc.bottom = vsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
+        vsbrc.left = vsbrc.right - (needVscroll ? sb.x : 0);
+        vsbrc.bottom = vsbrc.bottom - (needHscroll ? sb.y : 0);
         Rect hsbrc = rc;
-        hsbrc.right = hsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
-        hsbrc.top = hsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
+        hsbrc.right = hsbrc.right - (needVscroll ? sb.x : 0);
+        hsbrc.top = hsbrc.bottom - (needHscroll ? sb.y : 0);
         if (_vscrollbar && _vscrollbarMode != ScrollBarMode.External) {
             _vscrollbar.visibility = needVscroll ? Visibility.Visible : Visibility.Gone;
             _vscrollbar.layout(vsbrc);
@@ -739,4 +753,41 @@ unittest {
         scope(exit) destroy(scroll);
         assert(scroll.hscrollbar.visibility == (contentWidth > 200 ? Visibility.Visible : Visibility.Gone));
     }
+}
+
+// the Auto scrollbar decision uses the sizes of autoScrollbarSizes(), which subclasses override, e.g. EditBox with
+// heights in lines (#991)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+
+    // content and client sizes in made-up units, not the content widget's pixels
+    static class UnitsScrollWidget : ScrollWidget {
+        Point content, client, clientWithScrollbars;
+        this() {
+            super("scroll", ScrollBarMode.Auto, ScrollBarMode.Auto);
+            contentWidget = new Widget("content").minWidth(10).minHeight(10);
+        }
+        override protected void autoScrollbarSizes(out Point contentSize, out Point clientSize,
+                                                   out Point clientSizeWithScrollbars) {
+            contentSize = content;
+            clientSize = client;
+            clientSizeWithScrollbars = clientWithScrollbars;
+        }
+    }
+    auto scroll = new UnitsScrollWidget;
+    scope(exit) destroy(scroll);
+    bool[2] layoutAndCheck(Point content) {
+        scroll.content = content;
+        scroll.client = Point(200, 20);
+        scroll.clientWithScrollbars = Point(184, 19);
+        // no measure(): scrollbars load their images there, and unittests have no image cache
+        scroll.layout(Rect(0, 0, 200, 150));
+        return [scroll.hscrollbar.visibility == Visibility.Visible, scroll.vscrollbar.visibility == Visibility.Visible];
+    }
+    assert(layoutAndCheck(Point(150, 10)) == [false, false]); // fits
+    assert(layoutAndCheck(Point(150, 30)) == [false, true]);  // too high, as wide as the client with the scrollbar
+    assert(layoutAndCheck(Point(190, 30)) == [true, true]);   // too high, and too wide with the scrollbar
+    assert(layoutAndCheck(Point(250, 20)) == [true, true]);   // too wide, and too high with the scrollbar
+    assert(layoutAndCheck(Point(250, 19)) == [true, false]);  // too wide, as high as the client with the scrollbar
 }

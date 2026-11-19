@@ -2888,68 +2888,19 @@ class EditBox : EditWidgetBase {
     }
 
     protected bool _extendRightScrollBound = true;
-    /// override to determine if scrollbars are needed or not
-    override protected void checkIfScrollbarsNeeded(ref bool needHScroll, ref bool needVScroll) {
-        needHScroll = _hscrollbar && (_hscrollbarMode == ScrollBarMode.Visible || _hscrollbarMode == ScrollBarMode.Auto);
-        needVScroll = _vscrollbar && (_vscrollbarMode == ScrollBarMode.Visible || _vscrollbarMode == ScrollBarMode.Auto);
-        if (!needHScroll && !needVScroll)
-            return; // not needed
-        if (_hscrollbarMode != ScrollBarMode.Auto && _vscrollbarMode != ScrollBarMode.Auto)
-            return; // no auto scrollbars
-        // either h or v scrollbar is in auto mode
-
-        // a scrollbar is null when created with ScrollBarMode.Invisible (#985)
-        int hsbHeight = _hscrollbar ? _hscrollbar.measuredHeight : 0;
-        int vsbWidth = _vscrollbar ? _vscrollbar.measuredWidth : 0;
-
+    /// sizes for the Auto scrollbar decision (#991): widths in pixels, heights in lines (fully visible lines of
+    /// the client area)
+    override protected void autoScrollbarSizes(out Point contentSize, out Point clientSize, out Point clientSizeWithScrollbars) {
+        Point sb = scrollbarSizes();
         int visibleLines = _lineHeight > 0 ? (_clientRect.height / _lineHeight) : 1; // fully visible lines
         if (visibleLines < 1)
             visibleLines = 1;
-        int visibleLinesWithScrollbar = _lineHeight > 0 ? ((_clientRect.height - hsbHeight) / _lineHeight) : 1; // fully visible lines
+        int visibleLinesWithScrollbar = _lineHeight > 0 ? ((_clientRect.height - sb.y) / _lineHeight) : 1; // fully visible lines
         if (visibleLinesWithScrollbar < 1)
             visibleLinesWithScrollbar = 1;
-
-        // either h or v scrollbar is in auto mode
-        //Point contentSize = fullContentSize();
-        int contentWidth = _maxLineWidth + (_extendRightScrollBound ? _clientRect.width / 16 : 0);
-        int contentHeight = _content.length;
-
-        int clientWidth = _clientRect.width;
-        int clientHeight = visibleLines;
-
-        int clientWidthWithScrollbar = clientWidth - vsbWidth;
-        int clientHeightWithScrollbar = visibleLinesWithScrollbar;
-
-        if (_hscrollbarMode == ScrollBarMode.Auto && _vscrollbarMode == ScrollBarMode.Auto) {
-            // both scrollbars in auto mode
-            bool xFits = contentWidth <= clientWidth;
-            bool yFits = contentHeight <= clientHeight;
-            if (!xFits && !yFits) {
-                // none fits, need both scrollbars
-            } else if (xFits && yFits) {
-                // everything fits!
-                needHScroll = false;
-                needVScroll = false;
-            } else if (xFits) {
-                // only X fits
-                if (contentWidth <= clientWidthWithScrollbar)
-                    needHScroll = false; // disable hscroll
-            } else { // yFits
-                // only Y fits
-                if (contentHeight <= clientHeightWithScrollbar)
-                    needVScroll = false; // disable vscroll
-            }
-        } else if (_hscrollbarMode == ScrollBarMode.Auto) {
-            // only hscroll is in auto mode
-            if (needVScroll)
-                clientWidth = clientWidthWithScrollbar;
-            needHScroll = contentWidth > clientWidth;
-        } else {
-            // only vscroll is in auto mode
-            if (needHScroll)
-                clientHeight = clientHeightWithScrollbar;
-            needVScroll = contentHeight > clientHeight;
-        }
+        contentSize = Point(_maxLineWidth + (_extendRightScrollBound ? _clientRect.width / 16 : 0), _content.length);
+        clientSize = Point(_clientRect.width, visibleLines);
+        clientSizeWithScrollbars = Point(_clientRect.width - sb.x, visibleLinesWithScrollbar);
     }
 
     /// update horizontal scrollbar widget position
