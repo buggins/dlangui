@@ -169,6 +169,12 @@ struct DockSpace {
         } else if (event == ResizerEventType.Dragging) {
             int dir = _alignment == DockAlignment.Right || _alignment == DockAlignment.Bottom ? -1 : 1;
             _space = _dragStartSpace + dir * (newPosition - _dragStartPosition);
+            // keep the limits while dragging, also outside the window (#972): a space <= 0 would mean
+            // "not initialized" in beforeLayout() and bring back the initial size
+            if (_space < _minSpace)
+                _space = _minSpace;
+            if (_space > _maxSpace)
+                _space = _maxSpace;
             _resizedByUser = true;
             if (_host) // null in the unittest
                 _host.onResize(source, event, newPosition);
@@ -429,6 +435,13 @@ unittest {
     space.initialPercent = 25;
     space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
     space.onResize(resizer, ResizerEventType.StartDragging, 500);
+    space.onResize(resizer, ResizerEventType.Dragging, 560);
+    assert(space.space == 310 && space.percent == 31);
+    // dragged beyond the limits, also outside the window: clamped to 10..40% (#972)
+    space.onResize(resizer, ResizerEventType.Dragging, -200);
+    assert(space.space == 100);
+    space.onResize(resizer, ResizerEventType.Dragging, 1500);
+    assert(space.space == 400);
     space.onResize(resizer, ResizerEventType.Dragging, 560);
     assert(space.space == 310 && space.percent == 31);
     space.beforeLayout(Rect(0, 0, 1240, 800), oneDock);

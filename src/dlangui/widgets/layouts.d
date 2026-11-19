@@ -311,10 +311,10 @@ class ResizerWidget : Widget {
     protected string _styleHorizontal;
     Signal!ResizeHandler resizeEvent;
 
-    /// Controls the minimum width of the previous item
+    /// Minimum size of the previous item when dragging: width, or height for a vertical resizer
     size_t minPreviousItemWidth = 100;
 
-    /// Controls the minimum width of the next item
+    /// Minimum size of the next item when dragging: width, or height for a vertical resizer
     size_t minNextItemWidth = 100;
 
     /// Orientation: Vertical to resize vertically, Horizontal - to resize horizontally
@@ -398,6 +398,8 @@ class ResizerWidget : Widget {
     protected Point _dragStart;
     protected Rect _dragStartRect;
     protected Rect _scrollArea;
+    protected int _dragStartPreviousSize; // size of the previous widget at drag start
+    protected int _dragStartNextSize; // size of the next widget at drag start
 
     @property int delta() { return _delta; }
 
@@ -418,6 +420,8 @@ class ResizerWidget : Widget {
             if (validProps) {
                 Rect r1 = _previousWidget.pos;
                 Rect r2 = _nextWidget.pos;
+                _dragStartPreviousSize = _orientation == Orientation.Vertical ? r1.height : r1.width;
+                _dragStartNextSize = _orientation == Orientation.Vertical ? r2.height : r2.width;
                 _scrollArea.left = r1.left;
                 _scrollArea.right = r2.right;
                 _scrollArea.top = r1.top;
@@ -430,12 +434,18 @@ class ResizerWidget : Widget {
                     _delta = _minDragDelta;
                 if (_delta > _maxDragDelta)
                     _delta = _maxDragDelta;
-            } else {
-                resizeAndFireEvent(newWidth, ResizerEventType.StartDragging);
             }
+            resizeAndFireEvent(newWidth, ResizerEventType.StartDragging);
             return true;
         }
         if (event.action == MouseAction.FocusOut && _dragging) {
+            return true;
+        }
+        if (event.action == MouseAction.Cancel && _dragging) {
+            // before the hover handling below, which would keep the drag going (#972)
+            resetState(State.Pressed | State.Hovered);
+            _dragging = false;
+            resizeAndFireEvent(newWidth, ResizerEventType.EndDragging);
             return true;
         }
         if ((event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) || (!event.lbutton.isDown && _dragging)) {
@@ -514,22 +524,157 @@ class ResizerWidget : Widget {
         return false;
     }
 
-    private void resizeAndFireEvent(short newWidth, ResizerEventType type)
+    /// newPosition: mouse x (horizontal) or y (vertical) in window coordinates
+    private void resizeAndFireEvent(int newPosition, ResizerEventType type)
     {
-        // Respect the dimensions
-        if( (newWidth > minPreviousItemWidth) && (newWidth < (parent.width - minWidth - minNextItemWidth)) && (_previousWidget is null ||
-           ( (newWidth > _previousWidget.minWidth) && 
-	     (newWidth < (parent.width - minWidth - _nextWidget.minWidth))
-	    )))
-        {
-	    if (_previousWidget !is null) {
-		_previousWidget.layoutWidth = newWidth;
-	    }
-            if (resizeEvent.assigned)
-            {
-               resizeEvent(this, type, newWidth);
-            }
+        if (validProps && type == ResizerEventType.Dragging)
+            resizeNeighbours(newPosition);
+        // listeners without previous/next widgets (e.g. DockHost areas) apply their own limits
+        if (resizeEvent.assigned)
+            resizeEvent(this, type, newPosition);
+    }
+
+    /// set the sizes of the previous and next widgets while dragging to newPosition (#972)
+    private void resizeNeighbours(int newPosition) {
+        import std.algorithm : max, min;
+        immutable bool vertical = _orientation == Orientation.Vertical;
+        int layoutSize(Widget w) { return vertical ? w.layoutHeight : w.layoutWidth; }
+        bool fills(Widget w) { return layoutSize(w) == FILL_PARENT || isPercentSize(layoutSize(w)); }
+        // the previous widget: its size at drag start plus the mouse movement since then
+        immutable int total = _dragStartPreviousSize + _dragStartNextSize;
+        int size = _dragStartPreviousSize + newPosition - (vertical ? _dragStart.y : _dragStart.x);
+        // sizes of the previous widget at which both widgets stay within their limits
+        int minPrevious = max(cast(int)minPreviousItemWidth, vertical ? _previousWidget.minHeight : _previousWidget.minWidth);
+        int maxPrevious = vertical ? _previousWidget.maxHeight : _previousWidget.maxWidth;
+        int minNext = max(cast(int)minNextItemWidth, vertical ? _nextWidget.minHeight : _nextWidget.minWidth);
+        int maxNext = vertical ? _nextWidget.maxHeight : _nextWidget.maxWidth;
+        int low = max(minPrevious, total - maxNext);
+        int high = min(maxPrevious, total - minNext);
+        if (low > high)
+            return; // no size fits both widgets
+        size = max(low, min(high, size));
+        // the widget which fills the rest of the layout takes the difference: set the size of the other one
+        Widget target = _previousWidget;
+        if (fills(_previousWidget) && !fills(_nextWidget)) {
+            target = _nextWidget;
+            size = total - size;
         }
+        if (vertical)
+            target.layoutHeight = size;
+        else
+            target.layoutWidth = size;
+    }
+}
+
+// dragging a resizer between two widgets of a linear layout (#972)
+unittest {
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
+    // the currentTheme setter destroys the previous theme: replace only a theme created here
+    immutable bool ownTheme = currentTheme is null;
+    if (ownTheme)
+        currentTheme = createDefaultTheme();
+    scope(exit) if (ownTheme) currentTheme = null;
+
+    MouseEvent mouse(MouseAction action, int x, int y, bool buttonDown = true) {
+        auto e = new MouseEvent(action, action == MouseAction.ButtonDown || action == MouseAction.ButtonUp
+                                ? MouseButton.Left : MouseButton.None,
+                                buttonDown ? MouseFlag.LButton : 0, cast(short)x, cast(short)y);
+        if (buttonDown)
+            e.lbutton.down(cast(short)x, cast(short)y, MouseFlag.LButton);
+        return e;
+    }
+
+    foreach (vertical; [false, true]) {
+        // first: sizeFirst px or FILL_PARENT, second: FILL_PARENT or sizeSecond px;
+        // the layout doesn't start at 0, 0 in the window
+        void test(int sizeFirst, int sizeSecond, int length, void delegate(Widget first, Widget second,
+                  ResizerWidget resizer, int delegate(MouseAction, int) send) check) {
+            LinearLayout layout = new LinearLayout(null, vertical ? Orientation.Vertical : Orientation.Horizontal);
+            scope(exit) destroy(layout);
+            layout.layoutWidth = FILL_PARENT;
+            layout.layoutHeight = FILL_PARENT;
+            Widget first = new Widget("first");
+            Widget second = new Widget("second");
+            foreach (w, size; [first: sizeFirst, second: sizeSecond]) {
+                w.minWidth = 10; // an empty FILL_PARENT widget gets no extra space
+                w.minHeight = 10;
+                if (vertical)
+                    w.layoutHeight = size;
+                else
+                    w.layoutWidth = size;
+            }
+            ResizerWidget resizer = new ResizerWidget();
+            layout.addChild(first);
+            layout.addChild(resizer);
+            layout.addChild(second);
+            Rect rc = vertical ? Rect(20, 30, 220, 30 + length) : Rect(20, 30, 20 + length, 230);
+            layout.measure(rc.width, rc.height);
+            layout.layout(rc);
+            assert(resizer.orientation == (vertical ? Orientation.Vertical : Orientation.Horizontal));
+            int start = vertical ? resizer.pos.top + 2 : resizer.pos.left + 2; // grab it 2 px inside
+            int send(MouseAction action, int pos) {
+                resizer.onMouseEvent(mouse(action, vertical ? 100 : start + pos, vertical ? start + pos : 100,
+                                           action != MouseAction.ButtonUp && action != MouseAction.Cancel));
+                return vertical ? first.layoutHeight : first.layoutWidth;
+            }
+            check(first, second, resizer, &send);
+        }
+        int size(Widget w) { return vertical ? w.layoutHeight : w.layoutWidth; }
+
+        // next widget fills the layout: the size of the previous one follows the mouse
+        test(150, FILL_PARENT, 500, (Widget first, Widget second, ResizerWidget resizer, int delegate(MouseAction, int) send) {
+            ResizerEventType[] events;
+            resizer.resizeEvent = delegate(ResizerWidget source, ResizerEventType event, int position) {
+                events ~= event;
+            };
+            send(MouseAction.ButtonDown, 0);
+            assert(events == [ResizerEventType.StartDragging]);
+            assert(send(MouseAction.Move, 50) == 200);
+            assert(send(MouseAction.Move, -30) == 120);
+            // limits: 100 px for the previous widget, and 100 px left for the next one
+            assert(send(MouseAction.Move, -120) == 100);
+            int total = vertical ? first.pos.height + second.pos.height : first.pos.width + second.pos.width;
+            assert(send(MouseAction.Move, 1000) == total - 100);
+            // releasing the button doesn't change the size
+            assert(send(MouseAction.ButtonUp, 10) == total - 100);
+            assert(events[$ - 1] == ResizerEventType.EndDragging);
+            assert(size(second) == FILL_PARENT);
+            // the other dimension is not changed
+            assert((vertical ? first.layoutWidth : first.layoutHeight) == WRAP_CONTENT);
+            // max size of the previous widget
+            if (vertical)
+                first.maxHeight = 250;
+            else
+                first.maxWidth = 250;
+            send(MouseAction.ButtonDown, 0);
+            assert(send(MouseAction.Move, 1000) == 250);
+            // a cancelled drag ends: later moves don't resize
+            send(MouseAction.Cancel, 0);
+            assert(events[$ - 1] == ResizerEventType.EndDragging);
+            assert(send(MouseAction.Move, -50) == 250);
+        });
+
+        // previous widget fills the layout: the next one gets the size
+        test(FILL_PARENT, 150, 500, (Widget first, Widget second, ResizerWidget resizer, int delegate(MouseAction, int) send) {
+            // a click without moving keeps FILL_PARENT
+            send(MouseAction.ButtonDown, 0);
+            assert(send(MouseAction.ButtonUp, 0) == FILL_PARENT);
+            assert(size(second) == 150);
+            send(MouseAction.ButtonDown, 0);
+            assert(send(MouseAction.Move, -40) == FILL_PARENT);
+            assert(size(second) == 190);
+            assert(send(MouseAction.Move, 30) == FILL_PARENT);
+            assert(size(second) == 120);
+            send(MouseAction.ButtonUp, 30);
+        });
+
+        // too small for the minimum sizes of both widgets (100 + 100): no resizing
+        test(90, FILL_PARENT, 190, (Widget first, Widget second, ResizerWidget resizer, int delegate(MouseAction, int) send) {
+            send(MouseAction.ButtonDown, 0);
+            assert(send(MouseAction.Move, 1) == 90);
+            assert(send(MouseAction.Move, -20) == 90);
+            send(MouseAction.ButtonUp, -20);
+        });
     }
 }
 
