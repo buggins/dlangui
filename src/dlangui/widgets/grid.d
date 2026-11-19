@@ -2137,12 +2137,8 @@ unittest {
 
 // fixedCols and fixedRows are kept apart, also by an external GridModelAdapter (#990)
 unittest {
-    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
-    // the currentTheme setter destroys the previous theme: replace only a theme created here
-    immutable bool ownTheme = currentTheme is null;
-    if (ownTheme)
-        currentTheme = createDefaultTheme();
-    scope(exit) if (ownTheme) currentTheme = null;
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
 
     static class TestModelAdapter : GridModelAdapter {
         int cols, rows;
