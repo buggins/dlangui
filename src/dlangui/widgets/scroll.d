@@ -648,12 +648,8 @@ class ScrollWidget :  ScrollWidgetBase {
 // scroll widgets lay out again the scrollbars they update in layout(): no layout of the window is left to the next
 // paint after a resize (#980)
 unittest {
-    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
-    // the currentTheme setter destroys the previous theme: replace only a theme created here
-    immutable bool ownTheme = currentTheme is null;
-    if (ownTheme)
-        currentTheme = createDefaultTheme();
-    scope(exit) if (ownTheme) currentTheme = null;
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
 
     auto scroll = new ScrollWidget("scroll");
     scope(exit) destroy(scroll);
@@ -677,12 +673,8 @@ unittest {
 
 // auto scrollbars: the space for the vertical scrollbar is its width, and a missing scrollbar takes none (#985)
 unittest {
-    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
-    // the currentTheme setter destroys the previous theme: replace only a theme created here
-    immutable bool ownTheme = currentTheme is null;
-    if (ownTheme)
-        currentTheme = createDefaultTheme();
-    scope(exit) if (ownTheme) currentTheme = null;
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
 
     // ScrollBar.measure() loads images, and unittests have no image cache: fixed sizes instead
     static class FixedSizeScrollBar : ScrollBar {

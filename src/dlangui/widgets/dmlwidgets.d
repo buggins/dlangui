@@ -134,12 +134,8 @@ unittest {
     import dlangui.widgets.controls : ImageTextButton, ImageWidget;
     import dlangui.widgets.layouts : HorizontalLayout;
     import dlangui.widgets.widget : Orientation, Visibility;
-    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
-    // the currentTheme setter destroys the previous theme: replace only a theme created here
-    immutable bool ownTheme = currentTheme is null;
-    if (ownTheme)
-        currentTheme = createDefaultTheme();
-    scope (exit) if (ownTheme) currentTheme = null;
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
     registerStandardWidgets();
 
     auto b = cast(ImageTextButton)parseML(q{

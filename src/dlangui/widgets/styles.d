@@ -1485,6 +1485,65 @@ Theme createDefaultTheme() {
     return res;
 }
 
+version (unittest) {
+    import core.attribute : mustuse;
+
+    /// Theme for unittests that create widgets (#987): `auto _ = useTestTheme();` sets the default theme when
+    /// there is none, and removes it at the end of the scope. The currentTheme setter destroys the previous
+    /// theme, so a theme set by someone else is kept. The SVG current color, which the setter changes, is
+    /// restored too.
+    @mustuse struct TestThemeGuard {
+        private Theme _createdTheme;
+        private uint _savedSvgColor;
+        @disable this(this);
+        ~this() {
+            // only the theme created here, if it is still the current one
+            if (_createdTheme !is null && _currentTheme is _createdTheme) {
+                currentTheme = null;
+                svgCurrentColor = _savedSvgColor;
+            }
+        }
+    }
+    /// ditto
+    TestThemeGuard useTestTheme() {
+        TestThemeGuard res;
+        if (currentTheme is null) {
+            res._savedSvgColor = svgCurrentColor;
+            res._createdTheme = createDefaultTheme();
+            currentTheme = res._createdTheme;
+        }
+        return res;
+    }
+
+    unittest {
+        Theme savedTheme = _currentTheme;
+        immutable uint savedSvgColor = svgCurrentColor;
+        scope(exit) {
+            _currentTheme = savedTheme;
+            svgCurrentColor = savedSvgColor;
+        }
+        // no theme set: the default theme for the scope, then no theme and the SVG color as before
+        _currentTheme = null;
+        svgCurrentColor = 0x123456;
+        {
+            auto _ = useTestTheme();
+            assert(currentTheme !is null);
+            assert(svgCurrentColor != 0x123456); // the default theme's text color
+        }
+        assert(currentTheme is null);
+        assert(svgCurrentColor == 0x123456);
+        // a theme set by someone else is kept
+        Theme theme = new Theme("test");
+        scope(exit) destroy(theme);
+        _currentTheme = theme;
+        {
+            auto _ = useTestTheme();
+            assert(currentTheme is theme);
+        }
+        assert(currentTheme is theme);
+    }
+}
+
 /// decode comma delimited dimension list or single value - and put to Rect
 Rect decodeRect(string s) {
     uint[6] values;
