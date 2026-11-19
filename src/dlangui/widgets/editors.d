@@ -2888,24 +2888,21 @@ class EditBox : EditWidgetBase {
     }
 
     protected bool _extendRightScrollBound = true;
-    /// sizes for the Auto scrollbar decision (#991): widths in pixels, heights in lines (fully visible lines of
-    /// the client area)
-    override protected void autoScrollbarSizes(out Point contentSize, out Point clientSize, out Point clientSizeWithScrollbars) {
-        Point sb = scrollbarSizes();
-        int visibleLines = _lineHeight > 0 ? (_clientRect.height / _lineHeight) : 1; // fully visible lines
-        if (visibleLines < 1)
-            visibleLines = 1;
-        int visibleLinesWithScrollbar = _lineHeight > 0 ? ((_clientRect.height - sb.y) / _lineHeight) : 1; // fully visible lines
-        if (visibleLinesWithScrollbar < 1)
-            visibleLinesWithScrollbar = 1;
-        contentSize = Point(_maxLineWidth + (_extendRightScrollBound ? _clientRect.width / 16 : 0), _content.length);
-        clientSize = Point(_clientRect.width, visibleLines);
-        clientSizeWithScrollbars = Point(_clientRect.width - sb.x, visibleLinesWithScrollbar);
+    /// width of the horizontal scroll range: the longest line, plus room after it with _extendRightScrollBound
+    protected int scrollContentWidth() {
+        return _maxLineWidth + (_extendRightScrollBound ? _clientRect.width / 16 : 0);
+    }
+
+    /// content size for the Auto scrollbar decision: the horizontal scroll range, and the height of all lines (#991);
+    /// a single line always fits, even into a client area lower than one line (no vertical scrollbar that can't
+    /// scroll anything)
+    override protected Point autoScrollbarContentSize() {
+        return Point(scrollContentWidth(), _content.length > 1 ? _lineHeight * _content.length : 0);
     }
 
     /// update horizontal scrollbar widget position
     override protected void updateHScrollBar() {
-        _hscrollbar.setRange(0, _maxLineWidth + (_extendRightScrollBound ? _clientRect.width / 16 : 0));
+        _hscrollbar.setRange(0, scrollContentWidth());
         _hscrollbar.pageSize = _clientRect.width;
         _hscrollbar.position = _scrollPos.x;
     }

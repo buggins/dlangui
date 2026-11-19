@@ -381,18 +381,14 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         return Point(_vscrollbar ? _vscrollbar.measuredWidth : 0, _hscrollbar ? _hscrollbar.measuredHeight : 0);
     }
 
-    /// Sizes compared by the Auto scrollbar decision in checkIfScrollbarsNeeded(), in any unit (EditBox
-    /// counts lines vertically): the content, the client area without scrollbars, and the client area with the
-    /// other scrollbar shown (#991)
-    protected void autoScrollbarSizes(out Point contentSize, out Point clientSize, out Point clientSizeWithScrollbars) {
-        contentSize = fullContentSize();
-        clientSize = Point(_clientRect.width, _clientRect.height);
-        Point sb = scrollbarSizes();
-        clientSizeWithScrollbars = Point(clientSize.x - sb.x, clientSize.y - sb.y);
+    /// content size compared with the client area by the Auto scrollbar decision; override when the scroll range
+    /// differs from fullContentSize() (EditBox: room after the longest line, #991)
+    protected Point autoScrollbarContentSize() {
+        return fullContentSize();
     }
 
-    /// decides which scrollbars are shown: Visible ones always, Auto ones when the content doesn't fit
-    /// (sizes from autoScrollbarSizes())
+    /// decides which scrollbars are shown: Visible ones always, Auto ones when autoScrollbarContentSize() doesn't
+    /// fit into the client area
     protected void checkIfScrollbarsNeeded(ref bool needHScroll, ref bool needVScroll) {
         needHScroll = _hscrollbar && (_hscrollbarMode == ScrollBarMode.Visible || _hscrollbarMode == ScrollBarMode.Auto);
         needVScroll = _vscrollbar && (_vscrollbarMode == ScrollBarMode.Visible || _vscrollbarMode == ScrollBarMode.Auto);
@@ -401,14 +397,15 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         if (_hscrollbarMode != ScrollBarMode.Auto && _vscrollbarMode != ScrollBarMode.Auto)
             return; // no auto scrollbars
         // either h or v scrollbar is in auto mode
-        Point contentSize, clientSize, clientSizeWithScrollbars;
-        autoScrollbarSizes(contentSize, clientSize, clientSizeWithScrollbars);
+        Point contentSize = autoScrollbarContentSize();
         int contentWidth = contentSize.x;
         int contentHeight = contentSize.y;
-        int clientWidth = clientSize.x;
-        int clientHeight = clientSize.y;
-        int clientWidthWithScrollbar = clientSizeWithScrollbars.x;
-        int clientHeightWithScrollbar = clientSizeWithScrollbars.y;
+        int clientWidth = _clientRect.width;
+        int clientHeight = _clientRect.height;
+
+        Point sb = scrollbarSizes();
+        int clientWidthWithScrollbar = clientWidth - sb.x;
+        int clientHeightWithScrollbar = clientHeight - sb.y;
 
         if (_hscrollbarMode == ScrollBarMode.Auto && _vscrollbarMode == ScrollBarMode.Auto) {
             // both scrollbars in auto mode
@@ -685,13 +682,9 @@ unittest {
     assert(scroll.vscrollbar.needLayout);
 }
 
-// auto scrollbars: the space for the vertical scrollbar is its width, and a missing scrollbar takes none (#985)
-unittest {
-    import dlangui.widgets.styles : useTestTheme;
-    auto _ = useTestTheme();
-
-    // ScrollBar.measure() loads images, and unittests have no image cache: fixed sizes instead
-    static class FixedSizeScrollBar : ScrollBar {
+version (unittest) {
+    // ScrollBar.measure() loads images, and unittests have no image cache: scrollbars of a fixed size instead
+    private class FixedSizeScrollBar : ScrollBar {
         this(string id, Orientation orientation) {
             super(id, orientation);
         }
@@ -702,8 +695,8 @@ unittest {
                 measuredContent(parentWidth, parentHeight, 100, 16);
         }
     }
-    ScrollWidget create(ScrollBarMode hmode, ScrollBarMode vmode, int contentWidth, int contentHeight) {
-        auto scroll = new ScrollWidget("scroll", hmode, vmode);
+    // replaces the scrollbars a scroll widget created by FixedSizeScrollBars
+    private void useFixedSizeScrollBars(ScrollWidgetBase scroll) {
         foreach (vertical; [false, true]) {
             ScrollBar* sb = vertical ? &scroll._vscrollbar : &scroll._hscrollbar;
             if (!*sb)
@@ -715,6 +708,17 @@ unittest {
             (*sb).scrollEvent = scroll;
             scroll.addChild(*sb);
         }
+    }
+}
+
+// auto scrollbars: the space for the vertical scrollbar is its width, and a missing scrollbar takes none (#985)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+
+    ScrollWidget create(ScrollBarMode hmode, ScrollBarMode vmode, int contentWidth, int contentHeight) {
+        auto scroll = new ScrollWidget("scroll", hmode, vmode);
+        useFixedSizeScrollBars(scroll);
         scroll.contentWidget = new Widget("content").minWidth(contentWidth).minHeight(contentHeight);
         scroll.measure(200, 150);
         scroll.layout(Rect(0, 0, 200, 150));
@@ -755,39 +759,52 @@ unittest {
     }
 }
 
-// the Auto scrollbar decision uses the sizes of autoScrollbarSizes(), which subclasses override, e.g. EditBox with
-// heights in lines (#991)
+// the Auto scrollbar decision compares autoScrollbarContentSize(), which subclasses override (EditBox: room after
+// the longest line), with the client area, in each combination of Auto and Visible modes (#991)
 unittest {
     import dlangui.widgets.styles : useTestTheme;
     auto _ = useTestTheme();
 
-    // content and client sizes in made-up units, not the content widget's pixels
-    static class UnitsScrollWidget : ScrollWidget {
-        Point content, client, clientWithScrollbars;
-        this() {
-            super("scroll", ScrollBarMode.Auto, ScrollBarMode.Auto);
+    // content size given by the test, not the content widget's size
+    static class ContentSizeScrollWidget : ScrollWidget {
+        Point content;
+        this(ScrollBarMode hmode, ScrollBarMode vmode) {
+            super("scroll", hmode, vmode);
             contentWidget = new Widget("content").minWidth(10).minHeight(10);
         }
-        override protected void autoScrollbarSizes(out Point contentSize, out Point clientSize,
-                                                   out Point clientSizeWithScrollbars) {
-            contentSize = content;
-            clientSize = client;
-            clientSizeWithScrollbars = clientWithScrollbars;
+        override protected Point autoScrollbarContentSize() {
+            return content;
         }
     }
-    auto scroll = new UnitsScrollWidget;
-    scope(exit) destroy(scroll);
-    bool[2] layoutAndCheck(Point content) {
+    // client area 200 x 150; returns [horizontal visible, vertical visible]
+    bool[2] scrollbarsFor(ScrollBarMode hmode, ScrollBarMode vmode, Point content) {
+        auto scroll = new ContentSizeScrollWidget(hmode, vmode);
+        scope(exit) destroy(scroll);
+        useFixedSizeScrollBars(scroll);
         scroll.content = content;
-        scroll.client = Point(200, 20);
-        scroll.clientWithScrollbars = Point(184, 19);
-        // no measure(): scrollbars load their images there, and unittests have no image cache
+        scroll.measure(200, 150);
         scroll.layout(Rect(0, 0, 200, 150));
         return [scroll.hscrollbar.visibility == Visibility.Visible, scroll.vscrollbar.visibility == Visibility.Visible];
     }
-    assert(layoutAndCheck(Point(150, 10)) == [false, false]); // fits
-    assert(layoutAndCheck(Point(150, 30)) == [false, true]);  // too high, as wide as the client with the scrollbar
-    assert(layoutAndCheck(Point(190, 30)) == [true, true]);   // too high, and too wide with the scrollbar
-    assert(layoutAndCheck(Point(250, 20)) == [true, true]);   // too wide, and too high with the scrollbar
-    assert(layoutAndCheck(Point(250, 19)) == [true, false]);  // too wide, as high as the client with the scrollbar
+    // scrollbar sizes, with the padding of their style
+    auto sbs = new ContentSizeScrollWidget(ScrollBarMode.Auto, ScrollBarMode.Auto);
+    useFixedSizeScrollBars(sbs);
+    sbs.measure(200, 150);
+    immutable Point sb = sbs.scrollbarSizes();
+    destroy(sbs);
+
+    alias Auto = ScrollBarMode.Auto;
+    alias Visible = ScrollBarMode.Visible;
+    // both Auto
+    assert(scrollbarsFor(Auto, Auto, Point(200, 150)) == [false, false]);
+    assert(scrollbarsFor(Auto, Auto, Point(200 - sb.x, 151)) == [false, true]);
+    assert(scrollbarsFor(Auto, Auto, Point(200 - sb.x + 1, 151)) == [true, true]);
+    assert(scrollbarsFor(Auto, Auto, Point(201, 150 - sb.y)) == [true, false]);
+    assert(scrollbarsFor(Auto, Auto, Point(201, 150 - sb.y + 1)) == [true, true]);
+    // horizontal Auto, vertical always shown
+    assert(scrollbarsFor(Auto, Visible, Point(200 - sb.x, 10)) == [false, true]);
+    assert(scrollbarsFor(Auto, Visible, Point(200 - sb.x + 1, 10)) == [true, true]);
+    // vertical Auto, horizontal always shown
+    assert(scrollbarsFor(Visible, Auto, Point(10, 150 - sb.y)) == [true, false]);
+    assert(scrollbarsFor(Visible, Auto, Point(10, 150 - sb.y + 1)) == [true, true]);
 }
