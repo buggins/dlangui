@@ -55,20 +55,27 @@ struct DockSpace {
     protected int _baseSize;
     /// host client width (left/right) or height (top/bottom) at the last layout
     @property int baseSize() { return _baseSize; }
-    /// current size in percent of baseSize, rounded (so that initialPercent = percent gives the same size); 0 if empty
+    /// current size in percent of baseSize, rounded (so that initialPercent = percent gives the same size); 0 if empty.
+    /// Until the user resizes the area it's the initial percentage (clamped to 10..40%): the size was set from it at
+    /// the first layout, whose host size may differ from the later ones, e.g. of a window being shown (#968)
     @property int percent() {
         if (_space <= 0 || _baseSize <= 0)
             return 0;
+        if (!_resizedByUser)
+            return _initialPercent < 10 ? 10 : (_initialPercent > 40 ? 40 : _initialPercent);
         return (_space * 100 + _baseSize / 2) / _baseSize;
     }
     protected int _minSpace;
     protected int _maxSpace;
     protected int _initialPercent = 20;
+    /// false until the user resizes the area with its resizer
+    protected bool _resizedByUser;
     /// initial size in percent of the host width (left/right) or height (top/bottom), clamped to 10..40%;
     /// setting it resets the current size, so the new initial size is used on the next layout
     @property void initialPercent(int percent) {
         _initialPercent = percent;
         _space = 0;
+        _resizedByUser = false;
     }
     ResizerWidget initialize(DockHost host, DockAlignment a) {
         _host = host;
@@ -162,7 +169,9 @@ struct DockSpace {
         } else if (event == ResizerEventType.Dragging) {
             int dir = _alignment == DockAlignment.Right || _alignment == DockAlignment.Bottom ? -1 : 1;
             _space = _dragStartSpace + dir * (newPosition - _dragStartPosition);
-            _host.onResize(source, event, newPosition);
+            _resizedByUser = true;
+            if (_host) // null in the unittest
+                _host.onResize(source, event, newPosition);
         }
     }
     protected void layoutDocked() {
@@ -405,9 +414,9 @@ unittest {
     // real size: default initial size 20%
     space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
     assert(space.space == 200);
-    // size is kept on later layouts
+    // size is kept on later layouts; the percentage stays the initial one until the user resizes the area (#968)
     space.beforeLayout(Rect(0, 0, 1200, 800), oneDock);
-    assert(space.space == 200);
+    assert(space.space == 200 && space.percent == 20);
     // custom initial size
     space.initialPercent = 25;
     space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
@@ -415,7 +424,15 @@ unittest {
     // clamped to 40%
     space.initialPercent = 60;
     space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
-    assert(space.space == 400);
+    assert(space.space == 400 && space.percent == 40);
+    // resized by the user: the percentage of the current size
+    space.initialPercent = 25;
+    space.beforeLayout(Rect(0, 0, 1000, 800), oneDock);
+    space.onResize(resizer, ResizerEventType.StartDragging, 500);
+    space.onResize(resizer, ResizerEventType.Dragging, 560);
+    assert(space.space == 310 && space.percent == 31);
+    space.beforeLayout(Rect(0, 0, 1240, 800), oneDock);
+    assert(space.space == 310 && space.percent == 25);
     // no docked windows: no space
     space.beforeLayout(Rect(0, 0, 1000, 800), null);
     assert(space.space == 0);
