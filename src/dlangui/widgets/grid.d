@@ -1218,7 +1218,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     protected bool _fullRowOnTop = true;
     /// Extends scroll area to show full row at top when scrolled to end row
-    @property bool fullRowOnTop() { return _fullColumnOnLeft; }
+    @property bool fullRowOnTop() { return _fullRowOnTop; }
     /// Extends scroll area to show full row at top when scrolled to end row
     @property GridWidgetBase fullRowOnTop(bool newFullRowOnTop) {
         if (_fullRowOnTop != newFullRowOnTop) {
@@ -2118,3 +2118,23 @@ class StringGridWidget : StringGridWidgetBase {
 
 //import dlangui.widgets.metadata;
 //mixin(registerWidgets!(StringGridWidget)());
+
+// fullColumnOnLeft and fullRowOnTop are separate settings (#986)
+unittest {
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
+    // the currentTheme setter destroys the previous theme: replace only a theme created here
+    immutable bool ownTheme = currentTheme is null;
+    if (ownTheme)
+        currentTheme = createDefaultTheme();
+    scope(exit) if (ownTheme) currentTheme = null;
+
+    auto grid = new StringGridWidget("grid");
+    scope(exit) destroy(grid);
+    foreach (column; [false, true]) {
+        foreach (row; [false, true]) {
+            grid.fullColumnOnLeft = column;
+            grid.fullRowOnTop = row;
+            assert(grid.fullColumnOnLeft == column && grid.fullRowOnTop == row);
+        }
+    }
+}
