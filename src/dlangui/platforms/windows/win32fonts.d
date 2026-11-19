@@ -47,7 +47,7 @@ private struct FontDef {
     @property FontFamily family() { return _family; }
     @property string face() { return _face; }
     @property ubyte pitchAndFamily() { return _pitchAndFamily; }
-    this(FontFamily family, string face, ubyte putchAndFamily) {
+    this(FontFamily family, string face, ubyte pitchAndFamily) {
         _family = family;
         _face = face;
         _pitchAndFamily = pitchAndFamily;
@@ -882,4 +882,11 @@ extern(Windows) {
         }
         return 1;
     }
+}
+
+// FontDef keeps pitch and family, passed to LOGFONT.lfPitchAndFamily (#981)
+unittest {
+    FontDef def = FontDef(FontFamily.MonoSpace, "Courier New", FIXED_PITCH | FF_MODERN);
+    assert(def.family == FontFamily.MonoSpace && def.face == "Courier New");
+    assert(def.pitchAndFamily == (FIXED_PITCH | FF_MODERN));
 }
