@@ -2121,12 +2121,8 @@ class StringGridWidget : StringGridWidgetBase {
 
 // fullColumnOnLeft and fullRowOnTop are separate settings (#986)
 unittest {
-    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
-    // the currentTheme setter destroys the previous theme: replace only a theme created here
-    immutable bool ownTheme = currentTheme is null;
-    if (ownTheme)
-        currentTheme = createDefaultTheme();
-    scope(exit) if (ownTheme) currentTheme = null;
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
 
     auto grid = new StringGridWidget("grid");
     scope(exit) destroy(grid);

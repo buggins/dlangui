@@ -582,12 +582,8 @@ class ResizerWidget : Widget {
 
 // dragging a resizer between two widgets of a linear layout (#972)
 unittest {
-    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
-    // the currentTheme setter destroys the previous theme: replace only a theme created here
-    immutable bool ownTheme = currentTheme is null;
-    if (ownTheme)
-        currentTheme = createDefaultTheme();
-    scope(exit) if (ownTheme) currentTheme = null;
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
 
     MouseEvent mouse(MouseAction action, int x, int y, bool buttonDown = true) {
         auto e = new MouseEvent(action, action == MouseAction.ButtonDown || action == MouseAction.ButtonUp
@@ -693,12 +689,8 @@ unittest {
 
 // FILL_PARENT items measured as 0 (e.g. empty panels) share the extra space by weight (#973)
 unittest {
-    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
-    // the currentTheme setter destroys the previous theme: replace only a theme created here
-    immutable bool ownTheme = currentTheme is null;
-    if (ownTheme)
-        currentTheme = createDefaultTheme();
-    scope(exit) if (ownTheme) currentTheme = null;
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
 
     foreach (vertical; [false, true]) {
         // children: size in px, FILL_PARENT or -weight (FILL_PARENT with that weight); minSize: their min size
