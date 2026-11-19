@@ -201,6 +201,20 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         checkIfNeededToChangeScrollbarVisibility();
     }
 
+    // rectangles of the scrollbars in the last layout(): a layout nested in updateScrollBars() changes them
+    private Rect _vscrollbarRect;
+    private Rect _hscrollbarRect;
+
+    /// Called at the end of layout(): lays out again scrollbars that requested a layout when updateScrollBars()
+    /// set their range or page size. Otherwise the next paint lays out the whole window, which happened after
+    /// every window resize (#980). Outside layout() the request stays: it makes the window lay out and repaint.
+    private void layoutScrollBarsIfNeeded() {
+        if (_vscrollbar && _vscrollbarMode != ScrollBarMode.External && _vscrollbar.needLayout)
+            _vscrollbar.layout(_vscrollbarRect);
+        if (_hscrollbar && _hscrollbarMode != ScrollBarMode.External && _hscrollbar.needLayout)
+            _hscrollbar.layout(_hscrollbarRect);
+    }
+
     public @property ScrollBar hscrollbar() { return _hscrollbar; }
     public @property ScrollBar vscrollbar() { return _vscrollbar; }
 
@@ -448,6 +462,8 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             _hscrollbar.visibility = needHscroll ? Visibility.Visible : Visibility.Gone;
             _hscrollbar.layout(hsbrc);
         }
+        _vscrollbarRect = vsbrc;
+        _hscrollbarRect = hsbrc;
 
         _clientRect = rc;
         if (needVscroll)
@@ -456,6 +472,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             _clientRect.bottom = hsbrc.top;
         handleClientRectLayout(_clientRect);
         updateScrollBars();
+        layoutScrollBarsIfNeeded();
     }
 
     /// keep the visible area from going above or left of the content (#964)
@@ -625,4 +642,34 @@ class ScrollWidget :  ScrollWidgetBase {
         wpos.offset(-cpos.left, -cpos.top);
         makeRectVisible(wpos, alignHorizontally, alignVertically);
     }
+}
+
+// scroll widgets lay out again the scrollbars they update in layout(): no layout of the window is left to the next
+// paint after a resize (#980)
+unittest {
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
+    // the currentTheme setter destroys the previous theme: replace only a theme created here
+    immutable bool ownTheme = currentTheme is null;
+    if (ownTheme)
+        currentTheme = createDefaultTheme();
+    scope(exit) if (ownTheme) currentTheme = null;
+
+    auto scroll = new ScrollWidget("scroll");
+    scope(exit) destroy(scroll);
+    scroll.contentWidget = new Widget("content").minWidth(1000).minHeight(1000);
+    // no measure(): scrollbars load their images there, and unittests have no image cache
+    foreach (rc; [Rect(0, 0, 200, 150), Rect(0, 0, 300, 250), Rect(10, 20, 260, 170)]) {
+        scroll.layout(rc);
+        assert(!scroll.needLayout);
+        assert(!scroll.vscrollbar.needLayout && !scroll.hscrollbar.needLayout);
+        assert(scroll.vscrollbar.pageSize == rc.height && scroll.hscrollbar.pageSize == rc.width);
+        // laid out again in their own places: the vertical one on the right edge, the horizontal one at the bottom
+        assert(scroll.vscrollbar.pos.top == rc.top && scroll.vscrollbar.pos.right == rc.right);
+        assert(scroll.hscrollbar.pos.left == rc.left && scroll.hscrollbar.pos.bottom == rc.bottom);
+    }
+    // outside layout() a new range still requests a layout: it makes the window lay out and repaint
+    scroll.contentWidget.minHeight(2000);
+    scroll.updateScrollBars();
+    assert(scroll.vscrollbar.maxValue == 2000);
+    assert(scroll.vscrollbar.needLayout);
 }
