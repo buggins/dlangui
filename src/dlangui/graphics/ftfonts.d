@@ -60,10 +60,12 @@ private struct FontDef {
     }
 }
 
-/// font file and index of the face in it (font collections, e.g. .ttc, have several faces)
+/// font file and index of the face in it (font collections, e.g. .ttc, have several faces);
+/// a font file kept in memory (#652) has data, and filename is only a name for logs
 private struct FontFileFace {
     string filename;
     int index;
+    immutable(ubyte)[] data;
 }
 
 private class FontFileItem {
@@ -77,12 +79,17 @@ private class FontFileItem {
     @property ref FontDef def() { return _def; }
     @property const(FontFileFace)[] files() { return _files; }
     @property FT_Library library() { return _library; }
-    void addFile(string fn, int index = 0) {
+    void addFile(string fn, int index = 0, immutable(ubyte)[] data = null) {
         // check for duplicate entry
-        foreach (ref existing; _files)
-            if (existing.index == index && fn.equal(existing.filename))
+        foreach (ref existing; _files) {
+            if (existing.index != index)
+                continue;
+            // the same font file kept in memory may be loaded twice into different arrays: compare the data
+            if (data.length ? existing.data.length == data.length && (existing.data is data || existing.data == data)
+                    : !existing.data.length && fn.equal(existing.filename))
                 return;
-        _files ~= FontFileFace(fn, index);
+        }
+        _files ~= FontFileFace(fn, index, data);
         _codepointPresence.clear(); // a new file may have more codepoints
     }
     this(FT_Library library, ref FontDef def) {
@@ -113,6 +120,7 @@ private class FontFileItem {
 
 class FreeTypeFontFile {
     private string _filename;
+    private immutable(ubyte)[] _data; // font file kept in memory (#652), or null
     private string _faceName;
     private FT_Library    _library;
     private FT_Face       _face;
@@ -141,9 +149,12 @@ class FreeTypeFontFile {
 
     debug private static __gshared int _instanceCount;
     debug @property static int instanceCount() { return _instanceCount; }
-    this(FT_Library library, string filename) {
+    /// data: the font file kept in memory (#652), must stay valid while the face is open; filename is then only
+    /// a name for logs
+    this(FT_Library library, string filename, immutable(ubyte)[] data = null) {
         _library = library;
         _filename = filename;
+        _data = data;
         _matrix.xx = 0x10000;
         _matrix.yy = 0x10000;
         _matrix.xy = 0;
@@ -185,10 +196,12 @@ class FreeTypeFontFile {
 
     /// open face with specified size
     bool open(int size, int index = 0) {
-        int error = FT_New_Face( _library, _filename.toStringz, index, &_face); /* create face object */
+        int error = _data.length
+            ? FT_New_Memory_Face(_library, _data.ptr, cast(FT_Long)_data.length, index, &_face)
+            : FT_New_Face( _library, _filename.toStringz, index, &_face); /* create face object */
         if (error)
             return false;
-        if ( _filename.endsWith(".pfb") || _filename.endsWith(".pfa") ) {
+        if (!_data.length && (_filename.endsWith(".pfb") || _filename.endsWith(".pfa"))) {
             string kernFile = _filename[0 .. $ - 4];
             if (exists(kernFile ~ ".afm")) {
                 kernFile ~= ".afm";
@@ -524,7 +537,7 @@ class FreeTypeFont : Font {
         if (!isNull())
             clear();
         foreach (ref f; _fontItem.files) {
-            FreeTypeFontFile file = new FreeTypeFontFile(_fontItem.library, f.filename);
+            FreeTypeFontFile file = new FreeTypeFontFile(_fontItem.library, f.filename, f.data);
             if (file.open(_size, f.index)) {
                 _files.add(file);
             } else {
@@ -566,7 +579,7 @@ private void ftCheckMissingSymFunc(const(loader.ErrorInfo)[] errors) {
     import std.algorithm : canFind;
     import std.exception : enforce;
     import std.string : fromStringz;
-    immutable names = ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
+    immutable names = ["FT_New_Face", "FT_New_Memory_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
             "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face",
             "FT_Init_FreeType", "FT_Done_FreeType", "FT_Get_Kerning", "FT_Get_Sfnt_Table"];
     foreach(info; errors) {
@@ -799,6 +812,32 @@ class FreeTypeFontManager : FontManager {
         return registered;
     }
 
+    /**
+        Registers all faces of a font file kept in memory (#652), with properties read from the font.
+        The font manager keeps a reference to data.
+        Returns: number of registered faces.
+    */
+    override int registerFontData(immutable(ubyte)[] data, FontFamily family, string name = null) {
+        if (_library is null || !data.length)
+            return 0;
+        // a negative face index only reads the number of faces
+        FT_Face ftface;
+        if (FT_New_Memory_Face(_library, data.ptr, cast(FT_Long)data.length, -1, &ftface))
+            return 0;
+        int count = cast(int)ftface.num_faces;
+        FT_Done_Face(ftface);
+        int registered = 0;
+        foreach (index; 0 .. count)
+            if (registerFace(name.length ? name : "font data", data, family, null, false, 0, false, index))
+                registered++;
+        return registered;
+    }
+
+    /// registers all faces of a font file (#652), opened by name: see registerFontFaces()
+    override int registerFontFile(string filename, FontFamily family) {
+        return registerFontFaces(filename, family);
+    }
+
     /// register freetype font by filename - optinally font properties can be passed if known (e.g. from libfontconfig).
     /// faceIndex: face in a font collection (e.g. .ttc)
     bool registerFont(string filename, FontFamily family, string face = null, bool italic = false, int weight = 0,
@@ -810,9 +849,14 @@ class FreeTypeFontManager : FontManager {
             Log.d("Font file ", filename, " not found");
             return false;
         }
+        return registerFace(filename, null, family, face, italic, weight, dontLoadFile, faceIndex);
+    }
 
+    /// registers a face of a font file, or of a font file kept in memory (data)
+    private bool registerFace(string filename, immutable(ubyte)[] data, FontFamily family, string face, bool italic,
+            int weight, bool dontLoadFile, int faceIndex) {
         if (!dontLoadFile) {
-            FreeTypeFontFile font = new FreeTypeFontFile(_library, filename);
+            FreeTypeFontFile font = new FreeTypeFontFile(_library, filename, data);
             if (!font.open(24, faceIndex)) {
                 Log.e("Failed to open font ", filename);
                 destroy(font);
@@ -836,7 +880,7 @@ class FreeTypeFontManager : FontManager {
             item = new FontFileItem(_library, def);
             _fontFiles ~= item;
         }
-        item.addFile(filename, faceIndex);
+        item.addFile(filename, faceIndex, data);
         installedFacesChanged();
 
         // registered
@@ -1083,4 +1127,57 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
 
     return facesFound > 0;
 }
+}
+
+// fonts kept in memory (#652): the same faces as from the file, usable fonts
+unittest {
+    import std.file : exists, read;
+    version (Windows)
+        string fn = `C:\Windows\Fonts\arial.ttf`;
+    else
+        string fn = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
+    if (!exists(fn))
+        return;
+    FreeTypeFontManager fromMemory, fromFile;
+    try {
+        fromMemory = new FreeTypeFontManager();
+        fromFile = new FreeTypeFontManager();
+    } catch (Exception e) {
+        return; // no FreeType library
+    }
+    scope(exit) {
+        destroy(fromMemory);
+        destroy(fromFile);
+    }
+    assert(fromFile.registerFontFaces(fn, FontFamily.SansSerif) == 1);
+    immutable(ubyte)[] data = cast(immutable(ubyte)[])read(fn);
+    assert(fromMemory.registerFontData(data, FontFamily.SansSerif) == 1);
+    assert(fromMemory.registerFontData(data, FontFamily.SansSerif) == 1); // again: no duplicate face
+    assert(fromMemory.registerFontData(data.idup, FontFamily.SansSerif, "copy") == 1); // the same font in another array
+    assert(fromMemory.registeredFontCount == 1);
+    assert(fromMemory._fontFiles[0].files.length == 1);
+    assert(fromMemory.getFaces() == fromFile.getFaces());
+    string face = fromMemory.getFaces()[0].face;
+    assert(face.length);
+    // rendering a glyph needs the gamma table, created by the app startup code
+    immutable bool ownGamma = _gamma256 is null;
+    if (ownGamma)
+        _gamma256 = new glyph_gamma_table!256(1.0);
+    scope(exit) if (ownGamma) {
+        destroy(_gamma256);
+        _gamma256 = null;
+    }
+    {
+        FontRef font = fromMemory.getFont(16, FontWeight.Normal, false, FontFamily.SansSerif, face);
+        assert(!font.isNull);
+        assert(font.hasCodepoint('A'));
+        assert(font.getCharGlyph('A') !is null);
+    }
+    // not a font
+    assert(fromMemory.registerFontData(cast(immutable(ubyte)[])"not a font", FontFamily.SansSerif) == 0);
+    assert(fromMemory.registeredFontCount == 1);
+    // a font resource in a file (here: by path) is opened by name, not loaded into memory
+    assert(fromFile.registerFontResource(fn, FontFamily.SansSerif) == 1);
+    assert(fromFile.registeredFontCount == 1 && fromFile._fontFiles[0].files.length == 1);
+    assert(fromFile._fontFiles[0].files[0].data is null);
 }

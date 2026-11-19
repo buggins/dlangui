@@ -485,6 +485,8 @@ class Win32Font : Font {
         // lf.lfFaceName[0..def.face.length] = def.face;
         // lf.lfFaceName[def.face.length] = 0;
         string oemFace = fromStringz(toMBSz(def.face)).dup;
+        if (oemFace.length > LF_FACESIZE - 1)
+            oemFace = oemFace[0 .. LF_FACESIZE - 1]; // registerFontData() skips such names (#652)
         lf.lfFaceName[0..oemFace.length] = oemFace;
         lf.lfFaceName[oemFace.length] = 0;
         lf.lfHeight = -size; //pixelsToPoints(size);
@@ -610,6 +612,79 @@ class Win32FontManager : FontManager {
         foreach (cache; _codepointPresence)
             cache.clear();
         _codepointPresence = null;
+        foreach (h; _memoryFonts)
+            RemoveFontMemResourceEx(h);
+        _memoryFonts = null;
+        _memoryFontData = null;
+        _memoryFontKeys = null;
+    }
+
+    /// fonts installed from memory (#652): handles from AddFontMemResourceEx, their data, and keys (length and
+    /// CRC-32 of the data) to recognize a font registered again
+    private HANDLE[] _memoryFonts;
+    private immutable(ubyte)[][] _memoryFontData;
+    private static struct MemoryFontKey {
+        size_t length;
+        ubyte[4] crc;
+    }
+    private MemoryFontKey[] _memoryFontKeys;
+
+    /**
+        Registers the faces of a TrueType / OpenType font file or collection kept in memory (#652): installs
+        it for this process only (AddFontMemResourceEx) and registers its family names, which are read from
+        the font's name table (GDI doesn't report them for such fonts). GDI chooses the weight and italic
+        variant among the installed faces of a family.
+        Returns: number of faces in the font.
+    */
+    override int registerFontData(immutable(ubyte)[] data, FontFamily family, string name = null) {
+        import std.algorithm : canFind;
+        import std.digest.crc : crc32Of;
+        FontFileFaceInfo[] faces = fontFileFaces(data);
+        if (!faces.length) {
+            Log.e("registerFontData: not a TrueType / OpenType font: ", name);
+            return 0;
+        }
+        MemoryFontKey key = MemoryFontKey(data.length, crc32Of(data));
+        if (_memoryFontKeys.canFind(key))
+            return cast(int)faces.length; // already registered
+        DWORD installed = 0;
+        HANDLE h = AddFontMemResourceEx(cast(void*)data.ptr, cast(DWORD)data.length, null, &installed);
+        if (h is null || installed == 0) {
+            Log.e("registerFontData: AddFontMemResourceEx failed for ", name);
+            return 0;
+        }
+        _memoryFonts ~= h;
+        _memoryFontKeys ~= key;
+        // GDI probably copies the data, but the docs don't say so; embedded resources cost nothing to keep
+        _memoryFontData ~= data;
+        ubyte familyFlags;
+        final switch (family) with (FontFamily) {
+            case Unspecified: familyFlags = FF_DONTCARE; break;
+            case SansSerif: familyFlags = FF_SWISS; break;
+            case Serif: familyFlags = FF_ROMAN; break;
+            case Fantasy: familyFlags = FF_DECORATIVE; break;
+            case Cursive: familyFlags = FF_SCRIPT; break;
+            case MonoSpace: familyFlags = FF_MODERN; break;
+        }
+        foreach (face; faces) {
+            // the face name goes into LOGFONT.lfFaceName (31 characters in the ANSI code page)
+            if (fromStringz(toMBSz(face.family)).length > LF_FACESIZE - 1) {
+                Log.w("registerFontData: face name too long for GDI, skipped: ", face.family);
+                continue;
+            }
+            // other weights and italic of a family have the same family name; a name that is already
+            // registered (also an installed font) isn't added again, but GDI may now use the new font:
+            // forget which codepoints the face has
+            if (face.family in _faceByName) {
+                foreach (k, cache; _codepointPresence)
+                    if (k.face == face.family)
+                        cache.clear();
+                installedFacesChanged();
+                continue;
+            }
+            registerFont(family, face.family, cast(ubyte)((face.fixedPitch ? FIXED_PITCH : VARIABLE_PITCH) | familyFlags));
+        }
+        return cast(int)faces.length;
     }
 
     private static struct FaceVariant {
