@@ -2055,6 +2055,115 @@ struct FontFaceProps {
     FontFamily family;
 }
 
+/// properties of a face in a TrueType / OpenType font file, read by fontFileFaces() (#652)
+struct FontFileFaceInfo {
+    /// family name (name ID 1, the name GDI uses for the face; e.g. "Roboto Light" for a light weight)
+    string family;
+    /// true for a fixed pitch (monospace) font (isFixedPitch of the post table)
+    bool fixedPitch;
+}
+
+/**
+    Reads the faces of a TrueType / OpenType font file or font collection (.ttc) kept in memory (#652):
+    family names from the name table, fixed pitch from the post table.
+    Returns: one entry per face; empty for data that isn't a font file, or a face without family name.
+*/
+FontFileFaceInfo[] fontFileFaces(const(ubyte)[] data) @safe {
+    uint u16(size_t pos) { return pos + 2 <= data.length ? (data[pos] << 8) | data[pos + 1] : 0; }
+    uint u32(size_t pos) { return pos + 4 <= data.length ? (u16(pos) << 16) | u16(pos + 2) : 0; }
+    // offset and length of a table of the face with the table directory at faceOffset; length 0 if missing
+    void findTable(size_t faceOffset, string tag, out size_t offset, out size_t length) {
+        uint numTables = u16(faceOffset + 4);
+        foreach (i; 0 .. numTables) {
+            size_t rec = faceOffset + 12 + i * 16;
+            if (rec + 16 > data.length)
+                return;
+            if (data[rec .. rec + 4] == cast(const(ubyte)[])tag) {
+                offset = u32(rec + 8);
+                length = u32(rec + 12);
+                if (offset + length > data.length)
+                    length = 0;
+                return;
+            }
+        }
+    }
+    string familyName(size_t faceOffset) {
+        size_t table, tableLength;
+        findTable(faceOffset, "name", table, tableLength);
+        if (tableLength < 6)
+            return null;
+        uint count = u16(table + 2);
+        size_t strings = table + u16(table + 4);
+        string best;
+        int bestScore = 0;
+        foreach (i; 0 .. count) {
+            size_t rec = table + 6 + i * 12;
+            if (rec + 12 > table + tableLength)
+                break;
+            uint platform = u16(rec), encoding = u16(rec + 2), language = u16(rec + 4), nameId = u16(rec + 6);
+            size_t len = u16(rec + 8), pos = strings + u16(rec + 10);
+            if (nameId != 1 || pos + len > data.length)
+                continue;
+            int score = 0;
+            if (platform == 3 && (encoding == 1 || encoding == 10))
+                score = language == 0x409 ? 5 : 4; // Windows, Unicode; prefer US English
+            else if (platform == 3 && encoding == 0)
+                score = 3; // Windows, Symbol (symbol and icon fonts), UTF-16 as well
+            else if (platform == 0)
+                score = 2; // Unicode
+            else if (platform == 1 && encoding == 0)
+                score = 1; // Macintosh, Roman
+            if (score <= bestScore)
+                continue;
+            const(ubyte)[] bytes = data[pos .. pos + len];
+            string name;
+            if (platform == 3 || platform == 0) {
+                import std.utf : toUTF8;
+                wchar[] w;
+                foreach (j; 0 .. len / 2)
+                    w ~= cast(wchar)((bytes[j * 2] << 8) | bytes[j * 2 + 1]);
+                try
+                    name = toUTF8(w);
+                catch (Exception e)
+                    continue; // invalid UTF-16
+            } else {
+                foreach (ch; bytes)
+                    name ~= ch < 0x80 ? cast(char)ch : '?';
+            }
+            if (name.length) {
+                best = name;
+                bestScore = score;
+            }
+        }
+        return best;
+    }
+
+    size_t[] faceOffsets;
+    if (data.length >= 12 && data[0 .. 4] == cast(const(ubyte)[])"ttcf") {
+        uint numFonts = u32(8);
+        foreach (i; 0 .. numFonts) {
+            if (12 + i * 4 + 4 > data.length)
+                break;
+            faceOffsets ~= u32(12 + i * 4);
+        }
+    } else {
+        faceOffsets ~= 0;
+    }
+    FontFileFaceInfo[] res;
+    foreach (offset; faceOffsets) {
+        uint sfntVersion = u32(offset);
+        if (sfntVersion != 0x0001_0000 && sfntVersion != 0x4F54_544F /* OTTO */ && sfntVersion != 0x7472_7565 /* true */)
+            continue;
+        string family = familyName(offset);
+        if (!family.length)
+            continue;
+        size_t post, postLength;
+        findTable(offset, "post", post, postLength);
+        res ~= FontFileFaceInfo(family, postLength >= 16 && u32(post + 12) != 0);
+    }
+    return res;
+}
+
 /// Access points to fonts.
 class FontManager {
     protected static __gshared FontManager _instance;
@@ -2087,6 +2196,58 @@ class FontManager {
     /// override to return list of font faces available
     FontFaceProps[] getFaces() {
         return null;
+    }
+
+    /**
+        Registers the faces of a TrueType / OpenType font file or collection kept in memory (#652), e.g. a font
+        embedded as a resource; face names, weight and italic are read from the font. The faces are then used
+        by name like installed fonts (getFont, `fontFace` in themes and DML). The font manager keeps a reference
+        to data. Registering the same data again adds nothing.
+
+        family: font family of the faces, used when a font is requested by family.
+        name: name of the font (e.g. the resource name), for log messages.
+        Returns: number of faces in the font; 0 if the data isn't a font, or the font manager can't load fonts
+        from memory (e.g. the console font manager).
+    */
+    int registerFontData(immutable(ubyte)[] data, FontFamily family, string name = null) {
+        return 0;
+    }
+
+    /**
+        Registers the faces of a font file (#652), see registerFontData(). By default the file is loaded into
+        memory; the FreeType font manager opens it by name.
+        Returns: number of faces in the font, see registerFontData().
+    */
+    int registerFontFile(string filename, FontFamily family) {
+        import dlangui.graphics.resources : loadResourceBytes;
+        immutable(ubyte)[] data = loadResourceBytes(filename);
+        return data.length ? registerFontData(data, family, filename) : 0;
+    }
+
+    /**
+        Registers the faces of a font file resource (#652): embedded (views/resources.list) or found in the
+        resource directories, by file name with or without extension (`.ttf`, `.otf`, `.ttc`), see
+        findFontResource(). E.g. `FontManager.instance.registerFontResource("MyFont", FontFamily.SansSerif)`
+        for an embedded `res/MyFont.ttf`, then use the face name of the font.
+        Returns: number of faces in the font, see registerFontData().
+    */
+    int registerFontResource(string resourceId, FontFamily family) {
+        import dlangui.graphics.resources : EMBEDDED_RESOURCE_PREFIX, findFontResource, loadResourceBytes;
+        string filename = findFontResource(resourceId);
+        if (!filename) {
+            Log.e("Font resource ", resourceId, " not found");
+            return 0;
+        }
+        int count;
+        if (filename.startsWith(EMBEDDED_RESOURCE_PREFIX)) {
+            immutable(ubyte)[] data = loadResourceBytes(filename);
+            count = data.length ? registerFontData(data, family, filename) : 0;
+        } else {
+            count = registerFontFile(filename, family);
+        }
+        if (!count)
+            Log.e("Cannot register font resource ", filename);
+        return count;
     }
 
     /// clear usage flags for all entries -- for cleanup of unused fonts
@@ -3104,3 +3265,82 @@ dchar getReplacementChar(dchar code) {
 
 __gshared glyph_gamma_table!65 _gamma65;
 __gshared glyph_gamma_table!256 _gamma256;
+
+// fontFileFaces: family names and fixed pitch from the name and post tables, font collections (#652)
+unittest {
+    // big-endian helpers to build a font file
+    ubyte[] be16(uint v) { return [cast(ubyte)(v >> 8), cast(ubyte)v]; }
+    ubyte[] be32(uint v) { return be16(v >> 16) ~ be16(v & 0xFFFF); }
+    // one face (sfnt) starting at base in the file: name table with a Mac and a Windows family name, post table
+    ubyte[] face(size_t base, string windowsName, string macName, bool fixedPitch, uint sfntVersion = 0x0001_0000,
+            uint platform = 3, uint encoding = 1) {
+        ubyte[] winBytes;
+        foreach (wchar ch; windowsName)
+            winBytes ~= be16(ch);
+        ubyte[] macBytes = cast(ubyte[])macName.dup;
+        ubyte[] strings = macBytes ~ winBytes;
+        ubyte[] name = be16(0) ~ be16(3) ~ be16(6 + 3 * 12)
+            ~ be16(1) ~ be16(0) ~ be16(0) ~ be16(1) ~ be16(cast(uint)macBytes.length) ~ be16(0) // Mac, family
+            ~ be16(3) ~ be16(1) ~ be16(0x409) ~ be16(2) ~ be16(2) ~ be16(0) // Windows, subfamily: ignored
+            ~ be16(platform) ~ be16(encoding) ~ be16(0x409) ~ be16(1) ~ be16(cast(uint)winBytes.length) ~ be16(cast(uint)macBytes.length)
+            ~ strings;
+        ubyte[] post = be32(0x0003_0000) ~ be32(0) ~ be16(0) ~ be16(0) ~ be32(fixedPitch ? 1 : 0) ~ new ubyte[16];
+        size_t nameOffset = base + 12 + 2 * 16;
+        size_t postOffset = nameOffset + name.length;
+        return be32(sfntVersion) ~ be16(2) ~ be16(0) ~ be16(0) ~ be16(0)
+            ~ cast(ubyte[])"name" ~ be32(0) ~ be32(cast(uint)nameOffset) ~ be32(cast(uint)name.length)
+            ~ cast(ubyte[])"post" ~ be32(0) ~ be32(cast(uint)postOffset) ~ be32(cast(uint)post.length)
+            ~ name ~ post;
+    }
+
+    // single face: the Windows name is preferred to the Mac name
+    ubyte[] ttf = face(0, "Test Sans \u00C4", "Mac Name", false);
+    FontFileFaceInfo[] faces = fontFileFaces(ttf);
+    assert(faces.length == 1);
+    assert(faces[0].family == "Test Sans \u00C4" && !faces[0].fixedPitch);
+    assert(fontFileFaces(face(0, "Test Mono", "Mac", true, 0x4F54_544F /* OTTO */)) == [FontFileFaceInfo("Test Mono", true)]);
+    // only a Mac name
+    assert(fontFileFaces(face(0, "", "Mac Only", false))[0].family == "Mac Only");
+    // Windows Symbol encoding (symbol and icon fonts) and Unicode platform names, preferred to the Mac name
+    assert(fontFileFaces(face(0, "Icons", "Mac", false, 0x0001_0000, 3, 0))[0].family == "Icons");
+    assert(fontFileFaces(face(0, "Unicode Name", "Mac", false, 0x0001_0000, 0, 3))[0].family == "Unicode Name");
+
+    // collection with two faces
+    size_t first = 12 + 2 * 4;
+    ubyte[] face1 = face(first, "Coll One", "", false);
+    ubyte[] face2 = face(first + face1.length, "Coll Two", "", true);
+    ubyte[] ttc = cast(ubyte[])"ttcf" ~ be32(0x0001_0000) ~ be32(2) ~ be32(cast(uint)first)
+        ~ be32(cast(uint)(first + face1.length)) ~ face1 ~ face2;
+    assert(fontFileFaces(ttc) == [FontFileFaceInfo("Coll One", false), FontFileFaceInfo("Coll Two", true)]);
+
+    // not a font, truncated data: no faces, no range errors
+    assert(fontFileFaces(null).length == 0);
+    assert(fontFileFaces(cast(const(ubyte)[])"not a font file at all").length == 0);
+    // truncated: no face, or a face with one of the names in the font, never a partial name; without the
+    // complete post table, fixed pitch isn't detected (the second face of a collection comes after the first)
+    foreach (len; 0 .. ttf.length) {
+        FontFileFaceInfo[] truncated = fontFileFaces(ttf[0 .. len]);
+        assert(truncated.length == 0 || (truncated.length == 1
+            && (truncated[0].family == "Test Sans \u00C4" || truncated[0].family == "Mac Name")));
+    }
+    string[] collection = ["Coll One", "Coll Two"];
+    foreach (len; 0 .. ttc.length) {
+        FontFileFaceInfo[] truncated = fontFileFaces(ttc[0 .. len]);
+        assert(truncated.length <= 2);
+        foreach (i, f; truncated)
+            assert(f.family == collection[i] && (i == 1 || !f.fixedPitch));
+    }
+
+    // real font files, where installed
+    import std.file : exists, read;
+    static struct Known { string path; string family; bool fixedPitch; }
+    foreach (k; [Known("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "DejaVu Sans", false),
+                 Known("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", "DejaVu Sans Mono", true),
+                 Known(`C:\Windows\Fonts\arial.ttf`, "Arial", false),
+                 Known(`C:\Windows\Fonts\cour.ttf`, "Courier New", true)]) {
+        if (!exists(k.path))
+            continue;
+        FontFileFaceInfo[] found = fontFileFaces(cast(const(ubyte)[])read(k.path));
+        assert(found == [FontFileFaceInfo(k.family, k.fixedPitch)], k.path);
+    }
+}

@@ -450,6 +450,38 @@ immutable(ubyte[]) loadResourceBytes(string filename) {
     }
 }
 
+/// file name extensions of font files, tried by findFontResource()
+immutable string[] FONT_FILE_EXTENSIONS = [".ttf", ".otf", ".ttc"];
+
+/**
+    Finds a font file resource (#652) by id: a file name without directory, with or without its extension
+    (`.ttf`, `.otf`, `.ttc` are tried). Embedded resources are searched first (the result starts with
+    EMBEDDED_RESOURCE_PREFIX), then the resource directories (DrawableCache.resourcePaths). A file path with a
+    directory part (e.g. `fonts/MyFont.ttf`) is also accepted. Returns: name for loadResourceBytes(), null if
+    not found.
+*/
+string findFontResource(string id) {
+    if (!id.length)
+        return null;
+    string[] names = [id];
+    foreach (ext; FONT_FILE_EXTENSIONS)
+        names ~= id ~ ext;
+    foreach (name; names)
+        if (EmbeddedResource * embedded = embeddedResourceList.find(name))
+            return EMBEDDED_RESOURCE_PREFIX ~ embedded.name;
+    if (drawableCache !is null)
+        foreach (path; drawableCache.resourcePaths)
+            foreach (name; names) {
+                string fn = buildPath(path, name);
+                if (exists(fn) && isFile(fn))
+                    return fn;
+            }
+    // a path; not a bare name, which would depend on the current directory
+    if (dirName(id) != "." && exists(id) && isFile(id))
+        return id;
+    return null;
+}
+
 /// Base class for all drawables
 class Drawable : RefCountedObject {
     debug static __gshared int _instanceCount;
