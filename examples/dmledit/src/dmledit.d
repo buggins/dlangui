@@ -101,8 +101,17 @@ q{VerticalLayout {
 }
 };
 
-// used to generate property lists once, then simply swap
-StringListAdapter[string] propListsAdapters;
+/// property list of a DML widget class, for the "Widget properties" list
+dstring[] widgetPropertyList(string widgetClass) {
+    dstring[] res;
+    if (auto meta = findWidgetMetadata(widgetClass)) {
+        auto mp = meta.properties;
+        mp.sort!("a.name < b.name");
+        foreach (const ref prop; mp)
+            res ~= toUTF32(prop.name ~ "   [" ~ to!string(prop.type) ~ "]");
+    }
+    return res;
+}
 
 class EditFrame : AppFrame {
 
@@ -330,22 +339,10 @@ class EditFrame : AppFrame {
         registeredWidgetList.sort!("a < b");
 
         foreach(const ref widget; registeredWidgetList)
-        { 
-            auto propertyListAdapter = new StringListAdapter();
-            if ( auto meta = findWidgetMetadata(widget) )
-            {
-                auto mp = meta.properties;
-                mp.sort!("a.name < b.name");
-                foreach(const ref prop; mp)
-                {
-                propertyListAdapter.add(UIString.fromRaw(prop.name ~ "   [" ~ to!string(prop.type) ~ "]" ));
-                propListsAdapters[widget] = propertyListAdapter;
-                }
-            }
             sla.add(UIString.fromRaw(widget));
-        }
 
-        widgetsList.adapter = sla;
+        // the lists own their adapters and destroy them with their item widgets (#970)
+        widgetsList.ownAdapter = sla;
 
         auto leftPanel = new VerticalLayout();
         leftPanel.layoutHeight = FILL_PARENT;
@@ -399,7 +396,7 @@ class EditFrame : AppFrame {
             return true;
         };
         widgetsList.itemClick = delegate (Widget source, int itemIndex){
-            propList.adapter = propListsAdapters[to!string(widgetsList.selectedItem)];
+            propList.items = widgetPropertyList(to!string(widgetsList.selectedItem));
             return true;
         };
         widgetsList.onItemDoubleClick = delegate (Widget source, int itemIndex) {
