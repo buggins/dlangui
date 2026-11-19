@@ -238,6 +238,49 @@ class Log {
         }
     }
 
+    /**
+        Writes an error message given as a few strings without allocating GC memory, for destructors run by the
+        garbage collector: allocating there throws InvalidMemoryOperationError, and the app can hang at exit
+        (#970). The line has no timestamp.
+
+        Doesn't wait for the log mutex: while the GC runs finalizers, another thread can be suspended holding it.
+        The line is written without the lock then (also when nothing was logged yet and there is no mutex).
+    */
+    static public void errorNoGC(scope const(char)[][] parts...) @trusted nothrow {
+        if (!isLogLevelEnabled(LogLevel.Error))
+            return;
+        immutable bool locked = _mutex !is null && _mutex.tryLock_nothrow();
+        scope(exit) if (locked) _mutex.unlock_nothrow();
+        version (Android) {
+            // NUL-terminated copy, cut at a character boundary
+            char[512] buf = void;
+            size_t len = 0;
+            outer: foreach (part; parts) {
+                foreach (ch; part) {
+                    if (len + 4 >= buf.length && (ch & 0xC0) != 0x80)
+                        break outer; // no room for another whole UTF-8 sequence
+                    buf[len++] = ch ? ch : ' ';
+                }
+            }
+            buf[len] = 0;
+            __android_log_write(android_LogPriority.ANDROID_LOG_ERROR, ANDROID_LOG_TAG, buf.ptr);
+        } else {
+            import core.stdc.stdio : fflush, fwrite;
+            if (logFile is null || !logFile.isOpen)
+                return;
+            try {
+                auto fp = logFile.getFP();
+                fwrite("E  ".ptr, 1, 3, fp);
+                foreach (part; parts)
+                    fwrite(part.ptr, 1, part.length, fp);
+                fwrite("\n".ptr, 1, 1, fp);
+                fflush(fp);
+            } catch (Exception e) {
+                // not open: nothing to write to
+            }
+        }
+    }
+
     /// Log verbose / trace message
     static public void v(S...)(S args) {
         if (isLogLevelEnabled(LogLevel.Trace))
@@ -317,8 +360,9 @@ debug {
     }
 }
 
+/// reports a resource destroyed by the GC at exit; called from destructors, so it doesn't allocate (#970)
 void onResourceDestroyWhileShutdown(string resourceName, string objname = null) {
-    Log.e("Resource leak: destroying resource while shutdown! ", resourceName, " ", objname);
+    Log.errorNoGC("Resource leak: destroying resource while shutdown! ", resourceName, " ", objname);
 }
 
 /// set to true when exiting main - to detect destructor calls for resources by GC
@@ -354,4 +398,40 @@ unittest {
     assert(text.canFind(" D  value 42 [1, 2]\n"));
     assert(text.canFind(" I  key=7\n"));
     assert(!text.canFind("hidden"));
+}
+
+// errorNoGC: written without GC allocations (#970)
+unittest {
+    import core.memory : GC;
+    import std.file : readText, remove, tempDir;
+    import std.path : buildPath;
+    import std.algorithm : canFind;
+    import std.array : replace, replicate;
+    string fn = buildPath(tempDir, "dlangui-logger-nogc-test.log");
+    LogLevel oldLevel = Log.logLevel;
+    File * oldFile = Log.logFile;
+    Log.logFile = null;
+    Log.setFileLogger(new File(fn, "w"));
+    Log.setLogLevel(LogLevel.Debug);
+    bool restored;
+    void restore() {
+        if (restored)
+            return;
+        restored = true;
+        Log.setFileLogger(null); // closes the file
+        Log.logFile = oldFile;
+        Log.logLevel = oldLevel;
+    }
+    scope(exit) restore();
+    string name = "ImageCache";
+    string longName = replicate("x", 600);
+    immutable ulong allocated = GC.allocatedInCurrentThread;
+    Log.errorNoGC("Resource leak: ", name, " ", null);
+    Log.errorNoGC(longName);
+    assert(GC.allocatedInCurrentThread == allocated);
+    restore();
+    string text = readText(fn).replace("\r\n", "\n");
+    remove(fn);
+    assert(text.canFind("\nE  Resource leak: ImageCache \n"));
+    assert(text.canFind("\nE  " ~ longName ~ "\n"));
 }
