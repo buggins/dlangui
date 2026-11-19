@@ -93,6 +93,11 @@ q{VerticalLayout {
         RadioButton { id: rb1; text: "Radio Button 1" }
         RadioButton { id: rb1; text: "Radio Button 2" }
     }
+    HorizontalLayout {
+        ImageTextButton { id: btn1; text: "Open folder"; drawableId: "folder" }
+        // orientation: Vertical puts the icon above the text
+        ImageTextButton { id: btn2; text: "Apply"; drawableId: "dialog-ok-apply"; orientation: Vertical }
+    }
 }
 };
 

@@ -542,6 +542,18 @@ class LinearLayout : WidgetGroupDefaultDrawing {
     /// sets linear layout orientation
     @property LinearLayout orientation(Orientation value) { _orientation = value; requestLayout(); return this; }
 
+    /// set int property value, for ML loaders: `orientation: Vertical` or `orientation: Horizontal` in DML
+    override bool setIntProperty(string name, int value) {
+        import std.algorithm : equal;
+        if (name.equal("orientation")) {
+            if (value != Orientation.Vertical && value != Orientation.Horizontal)
+                return false;
+            orientation = cast(Orientation)value;
+            return true;
+        }
+        return super.setIntProperty(name, value);
+    }
+
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);

@@ -127,3 +127,46 @@ unittest {
     registerStandardWidgets();
     assert(findWidgetMetadata("ProcessOutputWidget") !is null, "ProcessOutputWidget is not registered for DML");
 }
+
+// ImageTextButton icon and LinearLayout orientation set from DML and code (#838)
+unittest {
+    import dlangui.dml.parser : parseML;
+    import dlangui.widgets.controls : ImageTextButton, ImageWidget;
+    import dlangui.widgets.layouts : HorizontalLayout;
+    import dlangui.widgets.widget : Orientation, Visibility;
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
+    // the currentTheme setter destroys the previous theme: replace only a theme created here
+    immutable bool ownTheme = currentTheme is null;
+    if (ownTheme)
+        currentTheme = createDefaultTheme();
+    scope (exit) if (ownTheme) currentTheme = null;
+    registerStandardWidgets();
+
+    auto b = cast(ImageTextButton)parseML(q{
+        ImageTextButton { id: btn; text: "Open"; drawableId: "document-open"; orientation: Vertical }
+    });
+    assert(b !is null);
+    scope (exit) destroy(b);
+    ImageWidget icon = b.childById!ImageWidget("icon");
+    assert(icon !is null);
+    assert(b.drawableId == "document-open");
+    assert(icon.drawableId == "document-open");
+    assert(icon.visibility == Visibility.Visible);
+    assert(b.orientation == Orientation.Vertical);
+    assert(b.text == "Open");
+    b.drawableId = "";
+    assert(b.drawableId is null);
+    assert(icon.visibility == Visibility.Gone);
+    b.drawableId = "folder";
+    assert(icon.drawableId == "folder");
+    assert(icon.visibility == Visibility.Visible);
+    b.drawableId = null;
+    assert(icon.visibility == Visibility.Gone);
+
+    auto l = cast(HorizontalLayout)parseML(q{ HorizontalLayout { orientation: vertical } });
+    assert(l !is null);
+    scope (exit) destroy(l);
+    assert(l.orientation == Orientation.Vertical);
+    assert(!l.setIntProperty("orientation", 5));
+    assert(l.orientation == Orientation.Vertical);
+}

@@ -501,6 +501,26 @@ class ImageTextButton : HorizontalLayout {
     /// returns font set for widget using style or set manually
     override @property FontRef font() const { return _label.font; }
 
+    /// get icon drawable id
+    @property string drawableId() { return _icon.drawableId; }
+    /**
+        Set icon drawable id (also `drawableId` in DML). Setting null or "" hides the icon, for a text-only button.
+        (A button constructed with a null drawable id keeps its empty icon: CheckBox and RadioButton draw their
+        box with it.)
+    */
+    @property ImageTextButton drawableId(string id) {
+        if (!id.length)
+            id = null;
+        if (_icon.drawableId != id)
+            _icon.drawableId = id;
+        _icon.visibility = id ? Visibility.Visible : Visibility.Gone;
+        return this;
+    }
+
+    /// set string property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setStringProperty", "string",
+          "drawableId"));
+
     /// Returns orientation: Vertical - image top, Horizontal - image left"
     override @property Orientation orientation() const {
         return super.orientation();
