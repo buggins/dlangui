@@ -2898,8 +2898,9 @@ class EditBox : EditWidgetBase {
             return; // no auto scrollbars
         // either h or v scrollbar is in auto mode
 
-        int hsbHeight = _hscrollbar.measuredHeight;
-        int vsbWidth = _hscrollbar.measuredWidth;
+        // a scrollbar is null when created with ScrollBarMode.Invisible (#985)
+        int hsbHeight = _hscrollbar ? _hscrollbar.measuredHeight : 0;
+        int vsbWidth = _vscrollbar ? _vscrollbar.measuredWidth : 0;
 
         int visibleLines = _lineHeight > 0 ? (_clientRect.height / _lineHeight) : 1; // fully visible lines
         if (visibleLines < 1)

@@ -390,8 +390,9 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         int clientWidth = _clientRect.width;
         int clientHeight = _clientRect.height;
 
-        int hsbHeight = _hscrollbar.measuredHeight;
-        int vsbWidth = _hscrollbar.measuredWidth;
+        // a scrollbar is null when created with ScrollBarMode.Invisible (#985)
+        int hsbHeight = _hscrollbar ? _hscrollbar.measuredHeight : 0;
+        int vsbWidth = _vscrollbar ? _vscrollbar.measuredWidth : 0;
 
         int clientWidthWithScrollbar = clientWidth - vsbWidth;
         int clientHeightWithScrollbar = clientHeight - hsbHeight;
@@ -672,4 +673,78 @@ unittest {
     scroll.updateScrollBars();
     assert(scroll.vscrollbar.maxValue == 2000);
     assert(scroll.vscrollbar.needLayout);
+}
+
+// auto scrollbars: the space for the vertical scrollbar is its width, and a missing scrollbar takes none (#985)
+unittest {
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
+    // the currentTheme setter destroys the previous theme: replace only a theme created here
+    immutable bool ownTheme = currentTheme is null;
+    if (ownTheme)
+        currentTheme = createDefaultTheme();
+    scope(exit) if (ownTheme) currentTheme = null;
+
+    // ScrollBar.measure() loads images, and unittests have no image cache: fixed sizes instead
+    static class FixedSizeScrollBar : ScrollBar {
+        this(string id, Orientation orientation) {
+            super(id, orientation);
+        }
+        override void measure(int parentWidth, int parentHeight) {
+            if (orientation == Orientation.Vertical)
+                measuredContent(parentWidth, parentHeight, 16, 100);
+            else
+                measuredContent(parentWidth, parentHeight, 100, 16);
+        }
+    }
+    ScrollWidget create(ScrollBarMode hmode, ScrollBarMode vmode, int contentWidth, int contentHeight) {
+        auto scroll = new ScrollWidget("scroll", hmode, vmode);
+        foreach (vertical; [false, true]) {
+            ScrollBar* sb = vertical ? &scroll._vscrollbar : &scroll._hscrollbar;
+            if (!*sb)
+                continue;
+            scroll.removeChild(*sb);
+            destroy(*sb);
+            *sb = new FixedSizeScrollBar(vertical ? "vscrollbar" : "hscrollbar",
+                                         vertical ? Orientation.Vertical : Orientation.Horizontal);
+            (*sb).scrollEvent = scroll;
+            scroll.addChild(*sb);
+        }
+        scroll.contentWidget = new Widget("content").minWidth(contentWidth).minHeight(contentHeight);
+        scroll.measure(200, 150);
+        scroll.layout(Rect(0, 0, 200, 150));
+        return scroll;
+    }
+
+    // width of the vertical scrollbar, with the padding of its style
+    auto vsb = new FixedSizeScrollBar("vscrollbar", Orientation.Vertical);
+    vsb.measure(200, 150);
+    immutable int vsbWidth = vsb.measuredWidth;
+    destroy(vsb);
+
+    // too high, and exactly as wide as the client area with the vertical scrollbar: no horizontal scrollbar
+    {
+        auto scroll = create(ScrollBarMode.Auto, ScrollBarMode.Auto, 200 - vsbWidth, 1000);
+        scope(exit) destroy(scroll);
+        assert(scroll.vscrollbar.visibility == Visibility.Visible);
+        assert(scroll.hscrollbar.visibility == Visibility.Gone);
+    }
+    // one pixel wider: both
+    {
+        auto scroll = create(ScrollBarMode.Auto, ScrollBarMode.Auto, 200 - vsbWidth + 1, 1000);
+        scope(exit) destroy(scroll);
+        assert(scroll.vscrollbar.visibility == Visibility.Visible);
+        assert(scroll.hscrollbar.visibility == Visibility.Visible);
+    }
+    // no horizontal scrollbar (ScrollBarMode.Invisible creates none)
+    foreach (contentHeight; [1000, 100]) {
+        auto scroll = create(ScrollBarMode.Invisible, ScrollBarMode.Auto, 150, contentHeight);
+        scope(exit) destroy(scroll);
+        assert(scroll.vscrollbar.visibility == (contentHeight > 150 ? Visibility.Visible : Visibility.Gone));
+    }
+    // no vertical scrollbar
+    foreach (contentWidth; [1000, 100]) {
+        auto scroll = create(ScrollBarMode.Auto, ScrollBarMode.Invisible, contentWidth, 100);
+        scope(exit) destroy(scroll);
+        assert(scroll.hscrollbar.visibility == (contentWidth > 200 ? Visibility.Visible : Visibility.Gone));
+    }
 }
