@@ -170,6 +170,7 @@ class LayoutItems {
         // calc total size
         int visibleCount = cast(int)_list.length;
         int resizersSize = 0;
+        bool hasPercentSize = false;
         for (int i = 0; i < _count; i++) {
             LayoutItem * item = &_list[i];
             int weight = item.weight;
@@ -182,17 +183,23 @@ class LayoutItems {
             } else if (item.fillParent || isPercentSize(item.layoutSize)) {
                 resizableWeight += weight;
                 resizableSize += size * weight;
+                if (isPercentSize(item.layoutSize))
+                    hasPercentSize = true;
             } else {
                 nonresizableWeight += weight;
                 nonresizableSize += size * weight;
             }
         }
+        // FILL_PARENT items share extra space in proportion to measured size * weight; when all of them
+        // are measured as 0 (e.g. empty panels), by weight only, or they would get nothing (#973).
+        // Not for percent sizes: they keep their old behavior.
+        immutable bool growByWeight = resizableSize == 0 && resizableWeight > 0 && !hasPercentSize;
         if (_orientation == Orientation.Vertical) {
             if (_layoutWidth == WRAP_CONTENT && maxItem < rc.width)
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.width;
-            if ((_layoutHeight == FILL_PARENT || isPercentSize(_layoutHeight)) && totalSize < rc.height && resizableSize > 0) {
+            if ((_layoutHeight == FILL_PARENT || isPercentSize(_layoutHeight)) && totalSize < rc.height && (resizableSize > 0 || growByWeight)) {
                 delta = rc.height - totalSize; // total space to add to fit
             } else if (totalSize > rc.height) {
                 delta = rc.height - totalSize; // total space to reduce to fit
@@ -202,7 +209,7 @@ class LayoutItems {
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.height;
-            if ((_layoutWidth == FILL_PARENT || isPercentSize(_layoutWidth)) && totalSize < rc.width && resizableSize > 0)
+            if ((_layoutWidth == FILL_PARENT || isPercentSize(_layoutWidth)) && totalSize < rc.width && (resizableSize > 0 || growByWeight))
                 delta = rc.width - totalSize; // total space to add to fit
             else if (totalSize > rc.width)
                 delta = rc.width - totalSize; // total space to reduce to fit
@@ -210,6 +217,7 @@ class LayoutItems {
         // calculate resize options and scale
         bool needForceResize = false;
         bool needResize = false;
+        immutable bool byWeight = growByWeight && delta > 0;
         int scaleFactor = 10000; // per weight unit
         if (delta != 0 && visibleCount > 0) {
             if (delta < 0)
@@ -217,10 +225,13 @@ class LayoutItems {
             // need resize of some children
             needResize = true;
             // resize all if need to shrink or only resizable are too small to correct delta
-            needForceResize = /*delta < 0 || */ resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
+            // (also when shrinking and the resizable ones are all measured as 0: they can't shrink, #973)
+            needForceResize = resizableWeight == 0 || (delta < 0 && resizableSize == 0);
             // calculate scale factor: weight / delta * 10000
             if (needForceResize && nonresizableSize + resizableSize > 0)
                 scaleFactor = 10000 * delta / (nonresizableSize + resizableSize);
+            else if (byWeight)
+                scaleFactor = 10000 * delta / resizableWeight; // per weight unit, not per pixel
             else if (resizableSize > 0)
                 scaleFactor = 10000 * delta / resizableSize;
             else
@@ -233,7 +244,9 @@ class LayoutItems {
         int resizerDelta = 0;
         for (int i = 0; i < _count; i++) {
             LayoutItem * item = &_list[i];
-            if ((item.fillParent || isPercentSize(item.layoutSize) || needForceResize) && (delta < 0 || item.canExtend)) {
+            // when shrinking, not an item measured as 0: the remainder would make its size negative
+            if ((item.fillParent || isPercentSize(item.layoutSize) || needForceResize) && (delta < 0 || item.canExtend)
+                    && (delta > 0 || item.measuredSize > 0)) {
                 lastResized = i;
             }
             if (item._isResizer) {
@@ -251,7 +264,8 @@ class LayoutItems {
             int size = item.measuredSize;
             if (needResize && (layoutSize == FILL_PARENT || isPercentSize(layoutSize) || needForceResize)) {
                 // do resize
-                int correction = (delta < 0 || item.canExtend) ? scaleFactor * weight * size / 10000 : 0;
+                int share = byWeight ? weight : weight * size;
+                int correction = (delta < 0 || item.canExtend) ? scaleFactor * share / 10000 : 0;
                 deltaTotal += correction;
                 // for last resized, apply additional correction to resolve calculation inaccuracy
                 if (i == lastResized) {
@@ -596,8 +610,6 @@ unittest {
             Widget first = new Widget("first");
             Widget second = new Widget("second");
             foreach (w, size; [first: sizeFirst, second: sizeSecond]) {
-                w.minWidth = 10; // an empty FILL_PARENT widget gets no extra space
-                w.minHeight = 10;
                 if (vertical)
                     w.layoutHeight = size;
                 else
@@ -678,6 +690,65 @@ unittest {
     }
 }
 
+
+// FILL_PARENT items measured as 0 (e.g. empty panels) share the extra space by weight (#973)
+unittest {
+    import dlangui.widgets.styles : currentTheme, createDefaultTheme;
+    // the currentTheme setter destroys the previous theme: replace only a theme created here
+    immutable bool ownTheme = currentTheme is null;
+    if (ownTheme)
+        currentTheme = createDefaultTheme();
+    scope(exit) if (ownTheme) currentTheme = null;
+
+    foreach (vertical; [false, true]) {
+        // children: size in px, FILL_PARENT or -weight (FILL_PARENT with that weight); minSize: their min size
+        Rect[] layoutChildren(int[] sizes, int minSize = 0) {
+            LinearLayout layout = new LinearLayout(null, vertical ? Orientation.Vertical : Orientation.Horizontal);
+            scope(exit) destroy(layout);
+            layout.layoutWidth = FILL_PARENT;
+            layout.layoutHeight = FILL_PARENT;
+            foreach (size; sizes) {
+                Widget w = new Widget();
+                int layoutSize = size < 0 ? FILL_PARENT : size;
+                if (size < 0)
+                    w.layoutWeight = -size;
+                if (vertical)
+                    w.layoutHeight = layoutSize;
+                else
+                    w.layoutWidth = layoutSize;
+                w.minWidth = minSize;
+                w.minHeight = minSize;
+                layout.addChild(w);
+            }
+            Rect rc = vertical ? Rect(20, 30, 220, 430) : Rect(20, 30, 420, 230);
+            layout.measure(rc.width, rc.height);
+            layout.layout(rc);
+            Rect[] res;
+            foreach (i; 0 .. layout.childCount)
+                res ~= layout.child(i).pos;
+            return res;
+        }
+        int size(Rect rc) { return vertical ? rc.height : rc.width; }
+        int start(Rect rc) { return vertical ? rc.top : rc.left; }
+
+        // an empty FILL_PARENT widget after a fixed one gets the rest
+        Rect[] r = layoutChildren([150, FILL_PARENT]);
+        assert(size(r[0]) == 150 && size(r[1]) == 250 && start(r[1]) == (vertical ? 180 : 170));
+        // empty FILL_PARENT widgets by weight
+        r = layoutChildren([-1, -3]);
+        assert(size(r[0]) == 100 && size(r[1]) == 300);
+        // not empty: in proportion to measured size * weight, as before
+        r = layoutChildren([-1, -1], 10);
+        assert(size(r[0]) == 200 && size(r[1]) == 200);
+        // too small: the fixed items shrink, an empty FILL_PARENT item stays 0 (was negative)
+        r = layoutChildren([300, 200, FILL_PARENT]);
+        assert(size(r[0]) + size(r[1]) == 400 && size(r[0]) > size(r[1]));
+        assert(size(r[2]) == 0 && start(r[2]) == (vertical ? 430 : 420));
+        // percent sizes measured as 0 keep the old behavior (no weight sharing)
+        r = layoutChildren([makePercentSize(30), makePercentSize(70)]);
+        assert(size(r[0]) == 0 && size(r[1]) == 0);
+    }
+}
 
 /// Arranges items either vertically or horizontally
 class LinearLayout : WidgetGroupDefaultDrawing {
