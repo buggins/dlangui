@@ -59,7 +59,7 @@ import dlangui.widgets.scroll;
 import dlangui.widgets.menu;
 import std.conv;
 import std.container.rbtree;
-import std.algorithm : equal, min;
+import std.algorithm : equal, max, min;
 
 /// cellPopupMenu signal handler interface
 interface CellPopupMenuHandler {
@@ -287,8 +287,16 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     protected GridModelAdapter _gridModelAdapter;
     /// Get adapter to hold grid model data
     @property GridModelAdapter gridModelAdapter() { return _gridModelAdapter; }
-    /// Set adapter to hold grid model data
-    @property GridWidgetBase gridModelAdapter(GridModelAdapter adapter) { _gridModelAdapter = adapter; return this; }
+    /++ Set adapter to hold grid model data: while it is set, fixedCols and fixedRows are the adapter's.
+        The adapter doesn't notify the grid: change them through the grid's fixedCols/fixedRows, or call
+        requestLayout() after changing them on the adapter. Setting the grid itself as its adapter sets none
+        (the grid keeps its own counts). +/
+    @property GridWidgetBase gridModelAdapter(GridModelAdapter adapter) {
+        // the grid is a GridModelAdapter itself: as its own adapter, fixedCols/fixedRows would call themselves (#993)
+        _gridModelAdapter = adapter is cast(GridModelAdapter)this ? null : adapter;
+        onNonScrollCellsChanged();
+        return this;
+    }
 
     protected bool _smoothHScroll = true;
     /// Get smooth horizontal scroll flag - when true - scrolling by pixels, when false - by cells
@@ -406,14 +414,14 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     @property int headerCols() { return _headerCols; }
     @property GridWidgetBase headerCols(int c) {
         _headerCols = c;
-        invalidate();
+        onNonScrollCellsChanged();
         return this;
     }
     /// col header row count
     @property int headerRows() { return _headerRows; }
     @property GridWidgetBase headerRows(int r) {
         _headerRows = r;
-        invalidate();
+        onNonScrollCellsChanged();
         return this;
     }
 
@@ -424,7 +432,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             _fixedCols = c;
         else
             _gridModelAdapter.fixedCols = c;
-        invalidate();
+        onNonScrollCellsChanged();
     }
     /// fixed (non-scrollable) data row count
     @property int fixedRows() { return _gridModelAdapter is null ? _fixedRows : _gridModelAdapter.fixedRows; }
@@ -433,6 +441,16 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             _fixedRows = r;
         else
             _gridModelAdapter.fixedRows = r;
+        onNonScrollCellsChanged();
+    }
+
+    /// the count of header or fixed cells changed: the scrollable area, the scroll position and the scrollbars
+    /// follow (#993)
+    protected void onNonScrollCellsChanged() {
+        // before the first layout there is no client area, and the scroll position would be clamped to nothing:
+        // layout() updates the scrollbars
+        if (!_clientRect.empty)
+            updateScrollBars();
         invalidate();
     }
 
@@ -562,10 +580,11 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         updateCumulativeSizes();
     }
 
-    /// count of non-scrollable columns (header + fixed)
-    @property int nonScrollCols() { return _headerCols + fixedCols; }
-    /// count of non-scrollable rows (header + fixed)
-    @property int nonScrollRows() { return _headerRows + fixedRows; }
+    /// count of non-scrollable columns (header + fixed), at most all columns: fixedCols may be set before the
+    /// columns, or come from an adapter (#993); a negative fixedCols counts as 0
+    @property int nonScrollCols() { return min(_headerCols + max(fixedCols, 0), _cols); }
+    /// count of non-scrollable rows (header + fixed), at most all rows; a negative fixedRows counts as 0
+    @property int nonScrollRows() { return min(_headerRows + max(fixedRows, 0), _rows); }
     /// return all (fixed + scrollable) cells size in pixels
     @property Point fullAreaPixels() {
         if (_changedSize) updateCumulativeSizes();
@@ -2159,4 +2178,50 @@ unittest {
         if (withAdapter)
             assert(adapter.cols == 3 && adapter.rows == 2);
     }
+}
+
+// fixed rows and columns: counts larger than the grid, scrollbars following a change, the grid as its own
+// adapter (#993)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+
+    auto grid = new StringGridWidget("grid");
+    scope(exit) destroy(grid);
+    grid.resize(3, 3);
+    // more fixed rows and columns than the grid has (e.g. DML setting fixedRows before rows)
+    grid.fixedCols = 5;
+    grid.fixedRows = 5;
+    assert(grid.nonScrollCols == grid.headerCols + 3 && grid.nonScrollRows == grid.headerRows + 3);
+    assert(grid.nonScrollAreaPixels == grid.fullAreaPixels);
+    // a negative count doesn't make header columns scroll
+    grid.fixedCols = -1;
+    assert(grid.nonScrollCols == grid.headerCols);
+    grid.fixedCols = 0;
+    grid.fixedRows = 0;
+
+    // before the first layout, a change doesn't clamp the scroll position to the empty client area
+    grid.resize(3, 100);
+    grid._scrollY = 50;
+    grid.fixedRows = 1;
+    grid.headerRows = 1;
+    assert(grid._scrollY == 50);
+    grid._scrollY = 0;
+    grid.fixedRows = 0;
+
+    // the scrollbars follow a change of the fixed or header rows without a new layout
+    // no measure(): scrollbars load their images there, and unittests have no image cache
+    grid.layout(Rect(0, 0, 300, 200));
+    immutable int range = grid.vscrollbar.maxValue - grid.vscrollbar.minValue;
+    grid.fixedRows = 10;
+    immutable int rangeFixed = grid.vscrollbar.maxValue - grid.vscrollbar.minValue;
+    assert(rangeFixed < range);
+    grid.headerRows = 5;
+    assert(grid.vscrollbar.maxValue - grid.vscrollbar.minValue < rangeFixed);
+    grid.headerRows = 1;
+
+    // the grid as its own adapter is no adapter
+    grid.gridModelAdapter = grid;
+    assert(grid.gridModelAdapter is null);
+    assert(grid.fixedRows == 10);
 }
