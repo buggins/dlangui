@@ -2241,7 +2241,8 @@ unittest {
     grid.fixedCols = 2; // with the row header: 3 non-scrolling columns, 1 non-scrolling row
     assert(grid.nonScrollCols == 3 && grid.nonScrollRows == 1);
     // no measure(): scrollbars load their images there, and unittests have no image cache
-    grid.layout(Rect(0, 0, 300, 200));
+    // about 10 rows high, in pixels or console cells (#1030)
+    grid.layout(Rect(0, 0, 300, 10 * grid.defRowHeight));
     assert(grid.scrollRow == 1);
     grid.scrollBy(0, 2);
     assert(grid.scrollRow == 3);
