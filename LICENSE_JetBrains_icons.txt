@@ -6,6 +6,13 @@ repository), used unchanged; only the file names were changed to DlangUI
 resource ids with a size suffix (e.g. dialog-ok.16x16.svg, see README).
 Files ending in _dark are the icons' dark theme variants.
 
+DlangUI embeds these icons in applications (standard resources). The
+embedded copies don't contain the license comment at the start of each
+file, which is dropped at compile time; the files in the repository keep
+it. An application that ships binaries includes this file, with the license
+text and the NOTICE below, or its contents (e.g. in its documentation or
+About box).
+
 Source: https://github.com/JetBrains/intellij-community
 License: Apache License, Version 2.0 (text below)
 
