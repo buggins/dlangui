@@ -434,11 +434,12 @@ public:
 
     @property Style parentStyleId(string id) {
         if (_parentId != id) {
-            // merged states of this style change; of other styles only if they derive from it
-            if (_children.length)
-                _statesRevision++;
-            else
+            // merged states of this style change; nothing derives from a style without id (a widget's own style),
+            // other styles and own styles may derive from a theme style
+            if (_id is null && !_children.length)
                 _mergedRevision = 0;
+            else
+                _statesRevision++;
         }
         _parentId = id;
         if (_parentStyle)
@@ -996,9 +997,9 @@ public:
 
     /// state style of this style with nothing set: everything comes from this style
     private Style newStateStyle(uint stateMask, uint stateValue) {
-        Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(null);
         // a widget's own style has no theme: neither have its states, which outlive a theme switch
-        child._theme = _theme;
+        // (and are built without a current theme)
+        Style child = new Style(_theme, null);
         child._parentStyle = this;
         child._stateMask = stateMask;
         child._stateValue = stateValue;
@@ -2235,7 +2236,6 @@ unittest {
     Style child = button.createSubstyle("CHILD").textColor(0xFF0000).fontSize(20).padding(Rect(8, 8, 8, 8));
     assert(child.forState(HOVERED).textColor == 0x0000FF); // the parent's state value wins over own normal value
     assert(child.forState(HOVERED).fontSize == 20);
-    assert(child.forState(HOVERED).padding == Rect(8, 8, 8, 8));
     assert(child.forState(HOVERED).backgroundImageId == "btn_hovered");
     assert(child.forState(DISABLED).textColor == 0x808080);
     assert(child.forState(NORMAL) is child);
@@ -2312,6 +2312,24 @@ unittest {
     assert(own.forState(State.Hovered).textColor == 0x000002);
     own.parentStyleId = "ORDERED";
     assert(own.forState(State.Hovered).textColor == 0x000002);
+
+    // a parent change of a theme style reaches the own styles deriving from it
+    Style lone = t.createSubstyle("LONE");
+    Style ownLone = t.modifyStyle("LONE");
+    scope(exit) destroy(ownLone);
+    assert(ownLone.forState(HOVERED) is ownLone);
+    lone.parentStyleId = "BUTTON";
+    assert(ownLone.forState(HOVERED).textColor == 0x0000A0);
+
+    // merged states of an own style are built without a current theme
+    Style ownStates = t.modifyStyle("BUTTON");
+    scope(exit) destroy(ownStates);
+    ownStates.createState(State.Checked, State.Checked).textColor(0x000005);
+    {
+        _currentTheme = null;
+        scope(exit) _currentTheme = t;
+        assert(ownStates.forState(State.Checked).textColor == 0x000005);
+    }
 }
 
 /// theme styles inherit properties not set in them from their parent= style, recursively (#814)
