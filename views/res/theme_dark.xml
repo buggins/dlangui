@@ -119,6 +119,24 @@
     <drawable id="emblem-error" value="emblem-error_dark"/>
     <drawable id="emblem-warning" value="emblem-warning_dark"/>
     <drawable id="emblem-modified" value="emblem-modified_dark"/>
+    <!-- standard action icons (#1031) -->
+    <drawable id="document-new" value="document-new_dark"/>
+    <drawable id="document-open" value="document-open_dark"/>
+    <drawable id="document-open-recent" value="document-open-recent_dark"/>
+    <drawable id="document-close" value="document-close_dark"/>
+    <drawable id="document-save" value="document-save_dark"/>
+    <drawable id="document-save-as" value="document-save-as_dark"/>
+    <drawable id="document-properties" value="document-properties_dark"/>
+    <drawable id="edit-copy" value="edit-copy_dark"/>
+    <drawable id="edit-cut" value="edit-cut_dark"/>
+    <drawable id="edit-paste" value="edit-paste_dark"/>
+    <drawable id="edit-undo" value="edit-undo_dark"/>
+    <drawable id="edit-redo" value="edit-redo_dark"/>
+    <drawable id="edit-clear" value="edit-clear_dark"/>
+    <drawable id="edit-delete" value="edit-delete_dark"/>
+    <drawable id="edit-find" value="edit-find_dark"/>
+    <drawable id="configure" value="configure_dark"/>
+    <drawable id="debug-run" value="debug-run_dark"/>
 
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up_dark"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down_dark"/>
