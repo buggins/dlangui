@@ -175,20 +175,42 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             return;
         bool needHScroll = false;
         bool needVScroll = false;
-        checkIfScrollbarsNeeded(needHScroll, needVScroll);
+        {
+            // decide with the client area of layout(), not the one left after the scrollbars: that would take
+            // the space of a shown scrollbar twice and disagree with layout() (#996)
+            Rect clientRect = _clientRect;
+            scope(exit) _clientRect = clientRect;
+            _clientRect = _clientRectWithoutScrollbars;
+            checkIfScrollbarsNeeded(needHScroll, needVScroll);
+        }
         bool hscrollVisible = _hscrollbar && _hscrollbar.visibility == Visibility.Visible;
         bool vscrollVisible = _vscrollbar && _vscrollbar.visibility == Visibility.Visible;
         bool needChange = false;
-        if (_hscrollbar && hscrollVisible != needHScroll)
+        // External scrollbars are shown and hidden by their owner (layout() doesn't change them)
+        if (_hscrollbar && _hscrollbarMode != ScrollBarMode.External && hscrollVisible != needHScroll)
             needChange = true;
-        if (_vscrollbar && vscrollVisible != needVScroll)
+        if (_vscrollbar && _vscrollbarMode != ScrollBarMode.External && vscrollVisible != needVScroll)
             needChange = true;
         if (needChange) {
             _insideChangeScrollbarVisibility = true;
-            layout(_pos);
-            _insideChangeScrollbarVisibility = false;
+            scope(exit) _insideChangeScrollbarVisibility = false;
+            if (_insideLayout) {
+                // called by layout(): lay out again in the rectangle it got, without running subclass layouts
+                // again (EditBox would place its panels a second time inside the area left after them, #996)
+                ScrollWidgetBase.layout(_pos);
+            } else {
+                // outside layout(): through the subclass. A subclass that lays out the scroll area in a part of
+                // its rectangle must set _pos to its whole rectangle after super.layout(), as EditBox does
+                layout(_pos);
+            }
         }
     }
+
+    // client area without scrollbars in the last layout(), for the decision in
+    // checkIfNeededToChangeScrollbarVisibility() (#996)
+    private Rect _clientRectWithoutScrollbars;
+    // set while layout() runs
+    private bool _insideLayout;
 
     /// update scrollbar positions
     protected void updateScrollBars() {
@@ -446,12 +468,16 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         }
         _pos = rc;
         _needLayout = false;
+        immutable bool wasInsideLayout = _insideLayout;
+        _insideLayout = true;
+        scope(exit) _insideLayout = wasInsideLayout;
         applyMargins(rc);
         applyPadding(rc);
 
         // client area - initial setup w/o scrollbars
         _clientRect = rc;
         handleClientRectLayout(_clientRect);
+        _clientRectWithoutScrollbars = _clientRect;
 
         bool needHscroll;
         bool needVscroll;
@@ -807,4 +833,88 @@ unittest {
     // vertical Auto, horizontal always shown
     assert(scrollbarsFor(Visible, Auto, Point(10, 150 - sb.y)) == [true, false]);
     assert(scrollbarsFor(Visible, Auto, Point(10, 150 - sb.y + 1)) == [true, true]);
+}
+
+// the scrollbar recheck after layout() agrees with layout(), and a layout it starts doesn't run subclass layouts
+// again (#996)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+
+    // counts layouts; like EditBox with a panel, lays out the scroll area below a 20 px panel
+    static class CountingScrollWidget : ScrollWidget {
+        int layouts;
+        Point[] contentSizes; // returned by autoScrollbarContentSize(), the last one repeated
+        int contentSizeCalls;
+        this() {
+            super("scroll", ScrollBarMode.Auto, ScrollBarMode.Auto);
+            contentWidget = new Widget("content").minWidth(10).minHeight(10);
+            useFixedSizeScrollBars(this);
+        }
+        override void layout(Rect rc) {
+            layouts++;
+            super.layout(Rect(rc.left, rc.top + 20, rc.right, rc.bottom));
+            _pos = rc; // like EditBox
+        }
+        override protected Point autoScrollbarContentSize() {
+            size_t i = contentSizeCalls++;
+            return contentSizes[i < contentSizes.length ? i : $ - 1];
+        }
+    }
+    CountingScrollWidget create(Point[] contentSizes) {
+        auto scroll = new CountingScrollWidget;
+        scroll.contentSizes = contentSizes;
+        scroll.measure(200, 170);
+        scroll.layout(Rect(0, 0, 200, 170)); // scroll area 200 x 150
+        return scroll;
+    }
+    Point sb;
+    {
+        auto scroll = create([Point(10, 10)]);
+        scope(exit) destroy(scroll);
+        sb = scroll.scrollbarSizes();
+    }
+
+    // too high, and narrower than the client area with the vertical scrollbar, but by less than one more
+    // scrollbar: vertical scrollbar only, decided once
+    {
+        auto scroll = create([Point(200 - sb.x - sb.x / 2, 1000)]);
+        scope(exit) destroy(scroll);
+        assert(scroll.vscrollbar.visibility == Visibility.Visible);
+        assert(scroll.hscrollbar.visibility == Visibility.Gone);
+        assert(scroll.layouts == 1);
+        assert(scroll.contentSizeCalls == 2); // decided by layout() and by the recheck: no second layout
+        assert(scroll._clientRect.top == 20);
+        // content grows outside layout(): the recheck lays out again, through the subclass, in the same rectangle
+        scroll.contentSizes = [Point(1000, 1000)];
+        scroll.contentSizeCalls = 0;
+        scroll.updateScrollBars();
+        assert(scroll.hscrollbar.visibility == Visibility.Visible);
+        assert(scroll.layouts == 2);
+        assert(scroll.pos == Rect(0, 0, 200, 170));
+        assert(scroll._clientRect.top == 20);
+    }
+    // content size changes while layout() runs: the recheck lays out again in the same rectangle, without the
+    // subclass taking the panel's room a second time
+    {
+        auto scroll = create([Point(10, 10), Point(10, 1000)]);
+        scope(exit) destroy(scroll);
+        assert(scroll.vscrollbar.visibility == Visibility.Visible);
+        assert(scroll.layouts == 1);
+        assert(scroll._clientRect.top == 20);
+    }
+    // an External scrollbar, shown by its owner, doesn't make the recheck lay out again
+    {
+        auto hsb = new FixedSizeScrollBar("external", Orientation.Horizontal);
+        scope(exit) destroy(hsb);
+        auto scroll = new CountingScrollWidget;
+        scope(exit) destroy(scroll);
+        scroll.hscrollbar = hsb;
+        scroll.contentSizes = [Point(10, 10)];
+        scroll.measure(200, 170);
+        scroll.layout(Rect(0, 0, 200, 170));
+        assert(hsb.visibility == Visibility.Visible);
+        scroll.updateScrollBars();
+        assert(scroll.layouts == 1);
+    }
 }
