@@ -252,8 +252,28 @@ class Dialog : VerticalLayout {
         return false;
     }
 
-    /// pass key event here; returns true if search text is updated and you can move selection using it
+    /// a plain Enter was pressed (key down) while the dialog was open and no child used it (#728)
+    private bool _enterKeyDown;
+
+    /**
+        Keys that reach the dialog (the focused child didn't use them):
+        Enter presses the default button (Windows convention, #728): a control that uses Enter itself (a multi-line
+        editor, a focused button that presses itself, a list, an open popup) keeps it. Only an Enter pressed while the
+        dialog is open counts: not the release of the Enter that opened it. Ctrl+Enter presses the default button
+        from any control; Esc closes with the Cancel/No action.
+    */
     override bool onKeyEvent(KeyEvent event) {
+        if (event.keyCode == KeyCode.RETURN && event.noModifiers
+                && _defaultButtonIndex >= 0 && _defaultButtonIndex < _buttonActions.length) {
+            if (event.action == KeyAction.KeyDown) {
+                _enterKeyDown = true;
+                return true;
+            }
+            if (event.action == KeyAction.KeyUp && _enterKeyDown) {
+                _enterKeyDown = false;
+                return closeWithDefaultAction();
+            }
+        }
         if (event.action == KeyAction.KeyUp) {
             if (event.keyCode == KeyCode.RETURN && event.modifiers == KeyFlag.Control) {
                 // Ctrl+Enter: default action
@@ -300,4 +320,40 @@ unittest {
         assert(d.onKeyEvent(new KeyEvent(KeyAction.KeyUp, KeyCode.ESCAPE, 0)));
         assert(d.closedWith is no);
     }
+}
+
+// plain Enter that reaches the dialog presses the default button, only when pressed while the dialog is open (#728)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    import std.typecons : Rebindable;
+    auto _ = useTestTheme();
+    static class TestDialog : Dialog {
+        Rebindable!(const Action) closedWith;
+        this() { super(UIString.fromRaw("test"d)); }
+        override void close(const Action action) { closedWith = action; }
+    }
+    const ok = new Action(StandardAction.Ok, "OK"d);
+    const cancel = new Action(StandardAction.Cancel, "Cancel"d);
+    auto d = new TestDialog();
+    scope(exit) destroy(d);
+    d.addChild(d.createButtonsPanel([ok, cancel], 0, 0));
+    // the release of an Enter pressed before the dialog opened
+    assert(!d.onKeyEvent(new KeyEvent(KeyAction.KeyUp, KeyCode.RETURN, 0)));
+    assert(d.closedWith is null);
+    // Shift+Enter isn't plain Enter
+    d.onKeyEvent(new KeyEvent(KeyAction.KeyDown, KeyCode.RETURN, KeyFlag.Shift));
+    d.onKeyEvent(new KeyEvent(KeyAction.KeyUp, KeyCode.RETURN, KeyFlag.Shift));
+    assert(d.closedWith is null);
+    assert(d.onKeyEvent(new KeyEvent(KeyAction.KeyDown, KeyCode.RETURN, 0)));
+    assert(d.closedWith is null);
+    assert(d.onKeyEvent(new KeyEvent(KeyAction.KeyUp, KeyCode.RETURN, 0)));
+    assert(d.closedWith is ok);
+
+    // no default button: Enter isn't used
+    auto d2 = new TestDialog();
+    scope(exit) destroy(d2);
+    d2.addChild(d2.createButtonsPanel([ok, cancel], -1, 0));
+    assert(!d2.onKeyEvent(new KeyEvent(KeyAction.KeyDown, KeyCode.RETURN, 0)));
+    assert(!d2.onKeyEvent(new KeyEvent(KeyAction.KeyUp, KeyCode.RETURN, 0)));
+    assert(d2.closedWith is null);
 }
