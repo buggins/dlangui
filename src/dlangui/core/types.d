@@ -315,6 +315,15 @@ int makePointSize(int pt) @safe pure nothrow @nogc {
     return pt | SIZE_IN_POINTS_FLAG;
 }
 
+/// make Rect (e.g. padding, margins) with SIZE_IN_POINTS_FLAG set in its values; special sizes (SIZE_UNSPECIFIED,
+/// FILL_PARENT, WRAP_CONTENT) and negative values are kept as they are
+Rect makePointSize(Rect pt) @safe pure nothrow @nogc {
+    static int points(int v) @safe pure nothrow @nogc {
+        return v < 0 || isSpecialSize(v) ? v : makePointSize(v);
+    }
+    return Rect(points(pt.left), points(pt.top), points(pt.right), points(pt.bottom));
+}
+
 /// make size value with SIZE_IN_PERCENTS_FLAG set
 int makePercentSize(int percent) @safe pure nothrow @nogc {
     return (percent * 100) | SIZE_IN_PERCENTS_FLAG;
@@ -443,6 +452,9 @@ static if (!WIDGET_STYLE_CONSOLE) @safe unittest {
     scope(exit) overrideScreenDPI = saved;
     overrideScreenDPI = BASE_DPI;
     assert(scaledPixels(3) == 3 && scaledPixels(16) == 16);
+    assert(toPixels(makePointSize(Rect(8, 0, 3, 450))) == Rect(10, 0, 4, 600)); // padding/margins in points
+    assert(makePointSize(Rect(SIZE_UNSPECIFIED, -1, 0, 0)).left == SIZE_UNSPECIFIED); // special values kept
+    assert(makePointSize(Rect(SIZE_UNSPECIFIED, -1, 0, 0)).top == -1);
     overrideScreenDPI = 120; // 125%
     assert(scaledPixels(3) == 3 && scaledPixels(4) == 5 && scaledPixels(16) == 20);
     overrideScreenDPI = 192; // 200%

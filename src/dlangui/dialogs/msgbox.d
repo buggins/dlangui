@@ -55,8 +55,9 @@ class MessageBox : Dialog {
     /// override to implement creation of dialog controls
     override void initialize() {
         TextWidget msg = new MultilineTextWidget("msg", _message);
-        padding(Rect(10, 10, 10, 10));
-        msg.padding(Rect(10, 10, 10, 10));
+        // 8 pt: 10 px at 100% scaling, follows the screen DPI (#840)
+        padding(WIDGET_STYLE_CONSOLE ? Rect(10, 10, 10, 10) : makePointSize(Rect(8, 8, 8, 8)));
+        msg.padding(WIDGET_STYLE_CONSOLE ? Rect(10, 10, 10, 10) : makePointSize(Rect(8, 8, 8, 8)));
         addChild(msg);
         addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));
     }
