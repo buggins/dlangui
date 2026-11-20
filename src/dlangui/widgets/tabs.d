@@ -1009,8 +1009,9 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         A child without id gets id "tab1", "tab2", ...
     */
     override Widget addChild(Widget item) {
-        if (_tabHost is null || item is _tabControl || item is _tabHost)
-            return super.addChild(item); // own parts, from constructor
+        // own parts, from the constructor; plain children once the tab parts are removed (#1016)
+        if (_tabHost is null || _tabControl is null || item is _tabControl || item is _tabHost)
+            return super.addChild(item);
         if (!item.id.length) {
             for (int i = _tabControl.tabCount + 1; ; i++) {
                 string tabId = "tab" ~ to!string(i);
@@ -1030,6 +1031,42 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
             addTab(item, title.length ? title : to!dstring(item.id));
         }
         return item;
+    }
+
+    /// forget the tab control and tab host when they are removed (and maybe destroyed): a subclass may remove them
+    /// and add its own children, which addChild() then adds as plain children, not as tabs (#1016)
+    protected void forgetTabParts(Widget child) {
+        if (child is null)
+            return;
+        if (child is _tabControl)
+            _tabControl = null;
+        if (child is _tabHost)
+            _tabHost = null;
+    }
+
+    override Widget removeChild(int index) {
+        if (index >= 0 && index < childCount)
+            forgetTabParts(child(index));
+        return super.removeChild(index);
+    }
+
+    override Widget removeChild(string ID) {
+        immutable int index = _children.indexOf(ID);
+        if (index >= 0)
+            forgetTabParts(child(index));
+        return super.removeChild(ID);
+    }
+
+    override Widget removeChild(Widget item) {
+        if (childIndex(item) >= 0)
+            forgetTabParts(item);
+        return super.removeChild(item);
+    }
+
+    override void removeAllChildren(bool destroyObj = true) {
+        forgetTabParts(_tabControl);
+        forgetTabParts(_tabHost);
+        super.removeAllChildren(destroyObj);
     }
 
     /// remove tab by id
@@ -1104,7 +1141,7 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
 
     /// override to handle specific actions
     override bool handleAction(const Action a) {
-        if (a.id == StandardAction.TabSelectItem) {
+        if (a.id == StandardAction.TabSelectItem && _tabControl !is null) {
             selectTab(cast(int)a.longParam);
             return true;
         }
@@ -1115,6 +1152,8 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
 
     /// process key event, return true if event is processed.
     override bool onKeyEvent(KeyEvent event) {
+        if (_tabControl is null) // tab parts removed by a subclass (#1016)
+            return super.onKeyEvent(event);
         if (_tabNavigationInProgress) {
             if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
                 if (!(event.flags & KeyFlag.Control)) {
@@ -1163,4 +1202,37 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         return _tabHost.tabBody(_tabControl._selectedTabId);
     }
 
+}
+
+// a subclass that removes the tab parts and adds its own children, like DlangIDE's search panel (#1016)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    static class PlainTabWidget : TabWidget {
+        this() {
+            super("plain");
+            removeAllChildren();
+            addChild(new Widget("own1"));
+            addChild(new Widget(null));
+        }
+    }
+    auto w = new PlainTabWidget();
+    scope(exit) destroy(w);
+    assert(w.tabControl is null && w.tabHost is null);
+    assert(w.childCount == 2);
+    assert(w.child(0).id == "own1" && w.child(1).id is null);
+    // Ctrl+Tab and the tab selection action pass to the base class
+    w.onKeyEvent(new KeyEvent(KeyAction.KeyDown, KeyCode.TAB, KeyFlag.Control));
+    w.handleAction(new Action(StandardAction.TabSelectItem));
+
+    // a normal TabWidget still adds children as tabs; removeChild() of a tab part forgets it
+    auto t = new TabWidget("tabs");
+    scope(exit) destroy(t);
+    t.addChild(new Widget("page1"));
+    assert(t.tabCount == 1 && t.childCount == 2);
+    Widget host = t.removeChild(t.tabHost);
+    scope(exit) destroy(host);
+    assert(t.tabHost is null && t.tabControl !is null);
+    t.addChild(new Widget("plain"));
+    assert(t.childCount == 2 && t.child(1).id == "plain");
 }
