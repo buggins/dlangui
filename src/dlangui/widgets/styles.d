@@ -104,6 +104,8 @@ immutable string STYLE_TAB_HOST = "TAB_HOST";
 immutable string STYLE_POPUP_MENU = "POPUP_MENU";
 /// standard style id for menu item
 immutable string STYLE_MENU_ITEM = "MENU_ITEM";
+/// menu separator item (#1018)
+immutable string STYLE_MENU_SEPARATOR = "MENU_SEPARATOR";
 /// standard style id for menu item label
 immutable string STYLE_MENU_LABEL = "MENU_LABEL";
 /// standard style id for menu item icon
@@ -188,6 +190,8 @@ immutable string STYLE_TAB_DOWN_BUTTON_DARK_TEXT = "TAB_DOWN_BUTTON_DARK_TEXT";
 
 /// standard style id for tooltip popup
 immutable string STYLE_TOOLTIP = "TOOLTIP";
+/// SimpleBarChart, with custom colors chart_background_color, chart_axis_color, chart_segment_tag_color (#1018)
+immutable string STYLE_SIMPLE_BAR_CHART = "SIMPLE_BAR_CHART";
 /// standard style id for EditBox message bars (EditorMessageBar), one per message kind
 immutable string STYLE_EDIT_MESSAGE_BAR_INFO = "EDIT_MESSAGE_BAR_INFO";
 /// ditto
@@ -2426,10 +2430,8 @@ unittest {
         "console_theme_default": ids(console, "color"),
     ];
     // not needed in console builds: the message bar icon exists only in GUI builds
-    // TODO(#1018): remove the other console entries when the console theme defines them
     bool[string] consoleExceptions = [
         STYLE_EDIT_MESSAGE_BAR_ICON: true,
-        STYLE_TAB_DOWN: true, STYLE_TAB_DOWN_BUTTON: true, STYLE_LOG_WIDGET: true, STYLE_FILE_DIALOG_GRID: true,
     ];
     string missing;
     size_t checked;
