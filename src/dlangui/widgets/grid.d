@@ -822,7 +822,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             row = _rows - 1;
         if (col < nonScrollCols)
             col = nonScrollCols;
-        if (row < nonScrollCols)
+        if (row < nonScrollRows)
             row = nonScrollRows;
         Rect rc = cellRectNoScroll(col, row);
         Point ns = nonScrollAreaPixels;
@@ -2224,4 +2224,25 @@ unittest {
     grid.gridModelAdapter = grid;
     assert(grid.gridModelAdapter is null);
     assert(grid.fixedRows == 10);
+}
+
+// scrollBy() keeps the rows below the non-scrolling ones reachable with more non-scrolling columns than rows (#1000)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+
+    auto grid = new StringGridWidget("grid");
+    scope(exit) destroy(grid);
+    grid.resize(5, 100);
+    grid.fixedCols = 2; // with the row header: 3 non-scrolling columns, 1 non-scrolling row
+    assert(grid.nonScrollCols == 3 && grid.nonScrollRows == 1);
+    // no measure(): scrollbars load their images there, and unittests have no image cache
+    grid.layout(Rect(0, 0, 300, 200));
+    assert(grid.scrollRow == 1);
+    grid.scrollBy(0, 2);
+    assert(grid.scrollRow == 3);
+    grid.scrollBy(0, -1); // to row 2: it jumped to row 1, the first scrollable one
+    assert(grid.scrollRow == 2);
+    grid.scrollBy(0, -5);
+    assert(grid.scrollRow == 1);
 }
