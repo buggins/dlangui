@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- small button (style BUTTON_SMALL): the btn_* images with less padding inside the frame (#728) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"
+        android:drawable="@drawable/btn_small_pressed" />
+    <item android:state_focused="true" android:state_enabled="true"
+        android:drawable="@drawable/btn_small_normal" />
+    <item android:state_enabled="true" android:state_hovered="true"
+        android:drawable="@drawable/btn_small_hover" />
+    <item android:state_enabled="true"
+        android:drawable="@drawable/btn_small_normal" />
+    <item
+        android:drawable="@drawable/btn_small_disabled" />
+</selector>

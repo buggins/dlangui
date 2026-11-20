@@ -68,6 +68,9 @@
         align="Center"
         margins="0,0,0,0"
         />
+    <!-- buttons are one row high in the console anyway (#728) -->
+    <style id="BUTTON_SMALL" parent="BUTTON"/>
+    <style id="BUTTON_SMALL_TRANSPARENT" parent="BUTTON_TRANSPARENT"/>
     <style id="BUTTON_CHECK_TRANSPARENT"
         align="Center"
         margins="0,0,0,0"

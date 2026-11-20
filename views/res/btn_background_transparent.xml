@@ -4,11 +4,11 @@
     android:drawable="@null"
     android:state_enabled="false"/>
   <item
-    android:drawable="@null"
-    android:state_focused="true" />
-  <item
     android:drawable="btn_pressed"
     android:state_pressed="true" />
+  <item
+    android:drawable="@null"
+    android:state_focused="true" />
   <item
     android:drawable="btn_hover"
     android:state_hovered="true" android:state_enabled="true" />

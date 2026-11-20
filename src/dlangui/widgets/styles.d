@@ -50,6 +50,12 @@ immutable string STYLE_BUTTON_LABEL = "BUTTON_LABEL";
 immutable string STYLE_BUTTON_IMAGE = "BUTTON_IMAGE";
 /// style id for transparent Button
 immutable string STYLE_BUTTON_TRANSPARENT = "BUTTON_TRANSPARENT";
+/// smaller button: the button images with less padding inside the frame (`btn_background_small`), smaller margins
+/// (#728). The older `btn_default_small*` drawables are a different look; their "default" is the legacy Android name of
+/// the standard button, not the default button state `State.Default`.
+immutable string STYLE_BUTTON_SMALL = "BUTTON_SMALL";
+/// smaller transparent button (`btn_background_small_transparent`) (#728)
+immutable string STYLE_BUTTON_SMALL_TRANSPARENT = "BUTTON_SMALL_TRANSPARENT";
 /// style id for Button w/o margins
 immutable string STYLE_BUTTON_NOMARGINS = "BUTTON_NOMARGINS";
 /// standard style id for Switch
