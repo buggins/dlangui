@@ -45,13 +45,19 @@
         focusRectColors="#000"
         textFlags="UnderlineHotKeys"
         >
+        <!-- default button (State.Default): bold text, also when hovered or disabled (#728) -->
+        <state state_default="true" state_enabled="true" state_hovered="true" fontWeight="bold" textColor="#006080"/>
+        <state state_default="true" state_enabled="false" fontWeight="bold" textColor="#80000000"/>
+        <state state_default="true" fontWeight="bold"/>
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
         <state state_enabled="false" textColor="#80000000"/>
     </style>
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_transparent"
         align="Center"
-        />
+        >
+        <state state_default="true" fontWeight="bold"/>
+    </style>
     <!-- smaller buttons: the button images with less padding inside the frame, smaller margins (#728) -->
     <style id="BUTTON_SMALL" parent="BUTTON"
         backgroundImageId="btn_background_small"
@@ -71,6 +77,10 @@
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
+        <!-- the label of a default button (State.Default, from the button): bold text (#728) -->
+        <state state_default="true" state_enabled="true" state_hovered="true" fontWeight="bold" textColor="#006080"/>
+        <state state_default="true" state_enabled="false" fontWeight="bold" textColor="#80000000"/>
+        <state state_default="true" fontWeight="bold"/>
         <state state_enabled="false" textColor="#80000000"/>
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
     </style>
