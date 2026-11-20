@@ -963,6 +963,13 @@ class Console {
                                     handleMouseEvent(new MouseEvent(MouseAction.Wheel, MouseButton.None, flags, cast(short)x, cast(short)y, delta));
                                     actionSent = true;
                                 }
+                                // horizontal wheel (#1041): Shift + wheel, as scroll widgets expect; right is negative
+                                enum CONSOLE_MOUSE_HWHEELED = 0x0008; // MOUSE_HWHEELED
+                                if (eventFlags & CONSOLE_MOUSE_HWHEELED) {
+                                    short delta = cast(short)-(cast(short)(buttonState >> 16));
+                                    handleMouseEvent(new MouseEvent(MouseAction.Wheel, MouseButton.None, cast(ushort)(flags | MouseFlag.Shift), cast(short)x, cast(short)y, delta));
+                                    actionSent = true;
+                                }
                                 lastMouseFlags = flags;
                                 break;
                             case WINDOW_BUFFER_SIZE_EVENT:
@@ -1240,7 +1247,8 @@ struct ConsoleMouse {
 
 /**
     Decodes the button value of an X10 or SGR mouse report (#1041): low 2 bits the button (0 left, 1 middle,
-    2 right, 3 release in X10), +4 Shift, +8 Alt, +16 Control, +32 motion, +64 wheel (64 up, 65 down).
+    2 right, 3 release in X10), +4 Shift, +8 Alt, +16 Control, +32 motion, +64 wheel (64 up, 65 down, 66 left,
+    67 right). dlangui has no horizontal wheel event: horizontal is Shift + wheel, as scroll widgets expect.
     x1, y1 are 1-based; release is the SGR release report (final 'm'), which names the button.
 */
 ConsoleMouse decodeConsoleMouse(int b, int x1, int y1, bool release) pure nothrow @safe @nogc {
@@ -1256,7 +1264,9 @@ ConsoleMouse decodeConsoleMouse(int b, int x1, int y1, bool release) pure nothro
     immutable int btn = b & 3;
     if (b & 64) { // wheel: it isn't a button press
         m.action = MouseAction.Wheel;
-        m.wheelDelta = (btn & 1) ? -1 : 1;
+        m.wheelDelta = (btn & 1) ? -1 : 1; // up / left: 1, down / right: -1
+        if (btn >= 2)
+            m.flags |= MouseFlag.Shift; // horizontal
         return m;
     }
     switch (btn) {
@@ -1323,6 +1333,12 @@ bool parseConsoleMouse(string s, out ConsoleMouse m) pure @safe {
     assert(parseConsoleMouse("\x1b[<35;11;5M", m) && m.action == MouseAction.Move && m.button == MouseButton.None);
     assert(parseConsoleMouse("\x1b[<64;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == 1);
     assert(parseConsoleMouse("\x1b[<65;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == -1);
+    // horizontal wheel: Shift + wheel (was decoded as vertical)
+    assert(parseConsoleMouse("\x1b[<66;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == 1
+        && m.flags == MouseFlag.Shift);
+    assert(parseConsoleMouse("\x1b[<67;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == -1
+        && m.flags == MouseFlag.Shift);
+    assert(parseConsoleMouse("\x1b[<65;1;1M", m) && m.flags == 0);
     assert(parseConsoleMouse("\x1b[<16;1;1M", m) && (m.flags & MouseFlag.Control) && m.button == MouseButton.Left);
     // X10: press, release (no button), wheel (was a button press)
     assert(parseConsoleMouse("\x1b[M *%", m) && m.action == MouseAction.ButtonDown && m.x == 9 && m.y == 4);
