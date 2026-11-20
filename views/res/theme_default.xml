@@ -42,6 +42,7 @@
         backgroundImageId="btn_background"
         align="Center"
         margins="3pt,3pt,3pt,3pt"
+        padding="0,4pt,0,4pt"
         focusRectColors="#000"
         textFlags="UnderlineHotKeys"
         >
@@ -62,6 +63,7 @@
     <style id="BUTTON_SMALL" parent="BUTTON"
         backgroundImageId="btn_background_small"
         margins="1pt,1pt,1pt,1pt"
+        padding="0,0,0,0"
         />
     <style id="BUTTON_SMALL_TRANSPARENT" parent="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_small_transparent"
@@ -73,7 +75,7 @@
         />
     <style id="BUTTON_LABEL"
         layoutWidth="FILL_PARENT"
-        margins="2pt,2pt,2pt,2pt"
+        margins="2pt,0,2pt,0"
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
@@ -92,7 +94,7 @@
         <state state_enabled="true" state_hovered="true" textColor="#8080FF" textFlags="Underline"/>
     </style>
     <style id="BUTTON_IMAGE"
-        margins="2pt,2pt,2pt,2pt"
+        margins="2pt,0,2pt,0"
         align="Center"
         />
     <style id="SWITCH"
