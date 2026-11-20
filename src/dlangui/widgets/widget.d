@@ -2164,6 +2164,7 @@ unittest {
     auto _ = useTestTheme();
     GC.collect(); // leftovers of other tests are not counted below
     immutable saved = muteLeakReports();
+    scope(exit) restoreLeakReportCounters(saved);
     immutable size_t before = resourcesDestroyedByGC;
     immutable int widgets = Widget.instanceCount;
     // created by a thread that ends: no stack refers to them, the collection finalizes all of them
@@ -2177,8 +2178,12 @@ unittest {
     });
     t.start();
     t.join();
-    GC.collect();
+    // DMD 2.114: one collection finalized 147 of them, the next one the rest
+    foreach (i; 0 .. 3) {
+        GC.collect();
+        if (resourcesDestroyedByGC - before >= 150)
+            break;
+    }
     assert(resourcesDestroyedByGC - before == 150); // groups, image widgets, drawables
     assert(Widget.instanceCount == widgets + 100); // still counted: leaks
-    restoreLeakReportCounters(saved);
 }
