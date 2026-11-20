@@ -1587,14 +1587,18 @@ Theme createDefaultTheme() {
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_TEXT).textColor(0xFFFFFF).alignment(Align.Left | Align.VCenter).setMargins(0,0,1,0);
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_BUTTON).backgroundColor(0x808080).textColor(0xFFFFFF).alignment(Align.Center).setPadding(1,0,1,0).setMargins(1,0,0,0);
     } else {
-        res.fontSize = 15; // TODO: choose based on DPI
-        Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
+        // sizes in points, the same pixels as before at 100% (BASE_DPI), so they scale with the screen DPI (#840)
+        static Rect pt(int left, int top, int right, int bottom) {
+            return makePointSize(Rect(left, top, right, bottom));
+        }
+        res.fontSize = makePointSize(11); // 15 px at 100%
+        Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).margins(pt(4,4,4,4));
         res.createSubstyle(STYLE_BUTTON_TRANSPARENT).backgroundImageId("btn_background_transparent").alignment(Align.Center);
         res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
         res.createSubstyle(STYLE_BUTTON_IMAGE).alignment(Align.Center);
-        res.createSubstyle(STYLE_TEXT).setMargins(2,2,2,2).setPadding(1,1,1,1);
-        res.createSubstyle(STYLE_HSPACER).layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
-        res.createSubstyle(STYLE_VSPACER).layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
+        res.createSubstyle(STYLE_TEXT).margins(pt(2,2,2,2)).padding(pt(1,1,1,1));
+        res.createSubstyle(STYLE_HSPACER).layoutWidth(FILL_PARENT).minWidth(makePointSize(4)).layoutWeight(100);
+        res.createSubstyle(STYLE_VSPACER).layoutHeight(FILL_PARENT).minHeight(makePointSize(4)).layoutWeight(100);
         res.createSubstyle(STYLE_BUTTON_NOMARGINS).backgroundImageId("btn_background").alignment(Align.Center); // .setMargins(5,5,5,5)
         //button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
         //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
@@ -1621,7 +1625,7 @@ Theme createDefaultTheme() {
         tabUp.layoutWidth(FILL_PARENT);
         tabUp.createState(State.Selected, State.Selected).backgroundImageId("tab_up_backgrond_selected");
         Style tabUpButtonText = res.createSubstyle(STYLE_TAB_UP_BUTTON_TEXT);
-        tabUpButtonText.textColor(0x000000).fontSize(12).alignment(Align.Center);
+        tabUpButtonText.textColor(0x000000).fontSize(makePointSize(9)).alignment(Align.Center);
         tabUpButtonText.createState(State.Selected, State.Selected).textColor(0x000000);
         tabUpButtonText.createState(State.Selected|State.Focused, State.Selected|State.Focused).textColor(0x000000);
         tabUpButtonText.createState(State.Focused, State.Focused).textColor(0x000000);
@@ -1637,23 +1641,23 @@ Theme createDefaultTheme() {
         tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         tabHost.backgroundColor(0xF0F0F0);
         Style tabWidget = res.createSubstyle(STYLE_TAB_WIDGET);
-        tabWidget.setPadding(3,3,3,3).backgroundColor(0xEEEEEE);
+        tabWidget.padding(pt(2,2,2,2)).backgroundColor(0xEEEEEE); // was 3 px: no point size gives 3 px at 100%
         //tabWidget.backgroundImageId("frame_blue");
         //res.dumpStats();
 
         res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-        res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
-        Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+        res.createSubstyle(STYLE_MAIN_MENU_ITEM).padding(pt(3,2,3,2)).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
+        Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).padding(pt(3,2,3,2)); //.backgroundColor(0xE0E080)   ;
         menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
         menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
         menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
         menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
-        res.createSubstyle(STYLE_MENU_ICON).setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
-        res.createSubstyle(STYLE_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
-        res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
-        res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
+        res.createSubstyle(STYLE_MENU_ICON).margins(pt(2,2,2,2)).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
+        res.createSubstyle(STYLE_MENU_LABEL).margins(pt(3,2,3,2)).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
+        res.createSubstyle(STYLE_MAIN_MENU_LABEL).margins(pt(3,2,3,2)).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
+        res.createSubstyle(STYLE_MENU_ACCEL).margins(pt(3,2,3,2)).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
 
-        res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+        res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").padding(pt(3,2,3,2)); //.backgroundColor(0xE0E080)   ;
         //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
         //transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
         //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
@@ -1666,17 +1670,18 @@ Theme createDefaultTheme() {
         //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
         res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId("editbox_background")
-            .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(40)
-            .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(16);
+            .padding(pt(4,5,4,5)).margins(pt(2,2,2,2)).minWidth(makePointSize(30))
+            .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(makePointSize(12));
         res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
-            .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
-            .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
-        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundImageId("#border,#90CAF9,0,1px,0,1px,#E3F2FD").setPadding(5,2,2,2).layoutWidth(FILL_PARENT);
-        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_WARNING).backgroundImageId("#border,#FFD54F,0,1px,0,1px,#FFF8E1").setPadding(5,2,2,2).layoutWidth(FILL_PARENT);
-        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ERROR).backgroundImageId("#border,#EF9A9A,0,1px,0,1px,#FFEBEE").setPadding(5,2,2,2).layoutWidth(FILL_PARENT);
-        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ICON).alignment(Align.Left | Align.VCenter).setMargins(0,0,5,0);
-        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_TEXT).textColor(0x202020).alignment(Align.Left | Align.VCenter).setMargins(0,0,5,0);
-        res.get(STYLE_BUTTON).createSubstyle(STYLE_EDIT_MESSAGE_BAR_BUTTON).setMargins(2,1,2,1);
+            .padding(pt(4,5,4,5)).margins(pt(2,2,2,2)).minWidth(makePointSize(75)).minHeight(makePointSize(45))
+            .layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
+            .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(makePointSize(12));
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundImageId("#border,#90CAF9,0,1px,0,1px,#E3F2FD").padding(pt(4,2,2,2)).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_WARNING).backgroundImageId("#border,#FFD54F,0,1px,0,1px,#FFF8E1").padding(pt(4,2,2,2)).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ERROR).backgroundImageId("#border,#EF9A9A,0,1px,0,1px,#FFEBEE").padding(pt(4,2,2,2)).layoutWidth(FILL_PARENT);
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ICON).alignment(Align.Left | Align.VCenter).margins(pt(0,0,4,0));
+        res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_TEXT).textColor(0x202020).alignment(Align.Left | Align.VCenter).margins(pt(0,0,4,0));
+        res.get(STYLE_BUTTON).createSubstyle(STYLE_EDIT_MESSAGE_BAR_BUTTON).margins(pt(2,1,2,1));
     }
 
     return res;
