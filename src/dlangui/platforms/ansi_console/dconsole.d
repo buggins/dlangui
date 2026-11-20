@@ -355,6 +355,7 @@ class Console {
             import core.sys.posix.unistd;
             tcsetattr(STDIN_FILENO, TCSANOW, &savedStdinState);
             // reset terminal state
+            rawWrite("\033[?1006l\033[?1003l"); // mouse tracking off (#1041)
             rawWrite("\033c");
             // reset attributes
             rawWrite("\x1b[0m");
@@ -452,8 +453,9 @@ class Console {
             _textColor = 7;
             _backgroundColor = 0;
             _underline = false;
-            // enable mouse tracking - all events
-            rawWrite("\033[?1003h");
+            // enable mouse tracking - all events, reported in the SGR format (#1041: no limit at column 223;
+            // terminals without it use the X10 format)
+            rawWrite("\033[?1003h\033[?1006h");
             //rawWrite("\x1b[c");
             //string termType = rawRead();
             //Log.d("Term type=", termType);
@@ -961,6 +963,13 @@ class Console {
                                     handleMouseEvent(new MouseEvent(MouseAction.Wheel, MouseButton.None, flags, cast(short)x, cast(short)y, delta));
                                     actionSent = true;
                                 }
+                                // horizontal wheel (#1041): Shift + wheel, as scroll widgets expect; right is negative
+                                enum CONSOLE_MOUSE_HWHEELED = 0x0008; // MOUSE_HWHEELED
+                                if (eventFlags & CONSOLE_MOUSE_HWHEELED) {
+                                    short delta = cast(short)-(cast(short)(buttonState >> 16));
+                                    handleMouseEvent(new MouseEvent(MouseAction.Wheel, MouseButton.None, cast(ushort)(flags | MouseFlag.Shift), cast(short)x, cast(short)y, delta));
+                                    actionSent = true;
+                                }
                                 lastMouseFlags = flags;
                                 break;
                             case WINDOW_BUFFER_SIZE_EVENT:
@@ -992,50 +1001,14 @@ class Console {
                 handleInputIdle();
                 return !_stopped;
             }
-            if (s.length == 6 && s[0] == 27 && s[1] == '[' && s[2] == 'M') {
-                // mouse event
-                MouseAction a = MouseAction.Cancel;
-                int mb = s[3] - 32;
-                int mx = s[4] - 32 - 1;
-                int my = s[5] - 32 - 1;
-
-                int btn = mb & 3;
-                if (btn < 3)
-                    a = MouseAction.ButtonDown;
-                else
-                    a = MouseAction.ButtonUp;
-                if (mb & 32) {
-                    a = MouseAction.Move;
-                }
-                MouseButton button = MouseButton.None;
-                ushort flags = 0;
-                if (btn == 0) {
-                    flags |= MouseFlag.LButton;
-                    button = MouseButton.Left;
-                }
-                if (btn == 2) {
-                    flags |= MouseFlag.RButton;
-                    button = MouseButton.Right;
-                }
-                if (btn == 1) {
-                    flags |= MouseFlag.MButton;
-                    button = MouseButton.Middle;
-                }
-                if (btn == 3 && a != MouseAction.Move)
-                    a = MouseAction.ButtonUp;
-                if (button != MouseButton.None)
-                    lastButtonDown = button;
-                else if (a == MouseAction.ButtonUp)
-                    button = lastButtonDown;
-                if (mb & 4)
-                    flags |= MouseFlag.Shift;
-                if (mb & 8)
-                    flags |= MouseFlag.Alt;
-                if (mb & 16)
-                    flags |= MouseFlag.Control;
-                //Log.d("mouse evt:", s, " mb=", mb, " mx=", mx, " my=", my, "  action=", a, " button=", button, " flags=", flags);
-                MouseEvent evt = new MouseEvent(a, button, flags, cast(short)mx, cast(short)my);
-                handleMouseEvent(evt);
+            ConsoleMouse m;
+            if (parseConsoleMouse(s, m)) {
+                // X10 reports no button for a release: the last pressed one
+                if (m.action == MouseAction.ButtonDown)
+                    lastButtonDown = m.button;
+                else if (m.action == MouseAction.ButtonUp && m.button == MouseButton.None)
+                    m.button = lastButtonDown;
+                handleMouseEvent(new MouseEvent(m.action, m.button, m.flags, m.x, m.y, m.wheelDelta));
                 return true;
             }
             ConsoleKey key = parseConsoleKey(s);
@@ -1261,6 +1234,124 @@ ConsoleKey parseConsoleKey(string s) pure @safe {
         res.keyCode = 0x400000 | ch;
     }
     return res;
+}
+
+/// a mouse event from terminal input (#1041)
+struct ConsoleMouse {
+    MouseAction action = MouseAction.Cancel;
+    MouseButton button = MouseButton.None;
+    ushort flags;
+    short x, y; // 0-based cell
+    short wheelDelta; // 1 up, -1 down
+}
+
+/**
+    Decodes the button value of an X10 or SGR mouse report (#1041): low 2 bits the button (0 left, 1 middle,
+    2 right, 3 release in X10), +4 Shift, +8 Alt, +16 Control, +32 motion, +64 wheel (64 up, 65 down, 66 left,
+    67 right). dlangui has no horizontal wheel event: horizontal is Shift + wheel, as scroll widgets expect.
+    x1, y1 are 1-based; release is the SGR release report (final 'm'), which names the button.
+*/
+ConsoleMouse decodeConsoleMouse(int b, int x1, int y1, bool release) pure nothrow @safe @nogc {
+    ConsoleMouse m;
+    m.x = cast(short)(x1 - 1);
+    m.y = cast(short)(y1 - 1);
+    if (b & 4)
+        m.flags |= MouseFlag.Shift;
+    if (b & 8)
+        m.flags |= MouseFlag.Alt;
+    if (b & 16)
+        m.flags |= MouseFlag.Control;
+    immutable int btn = b & 3;
+    if (b & 64) { // wheel: it isn't a button press
+        m.action = MouseAction.Wheel;
+        m.wheelDelta = (btn & 1) ? -1 : 1; // up / left: 1, down / right: -1
+        if (btn >= 2)
+            m.flags |= MouseFlag.Shift; // horizontal
+        return m;
+    }
+    switch (btn) {
+        case 0: m.button = MouseButton.Left; break;
+        case 1: m.button = MouseButton.Middle; break;
+        case 2: m.button = MouseButton.Right; break;
+        default: break; // 3: X10 release, or motion without a button
+    }
+    if (b & 32) {
+        m.action = MouseAction.Move;
+    } else if (release || btn == 3) {
+        m.action = MouseAction.ButtonUp;
+    } else {
+        m.action = MouseAction.ButtonDown;
+    }
+    // flags: the buttons held during the event
+    if (m.action != MouseAction.ButtonUp) {
+        if (m.button == MouseButton.Left)
+            m.flags |= MouseFlag.LButton;
+        else if (m.button == MouseButton.Middle)
+            m.flags |= MouseFlag.MButton;
+        else if (m.button == MouseButton.Right)
+            m.flags |= MouseFlag.RButton;
+    }
+    return m;
+}
+
+/**
+    Parses a mouse report: SGR `ESC [ < b ; x ; y M` (press, motion, wheel) or `... m` (release), or X10
+    `ESC [ M b x y` (bytes offset by 32). Returns false when s isn't a mouse report.
+*/
+bool parseConsoleMouse(string s, out ConsoleMouse m) pure @safe {
+    import std.algorithm : splitter;
+    import std.array : array;
+    import std.conv : to, ConvException;
+    if (s.length == 6 && s[0] == 0x1B && s[1] == '[' && s[2] == 'M') {
+        m = decodeConsoleMouse(s[3] - 32, s[4] - 32, s[5] - 32, false);
+        return true;
+    }
+    if (s.length >= 9 && s[0 .. 3] == "\x1b[<" && (s[$ - 1] == 'M' || s[$ - 1] == 'm')) {
+        string[] parts = s[3 .. $ - 1].splitter(';').array;
+        if (parts.length != 3)
+            return false;
+        try {
+            m = decodeConsoleMouse(parts[0].to!int, parts[1].to!int, parts[2].to!int, s[$ - 1] == 'm');
+        } catch (ConvException e) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+// mouse reports (#1041)
+@safe unittest {
+    ConsoleMouse m;
+    // SGR: press, release, beyond column 223, motion with a button, wheel, modifiers
+    assert(parseConsoleMouse("\x1b[<0;10;5M", m) && m.action == MouseAction.ButtonDown && m.button == MouseButton.Left
+        && m.x == 9 && m.y == 4 && m.flags == MouseFlag.LButton);
+    assert(parseConsoleMouse("\x1b[<0;10;5m", m) && m.action == MouseAction.ButtonUp && m.button == MouseButton.Left
+        && m.flags == 0);
+    assert(parseConsoleMouse("\x1b[<2;300;60M", m) && m.button == MouseButton.Right && m.x == 299 && m.y == 59);
+    assert(parseConsoleMouse("\x1b[<32;11;5M", m) && m.action == MouseAction.Move && (m.flags & MouseFlag.LButton));
+    assert(parseConsoleMouse("\x1b[<35;11;5M", m) && m.action == MouseAction.Move && m.button == MouseButton.None);
+    assert(parseConsoleMouse("\x1b[<64;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == 1);
+    assert(parseConsoleMouse("\x1b[<65;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == -1);
+    // horizontal wheel: Shift + wheel (was decoded as vertical)
+    assert(parseConsoleMouse("\x1b[<66;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == 1
+        && m.flags == MouseFlag.Shift);
+    assert(parseConsoleMouse("\x1b[<67;1;1M", m) && m.action == MouseAction.Wheel && m.wheelDelta == -1
+        && m.flags == MouseFlag.Shift);
+    assert(parseConsoleMouse("\x1b[<65;1;1M", m) && m.flags == 0);
+    assert(parseConsoleMouse("\x1b[<16;1;1M", m) && (m.flags & MouseFlag.Control) && m.button == MouseButton.Left);
+    // X10: press, release (no button), wheel (was a button press)
+    assert(parseConsoleMouse("\x1b[M *%", m) && m.action == MouseAction.ButtonDown && m.x == 9 && m.y == 4);
+    assert(parseConsoleMouse("\x1b[M#*%", m) && m.action == MouseAction.ButtonUp && m.button == MouseButton.None);
+    assert(parseConsoleMouse("\x1b[M`!!", m) && m.action == MouseAction.Wheel && m.wheelDelta == 1);
+    // not mouse reports
+    assert(!parseConsoleMouse("\x1b[A", m));
+    assert(!parseConsoleMouse("\x1b[<0;10M", m));
+    assert(!parseConsoleMouse("\x1b[<a;1;1M", m));
+    // complete sequences
+    assert(!isEscSequenceComplete("\x1b[<0;10;5"));
+    assert(isEscSequenceComplete("\x1b[<0;10;5M"));
+    assert(isEscSequenceComplete("\x1b[<0;10;5m"));
 }
 
 /// key of a CSI / SS3 sequence ending with this letter: arrows, Home, End, F1..F4
