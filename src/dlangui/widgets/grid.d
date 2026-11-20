@@ -2004,7 +2004,31 @@ class StringGridWidget : StringGridWidgetBase {
         Point sz = fnt.textSize(txt);
         if (sz.y < fnt.height)
             sz.y = fnt.height;
+        Rect p = cellTextPadding();
+        sz.x += p.left + p.right;
         return sz;
+    }
+
+    /// space between the cell border and the text: a few pixels at the sides in GUI builds (#1037)
+    protected Rect cellTextPadding() {
+        static if (BACKEND_GUI)
+            return Rect(scaledPixels(4), 0, scaledPixels(4), 0); // pixels at 100%, scaled (#840)
+        else
+            return Rect(0, 0, 0, 0);
+    }
+
+    /// text area of a cell: without the padding (GUI), or without the last column (console: a gap)
+    protected Rect cellTextRect(Rect rc) {
+        static if (BACKEND_GUI) {
+            Rect p = cellTextPadding();
+            rc.left += p.left;
+            rc.right -= p.right;
+            rc.top += p.top;
+            rc.bottom -= p.bottom;
+        } else {
+            rc.right--;
+        }
+        return rc;
     }
 
 
@@ -2013,14 +2037,14 @@ class StringGridWidget : StringGridWidgetBase {
         if (_customCellAdapter && _customCellAdapter.isCustomCell(col, row)) {
             return _customCellAdapter.drawCell(buf, rc, col, row);
         }
-        if (BACKEND_GUI)
-            rc.shrink(2, 1);
-        else
-            rc.right--;
+        rc = cellTextRect(rc);
         FontRef fnt = font;
         dstring txt = cellText(col, row);
-        int offset = WIDGET_STYLE_CONSOLE ? 0 : 1;
-        fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, textColor);
+        if (!txt.length)
+            return;
+        // vertically centered like header cells (#1037)
+        applyTextAlign(rc, fnt.textSize(txt), Align.Left, Align.VCenter, fnt.get);
+        fnt.drawText(buf, rc.left, rc.top, txt, textColor);
     }
 
     /// draw cell content
@@ -2028,10 +2052,7 @@ class StringGridWidget : StringGridWidgetBase {
         if (_customCellAdapter && _customCellAdapter.isCustomCell(col, row)) {
             return _customCellAdapter.drawCell(buf, rc, col, row);
         }
-        if (BACKEND_GUI)
-            rc.shrink(2, 1);
-        else
-            rc.right--;
+        rc = cellTextRect(rc);
         FontRef fnt = font;
         dstring txt;
         if (row < 0 && col >= 0)
@@ -2047,10 +2068,9 @@ class StringGridWidget : StringGridWidgetBase {
         //if (row < 0)
         //    ha = Align.HCenter;
         applyTextAlign(rc, sz, ha, Align.VCenter, fnt.get);
-        int offset = WIDGET_STYLE_CONSOLE ? 0 : 1;
         uint cl = textColor;
         cl = style.customColor("grid_cell_text_color_header", cl);
-        fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, cl);
+        fnt.drawText(buf, rc.left, rc.top, txt, cl);
     }
 
     /// draw cell background
