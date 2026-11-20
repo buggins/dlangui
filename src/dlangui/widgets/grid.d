@@ -547,6 +547,52 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     protected bool _changedSize = true;
+
+    /// screen DPI the column widths and row heights are for, 0 before the first layout (#1038)
+    private int _sizesDpi;
+    /// the sizes at BASE_DPI (NaN: not known yet), and the sizes they were last scaled to: a size that differs from
+    /// its last scaled value was set (by the app, autoFit() or the mouse) at the current DPI
+    private double[] _colWidthsAtBaseDpi, _rowHeightsAtBaseDpi;
+    private int[] _colWidthsScaled, _rowHeightsScaled;
+
+    private static void rescaleSizes(int[] sizes, ref double[] atBaseDpi, ref int[] scaled, int oldDpi, int newDpi) {
+        import std.math : isNaN, lround;
+        atBaseDpi.length = sizes.length; // new elements: NaN
+        scaled.length = sizes.length;
+        foreach (i, ref size; sizes) {
+            if (isNaN(atBaseDpi[i]) || size != scaled[i])
+                atBaseDpi[i] = size * cast(double)BASE_DPI / oldDpi;
+            size = cast(int)lround(atBaseDpi[i] * newDpi / BASE_DPI);
+            scaled[i] = size;
+        }
+    }
+
+    /**
+        Column widths and row heights are pixels at the DPI they were set for: when the screen DPI changes (e.g.
+        overrideScreenDPI, or a monitor with another DPI), they are scaled to the new one (#1038).
+    */
+    protected void followScreenDpi() {
+        immutable int dpi = SCREEN_DPI;
+        if (dpi == _sizesDpi)
+            return;
+        if (_sizesDpi > 0) {
+            rescaleSizes(_colWidths, _colWidthsAtBaseDpi, _colWidthsScaled, _sizesDpi, dpi);
+            rescaleSizes(_rowHeights, _rowHeightsAtBaseDpi, _rowHeightsScaled, _sizesDpi, dpi);
+            _changedSize = true;
+        }
+        _sizesDpi = dpi;
+    }
+
+    override void measure(int parentWidth, int parentHeight) {
+        followScreenDpi();
+        super.measure(parentWidth, parentHeight);
+    }
+
+    override void layout(Rect rc) {
+        followScreenDpi();
+        super.layout(rc);
+    }
+
     /// recalculate colCumulativeWidths, rowCumulativeHeights after resizes
     protected void updateCumulativeSizes() {
         if (!_changedSize)
@@ -2278,4 +2324,38 @@ static if (!WIDGET_STYLE_CONSOLE) unittest {
     assert(grid.defColumnWidth == 0);
     grid.defRowHeight = makePointSize(12); // in points: converted
     assert(grid.defRowHeight == 32);
+}
+
+// column widths and row heights follow screen DPI changes, without rounding drift (#1038)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    immutable int savedDpi = overrideScreenDPI;
+    scope(exit) overrideScreenDPI = savedDpi;
+    static if (!WIDGET_STYLE_CONSOLE) {
+        overrideScreenDPI = BASE_DPI;
+        auto grid = new StringGridWidget("grid");
+        scope(exit) destroy(grid);
+        grid.resize(3, 3);
+        grid.setColWidth(grid.headerCols, 100);
+        grid.setRowHeight(grid.headerRows, 21);
+        void relayout() { grid.layout(Rect(0, 0, 500, 300)); } // no measure(): no image cache for scrollbars
+        relayout();
+        overrideScreenDPI = 120;
+        relayout();
+        assert(grid._colWidths[grid.headerCols] == 125 && grid._rowHeights[grid.headerRows] == 26); // 26.25
+        overrideScreenDPI = 144;
+        relayout();
+        assert(grid._colWidths[grid.headerCols] == 150 && grid._rowHeights[grid.headerRows] == 32); // 31.5
+        overrideScreenDPI = BASE_DPI;
+        relayout();
+        assert(grid._colWidths[grid.headerCols] == 100 && grid._rowHeights[grid.headerRows] == 21); // no drift
+        // a width set at 192 DPI is 192 DPI pixels
+        overrideScreenDPI = 192;
+        relayout();
+        grid.setColWidth(grid.headerCols, 150);
+        overrideScreenDPI = BASE_DPI;
+        relayout();
+        assert(grid._colWidths[grid.headerCols] == 75);
+    }
 }
