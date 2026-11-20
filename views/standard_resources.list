@@ -44,6 +44,10 @@ res/dock_window_caption_background_normal_dark.9.png
 res/dock_window_caption_background_down_dark.xml
 res/dock_window_caption_background_focused_down_dark.9.png
 res/dock_window_caption_background_normal_down_dark.9.png
+res/edit-indent.16x16.svg
+res/edit-indent_dark.16x16.svg
+res/edit-unindent.16x16.svg
+res/edit-unindent_dark.16x16.svg
 res/fileclose.png
 res/fileopen.png
 res/frame_blue.9.png

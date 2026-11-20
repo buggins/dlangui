@@ -140,6 +140,9 @@
     <drawable id="edit-find" value="edit-find_dark"/>
     <drawable id="configure" value="configure_dark"/>
     <drawable id="debug-run" value="debug-run_dark"/>
+    <!-- dlangui's own icons in the same style (#1039) -->
+    <drawable id="edit-indent" value="edit-indent_dark"/>
+    <drawable id="edit-unindent" value="edit-unindent_dark"/>
 
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up_dark"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down_dark"/>
