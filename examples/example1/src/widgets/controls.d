@@ -4,6 +4,8 @@ import dlangui;
 
 class BasicControls : LinearLayout
 {
+    private TabWidget _tabs1;
+
     this(string ID)
     {
         super(ID);
@@ -87,10 +89,10 @@ class BasicControls : LinearLayout
         line3.addChild(gbeditbox);
         GroupBox gbtabs = new GroupBox(null, "TabWidget"d);
         gbtabs.layoutWidth(FILL_PARENT);
-        TabWidget tabs1 = new TabWidget("tabs1");
+        TabWidget tabs1 = _tabs1 = new TabWidget("tabs1");
         tabs1.addTab(new TextWidget("tab1", "TextWidget on tab page\nTextWidgets can be\nMultiline"d).maxLines(3), "Tab 1"d);
         tabs1.addTab(new ImageWidget("tab2", "dlangui-logo1"), "Tab 2"d);
-        tabs1.tabHost.backgroundColor = 0xE0E0E0;
+        updateTabsBackground();
         tabs1.tabHost.padding = Rect(makePointSize(10), makePointSize(10), makePointSize(10), makePointSize(10));
         gbtabs.addChild(tabs1);
         line3.addChild(gbtabs);
@@ -185,5 +187,15 @@ class BasicControls : LinearLayout
         line4.addChild(gbtree);
 
         addChild(line4);
+    }
+
+    /// the tab body has the editor background color of the current theme (#1022)
+    private void updateTabsBackground() {
+        _tabs1.tabHost.backgroundColor = currentTheme.customColor("edit_background");
+    }
+
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        updateTabsBackground(); // View > Theme
     }
 }
