@@ -773,10 +773,19 @@ static if (WIDGET_STYLE_CONSOLE) {
     */
     static Drawable createTextDrawable(string s) {
         TextDrawable drawable = new TextDrawable(s);
-        if (drawable.width == 0 || drawable.height == 0)
+        if (drawable.width == 0 || drawable.height == 0) {
+            destroy(drawable); // not returned: destroy it here, not by the GC (#1027)
             return null;
+        }
         return drawable;
     }
+}
+
+// an empty text drawable isn't returned, and is destroyed at once instead of by the GC (#1027)
+static if (WIDGET_STYLE_CONSOLE) debug unittest {
+    immutable int before = Drawable.instanceCount;
+    assert(createTextDrawable("{'' #FFFF00}") is null);
+    assert(Drawable.instanceCount == before);
 }
 
 /// decode solid color / gradient / border drawable from string like #AARRGGBB, e.g. #5599AA
@@ -2058,6 +2067,7 @@ private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform 
                         if (d.width && d.height) {
                             return d;
                         }
+                        destroy(d); // empty: not returned (#1027)
                     }
                 } catch (Exception e) {
                     // cannot find drawable file
