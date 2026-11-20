@@ -2544,6 +2544,10 @@ class EditLine : EditWidgetBase {
         // Escape goes to the parents, e.g. a dialog cancels or a find panel closes, as with focus on other widgets
         if (event.keyCode == KeyCode.ESCAPE)
             return false;
+        // so does a plain Enter without an enterKey handler: a dialog presses its default button (#728)
+        if (event.keyCode == KeyCode.RETURN && event.noModifiers
+                && (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp))
+            return false;
         return true;
     }
 
