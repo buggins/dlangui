@@ -179,6 +179,29 @@ version (Windows) {
 
 /// console I/O support
 class Console {
+    import core.time : Duration;
+    private Duration _escTimeout;
+    private bool _escTimeoutSet;
+    /**
+        How long a lone ESC waits for a second key before it's the Esc key (terminals, #1041): ESC + digit is an F-key
+        (ESC 1..9, ESC 0: F1..F10), ESC + another key is the key with Alt. 50 ms by default, so Esc reacts at once and
+        the prefix works for terminals that send it (Alt+1 as ESC 1); ESCDELAY in milliseconds from the environment,
+        as for ncurses apps, e.g. ESCDELAY=1000 to type ESC, 1 by hand for F1. ESC ESC is the Esc key after 50 ms
+        whatever ESCDELAY is.
+    */
+    @property Duration escTimeout() {
+        if (!_escTimeoutSet) {
+            import std.process : environment;
+            _escTimeout = escTimeoutFromEnvironment(environment.get("ESCDELAY"));
+            _escTimeoutSet = true;
+        }
+        return _escTimeout;
+    }
+    /// ditto
+    @property void escTimeout(Duration timeout) {
+        _escTimeout = timeout;
+        _escTimeoutSet = true;
+    }
     private int _cursorX;
     private int _cursorY;
     private int _width;
@@ -276,11 +299,12 @@ class Console {
                 return s;
             }
             if (readBufPos > 0) {
-                // incomplete: a lone ESC is the Esc key, other bytes are passed on as they are after a while (#1041)
+                // incomplete: a lone ESC is the Esc key after escTimeout; other bytes (ESC ESC, a sequence cut by a
+                // slow link) are passed on as they are after SEQUENCE_TIMEOUT (#1041)
                 immutable MonoTime now = MonoTime.currTime;
                 if (_partialSince == MonoTime.zero) {
                     _partialSince = now;
-                } else if (now - _partialSince >= ESC_TIMEOUT) {
+                } else if (now - _partialSince >= (readBufPos == 1 ? escTimeout : SEQUENCE_TIMEOUT)) {
                     string s = readBuf[0 .. readBufPos].idup;
                     readBufPos = 0;
                     _partialSince = MonoTime.zero;
@@ -289,8 +313,8 @@ class Console {
             }
             return null;
         }
-        /// time to wait for the rest of an escape sequence: after it, a lone ESC is the Esc key (#1041)
-        enum ESC_TIMEOUT = dur!"msecs"(50);
+        /// time to wait for the rest of a sequence sent by the terminal: its bytes arrive within it (#1041)
+        enum SEQUENCE_TIMEOUT = dur!"msecs"(50);
         import core.time : MonoTime, dur;
         private MonoTime _partialSince;
         bool rawWrite(string s) {
@@ -1031,6 +1055,33 @@ class Console {
         }
         return !_stopped;
     }
+}
+
+import core.time : Duration;
+
+/// the Esc timeout for an ESCDELAY environment value (milliseconds, 0..10000), 50 ms if it isn't set or valid (#1041)
+Duration escTimeoutFromEnvironment(string escDelay) pure @safe {
+    import core.time : msecs;
+    import std.conv : to, ConvException;
+    if (escDelay.length) {
+        try {
+            immutable int ms = escDelay.to!int;
+            if (ms >= 0 && ms <= 10_000)
+                return msecs(ms);
+        } catch (ConvException e) {
+            // not a number: the default
+        }
+    }
+    return msecs(50);
+}
+
+@safe unittest {
+    import core.time : msecs;
+    assert(escTimeoutFromEnvironment(null) == msecs(50));
+    assert(escTimeoutFromEnvironment("1000") == msecs(1000));
+    assert(escTimeoutFromEnvironment("0") == msecs(0));
+    assert(escTimeoutFromEnvironment("abc") == msecs(50));
+    assert(escTimeoutFromEnvironment("99999") == msecs(50));
 }
 
 /// a key from console (terminal) input: key code (KeyCode), flags (KeyFlag), text for KeyAction.Text (#1041)
