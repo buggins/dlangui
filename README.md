@@ -264,4 +264,4 @@ License
 -------
 
 Boost Software License 1.0, see [LICENSE.txt](LICENSE.txt).
-The icons of the default theme have their own licenses: the SVG icons in `views/res/icons` are JetBrains IntelliJ Platform icons (Apache License 2.0), see [LICENSE_JetBrains_icons.txt](LICENSE_JetBrains_icons.txt); the other icons, see [LICENSE_default_theme_icons.txt](LICENSE_default_theme_icons.txt).
+The icons of the default theme have their own licenses: the SVG icons in `views/res/icons` are JetBrains IntelliJ Platform icons (Apache License 2.0), see [LICENSE_JetBrains_icons.txt](LICENSE_JetBrains_icons.txt); the other icons, see [LICENSE_default_theme_icons.txt](LICENSE_default_theme_icons.txt). Apps embed these icons with the standard resources, so an app that ships binaries includes these license files (or their contents, e.g. in its documentation or About box). The embedded copies of the SVG icons don't contain the license comment of the files: it's dropped at compile time, which saves about 14% of the SVG data.

@@ -333,7 +333,12 @@ EmbeddedResource[] embedResource(string resourceName)() {
             immutable string name = baseName(resourceName);
         }
         static if (name.length > 0) {
-            immutable ubyte[] data = cast(immutable ubyte[])import(name);
+            // SVG: without the leading comments, the license notices of icon sets (#1033)
+            static if (name.endsWith(".svg") || name.endsWith(".SVG")) {
+                enum string svgText = stripLeadingXmlComments(import(name)); // enum: evaluated at compile time
+                immutable ubyte[] data = cast(immutable ubyte[])svgText;
+            } else
+                immutable ubyte[] data = cast(immutable ubyte[])import(name);
             immutable string resname = baseName(name);
             immutable string resdir = resDirName(name);
             static if (data.length > 0)
@@ -343,6 +348,35 @@ EmbeddedResource[] embedResource(string resourceName)() {
         } else
             return [];
     }
+}
+
+/**
+    The text without the XML comments (and whitespace) at its start, used for SVG files embedded at compile time
+    (#1033): the license notice comments of icon sets are about 14% of the SVG data. The files keep their notices;
+    an app that ships the embedded resources includes the license files (e.g. LICENSE_JetBrains_icons.txt).
+    The text is returned unchanged when it doesn't start with a comment, or a comment isn't closed.
+*/
+string stripLeadingXmlComments(string text) pure @safe {
+    import std.string : indexOf, stripLeft;
+    string res = text;
+    for (;;) {
+        string s = res.stripLeft;
+        if (!s.startsWith("<!--"))
+            return res;
+        immutable ptrdiff_t end = s.indexOf("-->");
+        if (end < 0)
+            return text;
+        res = s[end + 3 .. $].stripLeft;
+    }
+}
+
+@safe unittest {
+    assert(stripLeadingXmlComments("<svg/>") == "<svg/>");
+    assert(stripLeadingXmlComments("<!-- notice -->\n<svg/>\n") == "<svg/>\n");
+    assert(stripLeadingXmlComments("  <!-- a -->  <!-- b -->\r\n<svg/>") == "<svg/>");
+    assert(stripLeadingXmlComments("<svg><!-- inside --></svg>") == "<svg><!-- inside --></svg>");
+    assert(stripLeadingXmlComments("<!-- not closed <svg/>") == "<!-- not closed <svg/>");
+    assert(stripLeadingXmlComments("") == "");
 }
 
 /// embed all resources from list
@@ -424,6 +458,27 @@ unittest {
         string[] missing = missingResourceReferences!list();
         assert(!missing.length, "missing resources referenced from " ~ list ~ ": " ~ (){ string s; foreach (m; missing) s ~= "\n  " ~ m; return s; }());
     }}
+}
+
+/// the embedded standard SVG icons have no leading comment, and are otherwise the files (#1033)
+unittest {
+    static if (!WIDGET_STYLE_CONSOLE) {
+        size_t svgCount;
+        foreach (r; embedResourcesFromList!("standard_resources.list")()) {
+            if (!r.name.endsWith(".svg"))
+                continue;
+            svgCount++;
+            string text = cast(string)r.data;
+            assert(text.startsWith("<svg"), r.name ~ " starts with: " ~ text[0 .. min(20, $)]);
+        }
+        assert(svgCount > 0);
+        // a file with the JetBrains notice: the embedded data is its end
+        enum string file = import("res/icons/dialog-error.16x16.svg");
+        static assert(file.startsWith("<!--"));
+        foreach (r; embedResourcesFromList!("standard_resources.list")())
+            if (r.name == "dialog-error.16x16.svg")
+                assert(file.endsWith(cast(string)r.data) && r.data.length < file.length);
+    }
 }
 
 void embedStandardDlangUIResources() {
