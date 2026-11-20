@@ -349,6 +349,7 @@ class ComboBox : ComboBoxBase {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_adapter) {
             destroy(_adapter);
             _adapter = null;
@@ -468,6 +469,7 @@ class IconTextComboBox : ComboBoxBase {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_adapter) {
             destroy(_adapter);
             _adapter = null;

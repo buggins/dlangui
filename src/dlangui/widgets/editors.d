@@ -1108,6 +1108,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// free resources
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_ownContent) {
             destroy(_content);
             _content = null;
@@ -2735,6 +2736,7 @@ class EditBox : EditWidgetBase {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_findPanel) {
             destroy(_findPanel);
             _findPanel = null;

@@ -222,6 +222,7 @@ class Win32Font : Font {
 
     /// do cleanup
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
 
@@ -607,6 +608,7 @@ class Win32FontManager : FontManager {
         initialize();
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         debug Log.i("Destroying Win32FontManager");
         releaseFallbackFonts(); // fallback references may form cycles (#888)
         foreach (cache; _codepointPresence)

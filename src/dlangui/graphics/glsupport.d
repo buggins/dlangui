@@ -275,6 +275,7 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     abstract bool initLocations();
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         // TODO: cleanup
         if (program)
             glDeleteProgram(program);
@@ -789,6 +790,7 @@ final class GLSupport {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         uninitShaders();
     }
 
@@ -1229,6 +1231,7 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (!glNoContext) {
             unbind();
             mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &ID);");
@@ -1326,6 +1329,7 @@ class GLVertexBuffer : VertexBuffer {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         checkgl!glDeleteBuffers(1, &_vertexBuffer);
         checkgl!glDeleteBuffers(1, &_indexBuffer);
         checkgl!glDeleteVertexArrays(1, &_vao);

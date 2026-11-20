@@ -1,6 +1,7 @@
 module dlangui.dml.tokenizer;
 
 import dlangui.core.types;
+import dlangui.core.logger : inGCFinalizer;
 import dlangui.core.linestream;
 
 import std.conv : to;
@@ -118,6 +119,7 @@ final class Tokenizer {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         destroy(_lines);
         _lines = null;
     }

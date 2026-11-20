@@ -283,6 +283,7 @@ enum TextFlag : uint {
 struct DrawableAttributeList {
     DrawableAttribute[string] _customDrawables;
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
     void clear() {
@@ -953,6 +954,7 @@ public:
 
 
     ~this() {
+        if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         foreach(ref Style item; _substates) {
             //Log.d("Destroying substate");
             destroy(item);
@@ -1290,6 +1292,7 @@ class Theme : Style {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         //Log.d("Theme destructor");
         if (unknownStyleIds.length > 0) {
             Log.e("Unknown style statistics: ", unknownStyleIds);
@@ -2123,6 +2126,7 @@ public:
         _drawableId = drawableId;
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
     @property string id() const { return _id; }

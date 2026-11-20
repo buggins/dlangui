@@ -44,6 +44,7 @@ module dlangui.core.types;
 public import dlangui.core.config;
 
 import std.algorithm;
+import dlangui.core.logger : destroyedByGC, inGCFinalizer;
 
 /// 2D point
 struct Point {
@@ -504,7 +505,10 @@ class RefCountedObject {
         if (--_refCount == 0)
             destroy(this);
     }
-    ~this() {}
+    /// objects are destroyed by Ref, or explicitly: destruction by the GC is a leak (#975)
+    ~this() {
+        destroyedByGC(this.classinfo.name);
+    }
 }
 
 /**
@@ -584,6 +588,9 @@ struct Ref(T) { // if (T is RefCountedObject)
     }
     /// decreases counter, and destroys object if no more references left
     ~this() {
+        // finalized by the GC (the owner leaked): the object may be finalized already, so it isn't released; a shared
+        // one (cached font, drawable) then stays referenced and is reported as a leak too: fix the first leak (#975)
+        if (inGCFinalizer()) return;
         if (_data !is null)
             _data.releaseRef();
     }

@@ -260,6 +260,7 @@ static if (!WIDGET_STYLE_CONSOLE) {
             }
             ~this()
             {
+                if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
                 if (_shell) {
                     FreeLibrary(_shell);
                 }
@@ -476,6 +477,7 @@ static if (!WIDGET_STYLE_CONSOLE) {
 
             ~this()
             {
+                if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
                 foreach(ref buf; _cache)
                 {
                     buf.clear();

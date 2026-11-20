@@ -96,8 +96,8 @@ class DrawBuf : RefCountedObject {
     debug private static __gshared int _instanceCount;
     debug @property static int instanceCount() { return _instanceCount; }
     ~this() {
-        /*import core.memory : gc_inFinalizer;*/
-        if (APP_IS_SHUTTING_DOWN/* || gc_inFinalizer*/)
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
+        if (APP_IS_SHUTTING_DOWN)
             onResourceDestroyWhileShutdown("DrawBuf", this.classinfo.name);
 
         debug _instanceCount--;

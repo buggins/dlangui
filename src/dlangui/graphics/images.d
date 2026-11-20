@@ -474,6 +474,7 @@ ColorDrawBuf scaleImage(ColorDrawBuf src, double scale) {
 unittest {
     // a 4x2 image, left half opaque red, right half fully transparent
     ColorDrawBuf src = new ColorDrawBuf(4, 2);
+    scope(exit) destroy(src); // draw buffers hold resources: destroyed explicitly (#975)
     foreach (y; 0 .. 2) {
         uint * line = src.scanLine(y);
         line[0] = line[1] = 0x00FF0000;
@@ -481,22 +482,27 @@ unittest {
     }
     // downscale 2x: the area average of red and transparent stays red with half opacity
     ColorDrawBuf half = resampleImage(src, Rect(0, 0, 4, 2), 2, 1);
+    scope(exit) destroy(half);
     assert(half.width == 2 && half.height == 1);
     assert(half.scanLine(0)[0] == 0x00FF0000);
     assert(half.scanLine(0)[1] == 0xFF000000);
     ColorDrawBuf mixed = resampleImage(src, Rect(1, 0, 3, 2), 1, 1);
+    scope(exit) destroy(mixed);
     uint c = mixed.scanLine(0)[0];
     assert((c & 0xFFFFFF) == 0xFF0000, "premultiplied: no dark fringe"); // color stays pure red
     assert((c >> 24) >= 126 && (c >> 24) <= 128); // half opacity
     // upscale keeps the size and the corner colors
     ColorDrawBuf dbl = resampleImage(src, Rect(0, 0, 4, 2), 8, 4);
+    scope(exit) destroy(dbl);
     assert(dbl.width == 8 && dbl.height == 4);
     assert(dbl.scanLine(0)[0] == 0x00FF0000 && dbl.scanLine(3)[7] == 0xFF000000);
     // nine-patch: frame and padding are scaled, the border stays transparent
     ColorDrawBuf np = new ColorDrawBuf(12, 12);
+    scope(exit) destroy(np);
     np.fill(0x00808080);
     np.ninePatch = new NinePatch(Rect(2, 2, 2, 2), Rect(4, 2, 4, 2));
     ColorDrawBuf np15 = scaleImage(np, 1.5);
+    scope(exit) destroy(np15);
     assert(np15.width == 17 && np15.height == 17); // 10 * 1.5 + 2
     assert(np15.ninePatch.frame == Rect(3, 3, 3, 3));
     assert(np15.ninePatch.padding == Rect(6, 3, 6, 3));

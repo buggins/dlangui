@@ -614,6 +614,7 @@ class Win32Window : Window {
 
     protected bool _destroying;
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         debug Log.d("Window destructor");
         _destroying = true;
         if (_drawbuf) {

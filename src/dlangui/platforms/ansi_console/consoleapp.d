@@ -98,6 +98,7 @@ class ConsolePlatform : Platform {
         _drawBuf = new ANSIConsoleDrawBuf(_console);
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         //Log.d("Destroying console");
         //destroy(_console);
         Log.d("Destroying drawbuf");
@@ -291,6 +292,7 @@ class ANSIConsoleDrawBuf : ConsoleDrawBuf {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         Log.d("Calling console.uninit");
         _console.uninit();
     }

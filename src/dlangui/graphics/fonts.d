@@ -465,6 +465,7 @@ class Font : RefCountedObject {
         _textSizeBuffer.assumeSafeAppend();
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
         _fallbackFonts.clear();
     }
@@ -1336,6 +1337,7 @@ unittest {
         string[] _faces = ["A", "B", "C", "D"];
         FontRef _nullFont;
         ~this() {
+            if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
             releaseFallbackFonts();
             _fonts.clear();
         }
@@ -1493,6 +1495,7 @@ unittest {
         FontList _fonts;
         FontRef _nullFont;
         ~this() {
+            if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
             releaseFallbackFonts();
             _fonts.clear();
         }
@@ -1812,6 +1815,7 @@ struct FontList {
     FontRef[] _list;
     uint _len;
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
 
@@ -2028,6 +2032,7 @@ struct FallbackFontList {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
 }
@@ -2744,6 +2749,7 @@ class FontManager {
     }
 
     ~this() {
+        if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         Log.d("Destroying font manager");
     }
 }
@@ -2844,6 +2850,7 @@ struct GlyphCache
     }
     /// on destroy, destroy all items (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
 }

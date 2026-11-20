@@ -30,6 +30,7 @@ class Effect : GLProgram {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         EffectCache.instance.onObjectDestroyed(_id);
     }
 

@@ -1,6 +1,7 @@
 module dlangui.graphics.scene.mesh;
 
 public import dlangui.core.config;
+import dlangui.core.logger : inGCFinalizer;
 static if (ENABLE_OPENGL):
 static if (BACKEND_GUI):
 
@@ -484,6 +485,7 @@ class Mesh : RefCountedObject {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_vertexBuffer) {
             _vertexBuffer.destroy;
             _vertexBuffer = null;

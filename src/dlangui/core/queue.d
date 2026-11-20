@@ -2,6 +2,7 @@ module dlangui.core.queue;
 
 import core.sync.condition;
 import core.sync.mutex;
+import dlangui.core.logger : inGCFinalizer;
 
 class BlockingQueue(T) {
 
@@ -20,6 +21,7 @@ class BlockingQueue(T) {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         close();
         if (_condition) {
             destroy(_condition);

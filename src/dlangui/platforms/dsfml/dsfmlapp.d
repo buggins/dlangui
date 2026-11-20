@@ -39,6 +39,7 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_ownRenderWindow) {
             destroy(_wnd);
         }
