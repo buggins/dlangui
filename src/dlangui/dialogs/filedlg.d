@@ -570,7 +570,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
         res.ownAdapter = adapter;
         res.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT).layoutWeight(0);
-        res.maxWidth(WIDGET_STYLE_CONSOLE ? 16 : 100.pointsToPixels);
+        res.maxWidth(WIDGET_STYLE_CONSOLE ? 16 : makePointSize(100));
         res.itemClick = delegate(Widget source, int itemIndex) {
             openDirectory(_roots[itemIndex].path, null);
             res.selectItem(-1);
@@ -780,7 +780,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         if (!_placesSet)
             places = createDefaultPlaces();
 
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(WIDGET_STYLE_CONSOLE ? 50 : 600);
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(WIDGET_STYLE_CONSOLE ? 50 : makePointSize(450)); // 600 px at 100% (#840)
         //minHeight = 400;
 
         LinearLayout content = new HorizontalLayout("dlgcontent");
@@ -793,7 +793,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         //leftPanel.layoutHeight(FILL_PARENT).minWidth(WIDGET_STYLE_CONSOLE ? 7 : 40);
 
         leftPanel = createRootsList();
-        leftPanel.minWidth(WIDGET_STYLE_CONSOLE ? 7 : 40.pointsToPixels);
+        leftPanel.minWidth(WIDGET_STYLE_CONSOLE ? 7 : makePointSize(40));
 
         rightPanel = new VerticalLayout("main");
         rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
@@ -972,7 +972,7 @@ class FilePathPanelItem : HorizontalLayout {
         trackHover(true);
         addChild(_text);
         addChild(_button);
-        margins(Rect(2.pointsToPixels + 1, 0, 2.pointsToPixels + 1, 0));
+        margins(Rect(scaledPixels(3), 0, scaledPixels(3), 0)); // 3 px at 100% (#840)
     }
 
     private bool onTextClick(Widget src) {
@@ -1249,7 +1249,7 @@ class FileNameEditLine : HorizontalLayout {
         super(ID);
         _caption = UIString.fromId("TITLE_OPEN_FILE"c).value;
         _edFileName = new EditLine("FileNameEditLine_edFileName");
-        _edFileName.minWidth(WIDGET_STYLE_CONSOLE ? 16 : 200);
+        _edFileName.minWidth(WIDGET_STYLE_CONSOLE ? 16 : makePointSize(150)); // 200 px at 100% (#840)
         _edFileName.layoutWidth = FILL_PARENT;
         _btn = new Button("FileNameEditLine_btnFile", "..."d);
         _btn.styleId = STYLE_BUTTON_NOMARGINS;
