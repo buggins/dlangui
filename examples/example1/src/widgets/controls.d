@@ -113,8 +113,6 @@ class BasicControls : LinearLayout
         for (int y = 0; y < 10; y++)
             grid.setRowTitle(y, UIString.fromRaw(to!string(y+1)));
 
-        grid.setColWidth(0, 30.pointsToPixels);
-        grid.autoFit();
         import std.random;
         import std.string;
         for (int x = 0; x < 12; x++) {
@@ -123,6 +121,7 @@ class BasicControls : LinearLayout
                 grid.setCellText(x, y, UIString.fromRaw(to!string("%.2f".format(n / 100.0))));
             }
         }
+        grid.autoFit(); // after setting the texts: the widths fit the headers and the cells (#1037)
 
         gbgrid.addChild(grid);
         line4.addChild(gbgrid);
