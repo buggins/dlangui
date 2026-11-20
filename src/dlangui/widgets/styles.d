@@ -2389,3 +2389,57 @@ unittest {
     assert(own.padding == Rect(5, 5, 5, 5));
     assert(own.alpha == 16);
 }
+
+/// the style ids of the STYLE_* constants (STYLE_COLOR_*: color ids) exist in the standard themes (#728)
+unittest {
+    import std.regex : matchAll, regex;
+    static bool[string] ids(string xml, string tag) {
+        bool[string] res;
+        foreach (m; matchAll(xml, regex(`<` ~ tag ~ `\s+id="([^"]+)"`)))
+            res[m[1]] = true;
+        return res;
+    }
+    static bool[string] merged(bool[string] a, bool[string] b) {
+        bool[string] res = a.dup;
+        foreach (k, v; b)
+            res[k] = v;
+        return res;
+    }
+    // theme_dark has parent="theme_default"
+    immutable string light = import("res/theme_default.xml");
+    immutable string dark = import("res/theme_dark.xml");
+    immutable string console = import("res/console_theme_default.xml");
+    bool[string][string] styles = [
+        "theme_default": ids(light, "style"),
+        "theme_dark": merged(ids(light, "style"), ids(dark, "style")),
+        "console_theme_default": ids(console, "style"),
+    ];
+    bool[string][string] colors = [
+        "theme_default": ids(light, "color"),
+        "theme_dark": merged(ids(light, "color"), ids(dark, "color")),
+        "console_theme_default": ids(console, "color"),
+    ];
+    // not needed in console builds: the message bar icon exists only in GUI builds
+    // TODO(#1018): remove the other console entries when the console theme defines them
+    bool[string] consoleExceptions = [
+        STYLE_EDIT_MESSAGE_BAR_ICON: true,
+        STYLE_TAB_DOWN: true, STYLE_TAB_DOWN_BUTTON: true, STYLE_LOG_WIDGET: true, STYLE_FILE_DIALOG_GRID: true,
+    ];
+    string missing;
+    size_t checked;
+    static foreach (name; __traits(allMembers, dlangui.widgets.styles)) {
+        static if (name.length > 6 && name[0 .. 6] == "STYLE_"
+                && is(typeof(__traits(getMember, dlangui.widgets.styles, name)) : const(string))) {{
+            string id = __traits(getMember, dlangui.widgets.styles, name);
+            checked++;
+            foreach (theme, themeIds; name.startsWith("STYLE_COLOR_") ? colors : styles) {
+                if (theme == "console_theme_default" && id in consoleExceptions)
+                    continue;
+                if (id !in themeIds)
+                    missing ~= "\n  " ~ theme ~ ": " ~ name ~ " = \"" ~ id ~ "\"";
+            }
+        }}
+    }
+    assert(checked > 80, "STYLE_* constants not found");
+    assert(!missing.length, "style ids of STYLE_* constants missing in the standard themes:" ~ missing);
+}
