@@ -1061,6 +1061,15 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         }
         _children.clear(false);
     }
+    /// empty space kept free after the path items in a width (without margins and padding): 1/20 of it, at least 4 and
+    /// at most 40 points, or character cells in console builds (#1009)
+    protected static int reservedForEmptySpace(int width) {
+        static if (WIDGET_STYLE_CONSOLE)
+            return clamp(width / 20, 4, 40);
+        else
+            return clamp(width / 20, 4.pointsToPixels, 40.pointsToPixels);
+    }
+
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
         Rect m = margins;
@@ -1074,22 +1083,21 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
 
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight = parentHeight - (m.top + m.bottom + p.top + p.bottom);
-        int reservedForEmptySpace = parentWidth / 20;
-        if (reservedForEmptySpace > 40.pointsToPixels)
-            reservedForEmptySpace = 40.pointsToPixels;
-        if (reservedForEmptySpace < 4.pointsToPixels)
-            reservedForEmptySpace = 4.pointsToPixels;
+        // an unspecified width gives the minimum: the first item and the reserved space; counting all items would
+        // make a dialog sized from this measure as wide as the whole path (#1009)
+        immutable bool unlimited = parentWidth == SIZE_UNSPECIFIED;
 
         Point sz;
-        sz.x += reservedForEmptySpace;
+        sz.x += unlimited ? reservedForEmptySpace(int.max) : reservedForEmptySpace(pwidth);
         // measure children
         bool exceeded = false;
         for (int i = 0; i < _children.count; i++) {
             Widget item = _children.get(i);
-            item.measure(pwidth, pheight);
+            item.measure(unlimited ? SIZE_UNSPECIFIED : pwidth,
+                         parentHeight == SIZE_UNSPECIFIED ? SIZE_UNSPECIFIED : pheight);
             if (sz.y < item.measuredHeight)
                 sz.y = item.measuredHeight;
-            if (sz.x + item.measuredWidth > pwidth) {
+            if (unlimited || sz.x + item.measuredWidth > pwidth) {
                 exceeded = true;
             }
             if (!exceeded || i == 0) // at least one item must be measured
@@ -1108,12 +1116,8 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         applyMargins(rc);
         applyPadding(rc);
 
-        int reservedForEmptySpace = rc.width / 20;
-        if (reservedForEmptySpace > 40)
-            reservedForEmptySpace = 40;
-        if (reservedForEmptySpace < 4)
-            reservedForEmptySpace = 4;
-        int maxw = rc.width - reservedForEmptySpace;
+        // the same rule as measure(): the items fit in the width without the reserved space (#1009)
+        int maxw = max(0, rc.width - reservedForEmptySpace(rc.width));
         int totalw = 0;
         int visibleItems = 0;
         bool exceeded = false;
@@ -1122,7 +1126,7 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
             Widget item = _children.get(i);
             item.visibility = Visibility.Visible;
             item.measure(rc.width, rc.height);
-            if (totalw + item.measuredWidth > rc.width) {
+            if (totalw + item.measuredWidth > maxw) {
                 exceeded = true;
             }
             if (!exceeded || i == 0) { // at least one item must be visible
@@ -1361,3 +1365,37 @@ class DirEditLine : FileNameEditLine {
 
 //import dlangui.widgets.metadata;
 //mixin(registerWidgets!(FileNameEditLine, DirEditLine)());
+
+// path items: measure() and layout() reserve the same empty space; an unspecified width gives the minimum (#1009)
+static if (!WIDGET_STYLE_CONSOLE) unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    immutable int savedDpi = overrideScreenDPI;
+    scope(exit) overrideScreenDPI = savedDpi;
+    overrideScreenDPI = BASE_DPI;
+
+    // 1/20 of the width, 4..40 points (5..53 pixels at 96 DPI)
+    assert(FilePathPanelButtons.reservedForEmptySpace(1000) == 50);
+    assert(FilePathPanelButtons.reservedForEmptySpace(2000) == 53);
+    assert(FilePathPanelButtons.reservedForEmptySpace(40) == 5);
+
+    auto panel = new FilePathPanelButtons();
+    scope(exit) destroy(panel);
+    foreach (i; 0 .. 5) // items of 100 pixels instead of path buttons (no fonts in unittests)
+        panel.addChild(new Widget(null).minWidth(100).minHeight(20));
+    int visibleItems() {
+        int n = 0;
+        foreach (i; 0 .. panel.childCount)
+            if (panel.child(i).visibility == Visibility.Visible)
+                n++;
+        return n;
+    }
+    // unspecified width: the first item, measured without a width limit, and the largest reserved space (before:
+    // only the reserved space, the items were measured at width 0)
+    panel.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+    assert(panel.measuredWidth == 53 + 100);
+    // 310 pixels, 15 reserved: 2 items fit, in measure() and layout() (layout() showed 3)
+    panel.measure(310, 100);
+    panel.layout(Rect(0, 0, 310, 20));
+    assert(visibleItems == 2);
+}
