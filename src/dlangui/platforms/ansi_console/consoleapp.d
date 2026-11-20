@@ -92,6 +92,7 @@ class ConsolePlatform : Platform {
         _console.mouseEvent = &onConsoleMouse;
         _console.resizeEvent = &onConsoleResize;
         _console.inputIdleEvent = &onInputIdle;
+        _console.pasteEvent = &onConsolePaste;
         _console.init();
         _console.setCursorType(ConsoleCursorType.Invisible);
         _uiDialogDisplayMode = DialogDisplayMode.allTypesOfDialogsInPopup;
@@ -142,6 +143,20 @@ class ConsolePlatform : Platform {
             return true;
         }
         return false;
+    }
+
+    /// text pasted in the terminal (bracketed paste, #1041): pasted with Ctrl+V, the Paste key of the focused widget,
+    /// through the clipboard, so editors insert it as one paste (line breaks included, one undo step) and line breaks
+    /// in it aren't Enter keys (e.g. a dialog's default button). The clipboard keeps what the user copied.
+    protected bool onConsolePaste(dstring text) {
+        if (!text.length)
+            return false;
+        dstring copied = _clipboardText;
+        scope(exit) _clipboardText = copied;
+        setClipboardText(text);
+        bool res = onConsoleKey(new KeyEvent(KeyAction.KeyDown, KeyCode.KEY_V, KeyFlag.Control));
+        onConsoleKey(new KeyEvent(KeyAction.KeyUp, KeyCode.KEY_V, KeyFlag.Control));
+        return res;
     }
 
     protected bool onConsoleMouse(MouseEvent event) {

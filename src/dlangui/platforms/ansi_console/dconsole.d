@@ -355,7 +355,7 @@ class Console {
             import core.sys.posix.unistd;
             tcsetattr(STDIN_FILENO, TCSANOW, &savedStdinState);
             // reset terminal state
-            rawWrite("\033[?1006l\033[?1003l"); // mouse tracking off (#1041)
+            rawWrite("\033[?2004l\033[?1006l\033[?1003l"); // bracketed paste and mouse tracking off (#1041)
             rawWrite("\033c");
             // reset attributes
             rawWrite("\x1b[0m");
@@ -456,6 +456,8 @@ class Console {
             // enable mouse tracking - all events, reported in the SGR format (#1041: no limit at column 223;
             // terminals without it use the X10 format)
             rawWrite("\033[?1003h\033[?1006h");
+            // pasted text between ESC [200~ and ESC [201~, instead of typed keys (#1041)
+            rawWrite("\033[?2004h");
             //rawWrite("\x1b[c");
             //string termType = rawRead();
             //Log.d("Term type=", termType);
@@ -826,6 +828,17 @@ class Console {
     Signal!OnConsoleResize resizeEvent;
     /// console input is idle
     Signal!OnInputIdle inputIdleEvent;
+    /// text pasted in the terminal (bracketed paste, #1041)
+    Signal!OnConsolePaste pasteEvent;
+
+    protected bool handlePaste(dstring text) {
+        if (pasteEvent.assigned)
+            return pasteEvent(text);
+        return false;
+    }
+    /// bracketed paste: in a paste, and the bytes pasted so far (#1041)
+    private bool _pasting;
+    private string _pastedBytes;
 
     protected bool handleKeyEvent(KeyEvent event) {
         if (keyEvent.assigned)
@@ -999,6 +1012,24 @@ class Console {
             string s = rawRead(20);
             if (s is null) {
                 handleInputIdle();
+                return !_stopped;
+            }
+            // bracketed paste (#1041): the bytes between ESC [200~ and ESC [201~ are text, not keys
+            if (s == "\x1b[200~") {
+                _pasting = true;
+                _pastedBytes = null;
+                return !_stopped;
+            }
+            if (_pasting) {
+                // the end marker is looked for in the collected bytes: the reader's timeout may split it
+                import std.string : indexOf;
+                _pastedBytes ~= s;
+                immutable ptrdiff_t end = _pastedBytes.indexOf("\x1b[201~");
+                if (end >= 0) {
+                    _pasting = false;
+                    handlePaste(consolePasteText(_pastedBytes[0 .. end]));
+                    _pastedBytes = null;
+                }
                 return !_stopped;
             }
             ConsoleMouse m;
@@ -1234,6 +1265,30 @@ ConsoleKey parseConsoleKey(string s) pure @safe {
         res.keyCode = 0x400000 | ch;
     }
     return res;
+}
+
+/// text of a bracketed paste (#1041): line breaks as \n, invalid UTF-8 replaced
+dstring consolePasteText(string bytes) pure @safe {
+    import std.array : replace;
+    import std.utf : decode, UTFException;
+    string text = bytes.replace("\r\n", "\n").replace("\r", "\n");
+    dchar[] res;
+    for (size_t i = 0; i < text.length; ) {
+        try {
+            res ~= decode(text, i);
+        } catch (UTFException e) {
+            res ~= '\uFFFD'; // invalid UTF-8: one replacement character per byte
+            i++;
+        }
+    }
+    return res.idup;
+}
+
+@safe unittest {
+    assert(consolePasteText("line 1\r\nline 2\rline 3\n") == "line 1\nline 2\nline 3\n"d);
+    assert(consolePasteText("жук") == "жук"d);
+    assert(consolePasteText("") == ""d);
+    assert(consolePasteText("a\xffb") == "a\uFFFDb"d);
 }
 
 /// a mouse event from terminal input (#1041)
@@ -1473,4 +1528,9 @@ interface OnConsoleResize {
 
 interface OnInputIdle {
     bool onInputIdle();
+}
+
+/// slot for text pasted in the terminal (bracketed paste, #1041)
+interface OnConsolePaste {
+    bool onPaste(dstring text);
 }
