@@ -95,6 +95,9 @@
     <style id="BUTTON_NOMARGINS"
         backgroundImageId="btn_background_dark"
         />
+    <style id="SWITCH"
+        backgroundImageId="switch_dark"
+        />
     <drawable id="close" value="close_dark"/>
     <drawable id="tab_more" value="tab_more_dark"/>
     <drawable id="btn_check" value="btn_check_dark"/>

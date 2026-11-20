@@ -183,10 +183,6 @@ res/hdpi/hdpi_scrollbar_btn_right.png
 res/hdpi/hdpi_scrollbar_btn_right_dark.png
 res/hdpi/hdpi_scrollbar_btn_up.png
 res/hdpi/hdpi_scrollbar_btn_up_dark.png
-res/hdpi/hdpi_switch_off.png
-res/hdpi/hdpi_switch_off_disabled.png
-res/hdpi/hdpi_switch_on.png
-res/hdpi/hdpi_switch_on_disabled.png
 res/hdpi/hdpi_scrollbar_indicator_horizontal.png
 res/hdpi/hdpi_scrollbar_indicator_vertical.png
 res/mdpi/arrow_right_down_black.png
@@ -291,10 +287,6 @@ res/mdpi/menu_separator.9.png
 res/mdpi/menu_separator_dark.9.png
 res/mdpi/popup_window_background.9.png
 res/mdpi/popup_window_background_dark.9.png
-res/mdpi/switch_off.png
-res/mdpi/switch_off_disabled.png
-res/mdpi/switch_on.png
-res/mdpi/switch_on_disabled.png
 res/mdpi/tab_btn_dark_down_focused.9.png
 res/mdpi/tab_btn_dark_down_focused_dark.9.png
 res/mdpi/tab_btn_dark_down_focused_selected.9.png
@@ -368,6 +360,15 @@ res/scrollbar_btn_up_dark.png
 res/scrollbar_indicator_horizontal.png
 res/scrollbar_indicator_vertical.png
 res/switch.xml
+res/switch_dark.xml
+res/switch_off.36x20.svg
+res/switch_off_dark.36x20.svg
+res/switch_off_disabled.36x20.svg
+res/switch_off_disabled_dark.36x20.svg
+res/switch_on.36x20.svg
+res/switch_on_dark.36x20.svg
+res/switch_on_disabled.36x20.svg
+res/switch_on_disabled_dark.36x20.svg
 res/tab_btn_dark_down.xml
 res/tab_btn_dark_down_dark.xml
 res/tab_btn_dark_up.xml
