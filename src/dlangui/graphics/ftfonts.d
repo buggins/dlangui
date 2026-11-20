@@ -164,6 +164,7 @@ class FreeTypeFontFile {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
         debug --_instanceCount;
         debug(FontResources) Log.d("Destroyed FreeTypeFontFile, count=", _instanceCount);
@@ -418,6 +419,7 @@ class FreeTypeFont : Font {
 
     /// do cleanup
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
         debug --_instanceCount;
         debug(resalloc) Log.d("Destroyed font, count=", _instanceCount);
@@ -725,6 +727,7 @@ class FreeTypeFontManager : FontManager {
         //FT_Library_SetLcdFilter(_library, FT_LCD_FILTER_DEFAULT);
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         debug(FontResources) Log.d("FreeTypeFontManager ~this()");
         releaseFallbackFonts(); // fallback references may form cycles (#888)
         //_activeFonts.clear();

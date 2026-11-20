@@ -497,6 +497,7 @@ final class MLParser {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         destroy(_tokenizer);
         _tokenizer = null;
     }

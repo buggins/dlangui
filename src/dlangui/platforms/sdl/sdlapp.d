@@ -112,6 +112,7 @@ class SDLWindow : Window {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         debug Log.d("Destroying SDL window");
 
         if (_parent) {
@@ -1314,6 +1315,7 @@ class SDLPlatform : Platform {
     private SDLWindow[uint] _windowMap;
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         foreach(ref SDLWindow wnd; _windowMap) {
             destroy(wnd);
             wnd = null;

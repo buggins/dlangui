@@ -179,6 +179,7 @@ class EventList {
         _mutex = new Mutex();
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         destroy(_mutex);
         _mutex = null;
     }
@@ -896,6 +897,7 @@ class Window : CustomEventTarget {
             _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND);
     }
     ~this() {
+        if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         debug Log.d("Destroying window");
         if (_onClose)
             _onClose();
@@ -2122,6 +2124,7 @@ class Platform {
 
     ~this()
     {
+        if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         if(_iconProvider) {
             destroy(_iconProvider);
         }

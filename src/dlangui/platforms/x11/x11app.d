@@ -459,6 +459,7 @@ class X11Window : DWindow {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         debug Log.d("Destroying X11 window");
         if (timer) {
             timer.stop();
@@ -1529,6 +1530,7 @@ class X11Platform : Platform {
     private char* _classname;
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         // Destroy windows the application left open while the X display is still open.
         // Otherwise GC finalizers destroy them after XCloseDisplay, and X11Window's destructor
         // calls XFreeGC/XDestroyWindow on the freed Display (heap corruption, crash on exit).
@@ -2119,6 +2121,7 @@ class TimerThread : Thread {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         stop();
         destroy(condition);
         destroy(mutex);

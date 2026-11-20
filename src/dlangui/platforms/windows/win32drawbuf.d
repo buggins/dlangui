@@ -103,6 +103,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
         return null;
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
     /// Clear buffer contents, set dimension to 0, 0

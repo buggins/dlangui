@@ -492,6 +492,7 @@ class Drawable : RefCountedObject {
         //Log.d("Created drawable, count=", ++_instanceCount);
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         //Log.d("Destroyed drawable, count=", --_instanceCount);
         debug --_instanceCount;
     }
@@ -1074,6 +1075,7 @@ class ImageDrawable : Drawable {
         debug(resalloc) Log.d("Created ImageDrawable, count=", _instanceCount);
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         _image.clear();
         debug _instanceCount--;
         debug(resalloc) Log.d("Destroyed ImageDrawable, count=", _instanceCount);
@@ -1294,6 +1296,7 @@ class StateDrawable : Drawable {
     protected Point _size;
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         foreach(ref item; _stateList)
             destroy(item);
         _stateList = null;
@@ -1506,6 +1509,7 @@ class OverlayDrawable : Drawable {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         // destroy() runs the destructors of fields, but not of the Refs in the array: release them here
         _base.clear();
         foreach (ref o; _overlays)
@@ -1660,6 +1664,7 @@ class ImageCache {
         }
 
         ~this() {
+            if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
             // the Refs in the maps are not released by destroy(): release them here
             compact();
         }
@@ -1748,6 +1753,7 @@ class ImageCache {
         debug Log.i("Creating ImageCache");
     }
     ~this() {
+        if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         debug Log.i("Destroying ImageCache");
         foreach (ref item; _map) {
             destroy(item);
@@ -1801,6 +1807,7 @@ class DrawableCache {
         debug @property static int instanceCount() { return _instanceCount; }
 
         ~this() {
+            if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
             _drawable.clear();
             foreach(ref t; _transformed)
                 t.clear();
@@ -2011,6 +2018,7 @@ class DrawableCache {
         debug Log.i("Creating DrawableCache");
     }
     ~this() {
+        if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         debug(resalloc) Log.e("Drawable instace count before destroying of DrawableCache: ", ImageDrawable.instanceCount);
 
         //Log.i("Destroying DrawableCache _idToDrawableMap.length=", _idToDrawableMap.length);

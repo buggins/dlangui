@@ -1,6 +1,7 @@
 module dlangui.graphics.scene.scene3d;
 
 public import dlangui.core.config;
+import dlangui.core.logger : inGCFinalizer;
 static if (ENABLE_OPENGL):
 static if (BACKEND_GUI):
 
@@ -34,6 +35,7 @@ class Scene3d : Node3d {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         destroy(_skyBox);
     }
 

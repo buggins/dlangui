@@ -41,6 +41,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.core.collections;
 
 import std.algorithm;
+import dlangui.core.logger : inGCFinalizer;
 
 /**
     Array based collection of items.
@@ -231,6 +232,10 @@ struct Collection(T, bool ownItems = false) {
     }
     /// removes all items on destroy
     ~this() {
+        static if (ownItems || is(T == class) || is(T == struct)) {
+            // finalized by the GC: the items and the array may be finalized or freed already (#975)
+            if (inGCFinalizer()) return;
+        }
         clear();
     }
 }
@@ -354,6 +359,7 @@ struct ObjectList(T) {
     }
     /// destructor destroys all items
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
 }
@@ -387,8 +393,8 @@ unittest
     assert(d[0].a == 456);
 }
 
-// Collection of values and of non-owned class references: the inferred attributes allow @safe, pure and nothrow
-// code (owning collections and ObjectList destroy their items: @system)
+// Collection of values: the inferred attributes allow @safe, pure and nothrow code (of references: not pure, the
+// destructor checks for the GC (#975); owning collections and ObjectList destroy their items: @system)
 @safe pure nothrow unittest
 {
     Collection!int c;
@@ -416,7 +422,10 @@ unittest
     assert(c.length == 3 && c[2] == 7);
     c.clear();
     assert(c.empty);
+}
 
+@safe nothrow unittest
+{
     static class Item { int v; this(int v) pure nothrow @safe { this.v = v; } }
     Collection!Item items;
     auto a = new Item(1);

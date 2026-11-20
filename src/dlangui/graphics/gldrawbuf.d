@@ -212,7 +212,10 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
             // TODO: delete framebuffer
         }
     }
-    ~this() { clear(); }
+    ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
+        clear();
+    }
 }
 
 /// base class for all drawing scene items.
@@ -250,6 +253,7 @@ class Scene {
         activeSceneCount++;
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         activeSceneCount--;
     }
     /// add new scene item to scene
@@ -389,6 +393,7 @@ private abstract class GLCache
         }
 
         ~this() {
+            if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
             if (_drawbuf) {
                 destroy(_drawbuf);
                 _drawbuf = null;
@@ -504,6 +509,7 @@ private abstract class GLCache
     this() {
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
     /// check if item is in cache
@@ -1010,6 +1016,7 @@ static class GLTexture : RefCountedObject {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         import std.string : empty;
         if (!_resourceId.empty)
             GLTextureCache.instance.onItemRemoved(_resourceId);

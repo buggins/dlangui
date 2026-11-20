@@ -139,6 +139,7 @@ public:
         start();
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         _queue.close();
         join();
     }

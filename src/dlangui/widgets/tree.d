@@ -1020,6 +1020,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_tree) {
             destroy(_tree);
             _tree = null;

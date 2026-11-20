@@ -299,6 +299,7 @@ class ConsoleFont : Font {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
 }

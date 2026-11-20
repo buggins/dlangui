@@ -208,16 +208,26 @@ class Log {
     /// Log message with arbitrary log level
     static public void log(S...)(LogLevel level, S args) {
         import std.conv : text;
-        // the arguments are formatted here, so the attributes of log() follow their types (#931)
-        if (isLogLevelEnabled(level))
+        if (isLogLevelEnabled(level) && !skippedInGCFinalizer())
+            // the arguments are formatted here, so the attributes of log() follow their types (#931)
             writeMessage(level, text(args));
     }
 
     /// Log message with arbitrary log level with format string
     static public void logf(S...)(LogLevel level, string fmt, S args) {
         import std.format : format;
-        if (isLogLevelEnabled(level))
+        if (isLogLevelEnabled(level) && !skippedInGCFinalizer())
             writeMessage(level, format(fmt, args));
+    }
+
+    /// in a destructor run by the GC, formatting a message would allocate and throw: the message is replaced
+    /// by a fixed one, at most MAX_GC_FINALIZER_REPORTS times (#975)
+    static private bool skippedInGCFinalizer() nothrow @safe {
+        if (!inGCFinalizer())
+            return false;
+        reportLimitedLogCall("Log call in a destructor run by the GC skipped (destroy the object "
+            ~ "explicitly)", null, null);
+        return true;
     }
 
     /// writes a formatted message: the only part that accesses the log output. @trusted: the log state is
@@ -367,6 +377,104 @@ void onResourceDestroyWhileShutdown(string resourceName, string objname = null) 
 
 /// set to true when exiting main - to detect destructor calls for resources by GC
 __gshared bool APP_IS_SHUTTING_DOWN = false;
+
+/++
+    True while the garbage collector runs a destructor (finalizer). Such a destructor must not allocate (that
+    throws InvalidMemoryOperationError), log with Log.d/i/... (formatting allocates), or touch other GC objects
+    (they may be finalized already: destroying children, releasing Refs, ...), and may run on any thread
+    (no OpenGL or OS handles). Objects holding resources must be destroyed explicitly (#975).
++/
+bool inGCFinalizer() nothrow @nogc @safe {
+    import core.memory : GC;
+    return GC.inFinalizer;
+}
+
+/++
+    For destructors of objects holding resources (widgets, drawables, fonts, draw buffers, styles, windows, caches),
+    in the class where the destructor chain ends: in a destructor run by the GC, reports the object as a leak
+    (objects holding resources must be destroyed explicitly) and returns true; the destructor then must do nothing
+    else. Reports are written without allocating, the first MAX_GC_FINALIZER_REPORTS ones only (#975).
+
+    Destructors of subclasses and of other classes and structs that touch other objects check inGCFinalizer().
++/
+bool destroyedByGC(string className, string id = null) nothrow @trusted { // @trusted: __gshared counters only
+    if (!inGCFinalizer())
+        return false;
+    _resourcesDestroyedByGC++;
+    reportLimited(_resourceReports, "Resource leak: destroyed by the GC, not explicitly: ", className,
+        id.length ? id : null);
+    return true;
+}
+
+/// count of objects holding resources destroyed by the GC (leaks) since start
+@property size_t resourcesDestroyedByGC() nothrow @nogc @trusted { // @trusted: reads a __gshared counter
+    return _resourcesDestroyedByGC;
+}
+
+/// at most this many leak reports from GC finalizers are written, then one more saying the rest is not (#975)
+enum MAX_GC_FINALIZER_REPORTS = 20;
+
+// @trusted access: counters only, see reportLimited()
+private __gshared size_t _resourcesDestroyedByGC;
+private __gshared size_t _resourceReports;
+private __gshared size_t _logCallsInGCFinalizer;
+
+version (unittest) {
+    /// leak counters, saved by a test that leaks on purpose (muting the reports) and restored after it: later leaks
+    /// are still counted and named (#975)
+    package(dlangui) struct LeakReportCounters {
+        size_t destroyed;
+        size_t reports;
+    }
+    package(dlangui) LeakReportCounters muteLeakReports() nothrow @nogc @trusted { // __gshared counters only
+        auto saved = LeakReportCounters(_resourcesDestroyedByGC, _resourceReports);
+        _resourceReports = size_t.max / 2; // past the limit: nothing written
+        return saved;
+    }
+    package(dlangui) void restoreLeakReportCounters(LeakReportCounters saved) nothrow @nogc @trusted { // same
+        _resourcesDestroyedByGC = saved.destroyed;
+        _resourceReports = saved.reports;
+    }
+
+    // dub test: report objects holding resources the unittests didn't destroy (#975)
+    shared static ~this() {
+        import core.memory : GC;
+        GC.collect();
+        if (_resourcesDestroyedByGC)
+            stderr.writeln("Resource leak: ", _resourcesDestroyedByGC,
+                " objects holding resources destroyed by the GC after the unittests");
+    }
+}
+
+private void reportLimitedLogCall(string message, string name, string id) nothrow @trusted { // __gshared counter
+    reportLimited(_logCallsInGCFinalizer, message, name, id);
+}
+
+// @trusted: Log.errorNoGC is @trusted, not @nogc-annotated; count is a __gshared counter
+private void reportLimited(ref size_t count, string message, string name, string id) nothrow @trusted {
+    // finalizers may run on several threads: an inexact count only changes how many lines are written
+    immutable size_t n = ++count;
+    if (n <= MAX_GC_FINALIZER_REPORTS)
+        writeReport(message, name, id ? " " : null, id);
+    else if (n == MAX_GC_FINALIZER_REPORTS + 1)
+        writeReport(message, message.length && message[$ - 1] == ' ' ? null : " ", "(more are not reported)");
+}
+
+private void writeReport(scope const(char)[][] parts...) nothrow @trusted { // see reportLimited()
+    version (unittest) {
+        // dub test has no log output: the reports go to stderr, naming the objects when the GC runs during the tests
+        if (Log.logFile is null) {
+            import core.stdc.stdio : fflush, fwrite, stderr;
+            fwrite("E  ".ptr, 1, 3, stderr);
+            foreach (part; parts)
+                fwrite(part.ptr, 1, part.length, stderr);
+            fwrite("\n".ptr, 1, 1, stderr);
+            fflush(stderr);
+            return;
+        }
+    }
+    Log.errorNoGC(parts);
+}
 
 // logging from @safe code (#931): the attributes follow the arguments
 @safe unittest {

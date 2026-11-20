@@ -250,6 +250,7 @@ class AndroidPlatform : Platform {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         foreach_reverse(w; _windows) {
             destroy(w);
         }

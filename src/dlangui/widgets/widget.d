@@ -223,6 +223,9 @@ public:
     }
 
     ~this() {
+        // finalized by the GC: report the leak (#975). The id string may be freed in the same collection: its memory
+        // stays mapped until the collection ends, so at worst the report shows garbage; most ids are literals
+        if (destroyedByGC(this.classinfo.name, _id)) return;
         debug {
             //Log.v("destroying widget ", _id, " ", this.classinfo.name);
             if (appShuttingDown)
@@ -2148,3 +2151,39 @@ string generatePropertySettersMethodOverride(string methodName, string typeName,
 
 
 __gshared bool TOUCH_MODE = false;
+
+// widgets left to the GC: reported as leaks, their finalizers touch nothing else (children, Refs: the objects may
+// be finalized already) (#975)
+unittest {
+    import core.memory : GC;
+    import core.thread : Thread;
+    import dlangui.core.logger : muteLeakReports, resourcesDestroyedByGC, restoreLeakReportCounters;
+    import dlangui.widgets.styles : useTestTheme;
+    import dlangui.widgets.controls : ImageWidget;
+    import dlangui.graphics.resources : DrawableRef, SolidFillDrawable;
+    auto _ = useTestTheme();
+    GC.collect(); // leftovers of other tests are not counted below
+    immutable saved = muteLeakReports();
+    scope(exit) restoreLeakReportCounters(saved);
+    immutable size_t before = resourcesDestroyedByGC;
+    immutable int widgets = Widget.instanceCount;
+    // created by a thread that ends: no stack refers to them, the collection finalizes all of them
+    auto t = new Thread({
+        foreach (i; 0 .. 50) {
+            auto group = new WidgetGroup("gc-leak-test");
+            auto image = new ImageWidget("gc-leak-test-child");
+            image.drawable = DrawableRef(new SolidFillDrawable(0x123456));
+            group.addChild(image);
+        }
+    });
+    t.start();
+    t.join();
+    // DMD 2.114: one collection finalized 147 of them, the next one the rest
+    foreach (i; 0 .. 3) {
+        GC.collect();
+        if (resourcesDestroyedByGC - before >= 150)
+            break;
+    }
+    assert(resourcesDestroyedByGC - before == 150); // groups, image widgets, drawables
+    assert(Widget.instanceCount == widgets + 100); // still counted: leaks
+}

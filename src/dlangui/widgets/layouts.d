@@ -298,6 +298,7 @@ class LayoutItems {
         _count = 0;
     }
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         clear();
     }
 }

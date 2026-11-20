@@ -480,6 +480,7 @@ class StringListAdapter : StringListAdapterBase {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_widget)
             destroy(_widget);
     }
@@ -556,6 +557,7 @@ class IconStringListAdapter : StringListAdapterBase {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_widget)
             destroy(_widget);
     }
@@ -911,6 +913,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     }
 
     ~this() {
+        if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
         if (_adapter)
             _adapter.disconnect(this);
         //Log.d("Destroying List ", _id);
