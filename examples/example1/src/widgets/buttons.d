@@ -52,6 +52,15 @@ class ButtonsExample : VerticalLayout
         buttons12.addChild((new ImageTextButton(FILE_OPEN_ACTION)).enabled(false));
         addChild(buttons12);
 
+        WidgetGroup buttons12s = new HorizontalLayout();
+        buttons12s.addChild(new TextWidget(null, "Small buttons (BUTTON_SMALL, BUTTON_SMALL_TRANSPARENT): "d));
+        buttons12s.addChild((new Button(null, "Small"d)).styleId(STYLE_BUTTON_SMALL));
+        buttons12s.addChild((new Button(null, "Disabled"d)).styleId(STYLE_BUTTON_SMALL).enabled(false));
+        buttons12s.addChild((new ImageTextButton(FILE_OPEN_ACTION)).styleId(STYLE_BUTTON_SMALL));
+        buttons12s.addChild((new Button(null, "Transparent"d)).styleId(STYLE_BUTTON_SMALL_TRANSPARENT));
+        buttons12s.addChild((new ImageButton(FILE_OPEN_ACTION)).styleId(STYLE_BUTTON_SMALL_TRANSPARENT));
+        addChild(buttons12s);
+
         WidgetGroup buttons13 = new HorizontalLayout();
         buttons13.addChild(new TextWidget(null, "UrlImageTextButton (opens URL in browser): "d));
         buttons13.addChild(new UrlImageTextButton("btnUrl", "DlangUI on GitHub"d, "https://github.com/buggins/dlangui"));

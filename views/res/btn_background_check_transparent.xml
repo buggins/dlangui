@@ -8,11 +8,11 @@
     android:state_checked="true"
     android:state_focused="true" />
   <item
-    android:drawable="@null"
-    android:state_focused="true" />
-  <item
     android:drawable="btn_pressed"
     android:state_pressed="true" />
+  <item
+    android:drawable="@null"
+    android:state_focused="true" />
   <item
     android:drawable="btn_pressed"
     android:state_checked="true" />

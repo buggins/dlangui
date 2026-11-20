@@ -2,6 +2,10 @@ res/btn_background.xml
 res/btn_background_check_transparent.xml
 res/btn_background_check_transparent_dark.xml
 res/btn_background_dark.xml
+res/btn_background_small.xml
+res/btn_background_small_dark.xml
+res/btn_background_small_transparent.xml
+res/btn_background_small_transparent_dark.xml
 res/btn_background_transparent.xml
 res/btn_background_transparent_dark.xml
 res/btn_check.xml
@@ -209,6 +213,14 @@ res/mdpi/btn_radio_on_focused.png
 res/mdpi/btn_radio_on_focused_dark.png
 res/mdpi/btn_radio_on_pressed.png
 res/mdpi/btn_radio_on_pressed_dark.png
+res/mdpi/btn_small_disabled.9.png
+res/mdpi/btn_small_disabled_dark.9.png
+res/mdpi/btn_small_hover.9.png
+res/mdpi/btn_small_hover_dark.9.png
+res/mdpi/btn_small_normal.9.png
+res/mdpi/btn_small_normal_dark.9.png
+res/mdpi/btn_small_pressed.9.png
+res/mdpi/btn_small_pressed_dark.9.png
 res/mdpi/computer.png
 res/mdpi/dlangui-logo1.png
 res/mdpi/drive-harddisk.png

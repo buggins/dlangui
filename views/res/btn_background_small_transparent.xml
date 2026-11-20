@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- small transparent button (style BUTTON_SMALL_TRANSPARENT) (#728) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android" >
+  <item
+    android:drawable="@null"
+    android:state_enabled="false"/>
+  <item
+    android:drawable="btn_small_pressed"
+    android:state_pressed="true" />
+  <item
+    android:drawable="@null"
+    android:state_focused="true" />
+  <item
+    android:drawable="btn_small_hover"
+    android:state_hovered="true" android:state_enabled="true" />
+  <item
+    android:drawable="@null" />
+</selector>
