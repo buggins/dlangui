@@ -314,6 +314,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _caretColorReplace = 0x808080FF;
     protected uint _matchingBracketHightlightColor = 0x60FFE0B0;
 
+    /// widths of the left pane parts in pixels at 100% scaling (BASE_DPI): updateLeftPaneWidth() scales them to
+    /// SCREEN_DPI (#840); character cells in console builds
     protected uint _iconsPaneWidth = WIDGET_STYLE_CONSOLE ? 1 : 16;
     protected uint _foldingPaneWidth = WIDGET_STYLE_CONSOLE ? 1 : 12;
     protected uint _modificationMarksPaneWidth = WIDGET_STYLE_CONSOLE ? 1 : 4;
@@ -587,12 +589,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             iterator(currentSpan);
     }
 
-    /// override to add custom items on left panel
+    /// override to add custom items on left panel; add leftPaneGap() as the gap, drawLeftPane() and
+    /// handleLeftPaneMouseClick() subtract it (#840)
     protected void updateLeftPaneWidth() {
         import std.conv : to;
-        _iconsWidth = _showIcons ? _iconsPaneWidth : 0;
-        _foldingWidth = _showFolding ? _foldingPaneWidth : 0;
-        _modificationMarksWidth = _showModificationMarks && (BACKEND_GUI || !_showLineNumbers) ? _modificationMarksPaneWidth : 0;
+        _iconsWidth = _showIcons ? scaledPixels(_iconsPaneWidth) : 0;
+        _foldingWidth = _showFolding ? scaledPixels(_foldingPaneWidth) : 0;
+        _modificationMarksWidth = _showModificationMarks && (BACKEND_GUI || !_showLineNumbers)
+            ? scaledPixels(_modificationMarksPaneWidth) : 0;
         _lineNumbersWidth = 0;
         if (_showLineNumbers) {
             dchar[] s = to!(dchar[])(lineCount + 1);
@@ -604,7 +608,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
         _leftPaneWidth = _lineNumbersWidth + _modificationMarksWidth + _foldingWidth + _iconsWidth;
         if (_leftPaneWidth)
-            _leftPaneWidth += WIDGET_STYLE_CONSOLE ? 1 : 3;
+            _leftPaneWidth += leftPaneGap();
+    }
+
+    /// gap between the left pane parts and the text: 3 pixels at 100% scaling, scaled to SCREEN_DPI (#840);
+    /// one character cell in console builds
+    protected int leftPaneGap() const {
+        return WIDGET_STYLE_CONSOLE ? 1 : scaledPixels(3);
     }
 
     protected void drawLeftPaneFolding(DrawBuf buf, Rect rc, int line) {
@@ -729,7 +739,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     protected bool handleLeftPaneMouseClick(MouseEvent event, Rect rc, int line) {
-        rc.right -= 3;
+        rc.right -= leftPaneGap();
         if (_foldingWidth) {
             Rect rc2 = rc;
             rc.right = rc2.left = rc2.right - _foldingWidth;
@@ -762,7 +772,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         buf.fillRect(rc, _leftPaneBackgroundColor);
         //buf.fillRect(Rect(rc.right - 2, rc.top, rc.right - 1, rc.bottom), _leftPaneBackgroundColor2);
         //buf.fillRect(Rect(rc.right - 1, rc.top, rc.right - 0, rc.bottom), _leftPaneBackgroundColor3);
-        rc.right -= WIDGET_STYLE_CONSOLE ? 1 : 3;
+        rc.right -= leftPaneGap();
         if (_foldingWidth) {
             Rect rc2 = rc;
             rc.right = rc2.left = rc2.right - _foldingWidth;
@@ -2488,6 +2498,7 @@ class EditLine : EditWidgetBase {
         updateFontProps();
         measureVisibleText();
         measureTextToSetWidgetSize();
+        updateLeftPaneWidth(); // set by layout: the screen DPI may have changed since (#840)
         measuredContent(parentWidth, parentHeight, _measuredTextToSetWidgetSize.x + _leftPaneWidth, _measuredTextToSetWidgetSize.y);
     }
 
