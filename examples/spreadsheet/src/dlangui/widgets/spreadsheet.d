@@ -49,8 +49,8 @@ class SpreadSheetView : StringGridWidget {
         super(ID);
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
-        defRowHeight = 14;
-        defColumnWidth = 80;
+        defRowHeight = makePointSize(11); // 14 px at 100% scaling, follows the screen DPI (#840)
+        defColumnWidth = makePointSize(60); // 80 px at 100%
         styleId = null;
         backgroundColor = 0xFFFFFF;
         resize(50, 50);

@@ -369,10 +369,10 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     protected bool _activateOnButtonUp;
     protected int _activateCol;
     protected int _activateRow;
-    /// default column width - for newly added columns
-    protected int _defColumnWidth;
-    /// default row height - for newly added rows
-    protected int _defRowHeight;
+    /// default column width as set (pixels or points), SIZE_UNSPECIFIED if not set: use the defColumnWidth getter
+    protected int _defColumnWidth = SIZE_UNSPECIFIED;
+    /// default row height as set (pixels or points), SIZE_UNSPECIFIED if not set: use the defRowHeight getter
+    protected int _defRowHeight = SIZE_UNSPECIFIED;
 
     // properties
 
@@ -454,18 +454,24 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         invalidate();
     }
 
-    /// default column width - for newly added columns
+    /// default column width in pixels - for newly added columns; can be set in points (makePointSize, DML "pt");
+    /// if not set: 100 pixels at 100% scaling, scaled to the current screen DPI (#840)
     @property int defColumnWidth() {
-        return _defColumnWidth;
+        if (_defColumnWidth != SIZE_UNSPECIFIED)
+            return toPixels(_defColumnWidth);
+        return WIDGET_STYLE_CONSOLE ? 7 : scaledPixels(100);
     }
     @property GridWidgetBase defColumnWidth(int v) {
         _defColumnWidth = v;
         _changedSize = true;
         return this;
     }
-    /// default row height - for newly added rows
+    /// default row height in pixels - for newly added rows; can be set in points (makePointSize, DML "pt");
+    /// if not set: 16 points at the current screen DPI (#840)
     @property int defRowHeight() {
-        return _defRowHeight;
+        if (_defRowHeight != SIZE_UNSPECIFIED)
+            return toPixels(_defRowHeight);
+        return WIDGET_STYLE_CONSOLE ? 1 : pointsToPixels(16);
     }
     @property GridWidgetBase defRowHeight(int v) {
         _defRowHeight = v;
@@ -569,11 +575,11 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         _changedSize = true;
         _colWidths.length = c + _headerCols;
         for (int i = _cols; i < c + _headerCols; i++) {
-            _colWidths[i] = _defColumnWidth;
+            _colWidths[i] = defColumnWidth;
         }
         _rowHeights.length = r + _headerRows;
         for (int i = _rows; i < r + _headerRows; i++) {
-            _rowHeights[i] = _defRowHeight;
+            _rowHeights[i] = defRowHeight;
         }
         _cols = c + _headerCols;
         _rows = r + _headerRows;
@@ -1643,9 +1649,9 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     override Point minimumVisibleContentSize() {
         Point sz;
         if (_cols == 0 || _rows == 0) {
-             sz.x = 100;
-             sz.y = 100;
-             return sz;
+            sz.x = scaledPixels(100); // pixels at 100% scaling (#840)
+            sz.y = scaledPixels(100);
+            return sz;
         }
 
         // width:
@@ -1740,8 +1746,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     protected Point measureCell(int x, int y) {
-        // override it!
-        return Point(WIDGET_STYLE_CONSOLE ? 5 : 80, WIDGET_STYLE_CONSOLE ? 1 : 20);
+        // override it! (sizes in pixels at 100% scaling, #840)
+        return Point(WIDGET_STYLE_CONSOLE ? 5 : scaledPixels(80), WIDGET_STYLE_CONSOLE ? 1 : scaledPixels(20));
     }
 
     protected int measureColWidth(int x) {
@@ -1755,8 +1761,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         }
         //Log.d("measureColWidth ", x, " = ", m);
         static if (BACKEND_GUI) {
-            if (m < 10)
-                m = 10; // TODO: use min size
+            if (m < scaledPixels(10))
+                m = scaledPixels(10); // TODO: use min size (pixels at 100% scaling, #840)
         } else {
             if (m < 1)
                 m = 1; // TODO: use min size
@@ -1772,8 +1778,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 m = sz.y;
         }
         static if (BACKEND_GUI) {
-            if (m < 12)
-                m = 12; // TODO: use min size
+            if (m < scaledPixels(12))
+                m = scaledPixels(12); // TODO: use min size (pixels at 100% scaling, #840)
         }
         return m;
     }
@@ -1803,7 +1809,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     void autoFitRowHeight(int i) {
-        _rowHeights[i] = (i < _headerRows && !_showColHeaders) ? 0 : measureRowHeight(i) + (WIDGET_STYLE_CONSOLE ? 0 : 2);
+        _rowHeights[i] = (i < _headerRows && !_showColHeaders) ? 0 : measureRowHeight(i) + (WIDGET_STYLE_CONSOLE ? 0 : scaledPixels(2));
         _changedSize = true;
     }
 
@@ -1823,8 +1829,6 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         _headerCols = 1;
         _headerRows = 1;
         _selection = new RedBlackTree!Point();
-        _defRowHeight = WIDGET_STYLE_CONSOLE ? 1 : pointsToPixels(16);
-        _defColumnWidth = WIDGET_STYLE_CONSOLE ? 7 : 100;
 
         _showColHeaders = true;
         _showRowHeaders = true;
@@ -2245,4 +2249,32 @@ unittest {
     assert(grid.scrollRow == 2);
     grid.scrollBy(0, -5);
     assert(grid.scrollRow == 1);
+}
+
+// default sizes follow the screen DPI when the grid gets new columns and rows; set ones are kept (#840)
+static if (!WIDGET_STYLE_CONSOLE) unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    immutable int savedDpi = overrideScreenDPI;
+    scope(exit) overrideScreenDPI = savedDpi;
+
+    auto grid = new StringGridWidget("grid");
+    scope(exit) destroy(grid);
+    overrideScreenDPI = BASE_DPI;
+    assert(grid.defColumnWidth == 100 && grid.defRowHeight == 21); // 16 pt
+    grid.resize(1, 1);
+    assert(grid._colWidths[grid.headerCols] == 100);
+    overrideScreenDPI = 192; // 200%: after a change, new columns and rows get the scaled sizes
+    assert(grid.defColumnWidth == 200 && grid.defRowHeight == 42);
+    grid.resize(2, 2);
+    assert(grid._colWidths[grid.headerCols] == 100); // existing column kept
+    assert(grid._colWidths[grid.headerCols + 1] == 200);
+    assert(grid._rowHeights[grid.headerRows + 1] == 42);
+    grid.defColumnWidth = 80; // set by the application: pixels, not scaled
+    grid.resize(3, 2);
+    assert(grid.defColumnWidth == 80 && grid._colWidths[grid.headerCols + 2] == 80);
+    grid.defColumnWidth = 0; // zero width columns (0 isn't "not set")
+    assert(grid.defColumnWidth == 0);
+    grid.defRowHeight = makePointSize(12); // in points: converted
+    assert(grid.defRowHeight == 32);
 }

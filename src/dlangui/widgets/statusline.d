@@ -65,8 +65,9 @@ class StatusLineTextAndIconPanel : StatusLineTextPanel {
     this(string ID) {
         super(ID);
         _icon = new ImageWidget(null);
-        _icon.minWidth = WIDGET_STYLE_CONSOLE ? 1 : 20;
-        _icon.minHeight = WIDGET_STYLE_CONSOLE ? 1 : 20;
+        // 20 px at 100% scaling, follows the DPI (#840)
+        _icon.minWidth = WIDGET_STYLE_CONSOLE ? 1 : makePointSize(15);
+        _icon.minHeight = WIDGET_STYLE_CONSOLE ? 1 : makePointSize(15);
         _icon.alignment = Align.Center;
         addChild(_icon);
     }
