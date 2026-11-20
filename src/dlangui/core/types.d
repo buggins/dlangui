@@ -429,6 +429,26 @@ Rect pointsToPixels(Rect rc) @safe nothrow @nogc {
     return Rect(rc.left.pointsToPixels, rc.top.pointsToPixels, rc.right.pointsToPixels, rc.bottom.pointsToPixels);
 }
 
+/// length in pixels at BASE_DPI (100% scaling) to pixels at SCREEN_DPI, for default sizes given in pixels in code
+/// (#840): exact at 100%, truncated like pointsToPixels() otherwise; console builds: unchanged (character cells)
+int scaledPixels(int px) @safe nothrow @nogc {
+    static if (WIDGET_STYLE_CONSOLE)
+        return px;
+    else
+        return px * SCREEN_DPI / BASE_DPI;
+}
+
+static if (!WIDGET_STYLE_CONSOLE) @safe unittest {
+    immutable int saved = overrideScreenDPI;
+    scope(exit) overrideScreenDPI = saved;
+    overrideScreenDPI = BASE_DPI;
+    assert(scaledPixels(3) == 3 && scaledPixels(16) == 16);
+    overrideScreenDPI = 120; // 125%
+    assert(scaledPixels(3) == 3 && scaledPixels(4) == 5 && scaledPixels(16) == 20);
+    overrideScreenDPI = 192; // 200%
+    assert(scaledPixels(3) == 6 && scaledPixels(16) == 32);
+}
+
 /// convert points (1/72in units) to pixels according to SCREEN_DPI
 int pixelsToPoints(int px) @safe nothrow @nogc {
     return px * POINTS_PER_INCH / SCREEN_DPI;
