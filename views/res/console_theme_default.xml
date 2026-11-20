@@ -89,6 +89,8 @@
         >
         <state state_enabled="false" textColor="#60C0C0FF"/>
         <state state_enabled="true" state_hovered="true" textColor="#8080FF" textFlags="Underline"/>
+        <state state_pressed="true" textColor="#8080FF"/>
+        <state state_focused="true" textColor="#8080FF"/>
     </style>
     <style id="BUTTON_IMAGE"
         align="Center"

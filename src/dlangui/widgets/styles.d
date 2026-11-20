@@ -336,8 +336,6 @@ protected:
     string _parentId;
     uint _stateMask;
     uint _stateValue;
-    /// true for state substyle copied from parent style by updateStatesFromParent()
-    bool _copiedState;
     ubyte _align = Align.TopLeft;
     ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
     FontFamily _fontFamily = FontFamily.Unspecified;
@@ -367,6 +365,12 @@ protected:
 
     Style[] _substates;
     Style[] _children;
+    // state styles forState() chooses from: own state substyles merged over the parent's (#848)
+    Style[] _mergedStates;
+    // value of _statesRevision when _mergedStates was built
+    size_t _mergedRevision;
+    // changed when a state substyle, or the parent of a style, may have changed: merged states are built again
+    static __gshared size_t _statesRevision = 1;
 
     DrawableAttributeList _customDrawables;
     uint[string] _customColors;
@@ -380,6 +384,8 @@ public:
         _font.clear();
         _backgroundDrawable.clear();
         foreach(s; _substates)
+            s.onThemeChanged();
+        foreach(s; _mergedStates)
             s.onThemeChanged();
         foreach(s; _children)
             s.onThemeChanged();
@@ -427,6 +433,13 @@ public:
     }
 
     @property Style parentStyleId(string id) {
+        if (_parentId != id) {
+            // merged states of this style change; of other styles only if they derive from it
+            if (_children.length)
+                _statesRevision++;
+            else
+                _mergedRevision = 0;
+        }
         _parentId = id;
         if (_parentStyle)
             if (currentTheme) {
@@ -469,6 +482,7 @@ public:
     /// sets custom drawable attribute for style
     Style setCustomDrawable(string id, string resourceId) {
         _customDrawables.set(id, resourceId);
+        stateChanged();
         return this;
     }
 
@@ -482,6 +496,7 @@ public:
     /// sets custom color attribute for style
     Style setCustomColor(string id, uint color) {
         _customColors[id] = color;
+        stateChanged();
         return this;
     }
 
@@ -495,6 +510,7 @@ public:
     /// sets custom length attribute for style
     Style setCustomLength(string id, uint value) {
         _customLength[id] = value;
+        stateChanged();
         return this;
     }
 
@@ -689,21 +705,25 @@ public:
     /// set min width constraint
     @property Style minWidth(int value) {
         _minWidth = value;
+        stateChanged();
         return this;
     }
     /// set max width constraint
     @property Style maxWidth(int value) {
         _maxWidth = value;
+        stateChanged();
         return this;
     }
     /// set min height constraint
     @property Style minHeight(int value) {
         _minHeight = value;
+        stateChanged();
         return this;
     }
     /// set max height constraint
     @property Style maxHeight(int value) {
         _maxHeight = value;
+        stateChanged();
         return this;
     }
 
@@ -735,16 +755,19 @@ public:
     /// set layout height
     @property Style layoutHeight(int value) {
         _layoutHeight = value;
+        stateChanged();
         return this;
     }
     /// set layout width
     @property Style layoutWidth(int value) {
         _layoutWidth = value;
+        stateChanged();
         return this;
     }
     /// set layout weight
     @property Style layoutWeight(int value) {
         _layoutWeight = value;
+        stateChanged();
         return this;
     }
 
@@ -766,6 +789,7 @@ public:
     /// set alignment
     @property Style alignment(ubyte value) {
         _align = value;
+        stateChanged();
         return this;
     }
 
@@ -773,6 +797,7 @@ public:
         if (_fontFace != face)
             clearCachedObjects();
         _fontFace = face;
+        stateChanged();
         return this;
     }
 
@@ -780,6 +805,7 @@ public:
         if (_fontFamily != family)
             clearCachedObjects();
         _fontFamily = family;
+        stateChanged();
         return this;
     }
 
@@ -787,6 +813,7 @@ public:
         if (_fontStyle != style)
             clearCachedObjects();
         _fontStyle = style;
+        stateChanged();
         return this;
     }
 
@@ -794,6 +821,7 @@ public:
         if (_fontWeight != weight)
             clearCachedObjects();
         _fontWeight = weight;
+        stateChanged();
         return this;
     }
 
@@ -801,61 +829,72 @@ public:
         if (_fontSize != size)
             clearCachedObjects();
         _fontSize = size;
+        stateChanged();
         return this;
     }
 
     @property Style textColor(uint color) {
         _textColor = color;
+        stateChanged();
         return this;
     }
 
     @property Style maxLines(int lines) {
         _maxLines = lines;
+        stateChanged();
         return this;
     }
 
     @property Style ellipsize(TextEllipsis mode) {
         _ellipsize = mode;
+        stateChanged();
         return this;
     }
 
     @property Style alpha(uint alpha) {
         _alpha = alpha;
+        stateChanged();
         return this;
     }
 
     @property Style textFlags(uint flags) {
         _textFlags = flags;
+        stateChanged();
         return this;
     }
 
     @property Style backgroundColor(uint color) {
         _backgroundColor = color;
         _backgroundImageId = COLOR_DRAWABLE;
-        _backgroundDrawable.clear();
+        clearBackgroundDrawables();
+        stateChanged();
         return this;
     }
 
     @property Style backgroundImageId(string image) {
         _backgroundImageId = image;
-        _backgroundDrawable.clear();
+        clearBackgroundDrawables();
+        stateChanged();
         return this;
     }
 
     @property Style boxShadow(string s) {
         _boxShadow = s;
-        _backgroundDrawable.clear();
+        clearBackgroundDrawables();
+        stateChanged();
         return this;
     }
 
     @property Style border(string s) {
         _border = s;
-        _backgroundDrawable.clear();
+        clearBackgroundDrawables();
+        stateChanged();
         return this;
     }
 
     @property Style margins(Rect rc) {
         _margins = rc;
+        stateChanged();
         return this;
     }
 
@@ -864,11 +903,13 @@ public:
         _margins.top = top;
         _margins.right = right;
         _margins.bottom = bottom;
+        stateChanged();
         return this;
     }
 
     @property Style padding(Rect rc) {
         _padding = rc;
+        stateChanged();
         return this;
     }
 
@@ -885,6 +926,7 @@ public:
     /// sets colors to draw focus rectangle or null if no focus rect should be drawn for style
     @property Style focusRectColors(uint[] colors) {
         _focusRectColors = colors;
+        stateChanged();
         return this;
     }
 
@@ -893,6 +935,7 @@ public:
         _padding.top = top;
         _padding.right = right;
         _padding.bottom = bottom;
+        stateChanged();
         return this;
     }
 
@@ -915,6 +958,11 @@ public:
             item = null;
         }
         _substates.destroy();
+        foreach(ref Style item; _mergedStates) {
+            destroy(item);
+            item = null;
+        }
+        _mergedStates.destroy();
         foreach(ref Style item; _children) {
             destroy(item);
             item = null;
@@ -932,6 +980,7 @@ public:
         Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(id);
         child._parentStyle = this;
         _children ~= child;
+        _statesRevision++; // an existing style may get a new parent (derived theme)
         return child;
     }
 
@@ -939,15 +988,65 @@ public:
     Style createState(uint stateMask = 0, uint stateValue = 0) {
         assert(stateMask != 0);
         debug(styles) Log.d("Creating substate ", stateMask);
+        Style child = newStateStyle(stateMask, stateValue);
+        _substates ~= child;
+        _statesRevision++;
+        return child;
+    }
+
+    /// state style of this style with nothing set: everything comes from this style
+    private Style newStateStyle(uint stateMask, uint stateValue) {
         Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(null);
+        // a widget's own style has no theme: neither have its states, which outlive a theme switch
+        child._theme = _theme;
         child._parentStyle = this;
         child._stateMask = stateMask;
         child._stateValue = stateValue;
-        child._backgroundColor = COLOR_UNSPECIFIED;
-        child._textColor = COLOR_UNSPECIFIED;
-        child._textFlags = TEXT_FLAGS_UNSPECIFIED;
-        _substates ~= child;
+        child.resetProperties();
         return child;
+    }
+
+    /// set no property: all come from the parent style; clears cached objects
+    private void resetProperties() {
+        _align = Align.Unspecified;
+        _fontStyle = FONT_STYLE_UNSPECIFIED;
+        _fontFamily = FontFamily.Unspecified;
+        _fontWeight = FONT_WEIGHT_UNSPECIFIED;
+        _fontSize = FONT_SIZE_UNSPECIFIED;
+        _backgroundColor = COLOR_UNSPECIFIED;
+        _textColor = COLOR_UNSPECIFIED;
+        _textFlags = TEXT_FLAGS_UNSPECIFIED;
+        _alpha = COLOR_UNSPECIFIED;
+        _fontFace = null;
+        _backgroundImageId = null;
+        _boxShadow = null;
+        _border = null;
+        _padding = Rect(SIZE_UNSPECIFIED, 0, 0, 0);
+        _margins = Rect(SIZE_UNSPECIFIED, 0, 0, 0);
+        _minWidth = SIZE_UNSPECIFIED;
+        _maxWidth = SIZE_UNSPECIFIED;
+        _minHeight = SIZE_UNSPECIFIED;
+        _maxHeight = SIZE_UNSPECIFIED;
+        _layoutWidth = SIZE_UNSPECIFIED;
+        _layoutHeight = SIZE_UNSPECIFIED;
+        _layoutWeight = WEIGHT_UNSPECIFIED;
+        _maxLines = SIZE_UNSPECIFIED;
+        _ellipsize = ELLIPSIZE_UNSPECIFIED;
+        _focusRectColors = null;
+        _customDrawables.clear();
+        _customColors = null;
+        _customLength = null;
+        _font.clear();
+        _backgroundDrawable.clear();
+    }
+
+    /// a background property changed: background drawables cached by this style and its state styles are invalid
+    private void clearBackgroundDrawables() {
+        _backgroundDrawable.clear();
+        foreach (item; _substates)
+            item._backgroundDrawable.clear();
+        foreach (item; _mergedStates)
+            item._backgroundDrawable.clear();
     }
 
     Style clone() {
@@ -992,65 +1091,164 @@ public:
         if (stateValue == State.Normal)
             return this;
         foreach(item; _substates) {
-            if ((item._stateMask == stateMask) && (item._stateValue == stateValue)) {
-                // caller may modify it: keep it in updateStatesFromParent()
-                item._copiedState = false;
+            if ((item._stateMask == stateMask) && (item._stateValue == stateValue))
                 return item;
-            }
         }
         return createState(stateMask, stateValue);
     }
 
     /**
-        For widget's own style (see Theme.modifyStyle): replace state substyles copied from the parent style
-        with copies of the parent's current ones, e.g. after theme change or parent style id change (#729).
-
-        State substyles created or obtained with getOrCreateState() by application are kept.
-        If parent is null, parentStyle is used.
+        Obsolete: state styles are merged with the parent's when they are used (#848), also after a theme switch
+        or a parent style id change. Kept for compatibility: only makes the merged states be built again; the
+        argument has no effect (the states come from parentStyle).
     */
     void updateStatesFromParent(Style parent = null) {
-        if (parent is null)
-            parent = parentStyle;
-        Style[] old = _substates;
-        _substates = null;
-        bool[] used = new bool[old.length];
-        if (parent !is null && parent !is this) {
-            foreach(item; parent._substates) {
-                // state substyle of application instead of copy of parent's one
-                Style own = null;
-                foreach(i, s; old) {
-                    if (!used[i] && !s._copiedState && s._stateMask == item._stateMask && s._stateValue == item._stateValue) {
-                        own = s;
-                        used[i] = true;
-                        break;
-                    }
-                }
-                if (own is null) {
-                    own = item.clone();
-                    own._parentStyle = this;
-                    own._copiedState = true;
-                }
-                _substates ~= own;
-            }
-        }
-        foreach(i, s; old) {
-            if (used[i])
-                continue;
-            if (s._copiedState)
-                destroy(s);
-            else
-                _substates ~= s; // state substyle created by application
-        }
+        _statesRevision++;
     }
 
-    /// find substyle based on widget state (e.g. focused, pressed, ...)
+    // a state substyle changed: merged states are built again (#848)
+    private void stateChanged() {
+        if (_stateMask)
+            _statesRevision++;
+    }
+
+    /// copy the properties set in s (state values: no caches, no ids, no state flags)
+    private void mergeFrom(const Style s) {
+        if (s._align != Align.Unspecified)
+            _align = s._align;
+        if (s._fontStyle != FONT_STYLE_UNSPECIFIED)
+            _fontStyle = s._fontStyle;
+        if (s._fontFamily != FontFamily.Unspecified)
+            _fontFamily = s._fontFamily;
+        if (s._fontWeight != FONT_WEIGHT_UNSPECIFIED)
+            _fontWeight = s._fontWeight;
+        if (s._fontSize != FONT_SIZE_UNSPECIFIED)
+            _fontSize = s._fontSize;
+        if (s._backgroundColor != COLOR_UNSPECIFIED)
+            _backgroundColor = s._backgroundColor;
+        if (s._textColor != COLOR_UNSPECIFIED)
+            _textColor = s._textColor;
+        if (s._textFlags != TEXT_FLAGS_UNSPECIFIED)
+            _textFlags = s._textFlags;
+        if (s._alpha != COLOR_UNSPECIFIED)
+            _alpha = s._alpha;
+        if (s._fontFace !is null)
+            _fontFace = s._fontFace;
+        if (s._backgroundImageId !is null)
+            _backgroundImageId = s._backgroundImageId;
+        if (s._boxShadow !is null)
+            _boxShadow = s._boxShadow;
+        if (s._border !is null)
+            _border = s._border;
+        if (s._padding.left != SIZE_UNSPECIFIED)
+            _padding = s._padding;
+        if (s._margins.left != SIZE_UNSPECIFIED)
+            _margins = s._margins;
+        if (s._minWidth != SIZE_UNSPECIFIED)
+            _minWidth = s._minWidth;
+        if (s._maxWidth != SIZE_UNSPECIFIED)
+            _maxWidth = s._maxWidth;
+        if (s._minHeight != SIZE_UNSPECIFIED)
+            _minHeight = s._minHeight;
+        if (s._maxHeight != SIZE_UNSPECIFIED)
+            _maxHeight = s._maxHeight;
+        if (s._layoutWidth != SIZE_UNSPECIFIED)
+            _layoutWidth = s._layoutWidth;
+        if (s._layoutHeight != SIZE_UNSPECIFIED)
+            _layoutHeight = s._layoutHeight;
+        if (s._layoutWeight != WEIGHT_UNSPECIFIED)
+            _layoutWeight = s._layoutWeight;
+        if (s._maxLines != SIZE_UNSPECIFIED)
+            _maxLines = s._maxLines;
+        if (s._ellipsize != ELLIPSIZE_UNSPECIFIED)
+            _ellipsize = s._ellipsize;
+        if (s._focusRectColors !is null)
+            _focusRectColors = s._focusRectColors.dup;
+        foreach (key, value; s._customColors)
+            _customColors[key] = value;
+        foreach (key, value; s._customLength)
+            _customLength[key] = value;
+        foreach (key, value; s._customDrawables._customDrawables)
+            _customDrawables.set(key, value.drawableId);
+    }
+
+    /++
+        State styles forState() chooses from, built on first use and again after a change (#848):
+        - first the state substyles of this style whose state mask and value the parent's merged states don't
+          have, in their order;
+        - then the parent's merged states, in their order, each with this style's state substyles of the same
+          mask and value merged over it: properties set in this style's state win.
+        A property not set in a merged state comes from this style (normal state). So a state value of a parent
+        style wins over a value this style sets for the normal state, and a style can redefine a parent's state
+        partially without changing its priority. State substyles with the same mask and value give one merged
+        state. A rebuild updates the merged state objects in place; they are destroyed with the style, or when
+        their state is gone.
+    +/
+    protected Style[] mergedStates() {
+        if (_mergedRevision == _statesRevision)
+            return _mergedStates;
+        Style[] parentStates;
+        Style parent = parentStyle;
+        if (parent !is null && parent !is this)
+            parentStates = parent.mergedStates();
+        static bool sameState(const Style a, const Style b) {
+            return a._stateMask == b._stateMask && a._stateValue == b._stateValue;
+        }
+        Style[] old = _mergedStates;
+        // merged state object for the state of s: an old one of the same state, emptied, or a new one
+        Style take(const Style s) {
+            foreach (ref item; old) {
+                if (item !is null && sameState(item, s)) {
+                    Style res = item;
+                    item = null;
+                    res.resetProperties();
+                    return res;
+                }
+            }
+            return newStateStyle(s._stateMask, s._stateValue);
+        }
+        Style[] merged;
+        // own states the parent doesn't have
+        foreach (own; _substates) {
+            bool inParent = false;
+            foreach (p; parentStates)
+                inParent = inParent || sameState(p, own);
+            if (inParent)
+                continue;
+            Style item = null;
+            foreach (m; merged)
+                if (sameState(m, own))
+                    item = m;
+            if (item is null) {
+                item = take(own);
+                merged ~= item;
+            }
+            item.mergeFrom(own);
+        }
+        // the parent's states, own states of the same state merged over them
+        foreach (p; parentStates) {
+            Style item = take(p);
+            item.mergeFrom(p);
+            foreach (own; _substates)
+                if (sameState(own, p))
+                    item.mergeFrom(own);
+            merged ~= item;
+        }
+        foreach (item; old)
+            if (item !is null)
+                destroy(item);
+        _mergedStates = merged;
+        _mergedRevision = _statesRevision;
+        return _mergedStates;
+    }
+
+    /// find substyle based on widget state (e.g. focused, pressed, ...): the first merged state (see
+    /// mergedStates()) that matches. It is built from the state substyles: change those (createState(),
+    /// getOrCreateState()), changes to the returned style are lost at the next rebuild
     Style forState(uint state) {
         if (state == State.Normal)
             return this;
-        //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
-        if (parentStyle !is null && _substates.length == 0 && parentStyle._substates.length > 0) //id is null &&
-            return parentStyle.forState(state);
-        foreach(item; _substates) {
+        foreach(item; mergedStates()) {
             if ((item._stateMask & state) == item._stateValue)
                 return item;
         }
@@ -1059,16 +1257,8 @@ public:
 
     /// find substyle based on widget state (e.g. focused, pressed, ...)
     const(Style) forState(uint state) const {
-        if (state == State.Normal)
-            return this;
-        //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
-        if (parentStyle !is null && _substates.length == 0 && parentStyle._substates.length > 0) //id is null &&
-            return parentStyle.forState(state);
-        foreach(item; _substates) {
-            if ((item._stateMask & state) == item._stateValue)
-                return item;
-        }
-        return this; // fallback to current style
+        // builds the merged states on first use: a cache, styles are never immutable
+        return (cast(Style)this).forState(state);
     }
 
 }
@@ -1127,9 +1317,6 @@ class Theme : Style {
         style._textColor = COLOR_UNSPECIFIED; // inherit
         style._textFlags = TEXT_FLAGS_UNSPECIFIED; // inherit
         style._alpha = COLOR_UNSPECIFIED; // inherit
-        Style parent = get(id);
-        if (parent)
-            style.updateStatesFromParent(parent);
         return style;
     }
 
@@ -1239,6 +1426,11 @@ class Theme : Style {
         return this;
     }
 
+    /// the theme is the root style: its styles don't inherit states from it
+    override protected Style[] mergedStates() {
+        return null;
+    }
+
     /// find substyle based on widget state (e.g. focused, pressed, ...)
     override Style forState(uint state) {
         return this;
@@ -1259,6 +1451,7 @@ private __gshared Theme _currentTheme;
         destroy(_currentTheme);
     }
     _currentTheme = theme;
+    Style._statesRevision++; // styles with a parent style id find it in the new theme (#848)
     // one-color SVG icons (#843) use the theme's text color
     if (theme !is null) {
         uint color = theme.textColor;
@@ -2008,7 +2201,7 @@ unittest {
 
     // theme switch: states come from the new theme, own values are kept
     _currentTheme = dark;
-    own.updateStatesFromParent();
+    own.updateStatesFromParent(); // done by the currentTheme setter, which would destroy the old theme
     assert(own.textColor == 0x0000C0);
     assert(own.forState(DISABLED).textColor == 0x60FFFFFF);
     assert(own.forState(HOVERED).textColor == 0xE0E080);
@@ -2016,10 +2209,109 @@ unittest {
 
     // parent style id change: states of the new parent
     own.parentStyleId = "TXT";
-    own.updateStatesFromParent();
     assert(own.forState(DISABLED).textColor == 0xA0000000);
     assert(own.forState(HOVERED).textColor == 0x0000C0); // no hovered state in TXT: own normal color
     assert(own.forState(PRESSED).textColor == 0x00FF00);
+}
+
+/// state styles: own states merged over the parent's ones with the same mask and value, the parent's other states
+/// kept; properties not set in a state come from the style itself (#848)
+unittest {
+    Theme savedTheme = _currentTheme;
+    scope(exit) _currentTheme = savedTheme;
+    Theme t = new Theme("test");
+    _currentTheme = t;
+    scope(exit) destroy(t);
+    enum uint NORMAL = State.Enabled;
+    enum uint HOVERED = State.Enabled | State.Hovered;
+    enum uint DISABLED = 0;
+
+    Style button = t.createSubstyle("BUTTON").textColor(0x000000).fontSize(12).backgroundImageId("btn");
+    button.createState(State.Enabled | State.Hovered, State.Enabled | State.Hovered)
+        .textColor(0x0000FF).backgroundImageId("btn_hovered");
+    button.createState(State.Enabled, 0).textColor(0x808080);
+
+    // no own states: the parent's states, the rest from the style (the issue's example)
+    Style child = button.createSubstyle("CHILD").textColor(0xFF0000).fontSize(20).padding(Rect(8, 8, 8, 8));
+    assert(child.forState(HOVERED).textColor == 0x0000FF); // the parent's state value wins over own normal value
+    assert(child.forState(HOVERED).fontSize == 20);
+    assert(child.forState(HOVERED).padding == Rect(8, 8, 8, 8));
+    assert(child.forState(HOVERED).backgroundImageId == "btn_hovered");
+    assert(child.forState(DISABLED).textColor == 0x808080);
+    assert(child.forState(NORMAL) is child);
+
+    // a state redefined partially: the properties it sets over the parent's state, one merged state
+    Style dark = button.createSubstyle("DARK").textColor(0xFFFFFF).backgroundImageId("btn_dark");
+    dark.createState(State.Enabled | State.Hovered, State.Enabled | State.Hovered).backgroundImageId("btn_dark_hovered");
+    assert(dark.forState(HOVERED).backgroundImageId == "btn_dark_hovered");
+    assert(dark.forState(HOVERED).textColor == 0x0000FF);
+    assert(dark.forState(DISABLED).textColor == 0x808080); // a state only the parent has
+    assert(dark.forState(DISABLED).backgroundImageId == "btn_dark");
+    assert(dark.mergedStates().length == 2);
+
+    // own states come first: an own pressed state wins over the parent's hovered one
+    Style pressing = button.createSubstyle("PRESSING");
+    pressing.createState(State.Pressed, State.Pressed).textColor(0x00FF00);
+    assert(pressing.forState(HOVERED | State.Pressed).textColor == 0x00FF00);
+    assert(pressing.forState(HOVERED).textColor == 0x0000FF);
+
+    // the same state defined twice in one style: one merged state, the later values win
+    Style twice = t.createSubstyle("TWICE");
+    twice.createState(State.Hovered, State.Hovered).textColor(0x111111).fontSize(30);
+    twice.createState(State.Hovered, State.Hovered).textColor(0x222222);
+    assert(twice.forState(State.Hovered).textColor == 0x222222);
+    assert(twice.forState(State.Hovered).fontSize == 30);
+    assert(twice.mergedStates().length == 1);
+
+    // through a style without states, from the grandparent
+    Style grandChild = child.createSubstyle("GRANDCHILD").fontSize(25);
+    assert(grandChild.forState(HOVERED).textColor == 0x0000FF);
+    assert(grandChild.forState(HOVERED).fontSize == 25);
+
+    // changes after first use: a parent's state value, a new parent state
+    button.forState(HOVERED).textColor; // merged states built
+    button.createState(State.Enabled | State.Hovered, State.Enabled | State.Hovered); // same key: merged into one
+    button.getOrCreateState(State.Enabled | State.Hovered, State.Enabled | State.Hovered).textColor(0x0000C0);
+    assert(grandChild.forState(HOVERED).textColor == 0x0000C0);
+    assert(dark.forState(HOVERED).textColor == 0x0000C0);
+    button.createState(State.Focused, State.Focused).textColor(0x00C000);
+    assert(grandChild.forState(State.Focused | State.Enabled).textColor == 0x00C000);
+
+    // a redefined state keeps the parent's priority; states the parent doesn't have come first
+    Style ordered = t.createSubstyle("ORDERED");
+    ordered.createState(State.Pressed, State.Pressed).textColor(0x000001);
+    ordered.createState(State.Hovered, State.Hovered).textColor(0x000002);
+    Style redefining = ordered.createSubstyle("REDEFINING");
+    redefining.createState(State.Hovered, State.Hovered).textColor(0x000003);
+    redefining.createState(State.Focused, State.Focused).textColor(0x000004);
+    assert(redefining.forState(State.Pressed | State.Hovered).textColor == 0x000001);
+    assert(redefining.forState(State.Hovered).textColor == 0x000003);
+    assert(redefining.forState(State.Focused | State.Pressed).textColor == 0x000004);
+
+    // a rebuild updates the merged states in place
+    Style hovered = dark.forState(HOVERED);
+    button.getOrCreateState(State.Enabled | State.Hovered, State.Enabled | State.Hovered).textColor(0x0000A0);
+    assert(dark.forState(HOVERED) is hovered);
+    assert(hovered.textColor == 0x0000A0);
+
+    // a background change of the style clears the background cached by its merged states
+    Style colored = t.createSubstyle("COLORED").backgroundColor(0x111111);
+    colored.createState(State.Hovered, State.Hovered).textColor(0x222222);
+    assert(!colored.forState(State.Hovered).backgroundDrawable.isNull);
+    colored.backgroundColor(0x333333);
+    assert(colored.forState(State.Hovered)._backgroundDrawable.isNull);
+    assert(colored.forState(State.Hovered).backgroundColor == 0x333333);
+
+    // a parent style id change of a style without children rebuilds only its own merged states
+    Style own = t.modifyStyle("BUTTON");
+    scope(exit) destroy(own);
+    assert(own.forState(HOVERED).textColor == 0x0000A0);
+    immutable size_t revision = Style._statesRevision;
+    own.parentStyleId = "ORDERED";
+    assert(Style._statesRevision == revision);
+    assert(own.forState(State.Hovered).textColor == 0x000002);
+    own.parentStyleId = "ORDERED";
+    assert(own.forState(State.Hovered).textColor == 0x000002);
 }
 
 /// theme styles inherit properties not set in them from their parent= style, recursively (#814)
