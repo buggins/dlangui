@@ -245,7 +245,7 @@ class Dialog : VerticalLayout {
     protected bool closeWithCancelAction() {
         for (int i = 0; i < _buttonActions.length; i++) {
             if (_buttonActions[i].id == StandardAction.Cancel || _buttonActions[i].id == StandardAction.No) {
-                close(_buttonActions[_defaultButtonIndex]);
+                close(_buttonActions[i]); // the Cancel/No action, not the default one (#1020)
                 return true;
             }
         }
@@ -277,5 +277,27 @@ class DialogFrame : WindowFrame {
         _dialog = dialog;
         _caption.text = _dialog.windowCaption.value;
         bodyWidget = _dialog;
+    }
+}
+
+// Esc closes the dialog with its Cancel/No action, not with the default one (#1020)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    import std.typecons : Rebindable;
+    auto _ = useTestTheme();
+    static class TestDialog : Dialog {
+        Rebindable!(const Action) closedWith;
+        this() { super(UIString.fromRaw("test"d)); }
+        override void close(const Action action) { closedWith = action; }
+    }
+    // without icons: no image cache in unittests; Yes/No have no Esc accelerator, so Esc gets here
+    const yes = new Action(StandardAction.Yes, "Yes"d);
+    const no = new Action(StandardAction.No, "No"d);
+    foreach (defaultIndex; [0, -1]) {
+        auto d = new TestDialog();
+        scope(exit) destroy(d);
+        d.addChild(d.createButtonsPanel([yes, no], defaultIndex, 0));
+        assert(d.onKeyEvent(new KeyEvent(KeyAction.KeyUp, KeyCode.ESCAPE, 0)));
+        assert(d.closedWith is no);
     }
 }
