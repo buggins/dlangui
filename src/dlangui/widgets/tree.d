@@ -824,7 +824,7 @@ class TreeItemWidget : HorizontalLayout {
         ImageWidget icon = new ImageWidget("icon", _item.iconRes);
         icon.styleId = STYLE_TREE_ITEM_ICON;
         icon.setState(State.Parent);
-        icon.padding(Rect(0, 0, BACKEND_GUI ? 5 : 0, 0));
+        icon.padding(Rect(0, 0, BACKEND_GUI ? makePointSize(4) : 0, 0)); // 4 pt: 5 px at 100%, follows the DPI (#840)
         return icon;
     }
 
