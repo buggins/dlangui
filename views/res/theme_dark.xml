@@ -40,6 +40,8 @@
         backgroundImageId="btn_background_dark"
 	focusRectColors="#FFF"
         >
+        <state state_default="true" state_enabled="true" state_hovered="true" fontWeight="bold" textColor="#E0E080"/>
+        <state state_default="true" state_enabled="false" fontWeight="bold" textColor="#60FFFFFF"/>
         <state state_enabled="false" textColor="#60FFFFFF"/>
         <state state_enabled="true" state_hovered="true" textColor="#E0E080"/>
     </style>
@@ -60,6 +62,8 @@
         layoutWidth="FILL_PARENT"
 	focusRectColors="#FFF"
         >
+        <state state_default="true" state_enabled="true" state_hovered="true" fontWeight="bold" textColor="#E0E080"/>
+        <state state_default="true" state_enabled="false" fontWeight="bold" textColor="#60FFFFFF"/>
         <state state_enabled="false" textColor="#60FFFFFF"/>
         <state state_enabled="true" state_hovered="true" textColor="#E0E080"/>
     </style>
