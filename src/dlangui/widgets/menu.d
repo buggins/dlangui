@@ -421,7 +421,7 @@ class MenuItemWidget : WidgetGroupDefaultDrawing {
         _item = item;
         updateState();
         if (_item.type == MenuItemType.Separator) {
-            styleId = "MENU_SEPARATOR";
+            styleId = STYLE_MENU_SEPARATOR;
             trackHover = false;
             clickable = false;
         } else {

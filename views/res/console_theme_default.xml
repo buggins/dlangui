@@ -238,6 +238,9 @@
         >
         <state state_selected="true" backgroundColor="#000080"/>
     </style>
+    <!-- tabs below the content (#1018) -->
+    <style id="TAB_DOWN" parent="TAB_UP"/>
+    <style id="TAB_DOWN_BUTTON" parent="TAB_UP_BUTTON"/>
     <style id="TAB_HOST"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
@@ -267,6 +270,10 @@
         >
         <state state_selected="true" backgroundImageId="{' ' bc 0xFFFFFF stretch}"/>
     </style>
+    <!-- menu separator: a line one row high (#1018) -->
+    <style id="MENU_SEPARATOR"
+        backgroundImageId="{'─' tc 0x808080 bc 0xFFFFFFFF stretch}"
+        />
     <style id="MENU_ICON"
         margins="0,0,0,0"
         align="Left|VCenter"
@@ -352,6 +359,8 @@
         <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
         <state state_enabled="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
     </style>
+    <!-- LogWidget (#1018) -->
+    <style id="LOG_WIDGET" parent="EDIT_BOX"/>
     <style id="LIST_BOX"
         backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"
         padding="1,1,1,1"
@@ -386,6 +395,8 @@
         >
         <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
     </style>
+    <!-- the file list of the file dialog (#1018) -->
+    <style id="FILE_DIALOG_GRID" parent="STRING_GRID"/>
     <style id="STATUS_LINE"
         backgroundColor="#D0D0D0"
         layoutWidth="FILL_PARENT"
@@ -623,6 +634,15 @@
         >
         <state state_hovered="true" backgroundColor="#C0C0C0" textColor="#000000"/>
         <state state_pressed="true" backgroundColor="#FFFFFF" textColor="#000000"/>
+    </style>
+    <!-- SimpleBarChart (#1018) -->
+    <style id="SIMPLE_BAR_CHART"
+        margins="1,0,1,0"
+        minWidth="40"
+        >
+        <color id="chart_background_color" value="#000000"/>
+        <color id="chart_axis_color" value="#808080"/>
+        <color id="chart_segment_tag_color" value="#C0C0C0"/>
     </style>
 </theme>
 

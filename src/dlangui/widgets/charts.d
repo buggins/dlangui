@@ -51,7 +51,7 @@ class SimpleBarChart : Widget {
         clickable = false;
         focusable = false;
         trackHover = false;
-        styleId = "SIMPLE_BAR_CHART";
+        styleId = STYLE_SIMPLE_BAR_CHART;
         _axisX.arrowSize = 1;
         title =  UIString.fromId("TITLE_NEW_CHART"c);
         measureTextToSetWidgetSize();
