@@ -208,18 +208,8 @@ class Console {
         bool isSequenceCompleted() {
             if (!readBufPos)
                 return false;
-            if (readBuf[0] == 0x1B) {
-                if (readBufPos > 1 && readBuf[1] == '[' && readBuf[2] == 'M')
-                    return readBufPos >= 6;
-                for (int i = 1; i < readBufPos; i++) {
-                    char ch = readBuf[i];
-                    if (ch == 'O' && i == readBufPos - 1)
-                        continue;
-                    if ((ch >= 'a' && ch <='z') || (ch >= 'A' && ch <='Z') || ch == '@' || ch == '~')
-                        return true;
-                }
-                return false;
-            }
+            if (readBuf[0] == 0x1B)
+                return isEscSequenceComplete(readBuf[0 .. readBufPos]);
             if (readBuf[0] & 0x80) {
                 if ((readBuf[0] & 0xE0) == 0xC0)
                     return readBufPos >= 2;
@@ -282,10 +272,27 @@ class Console {
             if (readBufPos > 0 && isSequenceCompleted()) {
                 string s = readBuf[0 .. readBufPos].idup;
                 readBufPos = 0;
+                _partialSince = MonoTime.zero;
                 return s;
+            }
+            if (readBufPos > 0) {
+                // incomplete: a lone ESC is the Esc key, other bytes are passed on as they are after a while (#1041)
+                immutable MonoTime now = MonoTime.currTime;
+                if (_partialSince == MonoTime.zero) {
+                    _partialSince = now;
+                } else if (now - _partialSince >= ESC_TIMEOUT) {
+                    string s = readBuf[0 .. readBufPos].idup;
+                    readBufPos = 0;
+                    _partialSince = MonoTime.zero;
+                    return s;
+                }
             }
             return null;
         }
+        /// time to wait for the rest of an escape sequence: after it, a lone ESC is the Esc key (#1041)
+        enum ESC_TIMEOUT = dur!"msecs"(50);
+        import core.time : MonoTime, dur;
+        private MonoTime _partialSince;
         bool rawWrite(string s) {
             import core.sys.posix.unistd;
             import core.stdc.errno;
@@ -401,6 +408,10 @@ class Console {
             //turn off canonical mode
             ttystate.c_lflag &= ~ICANON;
             ttystate.c_lflag &= ~ECHO;
+            // keys for the app, as in full-screen terminal apps (#1041): Ctrl+C/Z/\ (signals), Ctrl+V/O (extended
+            // input processing), Ctrl+S/Q (flow control)
+            ttystate.c_lflag &= ~(ISIG | IEXTEN);
+            ttystate.c_iflag &= ~IXON;
             //minimum of number input read.
             ttystate.c_cc[VMIN] = 1;
             //set the terminal attributes.
@@ -1003,204 +1014,10 @@ class Console {
                 handleMouseEvent(evt);
                 return true;
             }
-            int keyCode = 0;
-            int keyFlags = 0;
-            dstring text;
-            if (s[0] == 27) {
-                //
-                string escSequence = s[1 .. $];
-                //Log.d("ESC ", escSequence);
-                char letter = escSequence[$ - 1];
-                if (escSequence.startsWith("[") && escSequence.length > 1) {
-                    import std.string : indexOf;
-                    string options = escSequence[1 .. $ - 1];
-                    if (letter == '~') {
-                        string code = options;
-                        int semicolonPos = cast(int)options.indexOf(";");
-                        if (semicolonPos >= 0) {
-                            code = options[0 .. semicolonPos];
-                            options = options[semicolonPos + 1 .. $];
-                        } else {
-                            options = null;
-                        }
-                        switch(options) {
-                            case "5": keyFlags = KeyFlag.Control; break;
-                            case "2": keyFlags = KeyFlag.Shift; break;
-                            case "3": keyFlags = KeyFlag.Alt; break;
-                            case "4": keyFlags = KeyFlag.Shift | KeyFlag.Alt; break;
-                            case "6": keyFlags = KeyFlag.Shift | KeyFlag.Control; break;
-                            case "7": keyFlags = KeyFlag.Alt | KeyFlag.Control; break;
-                            case "8": keyFlags = KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control; break;
-                            default: break;
-                        }
-                        switch(code) {
-                            case "15": keyCode = KeyCode.F5; break;
-                            case "17": keyCode = KeyCode.F6; break;
-                            case "18": keyCode = KeyCode.F7; break;
-                            case "19": keyCode = KeyCode.F8; break;
-                            case "20": keyCode = KeyCode.F9; break;
-                            case "21": keyCode = KeyCode.F10; break;
-                            case "23": keyCode = KeyCode.F11; break;
-                            case "24": keyCode = KeyCode.F12; break;
-                            case "5": keyCode = KeyCode.PAGEUP; break;
-                            case "6": keyCode = KeyCode.PAGEDOWN; break;
-                            case "2": keyCode = KeyCode.INS; break;
-                            case "3": keyCode = KeyCode.DEL; break;
-                            default: break;
-                        }
-                    } else {
-                        switch(options) {
-                            case "1;5": keyFlags = KeyFlag.Control; break;
-                            case "1;2": keyFlags = KeyFlag.Shift; break;
-                            case "1;3": keyFlags = KeyFlag.Alt; break;
-                            case "1;4": keyFlags = KeyFlag.Shift | KeyFlag.Alt; break;
-                            case "1;6": keyFlags = KeyFlag.Shift | KeyFlag.Control; break;
-                            case "1;7": keyFlags = KeyFlag.Alt | KeyFlag.Control; break;
-                            case "1;8": keyFlags = KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control; break;
-                            default: break;
-                        }
-                        switch(letter) {
-                            case 'A': keyCode = KeyCode.UP; break;
-                            case 'B': keyCode = KeyCode.DOWN; break;
-                            case 'D': keyCode = KeyCode.LEFT; break;
-                            case 'C': keyCode = KeyCode.RIGHT; break;
-                            case 'H': keyCode = KeyCode.HOME; break;
-                            case 'F': keyCode = KeyCode.END; break;
-                            default: break;
-                        }
-                        switch(letter) {
-                            case 'P': keyCode = KeyCode.F1; break;
-                            case 'Q': keyCode = KeyCode.F2; break;
-                            case 'R': keyCode = KeyCode.F3; break;
-                            case 'S': keyCode = KeyCode.F4; break;
-                            default: break;
-                        }
-                    }
-                } else if (escSequence.startsWith("O")) {
-                    switch(letter) {
-                        case 'P': keyCode = KeyCode.F1; break;
-                        case 'Q': keyCode = KeyCode.F2; break;
-                        case 'R': keyCode = KeyCode.F3; break;
-                        case 'S': keyCode = KeyCode.F4; break;
-                        default: break;
-                    }
-                }
-            } else {
-                import std.utf;
-                //Log.d("stdin: ", s);
-                try {
-                    dstring s32 = toUTF32(s);
-                    switch(s) {
-                        case " ": keyCode = KeyCode.SPACE; text = " "; break;
-                        case "\t": keyCode = KeyCode.TAB; break;
-                        case "\n": keyCode = KeyCode.RETURN; /* text = " " ; */ break;
-                        case "0": keyCode = KeyCode.KEY_0; text = s32; break;
-                        case "1": keyCode = KeyCode.KEY_1; text = s32; break;
-                        case "2": keyCode = KeyCode.KEY_2; text = s32; break;
-                        case "3": keyCode = KeyCode.KEY_3; text = s32; break;
-                        case "4": keyCode = KeyCode.KEY_4; text = s32; break;
-                        case "5": keyCode = KeyCode.KEY_5; text = s32; break;
-                        case "6": keyCode = KeyCode.KEY_6; text = s32; break;
-                        case "7": keyCode = KeyCode.KEY_7; text = s32; break;
-                        case "8": keyCode = KeyCode.KEY_8; text = s32; break;
-                        case "9": keyCode = KeyCode.KEY_9; text = s32; break;
-                        case "a":
-                        case "A":
-                            keyCode = KeyCode.KEY_A; text = s32; break;
-                        case "b":
-                        case "B":
-                            keyCode = KeyCode.KEY_B; text = s32; break;
-                        case "c":
-                        case "C":
-                            keyCode = KeyCode.KEY_C; text = s32; break;
-                        case "d":
-                        case "D":
-                            keyCode = KeyCode.KEY_D; text = s32; break;
-                        case "e":
-                        case "E":
-                            keyCode = KeyCode.KEY_E; text = s32; break;
-                        case "f":
-                        case "F":
-                            keyCode = KeyCode.KEY_F; text = s32; break;
-                        case "g":
-                        case "G":
-                            keyCode = KeyCode.KEY_G; text = s32; break;
-                        case "h":
-                        case "H":
-                            keyCode = KeyCode.KEY_H; text = s32; break;
-                        case "i":
-                        case "I":
-                            keyCode = KeyCode.KEY_I; text = s32; break;
-                        case "j":
-                        case "J":
-                            keyCode = KeyCode.KEY_J; text = s32; break;
-                        case "k":
-                        case "K":
-                            keyCode = KeyCode.KEY_K; text = s32; break;
-                        case "l":
-                        case "L":
-                            keyCode = KeyCode.KEY_L; text = s32; break;
-                        case "m":
-                        case "M":
-                            keyCode = KeyCode.KEY_M; text = s32; break;
-                        case "n":
-                        case "N":
-                            keyCode = KeyCode.KEY_N; text = s32; break;
-                        case "o":
-                        case "O":
-                            keyCode = KeyCode.KEY_O; text = s32; break;
-                        case "p":
-                        case "P":
-                            keyCode = KeyCode.KEY_P; text = s32; break;
-                        case "q":
-                        case "Q":
-                            keyCode = KeyCode.KEY_Q; text = s32; break;
-                        case "r":
-                        case "R":
-                            keyCode = KeyCode.KEY_R; text = s32; break;
-                        case "s":
-                        case "S":
-                            keyCode = KeyCode.KEY_S; text = s32; break;
-                        case "t":
-                        case "T":
-                            keyCode = KeyCode.KEY_T; text = s32; break;
-                        case "u":
-                        case "U":
-                            keyCode = KeyCode.KEY_U; text = s32; break;
-                        case "v":
-                        case "V":
-                            keyCode = KeyCode.KEY_V; text = s32; break;
-                        case "w":
-                        case "W":
-                            keyCode = KeyCode.KEY_W; text = s32; break;
-                        case "x":
-                        case "X":
-                            keyCode = KeyCode.KEY_X; text = s32; break;
-                        case "y":
-                        case "Y":
-                            keyCode = KeyCode.KEY_Y; text = s32; break;
-                        case "z":
-                        case "Z":
-                            keyCode = KeyCode.KEY_Z; text = s32; break;
-                        default:
-                            if (s32[0] >= 32)
-                                text = s32;
-                            keyCode = 0x400000 | s32[0];
-                            break;
-                    }
-                    if (s32.length == 1 && s32[0] >= 1 && s32[0] <= 26) {
-                        // ctrl + A..Z
-                        keyCode = KeyCode.KEY_A + s32[0] - 1;
-                        keyFlags = KeyFlag.Control;
-                    }
-                    if (s32.length == 1 && s32[0] >= 'A' && s32[0] <= 'Z') {
-                        // uppercase letter - with shift
-                        keyFlags = KeyFlag.Shift;
-                    }
-                } catch (Exception e) {
-                    // skip invalid utf8 encoding
-                }
-            }
+            ConsoleKey key = parseConsoleKey(s);
+            int keyCode = key.keyCode;
+            int keyFlags = key.flags;
+            dstring text = key.text;
             if (keyCode) {
                 KeyEvent keyDown = new KeyEvent(KeyAction.KeyDown, keyCode, keyFlags);
                 handleKeyEvent(keyDown);
@@ -1214,6 +1031,288 @@ class Console {
         }
         return !_stopped;
     }
+}
+
+/// a key from console (terminal) input: key code (KeyCode), flags (KeyFlag), text for KeyAction.Text (#1041)
+struct ConsoleKey {
+    int keyCode;
+    int flags;
+    dstring text;
+}
+
+/**
+    True when the bytes starting with ESC are a complete key sequence of a terminal (#1041):
+    CSI `ESC [` params final byte (the Linux console's `ESC [ [ x` takes one more byte; X10 mouse `ESC [ M` takes
+    three); SS3 `ESC O x`; ESC + a complete sequence (Alt+arrow in rxvt-like terminals: `ESC ESC [ A`); otherwise
+    ESC and one character (Alt+key), which may be UTF-8. A lone ESC or ESC ESC is completed by the timeout of the
+    reader (the Esc key).
+*/
+bool isEscSequenceComplete(const(char)[] s) pure nothrow @safe @nogc {
+    if (s.length < 2)
+        return false;
+    immutable char c = s[1];
+    if (c == 0x1B)
+        return isEscSequenceComplete(s[1 .. $]);
+    if (c == '[') {
+        if (s.length >= 3 && s[2] == 'M')
+            return s.length >= 6; // X10 mouse: ESC [ M b x y
+        if (s.length >= 3 && s[2] == '[')
+            return s.length >= 4; // Linux console F1..F5: ESC [ [ A..E
+        foreach (ch; s[2 .. $])
+            if (ch >= 0x40 && ch <= 0x7E)
+                return true;
+        return false;
+    }
+    if (c == 'O')
+        return s.length >= 3;
+    if (c & 0x80) { // Alt + a non-ASCII character
+        immutable size_t len = (c & 0xE0) == 0xC0 ? 2 : (c & 0xF0) == 0xE0 ? 3 : (c & 0xF8) == 0xF0 ? 4 : 1;
+        return s.length >= 1 + len;
+    }
+    return true;
+}
+
+private int consoleModifiers(int m) pure nothrow @safe @nogc {
+    // xterm modifier parameter: 1 + (1 Shift, 2 Alt, 4 Control, 8 Meta)
+    int flags;
+    m--;
+    if (m & 1) flags |= KeyFlag.Shift;
+    if (m & 2) flags |= KeyFlag.Alt;
+    if (m & 4) flags |= KeyFlag.Control;
+    return flags;
+}
+
+/**
+    Parses one complete key sequence from a terminal (as read by the console backend, mouse sequences excluded)
+    into a key (#1041). keyCode is 0 for an unknown sequence. Besides the usual xterm, VT220, rxvt and Linux console
+    sequences: ESC ESC is Esc; ESC 1..9 / ESC 0 are F1..F9 / F10 (a convention of text-UI apps); ESC + another key
+    is that key with Alt.
+*/
+ConsoleKey parseConsoleKey(string s) pure @safe {
+    import std.conv : to;
+    import std.string : indexOf;
+    import std.utf : decode, UTFException;
+    ConsoleKey res;
+    if (!s.length)
+        return res;
+    if (s[0] == 0x1B) {
+        if (s.length == 1 || s == "\x1b\x1b") {
+            res.keyCode = KeyCode.ESCAPE;
+            return res;
+        }
+        if (s[1] == '[' && s.length >= 3) {
+            if (s[2] == '[' && s.length == 4) { // Linux console F1..F5
+                if (s[3] >= 'A' && s[3] <= 'E')
+                    res.keyCode = KeyCode.F1 + (s[3] - 'A');
+                return res;
+            }
+            immutable char letter = s[$ - 1];
+            string params = s[2 .. $ - 1];
+            string code = params, mods;
+            ptrdiff_t semicolon = params.indexOf(';');
+            if (semicolon >= 0) {
+                code = params[0 .. semicolon];
+                mods = params[semicolon + 1 .. $];
+            }
+            if (mods.length) {
+                try {
+                    res.flags = consoleModifiers(mods.to!int);
+                } catch (Exception e) {
+                    return res;
+                }
+            }
+            if (letter == '~') {
+                switch (code) {
+                    case "1": case "7": res.keyCode = KeyCode.HOME; break;
+                    case "4": case "8": res.keyCode = KeyCode.END; break;
+                    case "2": res.keyCode = KeyCode.INS; break;
+                    case "3": res.keyCode = KeyCode.DEL; break;
+                    case "5": res.keyCode = KeyCode.PAGEUP; break;
+                    case "6": res.keyCode = KeyCode.PAGEDOWN; break;
+                    case "11": res.keyCode = KeyCode.F1; break;
+                    case "12": res.keyCode = KeyCode.F2; break;
+                    case "13": res.keyCode = KeyCode.F3; break;
+                    case "14": res.keyCode = KeyCode.F4; break;
+                    case "15": res.keyCode = KeyCode.F5; break;
+                    case "17": res.keyCode = KeyCode.F6; break;
+                    case "18": res.keyCode = KeyCode.F7; break;
+                    case "19": res.keyCode = KeyCode.F8; break;
+                    case "20": res.keyCode = KeyCode.F9; break;
+                    case "21": res.keyCode = KeyCode.F10; break;
+                    case "23": res.keyCode = KeyCode.F11; break;
+                    case "24": res.keyCode = KeyCode.F12; break;
+                    default: break;
+                }
+                return res;
+            }
+            if (letter == 'Z') { // Shift+Tab
+                res.keyCode = KeyCode.TAB;
+                res.flags |= KeyFlag.Shift;
+                return res;
+            }
+            res.keyCode = csiSs3Key(letter);
+            if (!res.keyCode)
+                res.flags = 0;
+            return res;
+        }
+        if (s[1] == 'O' && s.length == 3) { // SS3: application mode arrows, F1..F4
+            res.keyCode = csiSs3Key(s[2]);
+            return res;
+        }
+        // ESC + key: ESC 1..9, ESC 0 are F1..F9, F10; otherwise the key with Alt (no text)
+        string rest = s[1 .. $];
+        if (rest.length == 1 && rest[0] >= '1' && rest[0] <= '9') {
+            res.keyCode = KeyCode.F1 + (rest[0] - '1');
+            return res;
+        }
+        if (rest == "0") {
+            res.keyCode = KeyCode.F10;
+            return res;
+        }
+        res = parseConsoleKey(rest);
+        if (res.keyCode && res.keyCode != KeyCode.ESCAPE) {
+            res.flags |= KeyFlag.Alt;
+            res.text = null;
+        }
+        return res;
+    }
+    dchar ch;
+    try {
+        size_t index = 0;
+        ch = decode(s, index);
+    } catch (UTFException e) {
+        return res; // invalid UTF-8
+    }
+    switch (ch) {
+        case '\n': case '\r': res.keyCode = KeyCode.RETURN; return res;
+        case '\t': res.keyCode = KeyCode.TAB; return res;
+        case 0x7F: case 0x08: res.keyCode = KeyCode.BACK; return res;
+        case 0: res.keyCode = KeyCode.SPACE; res.flags = KeyFlag.Control; return res; // Ctrl+Space
+        case ' ': res.keyCode = KeyCode.SPACE; res.text = " "; return res;
+        default: break;
+    }
+    if (ch >= 1 && ch <= 26) { // Ctrl+A..Z (the ones above are Backspace, Tab and Enter)
+        res.keyCode = KeyCode.KEY_A + (ch - 1);
+        res.flags = KeyFlag.Control;
+        return res;
+    }
+    if (ch < ' ')
+        return res;
+    res.text = [ch];
+    if (ch >= 'a' && ch <= 'z') {
+        res.keyCode = KeyCode.KEY_A + (ch - 'a');
+    } else if (ch >= 'A' && ch <= 'Z') {
+        res.keyCode = KeyCode.KEY_A + (ch - 'A');
+        res.flags = KeyFlag.Shift;
+    } else if (ch >= '0' && ch <= '9') {
+        res.keyCode = KeyCode.KEY_0 + (ch - '0');
+    } else {
+        res.keyCode = 0x400000 | ch;
+    }
+    return res;
+}
+
+/// key of a CSI / SS3 sequence ending with this letter: arrows, Home, End, F1..F4
+private int csiSs3Key(char letter) pure nothrow @safe @nogc {
+    switch (letter) {
+        case 'A': return KeyCode.UP;
+        case 'B': return KeyCode.DOWN;
+        case 'C': return KeyCode.RIGHT;
+        case 'D': return KeyCode.LEFT;
+        case 'H': return KeyCode.HOME;
+        case 'F': return KeyCode.END;
+        case 'P': return KeyCode.F1;
+        case 'Q': return KeyCode.F2;
+        case 'R': return KeyCode.F3;
+        case 'S': return KeyCode.F4;
+        default: return 0;
+    }
+}
+
+// console key sequences (#1041)
+@safe unittest {
+    static void check(string s, int keyCode, int flags = 0, dstring text = null) {
+        ConsoleKey k = parseConsoleKey(s);
+        assert(k.keyCode == keyCode && k.flags == flags && k.text == text, s);
+    }
+    // basic keys: Enter and Tab were Ctrl+J / Ctrl+I, Backspace and Esc did nothing
+    check("\n", KeyCode.RETURN);
+    check("\r", KeyCode.RETURN);
+    check("\t", KeyCode.TAB);
+    check("\x7f", KeyCode.BACK);
+    check("\x08", KeyCode.BACK);
+    check("\x1b", KeyCode.ESCAPE);
+    check("\x1b\x1b", KeyCode.ESCAPE);
+    check(" ", KeyCode.SPACE, 0, " ");
+    check("\x00", KeyCode.SPACE, KeyFlag.Control);
+    // characters, Ctrl+letters
+    check("a", KeyCode.KEY_A, 0, "a");
+    check("Q", KeyCode.KEY_Q, KeyFlag.Shift, "Q");
+    check("7", KeyCode.KEY_7, 0, "7");
+    check("\x13", KeyCode.KEY_S, KeyFlag.Control); // Ctrl+S
+    check("\x03", KeyCode.KEY_C, KeyFlag.Control); // Ctrl+C
+    check("ж", 0x400000 | 'ж', 0, "ж");
+    // Alt+key, ESC + digit = F-key
+    check("\x1bf", KeyCode.KEY_F, KeyFlag.Alt);
+    check("\x1bX", KeyCode.KEY_X, KeyFlag.Shift | KeyFlag.Alt);
+    check("\x1b1", KeyCode.F1);
+    check("\x1b9", KeyCode.F9);
+    check("\x1b0", KeyCode.F10);
+    check("\x1b\x7f", KeyCode.BACK, KeyFlag.Alt);
+    // rxvt-like terminals: Alt + a sequence is ESC + the sequence
+    check("\x1b\x1b[A", KeyCode.UP, KeyFlag.Alt);
+    check("\x1b\x1bOP", KeyCode.F1, KeyFlag.Alt);
+    check("\x1b\x1b[1;5D", KeyCode.LEFT, KeyFlag.Control | KeyFlag.Alt);
+    // CSI and SS3 sequences
+    check("\x1b[A", KeyCode.UP);
+    check("\x1b[1;5D", KeyCode.LEFT, KeyFlag.Control);
+    check("\x1b[1;2C", KeyCode.RIGHT, KeyFlag.Shift);
+    check("\x1bOA", KeyCode.UP);
+    check("\x1b[H", KeyCode.HOME);
+    check("\x1b[1~", KeyCode.HOME);
+    check("\x1b[7~", KeyCode.HOME);
+    check("\x1b[4~", KeyCode.END);
+    check("\x1b[8~", KeyCode.END);
+    check("\x1bOF", KeyCode.END);
+    check("\x1b[Z", KeyCode.TAB, KeyFlag.Shift);
+    check("\x1bOP", KeyCode.F1);
+    check("\x1b[11~", KeyCode.F1);
+    check("\x1b[[A", KeyCode.F1);
+    check("\x1b[[E", KeyCode.F5);
+    check("\x1b[1;5P", KeyCode.F1, KeyFlag.Control);
+    check("\x1b[15~", KeyCode.F5);
+    check("\x1b[24;2~", KeyCode.F12, KeyFlag.Shift);
+    check("\x1b[5~", KeyCode.PAGEUP);
+    // Ctrl+Ins / Shift+Ins / Shift+Del: Copy / Paste / Cut in the editors
+    check("\x1b[2;5~", KeyCode.INS, KeyFlag.Control);
+    check("\x1b[2;2~", KeyCode.INS, KeyFlag.Shift);
+    check("\x1b[3;2~", KeyCode.DEL, KeyFlag.Shift);
+    // unknown
+    check("\x1b[99~", 0);
+    check("\x1b[1;xA", 0);
+}
+
+// complete sequences (#1041)
+@safe unittest {
+    assert(!isEscSequenceComplete("\x1b"));
+    assert(!isEscSequenceComplete("\x1b\x1b")); // Esc after the timeout, or the start of ESC ESC [ A
+    assert(!isEscSequenceComplete("\x1b\x1b["));
+    assert(isEscSequenceComplete("\x1b\x1b[A"));
+    assert(isEscSequenceComplete("\x1b\x1bOP"));
+    assert(isEscSequenceComplete("\x1bf"));
+    assert(isEscSequenceComplete("\x1b1"));
+    assert(!isEscSequenceComplete("\x1b["));
+    assert(!isEscSequenceComplete("\x1b[1;5"));
+    assert(isEscSequenceComplete("\x1b[1;5D"));
+    assert(isEscSequenceComplete("\x1b[2~"));
+    assert(!isEscSequenceComplete("\x1b[["));
+    assert(isEscSequenceComplete("\x1b[[A"));
+    assert(!isEscSequenceComplete("\x1bO"));
+    assert(isEscSequenceComplete("\x1bOP"));
+    assert(!isEscSequenceComplete("\x1b[M !"));
+    assert(isEscSequenceComplete("\x1b[M !!"));
+    assert(!isEscSequenceComplete("\x1b\xd0"));
+    assert(isEscSequenceComplete("\x1b\xd0\xb6"));
 }
 
 /// interface - slot for onMouse
