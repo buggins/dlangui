@@ -493,15 +493,16 @@ class SettingsDialog : Dialog {
     override void initialize() {
         import dlangui.widgets.scroll;
         minWidth(makePointSize(150)).minHeight(makePointSize(150));
-        layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         _tree = new TreeWidget("prop_tree", ScrollBarMode.Auto, ScrollBarMode.Auto);
         _tree.styleId = STYLE_SETTINGS_TREE;
-        _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(makePointSize(200)).minWidth(makePointSize(50));
+        // the tree keeps its width, the pages take the rest (#1010)
+        _tree.layoutHeight(FILL_PARENT).minHeight(makePointSize(200)).minWidth(makePointSize(50));
         _tree.selectionChange = &onTreeItemSelected;
         _tree.fontSize = WIDGET_STYLE_CONSOLE ? 16 : makePointSize(12); // 16 px at 100% (#840)
         _frame = new FrameLayout("prop_pages");
         _frame.styleId = STYLE_SETTINGS_PAGES;
-        _frame.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(makePointSize(200)).minWidth(makePointSize(100));
+        _frame.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(makePointSize(200)).minWidth(makePointSize(100));
         createControls(_layout, _tree.items);
         HorizontalLayout content = new HorizontalLayout("settings_dlg_content");
         content.addChild(_tree);
