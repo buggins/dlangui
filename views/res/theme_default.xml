@@ -346,6 +346,7 @@
         padding="3pt,3pt,3pt,3pt"
         margins="1pt,1pt,1pt,1pt"
         minWidth="30pt"
+        align="Left|VCenter"
         />
     <style id="EDIT_BOX"
         fontFace="Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Liberation Mono,Lucida Sans Typewriter,Courier New,Lucida Console"
