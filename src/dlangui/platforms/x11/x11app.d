@@ -1786,6 +1786,9 @@ class X11Platform : Platform {
                 if (w) {
                     if (event.xbutton.button == 4 || event.xbutton.button == 5) {
                         w.processMouseEvent(MouseAction.Wheel, 0, event.xbutton.state, 0, event.xbutton.button == 4 ? 1 : -1);
+                    } else if (event.xbutton.button == 6 || event.xbutton.button == 7) {
+                        // horizontal wheel (#1053): Shift + wheel, as scroll widgets expect; left +1, right -1
+                        w.processMouseEvent(MouseAction.Wheel, 0, event.xbutton.state | ShiftMask, 0, event.xbutton.button == 6 ? 1 : -1);
                     } else {
                         w.processMouseEvent(MouseAction.ButtonDown, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
                     }
@@ -1795,6 +1798,8 @@ class X11Platform : Platform {
                 break;
             case ButtonRelease:
                 Log.d("X11: ButtonRelease event");
+                if (event.xbutton.button == 6 || event.xbutton.button == 7)
+                    break; // horizontal wheel: handled on press (#1053)
                 X11Window w = findWindow(event.xbutton.window);
                 if (w) {
                     w.processMouseEvent(MouseAction.ButtonUp, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);

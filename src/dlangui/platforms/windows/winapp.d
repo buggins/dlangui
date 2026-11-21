@@ -389,6 +389,9 @@ interface UnknownWindowMessageHandler {
     bool onUnknownWindowMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, ref LRESULT result);
 }
 
+/// WM_MOUSEHWHEEL (horizontal mouse wheel, #1053), defined here: not every druntime version has it
+private enum uint WM_MOUSEHWHEEL_ = 0x020E;
+
 class Win32Window : Window {
     Win32Platform _platform;
 
@@ -1090,9 +1093,16 @@ class Win32Window : Window {
                 action = MouseAction.Leave;
                 break;
             case WM_MOUSEWHEEL:
+            case WM_MOUSEHWHEEL_:
                 {
                     action = MouseAction.Wheel;
                     wheelDelta = (cast(short)(flags >> 16)) / 120;
+                    if (message == WM_MOUSEHWHEEL_) {
+                        // horizontal wheel (#1053): Shift + wheel, as scroll widgets expect; right is positive here,
+                        // left +1 / right -1 as in the other backends
+                        wheelDelta = cast(short)-wheelDelta;
+                        flags |= MK_SHIFT;
+                    }
                     POINT pt;
                     pt.x = x;
                     pt.y = y;
@@ -1864,6 +1874,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_MBUTTONUP:
         case WM_RBUTTONUP:
         case WM_MOUSEWHEEL:
+        case WM_MOUSEHWHEEL_:
             if (window !is null) {
                 if (window.onMouse(message, cast(uint)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)))
                     return 0; // processed
