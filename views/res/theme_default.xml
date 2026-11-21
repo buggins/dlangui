@@ -177,7 +177,7 @@
     <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
     <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
     <style id="SCROLLBAR"
-        backgroundColor="#dce2e8"
+        backgroundColor="#F0F0F0"
         align="Center"
         />
     <style id="SLIDER"
