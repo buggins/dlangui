@@ -66,11 +66,18 @@ class BasicControls : LinearLayout
         HorizontalLayout line2 = new HorizontalLayout();
         addChild(line2);
 
+        // the scroll bar and the slider are lower than the edit lines in this row: as high as the row, centered vertically
         GroupBox gb5 = new GroupBox("scrollbar", "horizontal ScrollBar"d);
+        gb5.layoutHeight(FILL_PARENT);
+        gb5.addChild(new VSpacer().minHeight(0));
         gb5.addChild(new ScrollBar("sb1", Orientation.Horizontal));
+        gb5.addChild(new VSpacer().minHeight(0));
         line2.addChild(gb5);
         GroupBox gb6 = new GroupBox("slider", "horizontal SliderWidget"d);
+        gb6.layoutHeight(FILL_PARENT);
+        gb6.addChild(new VSpacer().minHeight(0));
         gb6.addChild(new SliderWidget("sb2", Orientation.Horizontal));
+        gb6.addChild(new VSpacer().minHeight(0));
         line2.addChild(gb6);
         GroupBox gb7 = new GroupBox("editline1", "EditLine"d);
         gb7.addChild(new EditLine("ed1", "Some text"d).minWidth(makePointSize(120)));
@@ -130,8 +137,9 @@ class BasicControls : LinearLayout
 
         GroupBox gbtree = new GroupBox("tree", "TreeWidget"d, Orientation.Vertical);
         gbtree.layoutWidth(makePercentSize(25)); // a share of the row (#1060); the resizer changes it
+        gbtree.layoutHeight(FILL_PARENT); // as high as the grid; the tree takes the free height, the edit line and buttons stay at the bottom
         auto tree = new TreeWidget("gbtree");
-        tree.maxHeight(makePointSize(200));
+        tree.layoutHeight(FILL_PARENT);
         TreeItem tree1 = tree.items.newChild("group1", "Group 1"d, "document-open");
         tree1.newChild("g1_1", "Group 1 item 1"d);
         tree1.newChild("g1_2", "Group 1 item 2"d);
