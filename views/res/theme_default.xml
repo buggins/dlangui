@@ -495,6 +495,10 @@
         >
         <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
     </style>
+    <!-- text of a ToolBarComboBox: no vertical padding, so the combobox is not much taller than the toolbar buttons -->
+    <style id="TOOLBAR_COMBO_BOX_BODY" parent="COMBO_BOX_BODY"
+        padding="2pt,0pt,2pt,0pt"
+        />
     <style id="TOOLBAR_SEPARATOR"
         align="Center"
         />

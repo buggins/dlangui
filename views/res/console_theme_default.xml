@@ -493,6 +493,8 @@
         >
         <state state_enabled="true" state_hover="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
     </style>
+    <style id="TOOLBAR_COMBO_BOX_BODY" parent="COMBO_BOX_BODY"
+        />
     <style id="TOOLBAR_SEPARATOR"
         backgroundImageId="{' ' 0x808080 padding 1 1 1 1}"
         align="Center"
