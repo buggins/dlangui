@@ -174,10 +174,12 @@ class ProgressBarWidget : AbstractProgressBar {
         applyMargins(rc);
         applyPadding(rc);
         DrawableRef animDrawable;
+        Rect animRect = rc;
         if (_progress >= 0) {
             DrawableRef gaugeDrawable = style.customDrawable("progress_bar_gauge");
             animDrawable = style.customDrawable("progress_bar_gauge_animation");
             int x = rc.left + _progress * rc.width / PROGRESS_MAX;
+            animRect.right = x; // the animation moves over the filled part only (#1076)
             if (!gaugeDrawable.isNull) {
                 gaugeDrawable.drawTo(buf, Rect(rc.left, rc.top, x, rc.bottom));
             } else {
@@ -194,7 +196,7 @@ class ProgressBarWidget : AbstractProgressBar {
                 scheduleAnimation();
             int w = animDrawable.width;
             _animationPhase %= w * 1000;
-            animDrawable.drawTo(buf, rc, 0, cast(int)(_animationPhase * _animationSpeedPixelsPerSecond / 1000), 0);
+            animDrawable.drawTo(buf, animRect, 0, cast(int)(_animationPhase * _animationSpeedPixelsPerSecond / 1000), 0);
             //Log.d("progress animation draw ", _animationPhase, " rc=", rc);
         }
     }
