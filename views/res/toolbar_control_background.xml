@@ -5,18 +5,18 @@
     android:state_enabled="false"
     android:state_focused="true" />
   <item
-    android:drawable="toolbar_button_hover"
+    android:drawable="toolbar_control_hover"
     android:state_hovered="true"
     android:state_focused="true" />
   <item
-    android:drawable="toolbar_button_hover"
+    android:drawable="toolbar_control_hover"
     android:state_focused="true" 
   />
   <item
-    android:drawable="toolbar_button_pressed"
+    android:drawable="toolbar_control_pressed"
     android:state_pressed="true" />
   <item
-    android:drawable="toolbar_button_hover"
+    android:drawable="toolbar_control_hover"
     android:state_hovered="true" />
   <item
     android:drawable="toolbar_control_normal" />
