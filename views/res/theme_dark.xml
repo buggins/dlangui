@@ -122,6 +122,10 @@
     <drawable id="emblem-error" value="emblem-error_dark"/>
     <drawable id="emblem-warning" value="emblem-warning_dark"/>
     <drawable id="emblem-modified" value="emblem-modified_dark"/>
+    <drawable id="emblem-added" value="emblem-added_dark"/>
+    <drawable id="emblem-removed" value="emblem-removed_dark"/>
+    <drawable id="emblem-unknown" value="emblem-unknown_dark"/>
+    <drawable id="emblem-important" value="emblem-important_dark"/>
     <!-- standard action icons (#1031) -->
     <drawable id="document-new" value="document-new_dark"/>
     <drawable id="document-open" value="document-open_dark"/>

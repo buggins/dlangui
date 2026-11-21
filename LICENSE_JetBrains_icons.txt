@@ -21,6 +21,10 @@ Each file says so in its comment.
     btn_check_on_focused, _on_pressed (and radio)         checkBoxSelectedFocused.svg, radioSelectedFocused.svg
     btn_check_on_disabled (and radio)                     checkBoxSelectedDisabled.svg, radioSelectedDisabled.svg
 
+views/res/emblem-important.9x9.svg and emblem-important_dark.9x9.svg are
+status/error.svg and status/error_dark.svg in blue instead of red (each file
+says so in its comment).
+
 DlangUI embeds these icons in applications (standard resources). The
 embedded copies don't contain the license comment at the start of each
 file, which is dropped at compile time; the files in the repository keep
