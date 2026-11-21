@@ -146,6 +146,16 @@ class StringGridAdapter : GridAdapter {
     Widget colHeader(int col) { return null; }
 }
 
+/// arrow shown in a column header of StringGridWidget, e.g. for the column a list is sorted by
+enum SortIndicator : ubyte {
+    /// no arrow
+    None,
+    /// arrow up (resource id "grid_sort_up")
+    Up,
+    /// arrow down (resource id "grid_sort_down")
+    Down,
+}
+
 /// grid control action codes
 enum GridActions : int {
     /// no action
@@ -1956,6 +1966,7 @@ class StringGridWidget : StringGridWidgetBase {
     protected UIString[][] _data;
     protected UIString[] _rowTitles;
     protected UIString[] _colTitles;
+    protected SortIndicator[] _colSortIndicators;
 
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -1998,6 +2009,7 @@ class StringGridWidget : StringGridWidgetBase {
         for (int y = 0; y < r; y++)
             _data[y].length = c;
         _colTitles.length = c;
+        _colSortIndicators.length = c;
         _rowTitles.length = r;
     }
 
@@ -2034,6 +2046,37 @@ class StringGridWidget : StringGridWidgetBase {
         return this;
     }
 
+    /// returns the arrow shown in the header of column col
+    SortIndicator colSortIndicator(int col) {
+        return _colSortIndicators[col];
+    }
+
+    /// set the arrow shown at the right side of the header of column col, e.g. for the sort column (#1076)
+    StringGridWidgetBase setColSortIndicator(int col, SortIndicator indicator) {
+        if (_colSortIndicators[col] != indicator) {
+            _colSortIndicators[col] = indicator;
+            invalidate();
+        }
+        return this;
+    }
+
+    /// image of a sort indicator in a column header (themed: the dark theme maps it to a _dark variant), null for none
+    protected DrawableRef sortIndicatorDrawable(int col) {
+        DrawableRef res;
+        if (col < 0 || col >= _colSortIndicators.length || _colSortIndicators[col] == SortIndicator.None)
+            return res;
+        string id = _colSortIndicators[col] == SortIndicator.Up ? "grid_sort_up" : "grid_sort_down";
+        return drawableCache.get(overrideCustomDrawableId(id));
+    }
+
+    /// space between a column title and its sort indicator
+    protected int sortIndicatorGap() {
+        static if (BACKEND_GUI)
+            return scaledPixels(4);
+        else
+            return 1;
+    }
+
     protected override Point measureCell(int x, int y) {
         if (_customCellAdapter && _customCellAdapter.isCustomCell(x, y)) {
             return _customCellAdapter.measureCell(x, y);
@@ -2050,6 +2093,14 @@ class StringGridWidget : StringGridWidgetBase {
         Point sz = fnt.textSize(txt);
         if (sz.y < fnt.height)
             sz.y = fnt.height;
+        if (y < 0 && x >= 0) {
+            DrawableRef arrow = sortIndicatorDrawable(x);
+            if (!arrow.isNull) {
+                sz.x += sortIndicatorGap() + arrow.width;
+                if (sz.y < arrow.height)
+                    sz.y = arrow.height;
+            }
+        }
         Rect p = cellTextPadding();
         sz.x += p.left + p.right;
         return sz;
@@ -2099,6 +2150,18 @@ class StringGridWidget : StringGridWidgetBase {
             return _customCellAdapter.drawCell(buf, rc, col, row);
         }
         rc = cellTextRect(rc);
+        if (row < 0 && col >= 0) {
+            // sort indicator at the right side; the title gets the rest
+            DrawableRef arrow = sortIndicatorDrawable(col);
+            if (!arrow.isNull) {
+                Rect arc = rc;
+                arc.left = arc.right - arrow.width;
+                arc.top += (arc.height - arrow.height) / 2;
+                arc.bottom = arc.top + arrow.height;
+                arrow.drawTo(buf, arc);
+                rc.right = arc.left - sortIndicatorGap();
+            }
+        }
         FontRef fnt = font;
         dstring txt;
         if (row < 0 && col >= 0)
@@ -2113,9 +2176,11 @@ class StringGridWidget : StringGridWidgetBase {
             ha = Align.Right;
         //if (row < 0)
         //    ha = Align.HCenter;
+        Rect textClip = rc; // a narrow column: the title doesn't cover the sort indicator
         applyTextAlign(rc, sz, ha, Align.VCenter, fnt.get);
         uint cl = textColor;
         cl = style.customColor("grid_cell_text_color_header", cl);
+        auto _ = ClipRectSaver(buf, textClip);
         fnt.drawText(buf, rc.left, rc.top, txt, cl);
     }
 
@@ -2378,4 +2443,23 @@ unittest {
         relayout();
         assert(grid._colWidths[grid.headerCols] == 75);
     }
+}
+unittest {
+    // column sort indicators (#1076); drawing and measuring need fonts and images: checked in the file dialog
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+
+    auto grid = new StringGridWidget("grid");
+    scope(exit) destroy(grid);
+    grid.resize(3, 2);
+    assert(grid.colSortIndicator(0) == SortIndicator.None && grid.colSortIndicator(2) == SortIndicator.None);
+    grid.setColSortIndicator(1, SortIndicator.Down);
+    grid.setColSortIndicator(2, SortIndicator.Up);
+    assert(grid.colSortIndicator(1) == SortIndicator.Down && grid.colSortIndicator(2) == SortIndicator.Up);
+    grid.resize(4, 2); // new columns have none, existing ones keep theirs
+    assert(grid.colSortIndicator(3) == SortIndicator.None && grid.colSortIndicator(1) == SortIndicator.Down);
+    // no image for none, a row header or a column out of range
+    assert(grid.sortIndicatorDrawable(0).isNull && grid.sortIndicatorDrawable(-1).isNull && grid.sortIndicatorDrawable(10).isNull);
+    grid.setColSortIndicator(1, SortIndicator.None);
+    assert(grid.sortIndicatorDrawable(1).isNull);
 }

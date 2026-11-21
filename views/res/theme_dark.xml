@@ -148,6 +148,8 @@
     <drawable id="edit-indent" value="edit-indent_dark"/>
     <drawable id="edit-unindent" value="edit-unindent_dark"/>
 
+    <drawable id="grid_sort_up" value="grid_sort_up_dark"/>
+    <drawable id="grid_sort_down" value="grid_sort_down_dark"/>
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up_dark"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down_dark"/>
     <drawable id="scrollbar_button_left" value="scrollbar_btn_left_dark"/>

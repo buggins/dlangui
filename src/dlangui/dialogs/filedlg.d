@@ -892,6 +892,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     }
 
     /// get sort order suffix for column title
+    deprecated("FileDialog shows the sort order with StringGridWidget.setColSortIndicator (#1076)")
     protected UIString appendSortOrderSuffix(UIString columnName, FileListSortOrder arrowUp, FileListSortOrder arrowDown)
     {
         if (_sortOrder == arrowUp)
@@ -901,10 +902,22 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return columnName;
     }
 
+    /// sort indicator of a column: up for the descending order, down for the ascending one (as before with " ▲"/" ▼")
+    protected SortIndicator sortIndicator(FileListSortOrder arrowUp, FileListSortOrder arrowDown) {
+        if (_sortOrder == arrowUp)
+            return SortIndicator.Up;
+        if (_sortOrder == arrowDown)
+            return SortIndicator.Down;
+        return SortIndicator.None;
+    }
+
     protected void updateColumnHeaders() {
-        _fileList.setColTitle(1, appendSortOrderSuffix(UIString.fromId("COL_NAME"c), FileListSortOrder.NAME_DESC, FileListSortOrder.NAME));
-        _fileList.setColTitle(2, appendSortOrderSuffix(UIString.fromId("COL_SIZE"c), FileListSortOrder.SIZE_DESC, FileListSortOrder.SIZE));
-        _fileList.setColTitle(3, appendSortOrderSuffix(UIString.fromId("COL_MODIFIED"c), FileListSortOrder.TIMESTAMP_DESC, FileListSortOrder.TIMESTAMP));
+        _fileList.setColTitle(1, UIString.fromId("COL_NAME"c));
+        _fileList.setColTitle(2, UIString.fromId("COL_SIZE"c));
+        _fileList.setColTitle(3, UIString.fromId("COL_MODIFIED"c));
+        _fileList.setColSortIndicator(1, sortIndicator(FileListSortOrder.NAME_DESC, FileListSortOrder.NAME));
+        _fileList.setColSortIndicator(2, sortIndicator(FileListSortOrder.SIZE_DESC, FileListSortOrder.SIZE));
+        _fileList.setColSortIndicator(3, sortIndicator(FileListSortOrder.TIMESTAMP_DESC, FileListSortOrder.TIMESTAMP));
     }
 
     protected void onHeaderCellClicked(GridWidgetBase source, int col, int row) {
