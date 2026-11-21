@@ -1,7 +1,21 @@
 // Written in the D programming language.
 
 /**
-This module is just to simplify import of most useful DLANGUI modules.
+`import dlangui;` imports the modules most apps need:
+
+$(UL
+    $(LI core: config, logger, types, i18n, files, standard actions)
+    $(LI graphics: images, colors, fonts, draw buffers)
+    $(LI widgets: the base widget, controls, scroll bars, progress bar, layouts, group box, lists, tabs, menus,
+        scroll widget, editors and source editor, grid, tree, process output, combo boxes, popups, app frame,
+        status line, docks, toolbars, charts)
+    $(LI dialogs: Dialog, FileDialog, message box and input box)
+    $(LI the platform (Platform, Window, APP_ENTRY_POINT) and the DML parser)
+    $(LI from Phobos: std.algorithm.equal, std.conv.to, std.utf.toUTF32)
+)
+
+Other modules, e.g. dlangui.dialogs.settingsdialog, dlangui.widgets.styles or dlangui.graphics.resources,
+are imported where needed.
 
 Synopsis:
 
@@ -79,6 +93,10 @@ public {
     import dlangui.widgets.docks;
     import dlangui.widgets.toolbars;
     import dlangui.widgets.charts;
+    import dlangui.dialogs.dialog;
+    import dlangui.dialogs.filedlg;
+    import dlangui.dialogs.msgbox;
+    import dlangui.dialogs.inputbox;
     import dlangui.platforms.common.platform;
     import dlangui.dml.parser;
 
