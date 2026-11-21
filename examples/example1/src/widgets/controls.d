@@ -115,9 +115,10 @@ class BasicControls : LinearLayout
 
         import std.random;
         import std.string;
+        auto rnd = Random(1068); // a fixed seed: the same values on every start, for comparable screenshots (#1068)
         for (int x = 0; x < 12; x++) {
             for (int y = 0; y < 10; y++) {
-                int n = uniform(0, 10000);
+                int n = uniform(0, 10000, rnd);
                 grid.setCellText(x, y, UIString.fromRaw(to!string("%.2f".format(n / 100.0))));
             }
         }
