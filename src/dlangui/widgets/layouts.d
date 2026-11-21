@@ -46,7 +46,7 @@ struct LayoutItem {
     @property int minSize() { return _measuredSize; }
     @property int maxSize() { return _maxSize; }
     @property int layoutSize() { return _layoutSize; }
-    @property int secondarySize() { return _layoutSize; }
+    @property int secondarySize() { return _secondarySize; }
     @property bool fillParent() { return _fillParent; }
     @property int weight() { return _weight; }
     // just to help GC
@@ -173,7 +173,6 @@ class LayoutItems {
         int resizableWeight = 0;
         int nonresizableSize = 0;
         int nonresizableWeight = 0;
-        int maxItem = 0; // max item dimention
         // calc total size
         int visibleCount = cast(int)_list.length;
         int resizersSize = 0;
@@ -189,8 +188,6 @@ class LayoutItems {
             int weight = item.weight;
             int size = item.measuredSize;
             totalSize += size;
-            if (maxItem < item.secondarySize)
-                maxItem = item.secondarySize;
             if (item._isResizer) {
                 resizersSize += size;
             } else if (item.fillParent) {
@@ -207,21 +204,18 @@ class LayoutItems {
         // extra space goes to FILL_PARENT children unless the layout wraps its content: also with a fixed size,
         // e.g. one set by a ResizerWidget (#1061)
         static bool hasRoom(int layoutSize) { return layoutSize != WRAP_CONTENT && layoutSize != SIZE_UNSPECIFIED; }
+        // children get the full cross size of the layout (#1064: a "maximum item size" was taken from their
+        // main-axis layout sizes, which only mattered when all of them were fixed: then a child with a fixed width of
+        // 20 got a height of 20 in a horizontal WRAP_CONTENT layout, whatever its measured height)
         if (_orientation == Orientation.Vertical) {
-            if (_layoutWidth == WRAP_CONTENT && maxItem < rc.width)
-                contentSecondarySize = maxItem;
-            else
-                contentSecondarySize = rc.width;
+            contentSecondarySize = rc.width;
             if (hasRoom(_layoutHeight) && totalSize < rc.height && (resizableSize > 0 || growByWeight)) {
                 delta = rc.height - totalSize; // total space to add to fit
             } else if (totalSize > rc.height) {
                 delta = rc.height - totalSize; // total space to reduce to fit
             }
         } else {
-            if (_layoutHeight == WRAP_CONTENT && maxItem < rc.height)
-                contentSecondarySize = maxItem;
-            else
-                contentSecondarySize = rc.height;
+            contentSecondarySize = rc.height;
             if (hasRoom(_layoutWidth) && totalSize < rc.width && (resizableSize > 0 || growByWeight))
                 delta = rc.width - totalSize; // total space to add to fit
             else if (totalSize > rc.width)
@@ -1338,4 +1332,34 @@ unittest {
     row.measure(rc.width, rc.height);
     row.layout(rc);
     assert(second.pos.width == 300 && second.pos.right == 800 && first.pos.right == resizer.pos.left);
+}
+
+// children get the full cross size of the layout, also when all of them have fixed main-axis sizes (#1064)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    foreach (vertical; [false, true]) {
+        LinearLayout layout = new LinearLayout(null, vertical ? Orientation.Vertical : Orientation.Horizontal);
+        scope(exit) destroy(layout);
+        Widget a = new Widget("a");
+        Widget b = new Widget("b");
+        if (vertical) {
+            layout.layoutHeight = FILL_PARENT;
+            layout.layoutWidth = WRAP_CONTENT;
+            a.layoutHeight(20).minWidth(30);
+            b.layoutHeight(20).minWidth(10);
+        } else {
+            layout.layoutWidth = FILL_PARENT;
+            layout.layoutHeight = WRAP_CONTENT;
+            a.layoutWidth(20).minHeight(30);
+            b.layoutWidth(20).minHeight(10);
+        }
+        layout.addChild(a);
+        layout.addChild(b);
+        layout.measure(300, 100);
+        assert((vertical ? layout.measuredWidth : layout.measuredHeight) == 30);
+        layout.layout(vertical ? Rect(0, 0, 100, 300) : Rect(0, 0, 300, 100));
+        // were 20 (the children's main-axis size): a was cut below its measured 30
+        assert((vertical ? a.pos.width : a.pos.height) == 100 && (vertical ? b.pos.width : b.pos.height) == 100);
+    }
 }
