@@ -181,6 +181,10 @@ res/emblem-removed.9x9.svg
 res/emblem-removed_dark.9x9.svg
 res/emblem-unknown.9x9.svg
 res/emblem-unknown_dark.9x9.svg
+res/grid_sort_down.12x12.svg
+res/grid_sort_down_dark.12x12.svg
+res/grid_sort_up.12x12.svg
+res/grid_sort_up_dark.12x12.svg
 res/scrollbar_btn_up.12x12.svg
 res/scrollbar_btn_up_dark.12x12.svg
 res/scrollbar_btn_down.12x12.svg

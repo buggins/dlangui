@@ -40,6 +40,8 @@
     <drawable id="arrow_right_hollow" value="{'► ' #008000}"/>
     <drawable id="btn_check" value="btn_check"/>
     <drawable id="btn_radio" value="btn_radio"/>
+    <drawable id="grid_sort_up" value="{'▲' #FFFFFF}"/>
+    <drawable id="grid_sort_down" value="{'▼' #FFFFFF}"/>
     <drawable id="scrollbar_button_up" value="{'▲' #FFFF00}"/>
     <drawable id="scrollbar_button_down" value="{'▼' #FFFF00}"/>
     <drawable id="scrollbar_button_left" value="{'◄' #FFFF00}"/>
