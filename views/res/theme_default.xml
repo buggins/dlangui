@@ -102,15 +102,16 @@
         align="Center"
         backgroundImageId="switch"
         />
+    <!-- check boxes and radio buttons: little vertical space; the 20 px images have room for the focus ring -->
     <style id="CHECKBOX"
         backgroundImageId="@null"
-        margins="2pt,2pt,2pt,2pt"
-        padding="2pt,2pt,2pt,2pt"
+        margins="2pt,1pt,2pt,1pt"
+        padding="2pt,1pt,2pt,1pt"
 	focusRectColors="@null"
         />
     <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
         align="Center"
-        margins="2pt,2pt,2pt,2pt"
+        margins="2pt,0pt,2pt,0pt"
         />
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
         margins="0"
@@ -121,12 +122,12 @@
         <state state_enabled="false" textColor="#909090"/>
     </style>
     <style id="RADIOBUTTON" parent="CHECKBOX"
-        margins="2pt,2pt,2pt,2pt"
-        padding="2pt,2pt,2pt,2pt"
+        margins="2pt,1pt,2pt,1pt"
+        padding="2pt,1pt,2pt,1pt"
         />
     <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
         align="Center"
-        margins="2pt,2pt,2pt,2pt"
+        margins="2pt,0pt,2pt,0pt"
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
 	focusRectColors="#000"
@@ -286,8 +287,9 @@
         padding="3pt,2pt,3pt,2pt"
         >
     </style>
+    <!-- no vertical margins: the 20 px check and radio images fit in the height of a label -->
     <style id="MENU_ICON"
-        margins="2pt,2pt,2pt,2pt"
+        margins="2pt,0pt,2pt,0pt"
         align="Left|VCenter"
         >
         <state state_enabled="false" alpha="160"/>
