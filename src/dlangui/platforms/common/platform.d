@@ -411,6 +411,15 @@ class Window : CustomEventTarget {
     abstract @property void windowCaption(dstring caption);
     /// sets window icon
     abstract @property void windowIcon(DrawBufRef icon);
+    /**
+        Sets window icon from resource id (e.g. "dlangui-logo1"): the backend makes the icon in the sizes the desktop
+        uses (title bar, taskbar, window switcher); an SVG resource is rendered at each size, so it stays sharp (#835).
+        The default implementation sets the image of the resource with windowIcon.
+     */
+    @property void windowIconId(string resourceId) {
+        static if (BACKEND_GUI)
+            windowIcon = drawableCache.getImage(resourceId);
+    }
     /// request window redraw
     abstract void invalidate();
     /// close window

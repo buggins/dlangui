@@ -512,7 +512,7 @@ class Win32Window : Window {
         ChangeWindowMessageFilter (0x0049, MSGFLT_ADD);
 
         if (platform.defaultWindowIcon.length != 0)
-            windowIcon = drawableCache.getImage(platform.defaultWindowIcon);
+            windowIconId = platform.defaultWindowIcon;
     }
 
     static if (ENABLE_OPENGL) {
@@ -611,6 +611,7 @@ class Win32Window : Window {
             destroy(_drawbuf);
             _drawbuf = null;
         }
+        destroyIcons();
 
         /*
         static if (ENABLE_OPENGL) {
@@ -886,7 +887,8 @@ class Win32Window : Window {
         super.handleWindowStateChange(newState, newWindowRect);
     }
 
-    HICON _icon;
+    HICON _icon; // ICON_BIG
+    HICON _iconSmall; // ICON_SMALL
 
     uint _cursorType;
 
@@ -958,36 +960,93 @@ class Win32Window : Window {
         onSetCursorType();
     }
 
-    /// sets window icon
-    @property override void windowIcon(DrawBufRef buf) {
-        if (_icon)
-            DestroyIcon(_icon);
-        _icon = null;
-        ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
-        if (!icon) {
-            Log.e("Trying to set null icon for window");
-            return;
-        }
-        Win32ColorDrawBuf resizedicon = new Win32ColorDrawBuf(icon, 32, 32);
-        resizedicon.invertAlpha();
+    /// window icon sizes for the current DPI: ICON_SMALL (title bar) and ICON_BIG (taskbar, Alt+Tab) (#835)
+    private static void systemIconSizes(out int small, out int big) {
+        small = GetSystemMetrics(SM_CXSMICON);
+        big = GetSystemMetrics(SM_CXICON);
+        if (small <= 0)
+            small = 16;
+        if (big <= 0)
+            big = 32;
+    }
+
+    /// HICON from image, scaled to size x size if it has another size; null on failure
+    private static HICON createIcon(ColorDrawBuf image, int size) {
+        Win32ColorDrawBuf buf = new Win32ColorDrawBuf(image, size, size);
+        buf.invertAlpha();
         ICONINFO ii;
-        HBITMAP mask = resizedicon.createTransparencyBitmap();
-        HBITMAP color = resizedicon.destroyLeavingBitmap();
+        HBITMAP mask = buf.createTransparencyBitmap();
+        HBITMAP color = buf.destroyLeavingBitmap();
         ii.fIcon = TRUE;
         ii.xHotspot = 0;
         ii.yHotspot = 0;
         ii.hbmMask = mask;
         ii.hbmColor = color;
-        _icon = CreateIconIndirect(&ii);
-        if (_icon) {
-            SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, cast(LPARAM)_icon);
-            SendMessageW(_hwnd, WM_SETICON, ICON_BIG, cast(LPARAM)_icon);
-        } else {
-            Log.e("failed to create icon");
-        }
+        HICON res = CreateIconIndirect(&ii);
         if (mask)
             DeleteObject(mask);
         DeleteObject(color);
+        return res;
+    }
+
+    private void destroyIcons() {
+        if (_icon)
+            DestroyIcon(_icon);
+        if (_iconSmall)
+            DestroyIcon(_iconSmall);
+        _icon = null;
+        _iconSmall = null;
+    }
+
+    /// sets ICON_SMALL and ICON_BIG from images of these sizes (scaled if they have other sizes)
+    private void setIcons(ColorDrawBuf small, ColorDrawBuf big) {
+        int smallSize, bigSize;
+        systemIconSizes(smallSize, bigSize);
+        HICON iconSmall = createIcon(small, smallSize);
+        HICON icon = createIcon(big, bigSize);
+        if (!iconSmall || !icon) {
+            Log.e("failed to create icon");
+            if (iconSmall)
+                DestroyIcon(iconSmall);
+            if (icon)
+                DestroyIcon(icon);
+            return;
+        }
+        SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, cast(LPARAM)iconSmall);
+        SendMessageW(_hwnd, WM_SETICON, ICON_BIG, cast(LPARAM)icon);
+        destroyIcons(); // the old icons, no longer used by the window
+        _iconSmall = iconSmall;
+        _icon = icon;
+        debug Log.d("Window icon sizes: ", smallSize, " and ", bigSize);
+    }
+
+    /// sets window icon: scaled to the system icon sizes
+    @property override void windowIcon(DrawBufRef buf) {
+        ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
+        if (!icon) {
+            Log.e("Trying to set null icon for window");
+            return;
+        }
+        setIcons(icon, icon);
+    }
+
+    /// sets window icon from a resource: an SVG resource is rendered at the system icon sizes (#835)
+    @property override void windowIconId(string resourceId) {
+        int smallSize, bigSize;
+        systemIconSizes(smallSize, bigSize);
+        ColorDrawBuf small = windowIconImage(resourceId, smallSize);
+        ColorDrawBuf big = windowIconImage(resourceId, bigSize);
+        scope(exit) {
+            if (small)
+                destroy(small);
+            if (big)
+                destroy(big);
+        }
+        if (!small || !big) {
+            Log.e("Window icon resource not found: ", resourceId);
+            return;
+        }
+        setIcons(small, big);
     }
 
     private void paintUsingGDI() {
