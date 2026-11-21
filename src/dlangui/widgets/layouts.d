@@ -110,31 +110,38 @@ class LayoutItems {
         _maxSecondarySize = 0;
         _measureParentSize.x = parentWidth;
         _measureParentSize.y = parentHeight;
-        bool hasPercentSizeWidget = false;
-        size_t percenSizeWidgetIndex;
-        // measure
+        // children with a percentage size (#1060): that share of the parent size when it's known; otherwise that
+        // share of the total, computed from the other children: rest * p / (1 - sum of the percentages)
+        immutable int primaryParentSize = _orientation == Orientation.Horizontal ? parentWidth : parentHeight;
+        immutable bool parentSizeKnown = primaryParentSize != SIZE_UNSPECIFIED;
+        int percentSum = 0; // in 1/100 %
         for (int i = 0; i < _count; i++) {
             LayoutItem * item = &_list[i];
 
             item.measure(parentWidth, parentHeight);
 
             if (isPercentSize(item._layoutSize)) {
-                if (!hasPercentSizeWidget) {
-                    percenSizeWidgetIndex = i;
-                    hasPercentSizeWidget = true;
-                }
+                if (parentSizeKnown)
+                    item._measuredSize = fromPercentSize(item._layoutSize, primaryParentSize);
+                else
+                    percentSum += fromPercentSize(item._layoutSize, 10000);
             }
-            else
+            if (!isPercentSize(item._layoutSize) || parentSizeKnown)
                 _totalSize += item._measuredSize;
 
             if (_maxSecondarySize < item._secondarySize)
                 _maxSecondarySize = item._secondarySize;
         }
-        if (hasPercentSizeWidget) {
-            LayoutItem * item = &_list[percenSizeWidgetIndex];
-            if (_totalSize > 0)
-                item._measuredSize = to!int(_totalSize * ((1 / (1 - cast (double) (fromPercentSize(item._layoutSize, 100))/100)) - 1));
-            _totalSize += item._measuredSize;
+        if (!parentSizeKnown && percentSum > 0) {
+            immutable int rest = _totalSize;
+            for (int i = 0; i < _count; i++) {
+                LayoutItem * item = &_list[i];
+                if (!isPercentSize(item._layoutSize))
+                    continue;
+                if (rest > 0 && percentSum < 10000)
+                    item._measuredSize = cast(int)(cast(long)rest * fromPercentSize(item._layoutSize, 10000) / (10000 - percentSum));
+                _totalSize += item._measuredSize;
+            }
         }
         return _orientation == Orientation.Horizontal ? Point(_totalSize, _maxSecondarySize) : Point(_maxSecondarySize, _totalSize);
     }
@@ -170,7 +177,13 @@ class LayoutItems {
         // calc total size
         int visibleCount = cast(int)_list.length;
         int resizersSize = 0;
-        bool hasPercentSize = false;
+        // children with a percentage size: that share of the layout, then like a fixed size (#1060)
+        immutable int available = _orientation == Orientation.Vertical ? rc.height : rc.width;
+        for (int i = 0; i < _count; i++) {
+            LayoutItem * item = &_list[i];
+            if (isPercentSize(item.layoutSize))
+                item._measuredSize = fromPercentSize(item.layoutSize, available);
+        }
         for (int i = 0; i < _count; i++) {
             LayoutItem * item = &_list[i];
             int weight = item.weight;
@@ -180,11 +193,9 @@ class LayoutItems {
                 maxItem = item.secondarySize;
             if (item._isResizer) {
                 resizersSize += size;
-            } else if (item.fillParent || isPercentSize(item.layoutSize)) {
+            } else if (item.fillParent) {
                 resizableWeight += weight;
                 resizableSize += size * weight;
-                if (isPercentSize(item.layoutSize))
-                    hasPercentSize = true;
             } else {
                 nonresizableWeight += weight;
                 nonresizableSize += size * weight;
@@ -192,14 +203,16 @@ class LayoutItems {
         }
         // FILL_PARENT items share extra space in proportion to measured size * weight; when all of them
         // are measured as 0 (e.g. empty panels), by weight only, or they would get nothing (#973).
-        // Not for percent sizes: they keep their old behavior.
-        immutable bool growByWeight = resizableSize == 0 && resizableWeight > 0 && !hasPercentSize;
+        immutable bool growByWeight = resizableSize == 0 && resizableWeight > 0;
+        // extra space goes to FILL_PARENT children unless the layout wraps its content: also with a fixed size,
+        // e.g. one set by a ResizerWidget (#1061)
+        static bool hasRoom(int layoutSize) { return layoutSize != WRAP_CONTENT && layoutSize != SIZE_UNSPECIFIED; }
         if (_orientation == Orientation.Vertical) {
             if (_layoutWidth == WRAP_CONTENT && maxItem < rc.width)
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.width;
-            if ((_layoutHeight == FILL_PARENT || isPercentSize(_layoutHeight)) && totalSize < rc.height && (resizableSize > 0 || growByWeight)) {
+            if (hasRoom(_layoutHeight) && totalSize < rc.height && (resizableSize > 0 || growByWeight)) {
                 delta = rc.height - totalSize; // total space to add to fit
             } else if (totalSize > rc.height) {
                 delta = rc.height - totalSize; // total space to reduce to fit
@@ -209,7 +222,7 @@ class LayoutItems {
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.height;
-            if ((_layoutWidth == FILL_PARENT || isPercentSize(_layoutWidth)) && totalSize < rc.width && (resizableSize > 0 || growByWeight))
+            if (hasRoom(_layoutWidth) && totalSize < rc.width && (resizableSize > 0 || growByWeight))
                 delta = rc.width - totalSize; // total space to add to fit
             else if (totalSize > rc.width)
                 delta = rc.width - totalSize; // total space to reduce to fit
@@ -245,7 +258,7 @@ class LayoutItems {
         for (int i = 0; i < _count; i++) {
             LayoutItem * item = &_list[i];
             // when shrinking, not an item measured as 0: the remainder would make its size negative
-            if ((item.fillParent || isPercentSize(item.layoutSize) || needForceResize) && (delta < 0 || item.canExtend)
+            if ((item.fillParent || needForceResize) && (delta < 0 || item.canExtend)
                     && (delta > 0 || item.measuredSize > 0)) {
                 lastResized = i;
             }
@@ -262,7 +275,7 @@ class LayoutItems {
             int layoutSize = item.layoutSize;
             int weight = item.weight;
             int size = item.measuredSize;
-            if (needResize && (layoutSize == FILL_PARENT || isPercentSize(layoutSize) || needForceResize)) {
+            if (needResize && (layoutSize == FILL_PARENT || needForceResize)) {
                 // do resize
                 int share = byWeight ? weight : weight * size;
                 int correction = (delta < 0 || item.canExtend) ? scaleFactor * share / 10000 : 0;
@@ -554,7 +567,8 @@ class ResizerWidget : Widget {
         import std.algorithm : max, min;
         immutable bool vertical = _orientation == Orientation.Vertical;
         int layoutSize(Widget w) { return vertical ? w.layoutHeight : w.layoutWidth; }
-        bool fills(Widget w) { return layoutSize(w) == FILL_PARENT || isPercentSize(layoutSize(w)); }
+        // a percentage size is a share, like a fixed size (#1060): only FILL_PARENT fills the rest
+        bool fills(Widget w) { return layoutSize(w) == FILL_PARENT; }
         // the previous widget: its size at drag start plus the mouse movement since then
         immutable int total = _dragStartPreviousSize + _dragStartNextSize;
         int size = _dragStartPreviousSize + newPosition - (vertical ? _dragStart.y : _dragStart.x);
@@ -737,9 +751,9 @@ unittest {
         r = layoutChildren([300, 200, FILL_PARENT]);
         assert(size(r[0]) + size(r[1]) == 400 && size(r[0]) > size(r[1]));
         assert(size(r[2]) == 0 && start(r[2]) == (vertical ? 430 : 420));
-        // percent sizes measured as 0 keep the old behavior (no weight sharing)
+        // percent sizes: that share of the layout, also when measured as 0 (#1060; were 0 and 0)
         r = layoutChildren([makePercentSize(30), makePercentSize(70)]);
-        assert(size(r[0]) == 0 && size(r[1]) == 0);
+        assert(size(r[0]) == 120 && size(r[1]) == 280);
     }
 }
 
@@ -1177,3 +1191,151 @@ class TableLayout : WidgetGroupDefaultDrawing {
 
 //import dlangui.widgets.metadata;
 //mixin(registerWidgets!(VerticalLayout, HorizontalLayout, TableLayout, FrameLayout)());
+
+// a layout with a fixed size (e.g. set by a resizer) lets its FILL_PARENT children fill it (#1061)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    foreach (vertical; [false, true]) {
+        LinearLayout box = new LinearLayout(null, vertical ? Orientation.Vertical : Orientation.Horizontal);
+        scope(exit) destroy(box);
+        Widget child = new Widget("child");
+        if (vertical) {
+            box.layoutHeight = 300;
+            child.minHeight(50).layoutHeight(FILL_PARENT);
+        } else {
+            box.layoutWidth = 300;
+            child.minWidth(50).layoutWidth(FILL_PARENT);
+        }
+        box.addChild(child);
+        box.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+        box.layout(Rect(0, 0, 300, 300));
+        assert((vertical ? child.pos.height : child.pos.width) == 300);
+    }
+    // a WRAP_CONTENT layout given more space keeps its FILL_PARENT children at their size, as before
+    {
+        LinearLayout box = new LinearLayout(null, Orientation.Horizontal);
+        scope(exit) destroy(box);
+        box.layoutWidth = WRAP_CONTENT;
+        Widget child = new Widget("child");
+        child.minWidth(50).layoutWidth(FILL_PARENT);
+        box.addChild(child);
+        box.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+        box.layout(Rect(0, 0, 300, 100));
+        assert(child.pos.width == 50);
+    }
+    // the example1 case: two FILL_PARENT boxes and a resizer; after a drag the first box has a fixed width,
+    // and a FILL_PARENT child in it still fills it
+    {
+        LinearLayout row = new LinearLayout(null, Orientation.Horizontal);
+        scope(exit) destroy(row);
+        row.layoutWidth = FILL_PARENT;
+        LinearLayout first = new LinearLayout("first", Orientation.Horizontal);
+        first.layoutWidth(FILL_PARENT).layoutWeight(3);
+        Widget inner = new Widget("inner");
+        inner.minWidth(20).layoutWidth(FILL_PARENT);
+        first.addChild(inner);
+        Widget second = new Widget("second");
+        second.minWidth(20).layoutWidth(FILL_PARENT);
+        ResizerWidget resizer = new ResizerWidget();
+        row.addChild(first);
+        row.addChild(resizer);
+        row.addChild(second);
+        Rect rc = Rect(0, 0, 600, 100);
+        row.measure(rc.width, rc.height);
+        row.layout(rc);
+        immutable int x = resizer.pos.left + 2;
+        MouseEvent ev(MouseAction a, int px) {
+            auto e = new MouseEvent(a, a == MouseAction.Move ? MouseButton.None : MouseButton.Left,
+                                    a == MouseAction.ButtonUp ? 0 : MouseFlag.LButton, cast(short)px, 50);
+            if (a != MouseAction.ButtonUp)
+                e.lbutton.down(cast(short)px, 50, MouseFlag.LButton);
+            return e;
+        }
+        resizer.onMouseEvent(ev(MouseAction.ButtonDown, x));
+        resizer.onMouseEvent(ev(MouseAction.Move, x - 120));
+        resizer.onMouseEvent(ev(MouseAction.ButtonUp, x - 120));
+        assert(!isSpecialSize(first.layoutWidth)); // the drag gave it a fixed width
+        row.measure(rc.width, rc.height);
+        row.layout(rc);
+        assert(inner.pos.width == first.pos.width); // was its measured width: 20
+    }
+}
+
+// children with percentage sizes get that share of the layout (#1060)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    LinearLayout row(int[] sizes, int[] minWidths, out Widget[] children) {
+        LinearLayout res = new LinearLayout(null, Orientation.Horizontal);
+        res.layoutWidth = FILL_PARENT;
+        foreach (i, size; sizes) {
+            Widget w = new Widget(null);
+            w.minWidth(minWidths[i]).layoutWidth(size);
+            res.addChild(w);
+            children ~= w;
+        }
+        return res;
+    }
+    Widget[] c;
+    // 75% / 25%, whatever their measured sizes (the example1 case: a wide grid and a narrow tree)
+    auto r1 = row([makePercentSize(75), makePercentSize(25)], [10, 200], c);
+    scope(exit) destroy(r1);
+    r1.measure(400, 100);
+    r1.layout(Rect(0, 0, 400, 100));
+    assert(c[0].pos.width == 300 && c[1].pos.width == 100);
+    // a percentage child next to a FILL_PARENT one: the FILL_PARENT one takes the rest
+    auto r2 = row([makePercentSize(25), FILL_PARENT], [10, 10], c);
+    scope(exit) destroy(r2);
+    r2.measure(400, 100);
+    r2.layout(Rect(0, 0, 400, 100));
+    assert(c[0].pos.width == 100 && c[1].pos.width == 300);
+    // three columns, as in DlangIDE's New project dialog
+    auto r3 = row([makePercentSize(25), makePercentSize(40), makePercentSize(35)], [10, 10, 10], c);
+    scope(exit) destroy(r3);
+    r3.measure(1000, 100);
+    r3.layout(Rect(0, 0, 1000, 100));
+    assert(c[0].pos.width == 250 && c[1].pos.width == 400 && c[2].pos.width == 350);
+    // measured without a parent size: the percentage child is that share of the total
+    auto r4 = row([makePercentSize(25), 300], [10, 10], c);
+    scope(exit) destroy(r4);
+    r4.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+    assert(r4.measuredWidth == 400);
+}
+
+// a resizer between a FILL_PARENT and a percentage child: the percentage one gets the fixed size, the FILL_PARENT one
+// still fills the layout, without a gap (#1060, #1061)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    LinearLayout row = new LinearLayout(null, Orientation.Horizontal);
+    scope(exit) destroy(row);
+    row.layoutWidth = FILL_PARENT;
+    Widget first = new Widget("first");
+    first.minWidth(20).layoutWidth(FILL_PARENT);
+    Widget second = new Widget("second");
+    second.minWidth(20).layoutWidth(makePercentSize(25));
+    ResizerWidget resizer = new ResizerWidget();
+    row.addChild(first);
+    row.addChild(resizer);
+    row.addChild(second);
+    Rect rc = Rect(0, 0, 800, 100);
+    row.measure(rc.width, rc.height);
+    row.layout(rc);
+    assert(second.pos.width == 200 && first.pos.right == resizer.pos.left && resizer.pos.right == second.pos.left);
+    immutable int x = resizer.pos.left + 2;
+    MouseEvent ev(MouseAction a, int px) {
+        auto e = new MouseEvent(a, a == MouseAction.Move ? MouseButton.None : MouseButton.Left,
+                                a == MouseAction.ButtonUp ? 0 : MouseFlag.LButton, cast(short)px, 50);
+        if (a != MouseAction.ButtonUp)
+            e.lbutton.down(cast(short)px, 50, MouseFlag.LButton);
+        return e;
+    }
+    resizer.onMouseEvent(ev(MouseAction.ButtonDown, x));
+    resizer.onMouseEvent(ev(MouseAction.Move, x - 100));
+    resizer.onMouseEvent(ev(MouseAction.ButtonUp, x - 100));
+    assert(first.layoutWidth == FILL_PARENT && second.layoutWidth == 300);
+    row.measure(rc.width, rc.height);
+    row.layout(rc);
+    assert(second.pos.width == 300 && second.pos.right == 800 && first.pos.right == resizer.pos.left);
+}
