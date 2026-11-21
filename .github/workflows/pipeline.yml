@@ -80,6 +80,11 @@ jobs:
           # See https://dub.pm/package-format-json.html#configurations
           dub test
 
+      # code compiled only in console builds (platforms/ansi_console, WIDGET_STYLE_CONSOLE branches) has its own
+      # unittests, e.g. the terminal key and mouse parsing (#1051)
+      - name: 'Unittests: console configuration'
+        run: dub test -c console
+
       - name: 'Build examples'
         shell: bash
         run: |
