@@ -406,8 +406,11 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         if (_btnSize < _btnBack.measuredHeight)
             _btnSize = _btnBack.measuredHeight;
         static if (BACKEND_GUI) {
-            if (_btnSize < 16)
-                _btnSize = 16;
+            if (_btnSize < scaledPixels(16))
+                _btnSize = scaledPixels(16);
+            // the thumb is at least twice as long as the scrollbar is thick: easier to grab, room around its grip (#1075)
+            if (_minIndicatorSize < _btnSize * 2)
+                _minIndicatorSize = _btnSize * 2;
         }
         if (_orientation == Orientation.Vertical) {
             // vertical
@@ -828,8 +831,11 @@ class SliderWidget : AbstractSlider, OnClickHandler {
         if (_btnSize < _minIndicatorSize)
             _btnSize = _minIndicatorSize;
         static if (BACKEND_GUI) {
-            if (_btnSize < 16)
-                _btnSize = 16;
+            if (_btnSize < scaledPixels(16))
+                _btnSize = scaledPixels(16);
+            // the thumb is at least as long as the slider is thick: room around its grip (#1075)
+            if (_minIndicatorSize < _btnSize)
+                _minIndicatorSize = _btnSize;
         }
         if (_orientation == Orientation.Vertical) {
             // vertical
