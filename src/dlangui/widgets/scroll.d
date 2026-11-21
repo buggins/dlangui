@@ -54,8 +54,8 @@ table2.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
 scrollContent.addChild(table2);
 
 scrollContent.addChild(new TextWidget(null, "Now - some buttons"d));
-scrollContent.addChild(new ImageTextButton("btn1", "fileclose", "Close"d));
-scrollContent.addChild(new ImageTextButton("btn2", "fileopen", "Open"d));
+scrollContent.addChild(new ImageTextButton("btn1", "document-close", "Close"d));
+scrollContent.addChild(new ImageTextButton("btn2", "document-open", "Open"d));
 scrollContent.addChild(new TextWidget(null, "And checkboxes"d));
 scrollContent.addChild(new CheckBox("btn1", "CheckBox 1"d));
 scrollContent.addChild(new CheckBox("btn2", "CheckBox 2"d));
