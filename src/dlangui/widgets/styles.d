@@ -389,6 +389,11 @@ protected:
 
     FontRef _font;
     DrawableRef _backgroundDrawable;
+    // value of _backgroundRevision when _backgroundDrawable was built
+    size_t _backgroundDrawableRevision;
+    // changed when a background property of a theme style changed: backgrounds cached by the styles that inherit
+    // it (derived styles, widget own styles, their state styles) are built again (#1003)
+    static __gshared size_t _backgroundRevision = 1;
 
 public:
     void onThemeChanged() {
@@ -461,8 +466,11 @@ public:
     }
 
     @property ref DrawableRef backgroundDrawable() const {
-        if (!(cast(Style)this)._backgroundDrawable.isNull)
-            return (cast(Style)this)._backgroundDrawable;
+        Style self = cast(Style)this;
+        if (!self._backgroundDrawable.isNull && self._backgroundDrawableRevision == _backgroundRevision)
+            return self._backgroundDrawable;
+        self._backgroundDrawable.clear();
+        self._backgroundDrawableRevision = _backgroundRevision;
         string image = backgroundImageId;
         uint color = backgroundColor;
         string borders = border;
@@ -1053,13 +1061,17 @@ public:
         _backgroundDrawable.clear();
     }
 
-    /// a background property changed: background drawables cached by this style and its state styles are invalid
+    /// a background property changed: background drawables cached by this style and its state styles are invalid,
+    /// and, for a style others may inherit from (a theme style), those of all styles (#1003)
     private void clearBackgroundDrawables() {
         _backgroundDrawable.clear();
         foreach (item; _substates)
             item._backgroundDrawable.clear();
         foreach (item; _mergedStates)
             item._backgroundDrawable.clear();
+        // a widget's own style (no id, no derived styles) is inherited only by its state styles, cleared above
+        if (_id !is null || _children.length)
+            _backgroundRevision++;
     }
 
     Style clone() {
@@ -2450,4 +2462,37 @@ unittest {
     }
     assert(checked > 80, "STYLE_* constants not found");
     assert(!missing.length, "style ids of STYLE_* constants missing in the standard themes:" ~ missing);
+}
+
+// a background change of a theme style reaches the styles that inherit it: derived styles, widget own styles and
+// their states (#1003)
+unittest {
+    Theme t = new Theme("test1003");
+    Theme saved = _currentTheme;
+    _currentTheme = t;
+    scope(exit) {
+        _currentTheme = saved;
+        destroy(t);
+    }
+    Style button = t.createSubstyle("BUTTON").backgroundColor(0xFF0000);
+    Style child = button.createSubstyle("CHILD"); // no background of its own
+    child.createState(State.Hovered, State.Hovered).textColor(0x00FF00);
+    Style own = t.modifyStyle("CHILD"); // a widget's own style
+    scope(exit) destroy(own);
+    const(Style)[] styles = [child, child.forState(State.Hovered), own, own.forState(State.Hovered)];
+    DrawableRef[4] before; // a static array: appending Refs would leave copies to the GC (#900)
+    foreach (i, st; styles)
+        before[i] = st.backgroundDrawable; // cached
+    foreach (i, st; styles)
+        assert(st.backgroundDrawable.get is before[i].get); // still cached
+    button.backgroundColor(0x0000FF);
+    foreach (i, st; styles)
+        assert(st.backgroundDrawable.get !is before[i].get); // built again
+    foreach (ref d; before)
+        d.clear();
+    // a widget's own style changing its background doesn't invalidate the caches of other styles
+    DrawableRef childBg = child.backgroundDrawable;
+    scope(exit) childBg.clear();
+    own.backgroundColor(0x00FFFF);
+    assert(child.backgroundDrawable.get is childBg.get);
 }
