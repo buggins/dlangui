@@ -900,7 +900,12 @@ class SDLWindow : Window {
                 lastFlags |= MouseFlag.Alt;
             else
                 lastFlags &= ~cast(uint)MouseFlag.Alt;
-            if (wheelDelta)
+            if (x && !y) {
+                // horizontal wheel (#1053): Shift + wheel, as scroll widgets expect; SDL's x is positive to the right,
+                // left +1 / right -1 as in the other backends
+                wheelDelta = cast(short)-x;
+                event = new MouseEvent(action, MouseButton.None, cast(ushort)(lastFlags | MouseFlag.Shift), lastx, lasty, wheelDelta);
+            } else if (wheelDelta)
                 event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
         } else {
             lastFlags = convertMouseFlags(state);
