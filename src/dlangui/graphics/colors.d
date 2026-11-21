@@ -212,6 +212,39 @@ uint blendARGB(uint dst, uint src, uint alpha) @safe pure nothrow @nogc {
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
+/**
+Draws src over dst: "over" compositing with straight alpha (DlangUI alpha is inverted: 0 is opaque, 255 transparent).
+
+`alpha` is the transparency of src to use: its own alpha, or that combined with a drawing alpha.
+Unlike blendARGB, which interpolates two colors (gradients), an opaque dst stays opaque, a transparent dst
+takes the src color, and the colors are weighted by opacity in between (#1100).
+*/
+uint blendARGBOver(uint dst, uint src, uint alpha) @safe pure nothrow @nogc {
+    uint dsta = dst >> 24;
+    if (dsta == 0) // opaque destination: the colors as blendARGB, the result stays opaque
+        return blendARGB(dst, src, alpha) & 0x00FFFFFF;
+    if (dsta == 255) // transparent destination: the source with its transparency
+        return (alpha << 24) | (src & 0x00FFFFFF);
+    uint sa = 255 - alpha; // opacity of src
+    uint dw = (255 - dsta) * alpha / 255; // weight of dst: its opacity, seen through src
+    uint oa = sa + dw; // opacity of the result, at least 1 here
+    uint r = ((((src >> 16) & 0xFF) * sa + ((dst >> 16) & 0xFF) * dw) + oa / 2) / oa;
+    uint g = ((((src >> 8) & 0xFF) * sa + ((dst >> 8) & 0xFF) * dw) + oa / 2) / oa;
+    uint b = (((src & 0xFF) * sa + (dst & 0xFF) * dw) + oa / 2) / oa;
+    return ((255 - oa) << 24) | (r << 16) | (g << 8) | b;
+}
+
+@safe unittest {
+    // over an opaque pixel: the colors of blendARGB, the result is opaque (blendARGB gave alpha 0x2B here)
+    assert(blendARGBOver(0x003574F0, 0xC7FFFFFF, 0xC7) == (blendARGB(0x003574F0, 0xC7FFFFFF, 0xC7) & 0x00FFFFFF));
+    assert(blendARGBOver(0x003574F0, 0xC7FFFFFF, 0xC7) >> 24 == 0);
+    // over a transparent pixel: the source, whatever the transparent pixel's color
+    assert(blendARGBOver(0xFF000000, 0xC7FFFFFF, 0xC7) == 0xC7FFFFFF);
+    assert(blendARGBOver(0xFFFFFFFF, 0xC7102030, 0xC7) == 0xC7102030);
+    // half transparent red under half transparent blue: 3/4 opaque, blue weighs twice as much as red
+    assert(blendARGBOver(0x80FF0000, 0x800000FF, 0x80) == 0x415500AA);
+}
+
 /// byte offsets of the color components of a 32-bit ARGB pixel in memory, listed for the subpixels from left
 /// to right: a pixel is stored as B, G, R, A bytes, so on an RGB panel the leftmost (red) subpixel is byte 2
 immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];

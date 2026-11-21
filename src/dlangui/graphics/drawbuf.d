@@ -1021,7 +1021,7 @@ class ColorDrawBufBase : DrawBuf {
                                     dstrow[i] = pixel;
                                 else if (alpha < 254) {
                                     // apply blending
-                                    dstrow[i] = blendARGB(dstrow[i], pixel, alpha);
+                                    dstrow[i] = blendARGBOver(dstrow[i], pixel, alpha);
                                 }
                             }
                         } else {
@@ -1033,7 +1033,7 @@ class ColorDrawBufBase : DrawBuf {
                                     dstrow[i] = pixel;
                                 else if (alpha < 254) {
                                     // apply blending
-                                    dstrow[i] = blendARGB(dstrow[i], pixel, alpha);
+                                    dstrow[i] = blendARGBOver(dstrow[i], pixel, alpha);
                                 }
                             }
                         }
@@ -1087,7 +1087,7 @@ class ColorDrawBufBase : DrawBuf {
                                 dstrow[x] = srcpixel;
                             else if (alpha < 255) {
                                 // apply blending
-                                dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+                                dstrow[x] = blendARGBOver(dstpixel, srcpixel, alpha);
                             }
                         }
                     } else {
@@ -1101,7 +1101,7 @@ class ColorDrawBufBase : DrawBuf {
                                 dstrow[x] = srcpixel;
                             else if (alpha < 255) {
                                 // apply blending
-                                dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+                                dstrow[x] = blendARGBOver(dstpixel, srcpixel, alpha);
                             }
                         }
                     }
@@ -1225,7 +1225,7 @@ class ColorDrawBufBase : DrawBuf {
                             row[colx] = pixel;
                         else {
                             // apply blending
-                            row[colx] = blendARGB(pixel, color, alpha);
+                            row[colx] = blendARGBOver(pixel, color, alpha);
                         }
                     }
                 }
@@ -1243,7 +1243,7 @@ class ColorDrawBufBase : DrawBuf {
                 } else if (alpha < 254) {
                     foreach(x; rc.left .. rc.right) {
                         // apply blending
-                        row[x] = blendARGB(row[x], color, alpha);
+                        row[x] = blendARGBOver(row[x], color, alpha);
                     }
                 }
             }
@@ -1290,7 +1290,7 @@ class ColorDrawBufBase : DrawBuf {
                     foreach(x; rc.left .. rc.right) {
                         // apply blending
                         if (pattern != 1 || ((x ^ y) & 1) != 0)
-                            row[x] = blendARGB(row[x], color, alpha);
+                            row[x] = blendARGBOver(row[x], color, alpha);
                     }
                 }
             }
@@ -1308,7 +1308,7 @@ class ColorDrawBufBase : DrawBuf {
             row[x] = color;
         } else if (alpha < 254) {
             // apply blending
-            row[x] = blendARGB(row[x], color, alpha);
+            row[x] = blendARGBOver(row[x], color, alpha);
         }
     }
 }
@@ -1831,4 +1831,24 @@ private bool CohenSutherlandLineClipAndDraw(ref Rect clipRect, ref double x0, re
         }
     }
     return accept;
+}
+
+unittest {
+    // drawImage and drawRescaled draw over the destination (#1100): a transparent destination (like a GL texture
+    // page) takes the image pixel as it is, an opaque one stays opaque
+    ColorDrawBuf src = new ColorDrawBuf(1, 1);
+    src.fill(0xC7FFFFFF); // white, 22% opaque
+    ColorDrawBuf dst = new ColorDrawBuf(4, 1);
+    uint * row = dst.scanLine(0);
+    row[0 .. 4] = [0xFF000000, 0x003574F0, 0xFF000000, 0x003574F0];
+    dst.drawImage(0, 0, src);
+    dst.drawImage(1, 0, src);
+    dst.drawRescaled(Rect(2, 0, 3, 1), src, Rect(0, 0, 1, 1));
+    dst.drawRescaled(Rect(3, 0, 4, 1), src, Rect(0, 0, 1, 1));
+    assert(row[0] == 0xC7FFFFFF);
+    assert(row[1] >> 24 == 0 && (row[1] & 0xFF) > 0xF0); // opaque, lighter
+    assert(row[2] == 0xC7FFFFFF);
+    assert(row[3] == row[1]);
+    destroy(src);
+    destroy(dst);
 }

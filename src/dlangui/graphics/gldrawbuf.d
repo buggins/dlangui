@@ -602,7 +602,16 @@ private class GLImageCache : GLCache
             if (cacheItem is null)
                 return null;
             buf.onDestroyCallback = &onObjectDestroyedCallback;
-            _drawbuf.drawImage(cacheItem._rc.left, cacheItem._rc.top, buf);
+            // copy, don't draw: the page is transparent black there, and the pixels must reach the texture
+            // as they are (#1100)
+            ColorDrawBufBase colorBuf = cast(ColorDrawBufBase)buf;
+            if (colorBuf !is null) {
+                foreach (y; 0 .. buf.height)
+                    _drawbuf.scanLine(cacheItem._rc.top + y)[cacheItem._rc.left .. cacheItem._rc.left + buf.width] =
+                        colorBuf.scanLine(y)[0 .. buf.width];
+            } else {
+                _drawbuf.drawImage(cacheItem._rc.left, cacheItem._rc.top, buf);
+            }
             convertPixelFormat(cacheItem);
             _needUpdateTexture = true;
             return cacheItem;
