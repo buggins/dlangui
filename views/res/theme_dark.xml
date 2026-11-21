@@ -379,6 +379,13 @@
         <state state_hovered="true" backgroundColor="#C0404000"/>
     </style>
 
+    <style id="PROGRESS_BAR"
+        backgroundImageId="progress_bar_background_frame_dark"
+        >
+        <drawable id="progress_bar_gauge" value="#548AF7"/>
+        <drawable id="progress_bar_indeterminate" value="#5C9A5C"/>
+    </style>
+
     <style id="GROUP_BOX"
         margins="2pt,4pt,2pt,2pt">
         <drawable id="group_box_frame_up_left" value="group_box_frame_up_left_dark"/>

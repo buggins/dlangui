@@ -56,8 +56,9 @@ res/slider_page_background_hover.9.5.0.11x11.svg
 res/slider_page_background_hover_dark.9.5.0.11x11.svg
 res/slider_page_background_pressed.9.5.0.11x11.svg
 res/slider_page_background_pressed_dark.9.5.0.11x11.svg
-res/progress_bar_gauge_animation.png
-res/progress_bar_background_frame.9.png
+res/progress_bar_background_frame.9.3.20x20.svg
+res/progress_bar_background_frame_dark.9.3.20x20.svg
+res/progress_bar_gauge_animation.128x32.svg
 res/i18n/std_en.ini
 res/i18n/std_pl.ini
 res/i18n/std_ru.ini
