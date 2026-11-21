@@ -471,6 +471,58 @@ ColorDrawBuf scaleImage(ColorDrawBuf src, double scale) {
     return res;
 }
 
+/// SVG nine-patch image (#847): `rendered` (an SVG rendered at `scale`) with a transparent 1-pixel border and a
+/// NinePatch: frame and padding (px at BASE_DPI) scaled by the same factor and rounded, keeping at least one
+/// stretchable pixel, as scaleImage() does for nine-patch PNGs. Destroys `rendered`.
+ColorDrawBuf svgNinePatchImage(ColorDrawBuf rendered, Rect frame, Rect padding, double scale) {
+    import std.algorithm : max, min;
+    import std.math : lround;
+    if (rendered is null)
+        return null;
+    scope(exit) destroy(rendered);
+    int scaled(int v) { return cast(int)lround(v * scale); }
+    int cw = rendered.width;
+    int ch = rendered.height;
+    ColorDrawBuf res = new ColorDrawBuf(cw + 2, ch + 2);
+    res.fill(0xFF000000); // transparent border: no nine-patch markers
+    foreach (y; 0 .. ch)
+        res.scanLine(y + 1)[1 .. cw + 1] = rendered.scanLine(y)[0 .. cw];
+    NinePatch * np = new NinePatch();
+    np.frame = Rect(scaled(frame.left), scaled(frame.top), scaled(frame.right), scaled(frame.bottom));
+    np.padding = Rect(scaled(padding.left), scaled(padding.top), scaled(padding.right), scaled(padding.bottom));
+    // keep at least one stretchable pixel
+    np.frame.left = min(np.frame.left, max(0, cw - 1));
+    np.frame.top = min(np.frame.top, max(0, ch - 1));
+    np.frame.right = min(np.frame.right, max(0, cw - 1 - np.frame.left));
+    np.frame.bottom = min(np.frame.bottom, max(0, ch - 1 - np.frame.top));
+    res.ninePatch = np;
+    return res;
+}
+
+unittest {
+    // SVG nine-patch: frame and padding scaled with the image, transparent border (#847)
+    foreach (scale; [1.0, 1.25, 2.0]) {
+        import std.math : lround;
+        int size = cast(int)lround(24 * scale);
+        ColorDrawBuf rendered = new ColorDrawBuf(size, size);
+        rendered.fill(0x00808080);
+        ColorDrawBuf np = svgNinePatchImage(rendered, Rect(4, 4, 4, 4), Rect(6, 3, 6, 3), scale);
+        scope(exit) destroy(np);
+        assert(np.width == size + 2 && np.height == size + 2);
+        int s(int v) { return cast(int)lround(v * scale); }
+        assert(np.ninePatch.frame == Rect(s(4), s(4), s(4), s(4)));
+        assert(np.ninePatch.padding == Rect(s(6), s(3), s(6), s(3)));
+        assert(np.scanLine(0)[0] == 0xFF000000 && np.scanLine(1)[1] == 0x00808080);
+    }
+    // a frame as large as the image: at least one stretchable pixel stays
+    ColorDrawBuf small = new ColorDrawBuf(8, 6);
+    small.fill(0x00808080);
+    ColorDrawBuf np2 = svgNinePatchImage(small, Rect(5, 5, 5, 5), Rect(0, 0, 0, 0), 1.0);
+    scope(exit) destroy(np2);
+    assert(np2.ninePatch.frame.left + np2.ninePatch.frame.right <= 7);
+    assert(np2.ninePatch.frame.top + np2.ninePatch.frame.bottom <= 5);
+}
+
 unittest {
     // a 4x2 image, left half opaque red, right half fully transparent
     ColorDrawBuf src = new ColorDrawBuf(4, 2);
