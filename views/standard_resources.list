@@ -139,10 +139,10 @@ res/icons/text-plain.16x16.svg
 res/icons/text-plain_dark.16x16.svg
 res/hdpi/hdpi_close.png
 res/hdpi/hdpi_close_dark.png
-res/hdpi/hdpi_arrow_right_down_black.png
-res/hdpi/hdpi_arrow_right_down_black_dark.png
-res/hdpi/hdpi_arrow_right_hollow.png
-res/hdpi/hdpi_arrow_right_hollow_dark.png
+res/arrow_right_down_black.16x16.svg
+res/arrow_right_down_black_dark.16x16.svg
+res/arrow_right_hollow.16x16.svg
+res/arrow_right_hollow_dark.16x16.svg
 res/hdpi/hdpi_btn_check_off.png
 res/hdpi/hdpi_btn_check_off_dark.png
 res/hdpi/hdpi_btn_check_off_disabled.png
@@ -191,10 +191,6 @@ res/scrollbar_indicator_horizontal.11x11.svg
 res/scrollbar_indicator_horizontal_dark.11x11.svg
 res/scrollbar_indicator_vertical.11x11.svg
 res/scrollbar_indicator_vertical_dark.11x11.svg
-res/mdpi/arrow_right_down_black.png
-res/mdpi/arrow_right_down_black_dark.png
-res/mdpi/arrow_right_hollow.png
-res/mdpi/arrow_right_hollow_dark.png
 res/mdpi/btn_check_off.png
 res/mdpi/btn_check_off_dark.png
 res/mdpi/btn_check_off_disabled.png
