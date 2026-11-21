@@ -543,20 +543,7 @@ class Win32Window : Window {
 
             GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
             buf.beforeDrawing();
-            static if (false) {
-                // for testing for render
-                buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
-                buf.fillRect(Rect(40, 70, 100, 120), 0x000000);
-                buf.fillRect(Rect(80, 80, 150, 150), 0x80008000); // green
-                drawableCache.get("exit").drawTo(buf, Rect(300, 100, 364, 164));
-                drawableCache.get("btn_default_pressed").drawTo(buf, Rect(300, 200, 564, 264));
-                drawableCache.get("btn_default_normal").drawTo(buf, Rect(300, 0, 400, 50));
-                drawableCache.get("btn_default_selected").drawTo(buf, Rect(0, 0, 100, 50));
-                FontRef fnt = currentTheme.font;
-                fnt.drawText(buf, 40, 40, "Some Text 1234567890 !@#$^*", 0x80FF0000);
-            } else {
-                onDraw(buf);
-            }
+            onDraw(buf);
             buf.afterDrawing();
             sharedGLContext.swapBuffers(hdc);
             sharedGLContext.unbind(hdc);
