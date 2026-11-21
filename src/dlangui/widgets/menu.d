@@ -303,6 +303,34 @@ class MenuItem {
     }
 }
 
+/// Check or radio image of a menu item: shows only the checked and enabled state of the item,
+/// not hover or focus, which the item background shows (#1076)
+class MenuCheckIcon : ImageWidget {
+    this(string ID, string drawableId) {
+        super(ID, drawableId);
+    }
+    alias state = ImageWidget.state;
+    override @property uint state() const {
+        if (parent is null)
+            return super.state;
+        return parent.state & (State.Enabled | State.Checked);
+    }
+}
+
+unittest {
+    // the image of a check or radio item ignores the hover and focus states of the item (#1076)
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    WidgetGroupDefaultDrawing item = new WidgetGroupDefaultDrawing("item");
+    scope(exit) destroy(item);
+    MenuCheckIcon icon = new MenuCheckIcon("icon", "btn_check");
+    item.addChild(icon);
+    item.state = State.Enabled | State.Checked | State.Hovered | State.Focused | State.Selected;
+    assert(icon.state == (State.Enabled | State.Checked));
+    item.state = State.Hovered;
+    assert(icon.state == 0);
+}
+
 /// widget to draw menu item
 class MenuItemWidget : WidgetGroupDefaultDrawing {
     protected bool _mainMenu;
@@ -433,7 +461,10 @@ class MenuItemWidget : WidgetGroupDefaultDrawing {
                 iconId = "btn_radio";
             // icon
             if (_item.action && iconId.length) {
-                _icon = new ImageWidget("MENU_ICON", iconId);
+                if (_item.type == MenuItemType.Check || _item.type == MenuItemType.Radio)
+                    _icon = new MenuCheckIcon("MENU_ICON", iconId);
+                else
+                    _icon = new ImageWidget("MENU_ICON", iconId);
                 _icon.styleId = STYLE_MENU_ICON;
                 _icon.state = State.Parent;
                 addChild(_icon);

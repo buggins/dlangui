@@ -10,8 +10,9 @@ The check box and radio button images in views/res (btn_check_*.20x20.svg,
 btn_radio_*.20x20.svg) are modified versions of IntelliJ Platform icons
 (platform/platform-resources/src/themes/expUI/icons/dark in the
 intellij-community repository): the viewBox is cropped to the box and its
-focus ring, and the light theme files use the colors of IntelliJ's light
-theme (expUI_light.theme.json). Each file says so in its comment.
+focus ring, the focus ring is thinner and inside the viewBox, and the light
+theme files use the colors of IntelliJ's light theme (expUI_light.theme.json).
+Each file says so in its comment.
 
     btn_check_off, btn_radio_off                          checkBox.svg, radio.svg
     btn_check_off_focused, _off_pressed (and radio)       checkBoxFocused.svg, radioFocused.svg

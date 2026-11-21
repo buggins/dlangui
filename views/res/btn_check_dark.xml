@@ -17,9 +17,10 @@
           android:state_enabled="true"
           android:drawable="@drawable/btn_check_off_focused_dark" />
 
+    <!-- hovered: no focus ring for a checked item (the label shows hover; the ring marks keyboard focus) -->
     <item android:state_checked="true" android:state_hovered="true"
           android:state_enabled="true"
-          android:drawable="@drawable/btn_check_on_focused_dark" />
+          android:drawable="@drawable/btn_check_on_dark" />
     <item android:state_checked="false" android:state_hovered="true"
           android:state_enabled="true"
           android:drawable="@drawable/btn_check_off_focused_dark" />

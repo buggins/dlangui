@@ -102,7 +102,7 @@
         align="Center"
         backgroundImageId="switch"
         />
-    <!-- check boxes and radio buttons: little vertical space; the 20 px images have room for the focus ring -->
+    <!-- check boxes and radio buttons: little space around the images; the 20 px images have room for the focus ring -->
     <style id="CHECKBOX"
         backgroundImageId="@null"
         margins="2pt,1pt,2pt,1pt"
@@ -111,7 +111,7 @@
         />
     <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
         align="Center"
-        margins="2pt,0pt,2pt,0pt"
+        margins="0pt,0pt,1pt,0pt"
         />
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
         margins="0"
@@ -127,7 +127,7 @@
         />
     <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
         align="Center"
-        margins="2pt,0pt,2pt,0pt"
+        margins="0pt,0pt,1pt,0pt"
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
 	focusRectColors="#000"
