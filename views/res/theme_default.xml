@@ -489,11 +489,13 @@
         >
         <state state_enabled="false" alpha="160" backgroundImageId="toolbar_button_null"/>
     </style>
+    <!-- toolbar controls (combo boxes): no vertical padding of their own; the backgrounds have 1 px, so a control is no
+         taller than a toolbar button (#1072) -->
     <style id="TOOLBAR_CONTROL"
         backgroundImageId="toolbar_control_background"
         align="Center"
         margins="1pt,1pt,1pt,1pt"
-        padding="2pt,2pt,2pt,2pt"
+        padding="2pt,0pt,2pt,0pt"
         >
         <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
     </style>
