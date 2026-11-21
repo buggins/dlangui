@@ -104,7 +104,7 @@ class BasicControls : LinearLayout
         GroupBox gbgrid = new GroupBox("grid", "StringGridWidget"d, Orientation.Horizontal);
         StringGridWidget grid = new StringGridWidget("stringgrid");
         grid.resize(12, 10);
-        gbgrid.layoutWidth(FILL_PARENT); // the rest of the row, the tree has a fixed width (#1056)
+        gbgrid.layoutWidth(FILL_PARENT); // the rest of the row: about 75%, the tree 25% (#1056)
         gbgrid.layoutHeight(FILL_PARENT);
         grid.layoutWidth(FILL_PARENT);
         grid.layoutHeight(FILL_PARENT);
@@ -125,9 +125,10 @@ class BasicControls : LinearLayout
 
         gbgrid.addChild(grid);
         line4.addChild(gbgrid);
+        line4.addChild(new ResizerWidget()); // between the grid and the tree (#1056)
 
         GroupBox gbtree = new GroupBox("tree", "TreeWidget"d, Orientation.Vertical);
-        gbtree.minWidth(makePointSize(220)); // room for the items and the edit line with buttons (#1056)
+        gbtree.layoutWidth(makePercentSize(25)); // a share of the row (#1060); the resizer changes it
         auto tree = new TreeWidget("gbtree");
         tree.maxHeight(makePointSize(200));
         TreeItem tree1 = tree.items.newChild("group1", "Group 1"d, "document-open");
