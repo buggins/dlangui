@@ -1510,12 +1510,33 @@ public:
         if (!bg.isNull) {
             bg.drawTo(buf, rc, state);
         }
-        applyPadding(rc);
-        if (state & State.Focused) {
-            rc.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
-            drawFocusRect(buf, rc);
-        }
+        if (state & State.Focused)
+            drawFocusRect(buf, focusRectOf(rc, bg));
         _needDraw = false;
+    }
+
+    /**
+        Focus rectangle for the background rectangle rc (#1055): on the sides where the background drawable has
+        padding, at that inset (the inner edge of a button frame), so it's even even when the style asks for more
+        padding than the drawable (e.g. BUTTON's vertical padding); elsewhere FOCUS_RECT_PADDING outside the content.
+    */
+    protected Rect focusRectOf(Rect rc, ref DrawableRef bg) {
+        Rect content = rc;
+        applyPadding(content);
+        content.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
+        if (bg.isNull)
+            return content;
+        Rect dp = bg.padding;
+        Rect res = content;
+        if (dp.left > 0)
+            res.left = rc.left + dp.left;
+        if (dp.top > 0)
+            res.top = rc.top + dp.top;
+        if (dp.right > 0)
+            res.right = rc.right - dp.right;
+        if (dp.bottom > 0)
+            res.bottom = rc.bottom - dp.bottom;
+        return res;
     }
 
     /// Helper function: applies margins to rectangle
