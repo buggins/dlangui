@@ -96,6 +96,14 @@ class ToolBarComboBox : ComboBox {
         if (items.length > 0)
             selectedItemIndex = 0;
     }
+
+    /// the text without vertical padding, so the combobox doesn't make the toolbar much taller than its buttons (#1072)
+    override protected Widget createSelectedItemWidget() {
+        Widget res = super.createSelectedItemWidget();
+        res.styleId = STYLE_TOOLBAR_COMBO_BOX_BODY;
+        return res;
+    }
+
     mixin ActionTooltipSupport;
 }
 

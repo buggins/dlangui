@@ -214,6 +214,8 @@ immutable string STYLE_TOOLBAR = "TOOLBAR";
 immutable string STYLE_TOOLBAR_BUTTON = "TOOLBAR_BUTTON";
 /// standard style id for toolbar control, e.g. combobox
 immutable string STYLE_TOOLBAR_CONTROL = "TOOLBAR_CONTROL";
+/// standard style id for the text of a combobox in a toolbar (no vertical padding: lower toolbars)
+immutable string STYLE_TOOLBAR_COMBO_BOX_BODY = "TOOLBAR_COMBO_BOX_BODY";
 /// standard style id for toolbar separator
 immutable string STYLE_TOOLBAR_SEPARATOR = "TOOLBAR_SEPARATOR";
 
