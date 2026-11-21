@@ -19,8 +19,8 @@ res/btn_default_small_transparent.xml
 res/btn_default_small_transparent_dark.xml
 res/btn_radio.xml
 res/btn_radio_dark.xml
-res/mdpi/close.png
-res/mdpi/close_dark.png
+res/icons/close.16x16.svg
+res/icons/close_dark.16x16.svg
 res/combobox_background.xml
 res/combobox_background_dark.xml
 res/editbox_background.xml
@@ -137,8 +137,6 @@ res/icons/folder.16x16.svg
 res/icons/folder_dark.16x16.svg
 res/icons/text-plain.16x16.svg
 res/icons/text-plain_dark.16x16.svg
-res/hdpi/hdpi_close.png
-res/hdpi/hdpi_close_dark.png
 res/arrow_right_down_black.16x16.svg
 res/arrow_right_down_black_dark.16x16.svg
 res/arrow_right_hollow.16x16.svg
@@ -297,8 +295,8 @@ res/mdpi/toolbar_control_disabled.9.png
 res/mdpi/toolbar_control_disabled_dark.9.png
 res/mdpi/toolbar_control_normal.9.png
 res/mdpi/toolbar_control_normal_dark.9.png
-res/mdpi/toolbar_separator.png
-res/mdpi/toolbar_separator_dark.png
+res/toolbar_separator.8x24.svg
+res/toolbar_separator_dark.8x24.svg
 res/mdpi/tooltip_background.9.png
 res/mdpi/tooltip_background_dark.9.png
 res/mdpi/user-desktop.png
@@ -351,8 +349,8 @@ res/tab_btn_up_normal.9.png
 res/tab_btn_up_normal_dark.9.png
 res/tab_btn_up_selected.9.png
 res/tab_btn_up_selected_dark.9.png
-res/tab_more.png
-res/tab_more_dark.png
+res/tab_more.16x16.svg
+res/tab_more_dark.16x16.svg
 res/tab_down_background.9.png
 res/tab_down_background_selected.9.png
 res/tab_down_background_selected_dark.9.png
