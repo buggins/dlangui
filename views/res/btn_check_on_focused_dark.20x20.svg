@@ -1,0 +1,6 @@
+<!-- Based on themes/expUI/icons/dark/checkBoxSelectedFocused.svg of the IntelliJ Platform (platform/platform-resources), Copyright JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. Changed for DlangUI: viewBox cropped to the box and its focus ring. -->
+<svg width="20" height="20" viewBox="1 1 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect id="Checkbox.Background.Selected_Checkbox.Border.Selected" x="4.5" y="4.5" width="15" height="15" rx="2.5" fill="#3574F0" stroke="#3574F0"/>
+<rect id="Checkbox.Focus.Wide" x="2" y="2" width="20" height="20" rx="4.5" stroke="#3574F0" stroke-width="2"/>
+<path id="Checkbox.Foreground.Selected" d="M8 12.5L11 15.5L16.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,4 @@
+<!-- Based on themes/expUI/icons/dark/radioFocused.svg of the IntelliJ Platform (platform/platform-resources), Copyright JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. Changed for DlangUI: viewBox cropped to the box and its focus ring. -->
+<svg width="20" height="20" viewBox="1 1 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle id="Checkbox.Background.Default_Checkbox.Border.Selected" cx="12" cy="12" r="8.5" fill="#2B2D30" stroke="#3574F0" stroke-width="2"/>
+</svg>
