@@ -149,8 +149,8 @@
     <drawable id="scrollbar_button_left" value="scrollbar_btn_left_dark"/>
     <drawable id="scrollbar_button_right" value="scrollbar_btn_right_dark"/>
 
-    <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
-    <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
+    <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical_dark"/>
+    <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal_dark"/>
 
     <style id="SCROLLBAR"
         backgroundColor="#C0808080"
