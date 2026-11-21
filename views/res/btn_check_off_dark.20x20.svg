@@ -1,4 +1,4 @@
 <!-- Based on themes/expUI/icons/dark/checkBox.svg of the IntelliJ Platform (platform/platform-resources), Copyright JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. Changed for DlangUI: viewBox cropped to the box and its focus ring. -->
-<svg width="20" height="20" viewBox="1 1 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="20" height="20" viewBox="0.5 0.5 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
 <rect id="Checkbox.Background.Default_Checkbox.Border.Default" x="4.5" y="4.5" width="15" height="15" rx="2.5" fill="#2B2D30" stroke="#5A5D63"/>
 </svg>
