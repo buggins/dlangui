@@ -6,6 +6,21 @@ repository), used unchanged; only the file names were changed to DlangUI
 resource ids with a size suffix (e.g. dialog-ok.16x16.svg, see README).
 Files ending in _dark are the icons' dark theme variants.
 
+The check box and radio button images in views/res (btn_check_*.20x20.svg,
+btn_radio_*.20x20.svg) are modified versions of IntelliJ Platform icons
+(platform/platform-resources/src/themes/expUI/icons/dark in the
+intellij-community repository): the viewBox is cropped to the box and its
+focus ring, the focus ring is thinner and inside the viewBox, and the light
+theme files use the colors of IntelliJ's light theme (expUI_light.theme.json).
+Each file says so in its comment.
+
+    btn_check_off, btn_radio_off                          checkBox.svg, radio.svg
+    btn_check_off_focused, _off_pressed (and radio)       checkBoxFocused.svg, radioFocused.svg
+    btn_check_off_disabled (and radio)                    checkBoxDisabled.svg, radioDisabled.svg
+    btn_check_on, btn_radio_on                            checkBoxSelected.svg, radioSelected.svg
+    btn_check_on_focused, _on_pressed (and radio)         checkBoxSelectedFocused.svg, radioSelectedFocused.svg
+    btn_check_on_disabled (and radio)                     checkBoxSelectedDisabled.svg, radioSelectedDisabled.svg
+
 DlangUI embeds these icons in applications (standard resources). The
 embedded copies don't contain the license comment at the start of each
 file, which is dropped at compile time; the files in the repository keep
