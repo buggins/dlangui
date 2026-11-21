@@ -241,7 +241,7 @@ extern (C) int UIAppMain(string[] args) {
     Window window = Platform.instance.createWindow("DlangUI SpreadSheet example"d, null, WindowFlag.Resizable, 700, 470);
 
     // create some widget to show in window
-    window.windowIcon = drawableCache.getImage("dlangui-logo1");
+    window.windowIconId = "dlangui-logo1";
 
     FontRef font = FontManager.instance.getFont(24, 300, false, FontFamily.SansSerif, "Arial");
     Log.d("font found: ", font.face);

@@ -276,6 +276,82 @@ bool isSvgFilename(string filename) {
     return filename.length > 4 && filename[$ - 4 .. $].toLower == ".svg";
 }
 
+static if (BACKEND_GUI) {
+    /**
+        Image of resource id for a window icon, size x size pixels (#835): an SVG resource is rendered at that size, so
+        it is sharp at every size the desktop asks for; another image is scaled. Returns null if the resource is not
+        found or can't be decoded, or if a non-SVG image is smaller than size and upscale is false. The caller destroys
+        the returned buffer.
+     */
+    ColorDrawBuf windowIconImage(string id, int size, bool upscale = true) {
+        if (size <= 0 || !drawableCache)
+            return null;
+        string filename = drawableCache.findResource(id);
+        if (!filename.length || filename[0] == '#' || filename[0] == '{')
+            return null;
+        immutable ubyte[] data = loadResourceBytes(filename);
+        if (!data.length)
+            return null;
+        ColorDrawBuf src;
+        if (isSvgFilename(filename)) {
+            src = renderSvgToSize(data, size, svgCurrentColor, filename);
+            if (src && src.width == size && src.height == size)
+                return src;
+        } else {
+            src = loadImage(data, filename);
+            if (src && !upscale && (src.width < size || src.height < size)) {
+                destroy(src);
+                return null;
+            }
+        }
+        if (!src)
+            return null;
+        scope(exit) destroy(src);
+        // scaled, or (an SVG that isn't square) centered, in a size x size image
+        ColorDrawBuf res = new ColorDrawBuf(size, size);
+        res.fill(COLOR_TRANSPARENT);
+        if (src.width <= size && src.height <= size && isSvgFilename(filename))
+            res.drawImage((size - src.width) / 2, (size - src.height) / 2, src);
+        else
+            res.drawRescaled(Rect(0, 0, size, size), src, Rect(0, 0, src.width, src.height));
+        return res;
+    }
+
+    unittest {
+        // window icon images at exact sizes from SVG resources (#835)
+        import std.file : mkdirRecurse, rmdirRecurse, tempDir, write;
+        import std.path : buildPath;
+        import std.process : thisProcessID;
+        import std.conv : to;
+        string dir = buildPath(tempDir, "dlangui-icon-test-" ~ to!string(thisProcessID));
+        mkdirRecurse(dir);
+        scope(exit) rmdirRecurse(dir);
+        // a red square filling the image, and a 20x10 green bar
+        write(buildPath(dir, "sq.16x16.svg"), `<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><rect width="16" height="16" fill="#FF0000"/></svg>`);
+        write(buildPath(dir, "wide.svg"), `<svg width="20" height="10" viewBox="0 0 20 10" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="10" fill="#00FF00"/></svg>`);
+        DrawableCache saved = _drawableCache;
+        _drawableCache = new DrawableCache();
+        scope(exit) {
+            destroy(_drawableCache);
+            _drawableCache = saved;
+        }
+        _drawableCache.setResourcePaths(dir ~ dirSeparator); // resource paths end with a separator
+        foreach (size; [16, 48]) {
+            ColorDrawBuf img = windowIconImage("sq", size);
+            assert(img && img.width == size && img.height == size);
+            assert((img.scanLine(size / 2)[size / 2] & 0xFFFFFF) == 0xFF0000);
+            destroy(img);
+        }
+        // not square: centered in a square image, transparent above and below
+        ColorDrawBuf w = windowIconImage("wide", 40);
+        assert(w && w.width == 40 && w.height == 40);
+        assert((w.scanLine(20)[20] & 0xFFFFFF) == 0x00FF00 && (w.scanLine(2)[20] >> 24) == 0xFF);
+        destroy(w);
+        assert(windowIconImage("missing", 32) is null);
+        assert(windowIconImage("#FF0000", 32) is null);
+    }
+}
+
 private __gshared uint _svgCurrentColor = 0x000000;
 /// color (0xRRGGBB) that replaces `currentColor` in SVG images (#843); the text color of the current theme
 @property uint svgCurrentColor() {

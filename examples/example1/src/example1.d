@@ -382,7 +382,7 @@ extern (C) int UIAppMain(string[] args)
     tabs.selectTab("controls");
 
     static if (BACKEND_GUI) {
-        window.windowIcon = drawableCache.getImage("dlangui-logo1");
+        window.windowIconId = "dlangui-logo1";
     }
     window.show();
     //window.windowCaption = "New Window Caption";

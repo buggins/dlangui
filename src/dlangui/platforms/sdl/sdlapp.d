@@ -108,7 +108,7 @@ class SDLWindow : Window {
         Log.i(_enableOpengl ? "OpenGL is enabled" : "OpenGL is disabled");
         
         if (platform.defaultWindowIcon.length != 0)
-            windowIcon = drawableCache.getImage(platform.defaultWindowIcon);
+            windowIconId = platform.defaultWindowIcon;
     }
 
     ~this() {
@@ -615,17 +615,11 @@ class SDLWindow : Window {
     }
 
     /// sets window icon
-    @property override void windowIcon(DrawBufRef buf) {
-        ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
-        if (!icon) {
-            Log.e("Trying to set null icon for window");
-            return;
-        }
-        int iconw = 32;
-        int iconh = 32;
-        ColorDrawBuf iconDraw = new ColorDrawBuf(iconw, iconh);
-        iconDraw.fill(0xFF000000);
-        iconDraw.drawRescaled(Rect(0, 0, iconw, iconh), icon, Rect(0, 0, icon.width, icon.height));
+    /// largest window icon size: SDL sets one image (SDL2 writes one _NET_WM_ICON entry on X11) (#835)
+    private enum MAX_ICON_SIZE = 64;
+
+    /// sets the window icon from an image of its final size
+    private void setSdlIcon(ColorDrawBuf iconDraw) {
         iconDraw.invertAndPreMultiplyAlpha();
         SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(iconDraw.scanLine(0), iconDraw.width, iconDraw.height, 32, iconDraw.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
         if (surface) {
@@ -636,7 +630,38 @@ class SDLWindow : Window {
         } else {
             Log.e("failed to set window icon");
         }
-        destroy(iconDraw);
+    }
+
+    /// sets window icon: the image at its own size, from 32 up to MAX_ICON_SIZE pixels
+    @property override void windowIcon(DrawBufRef buf) {
+        ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
+        if (!icon) {
+            Log.e("Trying to set null icon for window");
+            return;
+        }
+        int size = icon.width > icon.height ? icon.width : icon.height;
+        if (size > MAX_ICON_SIZE)
+            size = MAX_ICON_SIZE;
+        if (size < 32)
+            size = 32;
+        ColorDrawBuf iconDraw = new ColorDrawBuf(size, size);
+        scope(exit) destroy(iconDraw);
+        iconDraw.fill(COLOR_TRANSPARENT);
+        iconDraw.drawRescaled(Rect(0, 0, size, size), icon, Rect(0, 0, icon.width, icon.height));
+        setSdlIcon(iconDraw);
+    }
+
+    /// sets window icon from a resource: an SVG resource is rendered at MAX_ICON_SIZE (#835)
+    @property override void windowIconId(string resourceId) {
+        ColorDrawBuf img = windowIconImage(resourceId, MAX_ICON_SIZE, false); // SVG, or an image at least that large
+        if (!img)
+            img = windowIconImage(resourceId, 32);
+        if (!img) {
+            Log.e("Window icon resource not found: ", resourceId);
+            return;
+        }
+        scope(exit) destroy(img);
+        setSdlIcon(img);
     }
 
     /// after drawing, call to schedule redraw if animation is active

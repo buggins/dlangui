@@ -455,7 +455,7 @@ class X11Window : DWindow {
         handleWindowStateChange(WindowState.unspecified, Rect(0, 0, _dx, _dy));
 
         if (platform.defaultWindowIcon.length != 0)
-            windowIcon = drawableCache.getImage(platform.defaultWindowIcon);
+            windowIconId = platform.defaultWindowIcon;
     }
 
     ~this() {
@@ -731,27 +731,67 @@ class X11Window : DWindow {
     }
 
     /// sets window icon
+    /// window icon sizes set in _NET_WM_ICON (#835): desktops pick one for title bars, taskbars, switchers and docks
+    private static immutable int[] ICON_SIZES = [16, 32, 48, 64, 128, 256];
+
+    /// sets _NET_WM_ICON: one entry (width, height, ARGB pixels) per image
+    private void setNetWmIcon(ColorDrawBuf[] images) {
+        size_t len;
+        foreach (img; images)
+            len += 2 + cast(size_t)img.width * img.height;
+        if (!len)
+            return;
+        c_long[] propData = new c_long[len];
+        size_t pos;
+        foreach (img; images) {
+            img.invertAndPreMultiplyAlpha();
+            propData[pos++] = img.width;
+            propData[pos++] = img.height;
+            foreach (y; 0 .. img.height) {
+                uint * line = img.scanLine(y);
+                foreach (x; 0 .. img.width)
+                    propData[pos++] = line[x];
+            }
+        }
+        XChangeProperty(x11display, _win, atom_NET_WM_ICON, XA_CARDINAL, 32, PropModeReplace, cast(ubyte*)propData.ptr, cast(int)propData.length);
+    }
+
+    /// sets window icon: the image scaled to the icon sizes up to its own size (never upscaled), and always 32x32
     override @property void windowIcon(DrawBufRef buf) {
         ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
         if (!icon) {
             Log.e("Trying to set null icon for window");
             return;
         }
-        immutable int iconw = 32;
-        immutable int iconh = 32;
-        ColorDrawBuf iconDraw = new ColorDrawBuf(iconw, iconh);
-        scope(exit) destroy(iconDraw);
-        iconDraw.fill(0xFF000000);
-        iconDraw.drawRescaled(Rect(0, 0, iconw, iconh), icon, Rect(0, 0, icon.width, icon.height));
-        iconDraw.invertAndPreMultiplyAlpha();
-        c_long[] propData = new c_long[2 + iconw * iconh];
-        propData[0] = iconw;
-        propData[1] = iconh;
-        auto iconData = iconDraw.scanLine(0);
-        foreach(i; 0..iconw*iconh) {
-            propData[i+2] = iconData[i];
+        int srcSize = icon.width > icon.height ? icon.width : icon.height;
+        ColorDrawBuf[] images;
+        scope(exit) foreach (img; images) destroy(img);
+        foreach (size; ICON_SIZES) {
+            if (size > srcSize && size != 32)
+                continue;
+            ColorDrawBuf img = new ColorDrawBuf(size, size);
+            img.fill(COLOR_TRANSPARENT);
+            img.drawRescaled(Rect(0, 0, size, size), icon, Rect(0, 0, icon.width, icon.height));
+            images ~= img;
         }
-        XChangeProperty(x11display, _win, atom_NET_WM_ICON, XA_CARDINAL, 32, PropModeReplace, cast(ubyte*)propData.ptr, cast(int)propData.length);
+        setNetWmIcon(images);
+    }
+
+    /// sets window icon from a resource: an SVG resource is rendered at all icon sizes, another image is scaled down
+    /// to the sizes up to its own size, and to 32x32 (#835)
+    override @property void windowIconId(string resourceId) {
+        ColorDrawBuf[] images;
+        scope(exit) foreach (img; images) destroy(img);
+        foreach (size; ICON_SIZES) {
+            ColorDrawBuf img = windowIconImage(resourceId, size, size == 32);
+            if (img)
+                images ~= img;
+        }
+        if (!images.length) {
+            Log.e("Window icon resource not found: ", resourceId);
+            return;
+        }
+        setNetWmIcon(images);
     }
 
     uint _lastRedrawEventCode;
