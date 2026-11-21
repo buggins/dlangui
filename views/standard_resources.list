@@ -48,8 +48,14 @@ res/group_box_frame_up_left.9.12-16-2-1.0.15x18.svg
 res/group_box_frame_up_left_dark.9.12-16-2-1.0.15x18.svg
 res/group_box_frame_up_right.9.4-16-12-1.0.18x18.svg
 res/group_box_frame_up_right_dark.9.4-16-12-1.0.18x18.svg
-res/slider_background.9.png
-res/slider_background_dark.9.png
+res/slider_background.9.5.0.11x11.svg
+res/slider_background_dark.9.5.0.11x11.svg
+res/slider_page_background.xml
+res/slider_page_background_dark.xml
+res/slider_page_background_hover.9.5.0.11x11.svg
+res/slider_page_background_hover_dark.9.5.0.11x11.svg
+res/slider_page_background_pressed.9.5.0.11x11.svg
+res/slider_page_background_pressed_dark.9.5.0.11x11.svg
 res/progress_bar_gauge_animation.png
 res/progress_bar_background_frame.9.png
 res/i18n/std_en.ini
