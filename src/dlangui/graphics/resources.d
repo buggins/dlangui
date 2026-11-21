@@ -167,11 +167,10 @@ struct EmbeddedResourceList {
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
-            int w, h;
             if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name)
                     || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname)
                     || s.equal(bmpname) || s.equal(iconame) || s.equal(svgname) || s.equal(gifname)
-                    || svgSizeSuffix(s, w, h) == name) // name.WxH.svg
+                    || svgSuffixedResourceId(s) == name) // name.WxH.svg, name.9.<frame>.svg (#847)
                 return &list[i];
         }
         return null;
@@ -210,37 +209,59 @@ string resolvedImageFilename(string filename) {
     return filename;
 }
 
-/// Size at BASE_DPI (96) given in the name of an SVG file (#843): `name.24x24.svg` is drawn as 24x24 px at 96 DPI,
-/// whatever size the SVG content has, so icons from different sources can be used without editing them.
-/// filename is a file name with or without directory. Returns the resource id (`name`, without directory) and
-/// the size, or null if the name has no such suffix.
-string svgSizeSuffix(string filename, out int width, out int height) pure nothrow @safe {
-    // file name without directory
-    size_t start = 0;
-    foreach (i, c; filename)
-        if (c == '/' || c == '\\')
-            start = i + 1;
-    string name = filename[start .. $];
-    if (name.length < 4 || (name[$ - 4 .. $] != ".svg" && name[$ - 4 .. $] != ".SVG"))
-        return null;
-    name = name[0 .. $ - 4];
-    // name.WxH
-    size_t dot = name.length;
-    foreach_reverse (i, c; name)
-        if (c == '.') {
-            dot = i;
-            break;
-        }
-    if (dot == 0 || dot >= name.length)
-        return null;
-    string size = name[dot + 1 .. $];
+/// parts of the name of an SVG file (#843, #847): `id[.9.<frame>[.<padding>]][.WxH].svg`, see parseSvgFileName
+struct SvgFileName {
+    /// resource id: the file name without directory, nine-patch and size suffixes and extension
+    string id;
+    /// size at BASE_DPI from the `.WxH` suffix; 0 if there is none (the size of the SVG content is used)
+    int width, height;
+    /// true for a nine-patch image (`.9.<frame>[.<padding>]` suffix)
+    bool ninePatch;
+    /// nine-patch: non-stretching border, px at BASE_DPI (left, top, right, bottom)
+    Rect frame;
+    /// nine-patch: content padding, px at BASE_DPI; the frame if the name gives none
+    Rect padding;
+}
+
+/// rectangle from 1, 2 or 4 numbers joined by '-': all edges, horizontal-vertical, or left-top-right-bottom
+private bool parseRectSuffix(string s, out Rect r) pure nothrow @safe {
+    int[4] v;
+    int n = 0;
+    int digits = 0;
+    foreach (c; s) {
+        if (c >= '0' && c <= '9') {
+            if (n >= 4 || ++digits > 4)
+                return false;
+            v[n] = v[n] * 10 + (c - '0');
+        } else if (c == '-' && digits) {
+            n++;
+            digits = 0;
+        } else
+            return false;
+    }
+    if (!digits)
+        return false;
+    n++;
+    if (n == 1)
+        r = Rect(v[0], v[0], v[0], v[0]);
+    else if (n == 2)
+        r = Rect(v[0], v[1], v[0], v[1]);
+    else if (n == 4)
+        r = Rect(v[0], v[1], v[2], v[3]);
+    else
+        return false;
+    return true;
+}
+
+/// size suffix "WxH": up to 4 digits each, both > 0
+private bool parseSizeSuffix(string s, out int width, out int height) pure nothrow @safe {
     int w = 0, h = 0;
     bool x = false;
     size_t digits = 0;
-    foreach (c; size) {
+    foreach (c; s) {
         if (c >= '0' && c <= '9') {
             if (++digits > 4)
-                return null;
+                return false;
             if (x)
                 h = h * 10 + (c - '0');
             else
@@ -249,13 +270,127 @@ string svgSizeSuffix(string filename, out int width, out int height) pure nothro
             x = true;
             digits = 0;
         } else
-            return null;
+            return false;
     }
     if (!x || !digits || w <= 0 || h <= 0)
-        return null;
+        return false;
     width = w;
     height = h;
-    return name[0 .. dot];
+    return true;
+}
+
+/**
+    Parses the name of an SVG file (#843, #847), with or without directory:
+    `id[.9.<frame>[.<padding>]][.WxH].svg`.
+
+    - `.WxH`: the size at BASE_DPI (96), whatever size the SVG content has, so images from different sources can be
+      used without editing them (`edit-copy.24x24.svg` is 24x24 px at 100%).
+    - `.9.<frame>[.<padding>]`: a nine-patch image (like `.9.png`). `<frame>` is the non-stretching border, `<padding>`
+      the content padding (the frame if omitted); each is 1, 2 or 4 numbers joined by `-` (all edges,
+      horizontal-vertical, or left-top-right-bottom), px at BASE_DPI. E.g. `btn_normal.9.4.6-3.48x24.svg`.
+
+    The suffixes are not part of the resource id: such files are used by their plain id (`edit-copy`,
+    `btn_normal`). Returns false if the name doesn't end with `.svg`.
+ */
+bool parseSvgFileName(string filename, out SvgFileName res) pure nothrow @safe {
+    // file name without directory
+    size_t start = 0;
+    foreach (i, c; filename)
+        if (c == '/' || c == '\\')
+            start = i + 1;
+    string name = filename[start .. $];
+    if (name.length < 5 || (name[$ - 4 .. $] != ".svg" && name[$ - 4 .. $] != ".SVG"))
+        return false;
+    name = name[0 .. $ - 4];
+    // split into dot-separated parts
+    string[] parts;
+    size_t partStart = 0;
+    foreach (i, c; name)
+        if (c == '.') {
+            parts ~= name[partStart .. i];
+            partStart = i + 1;
+        }
+    parts ~= name[partStart .. $];
+    size_t n = parts.length; // parts of the id: parts[0 .. n]
+    int w, h;
+    if (n >= 2 && parseSizeSuffix(parts[n - 1], w, h)) {
+        res.width = w;
+        res.height = h;
+        n--;
+    }
+    Rect frame, padding;
+    if (n >= 4 && parts[n - 3] == "9" && parseRectSuffix(parts[n - 2], frame) && parseRectSuffix(parts[n - 1], padding)) {
+        res.ninePatch = true;
+        res.frame = frame;
+        res.padding = padding;
+        n -= 3;
+    } else if (n >= 3 && parts[n - 2] == "9" && parseRectSuffix(parts[n - 1], frame)) {
+        res.ninePatch = true;
+        res.frame = frame;
+        res.padding = frame;
+        n -= 2;
+    }
+    // the id: the remaining parts, with their dots
+    size_t idLength = 0;
+    foreach (i; 0 .. n)
+        idLength += parts[i].length + (i ? 1 : 0);
+    res.id = name[0 .. idLength];
+    if (!res.id.length) {
+        res = SvgFileName.init;
+        return false;
+    }
+    return true;
+}
+
+/// Size at BASE_DPI (96) given in the name of an SVG file (#843): `name.24x24.svg` is drawn as 24x24 px at 96 DPI,
+/// whatever size the SVG content has, so icons from different sources can be used without editing them.
+/// filename is a file name with or without directory. Returns the resource id (`name`, without directory and
+/// suffixes, see parseSvgFileName) and the size, or null if the name has no size suffix.
+string svgSizeSuffix(string filename, out int width, out int height) pure nothrow @safe {
+    SvgFileName p;
+    if (!parseSvgFileName(filename, p) || !p.width)
+        return null;
+    width = p.width;
+    height = p.height;
+    return p.id;
+}
+
+@safe unittest {
+    // SVG file names with nine-patch and size suffixes (#847)
+    SvgFileName p;
+    assert(parseSvgFileName("btn_normal.9.4.48x24.svg", p));
+    assert(p.id == "btn_normal" && p.width == 48 && p.height == 24 && p.ninePatch);
+    assert(p.frame == Rect(4, 4, 4, 4) && p.padding == Rect(4, 4, 4, 4)); // padding = frame
+    assert(parseSvgFileName("res/btn_normal.9.4.6-3.48x24.svg", p));
+    assert(p.id == "btn_normal" && p.frame == Rect(4, 4, 4, 4) && p.padding == Rect(6, 3, 6, 3));
+    assert(parseSvgFileName("tab_up.9.3-4-3-0.6-2.40x24.svg", p));
+    assert(p.id == "tab_up" && p.frame == Rect(3, 4, 3, 0) && p.padding == Rect(6, 2, 6, 2));
+    assert(parseSvgFileName("c:\\icons\\frame.9.2.svg", p)); // no size: the SVG's own size
+    assert(p.id == "frame" && p.ninePatch && !p.width && p.frame == Rect(2, 2, 2, 2));
+    // not nine-patch
+    assert(parseSvgFileName("edit-copy.24x24.svg", p) && p.id == "edit-copy" && !p.ninePatch && p.width == 24);
+    assert(parseSvgFileName("a.b.16X20.SVG", p) && p.id == "a.b" && p.width == 16 && p.height == 20);
+    assert(parseSvgFileName("x.9.1-2-3.svg", p) && p.id == "x.9.1-2-3" && !p.ninePatch); // 3 numbers: invalid
+    assert(parseSvgFileName("x.9.svg", p) && p.id == "x.9" && !p.ninePatch);
+    assert(parseSvgFileName("x.9.4-.svg", p) && !p.ninePatch);
+    assert(!parseSvgFileName("x.9.4.png", p));
+    assert(!parseSvgFileName(".9.4.svg", p)); // no id
+    // resource ids
+    assert(svgSuffixedResourceId("btn.9.4.svg") == "btn");
+    assert(svgSuffixedResourceId("edit-copy.24x24.svg") == "edit-copy");
+    assert(svgSuffixedResourceId("edit-copy.svg") is null);
+    int w, h;
+    assert(svgSizeSuffix("btn.9.4.48x24.svg", w, h) == "btn" && w == 48 && h == 24);
+    assert(svgSizeSuffix("btn.9.4.svg", w, h) is null);
+}
+
+/// resource id of an SVG file name with a size or nine-patch suffix (`name.24x24.svg`, `name.9.4.svg`), see
+/// parseSvgFileName; null if the name has no suffix (a plain `name.svg`) or isn't an SVG file name
+string svgSuffixedResourceId(string filename) pure nothrow @safe {
+    SvgFileName p;
+    if (!parseSvgFileName(filename, p) || (!p.width && !p.ninePatch))
+        return null;
+    return p.id;
 }
 
 unittest {
@@ -349,6 +484,36 @@ static if (BACKEND_GUI) {
         destroy(w);
         assert(windowIconImage("missing", 32) is null);
         assert(windowIconImage("#FF0000", 32) is null);
+    }
+
+    unittest {
+        // an SVG nine-patch resource is used by its plain id (#847)
+        import std.file : mkdirRecurse, rmdirRecurse, tempDir, write;
+        import std.path : buildPath;
+        import std.process : thisProcessID;
+        import std.conv : to;
+        string dir = buildPath(tempDir, "dlangui-ninepatch-test-" ~ to!string(thisProcessID));
+        mkdirRecurse(dir);
+        scope(exit) rmdirRecurse(dir);
+        write(buildPath(dir, "frame.9.4.6-3.24x24.svg"), `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="0.5" y="0.5" width="23" height="23" fill="#FFFFFF" stroke="#000000"/></svg>`);
+        DrawableCache savedDrawables = _drawableCache;
+        ImageCache savedImages = _imageCache;
+        _drawableCache = new DrawableCache();
+        _imageCache = new ImageCache();
+        scope(exit) {
+            destroy(_drawableCache);
+            _drawableCache = savedDrawables;
+            destroy(_imageCache);
+            _imageCache = savedImages;
+        }
+        _drawableCache.setResourcePaths(dir ~ dirSeparator);
+        DrawableRef d = _drawableCache.get("frame");
+        assert(!d.isNull);
+        import std.math : lround;
+        double scale = cast(double)SCREEN_DPI / BASE_DPI;
+        int s(int v) { return cast(int)lround(v * scale); }
+        assert(d.width == s(24) && d.height == s(24));
+        assert(d.padding == Rect(s(6), s(3), s(6), s(3)));
     }
 }
 
@@ -492,10 +657,9 @@ private string[] missingResourceReferences(string resourceList)() {
     bool[string] ids;
     foreach (f; files) {
         string name = baseName(f.strip);
-        int svgw, svgh;
-        string sized = svgSizeSuffix(name, svgw, svgh);
+        string sized = svgSuffixedResourceId(name);
         if (sized !is null)
-            name = sized; // name.WxH.svg
+            name = sized; // name.WxH.svg, name.9.<frame>[.<padding>][.WxH].svg (#847)
         else
             foreach (ext; [".9.png", ".png", ".jpg", ".jpeg", ".svg", ".xml", ".tim"])
                 if (name.endsWith(ext)) {
@@ -1720,6 +1884,15 @@ class ImageCache {
         // SVG images (#843) are rendered from their source for each DPI, with svgCurrentColor
         bool _svg;
         immutable(ubyte)[] _svgData;
+        SvgFileName _svgName; // size and nine-patch suffixes of the file name (#847)
+
+        /// the SVG image rendered at scale; a nine-patch SVG with its NinePatch (#847)
+        private ColorDrawBuf renderSvgImage(double scale) {
+            ColorDrawBuf buf = renderSvg(_svgData, scale, svgCurrentColor, _filename);
+            if (buf && _svgName.ninePatch)
+                return svgNinePatchImage(buf, _svgName.frame, _svgName.padding, scale);
+            return buf;
+        }
 
         bool _error; // flag to avoid loading of file if it has been failed once
         bool _used;
@@ -1740,7 +1913,8 @@ class ImageCache {
                 _svg = isSvgImage(_filename, data);
                 if (_svg) {
                     _svgData = data;
-                    _drawbuf = renderSvg(data, 1.0, svgCurrentColor, _filename);
+                    parseSvgFileName(_filename, _svgName);
+                    _drawbuf = renderSvgImage(1.0);
                 } else
                     _drawbuf = loadImage(data, _filename);
                 if (_filename.endsWith(".9.png"))
@@ -1778,7 +1952,7 @@ class ImageCache {
                 return *p;
             if (_svg) {
                 // vector image: rendered in the wanted size instead of resampled
-                ColorDrawBuf buf = renderSvg(_svgData, scale, svgCurrentColor, _filename);
+                ColorDrawBuf buf = renderSvgImage(scale);
                 _scaled[dpi] = buf ? DrawBufRef(buf) : _drawbuf;
                 return _scaled[dpi];
             }
@@ -2081,7 +2255,7 @@ class DrawableCache {
         return null;
     }
 
-    /// find an SVG file with a size suffix (#843), path ~ id ~ ".WxH.svg"; null if there is none
+    /// find an SVG file with a size or nine-patch suffix (#843, #847), path ~ id ~ ".WxH.svg" etc.; null if there is none
     private string findSizedSvg(string path, string id) {
         string full = path ~ id;
         string dir = dirName(full);
@@ -2090,8 +2264,7 @@ class DrawableCache {
             return null;
         try {
             foreach (DirEntry e; dirEntries(dir, name ~ ".*.svg", SpanMode.shallow)) {
-                int w, h;
-                if (e.isFile && svgSizeSuffix(e.name, w, h) == name)
+                if (e.isFile && svgSuffixedResourceId(e.name) == name)
                     return e.name;
             }
         } catch (Exception e) {
