@@ -621,9 +621,27 @@ class SliderWidget : AbstractSlider, OnClickHandler {
     class PageScrollButton : Widget {
         this(string ID) {
             super(ID);
-            styleId = STYLE_PAGE_SCROLL;
+            styleId = STYLE_SLIDER_PAGE_SCROLL;
             trackHover = true;
             clickable = true;
+        }
+
+        /// a background image (e.g. a hovered track) is drawn over the whole track and clipped to this page area,
+        /// so it has the shape of the track; without one, the style colors fill the area (#1076)
+        override void onDraw(DrawBuf buf) {
+            if (visibility != Visibility.Visible)
+                return;
+            string imageId = stateStyle.backgroundImageId;
+            if (!imageId.length || imageId == "@null") {
+                super.onDraw(buf);
+                return;
+            }
+            DrawableRef bg = backgroundDrawable;
+            if (!bg.isNull) {
+                auto _ = ClipRectSaver(buf, _pos, alpha);
+                bg.drawTo(buf, this.outer.trackRect(bg), state);
+            }
+            _needDraw = false;
         }
     }
 
@@ -972,6 +990,23 @@ class SliderWidget : AbstractSlider, OnClickHandler {
         return super.onMouseEvent(event);
     }
 
+    /// the rectangle of the track: as thick as the drawable across the slider, centered, the whole length
+    protected Rect trackRect(DrawableRef bg) {
+        Rect rc = _pos;
+        applyMargins(rc);
+        Rect r = rc;
+        if (_orientation == Orientation.Vertical) {
+            int dw = bg.width;
+            r.left += (rc.width - dw)/2;
+            r.right = r.left + dw;
+        } else {
+            int dw = bg.height;
+            r.top += (rc.height - dw)/2;
+            r.bottom = r.top + dw;
+        }
+        return r;
+    }
+
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible && !buf.isClippedOut(_pos))
@@ -980,19 +1015,8 @@ class SliderWidget : AbstractSlider, OnClickHandler {
         applyMargins(rc);
         auto _ = ClipRectSaver(buf, rc, alpha);
         DrawableRef bg = backgroundDrawable;
-        if (!bg.isNull) {
-            Rect r = rc;
-            if (_orientation == Orientation.Vertical) {
-                int dw = bg.width;
-                r.left += (rc.width - dw)/2;
-                r.right = r.left + dw;
-            } else {
-                int dw = bg.height;
-                r.top += (rc.height - dw)/2;
-                r.bottom = r.top + dw;
-            }
-            bg.drawTo(buf, r, state);
-        }
+        if (!bg.isNull)
+            bg.drawTo(buf, trackRect(bg), state);
         applyPadding(rc);
         if (state & State.Focused) {
             rc.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);

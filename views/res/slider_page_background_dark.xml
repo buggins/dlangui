@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SliderWidget page areas: drawn over the whole track and clipped to the area (#1076) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true"
+        android:drawable="@drawable/slider_page_background_pressed_dark" />
+    <item android:state_enabled="true" android:state_hovered="true"
+        android:drawable="@drawable/slider_page_background_hover_dark" />
+    <item
+        android:drawable="@null" />
+</selector>

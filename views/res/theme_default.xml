@@ -200,6 +200,10 @@
         <state state_pressed="true" backgroundColor="#C0404080"/>
         <state state_hovered="true" backgroundColor="#F0404080"/>
     </style>
+    <!-- slider page areas: the hovered / pressed track, clipped to the area (#1076) -->
+    <style id="SLIDER_PAGE_SCROLL"
+        backgroundImageId="slider_page_background"
+        />
 
     <style id="TAB_DOWN_DARK"
         backgroundImageId="dock_window_caption_background_down"

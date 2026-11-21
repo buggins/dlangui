@@ -193,6 +193,8 @@
         backgroundImageId="@null"
         >
     </style>
+    <style id="SLIDER_PAGE_SCROLL" parent="PAGE_SCROLL"
+        />
     <style id="TAB_UP_DARK"
         layoutWidth="FILL_PARENT"
         backgroundColor="#000000"

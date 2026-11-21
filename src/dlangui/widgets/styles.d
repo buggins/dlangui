@@ -86,6 +86,8 @@ immutable string STYLE_SCROLLBAR_BUTTON = "SCROLLBAR_BUTTON";
 immutable string STYLE_SCROLLBAR_BUTTON_TRANSPARENT = "SCROLLBAR_BUTTON_TRANSPARENT";
 /// standard style id for ScrollBar page control
 immutable string STYLE_PAGE_SCROLL = "PAGE_SCROLL";
+/// standard style id for SliderWidget page control: a background image is drawn over the whole track, clipped to the page area
+immutable string STYLE_SLIDER_PAGE_SCROLL = "SLIDER_PAGE_SCROLL";
 /// standard style id for TabWidget
 immutable string STYLE_TAB_WIDGET = "TAB_WIDGET";
 /// standard style id for Tab with Up alignment
@@ -1539,6 +1541,9 @@ Theme createDefaultTheme() {
         Style scrollbarPage = res.createSubstyle(STYLE_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
         scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
         scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
+        Style sliderPage = res.createSubstyle(STYLE_SLIDER_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
+        sliderPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
+        sliderPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
 
         Style tabUp = res.createSubstyle(STYLE_TAB_UP);
         tabUp.backgroundImageId("tab_up_background");
@@ -1643,6 +1648,9 @@ Theme createDefaultTheme() {
         Style scrollbarPage = res.createSubstyle(STYLE_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
         scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
         scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
+        Style sliderPage = res.createSubstyle(STYLE_SLIDER_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
+        sliderPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
+        sliderPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
 
         Style tabUp = res.createSubstyle(STYLE_TAB_UP);
         tabUp.backgroundImageId("tab_up_background");
