@@ -4,6 +4,7 @@ import dlangui.core.stdaction;
 import dlangui.dialogs.dialog;
 import dlangui.widgets.widget;
 import dlangui.dml.parser;
+import dlangui.platforms.common.platform : Platform, DialogDisplayMode;
 import ircclient.ui.frame;
 import ircclient.ui.settings;
 import std.utf : toUTF32;
@@ -15,7 +16,9 @@ class SettingsDialog : Dialog {
     bool _allowConnect;
     this(IRCFrame parent, IRCSettings settings, bool allowConnect) {
         super(UIString.fromRaw("IRC Client Settings"d), parent.window,
-              DialogFlag.Modal | DialogFlag.Resizable | DialogFlag.Popup, 500, 400);
+              DialogFlag.Modal | DialogFlag.Resizable
+              | (Platform.instance.uiDialogDisplayMode & DialogDisplayMode.userDialogInPopup ? DialogFlag.Popup : 0),
+              500, 400);
         _icon = "dlangui-logo1";
         _frame = parent;
         _settings = settings;

@@ -21,13 +21,11 @@ class InputBox : Dialog {
         _actions = [ACTION_OK, ACTION_CANCEL];
         _defaultButtonIndex = 0;
         _text = initialText;
-        if (handler) {
-            dialogResult = delegate (Dialog dlg, const Action action) {
-                if (action.id == ACTION_OK.id) {
-                    handler(_text);
-                }
-            };
-        }
+        // always set, so the result never goes to the parent window (see MessageBox, #1109)
+        dialogResult = delegate (Dialog dlg, const Action action) {
+            if (handler && action.id == ACTION_OK.id)
+                handler(_text);
+        };
     }
     /// override to implement creation of dialog controls
     override void initialize() {
