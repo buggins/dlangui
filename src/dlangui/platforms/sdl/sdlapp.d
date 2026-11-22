@@ -1494,22 +1494,60 @@ class SDLPlatform : Platform {
 
     /// files of current drop operation, collected from SDL_DROPFILE events
     private string[] _droppedFiles;
+    /// the window of the current drop operation (drop.windowID, SDL 2.0.5+); 0 if not known
+    private uint _dropWindowId;
+    /// SDL_DROPBEGIN was received: the drop ends with SDL_DROPCOMPLETE (SDL 2.0.5+)
+    private bool _dropBegun;
 
-    /// handle SDL_DROPFILE event: SDL sends one event per dropped file (#705)
-    private void handleDropFileEvent(ref SDL_Event event) {
-        if (event.drop.file) {
-            _droppedFiles ~= fromStringz(event.drop.file).idup;
-            SDL_free(event.drop.file);
+    /**
+        Handles the drop events (#705, #1116): SDL sends SDL_DROPBEGIN, one SDL_DROPFILE per file and
+        SDL_DROPCOMPLETE, with the window the files were dropped on (2.0.5+; windowID 0 for a drop on the
+        application, e.g. its macOS dock icon). The files are delivered together at SDL_DROPCOMPLETE; without
+        SDL_DROPBEGIN (SDL 2.0.4), after the last SDL_DROPFILE queued at once.
+    */
+    private void handleDropEvent(ref SDL_Event event) {
+        switch (event.type) {
+            case SDL_DROPBEGIN:
+                deliverDroppedFiles(); // files of an unfinished drop, if any
+                _dropBegun = true;
+                _dropWindowId = event.drop.windowID;
+                return;
+            case SDL_DROPCOMPLETE:
+                if (event.drop.windowID)
+                    _dropWindowId = event.drop.windowID;
+                deliverDroppedFiles();
+                return;
+            case SDL_DROPFILE:
+                if (event.drop.file)
+                    _droppedFiles ~= fromStringz(event.drop.file).idup;
+                if (event.drop.windowID)
+                    _dropWindowId = event.drop.windowID;
+                if (_dropBegun)
+                    break; // until SDL_DROPCOMPLETE
+                // SDL 2.0.4 queues all files of one drop at once: deliver them together after the last one
+                SDL_Event next;
+                if (SDL_PeepEvents(&next, 1, SDL_PEEKEVENT, SDL_DROPFILE, SDL_DROPFILE) <= 0)
+                    deliverDroppedFiles();
+                break;
+            default: // SDL_DROPTEXT: text isn't dropped into dlangui windows
+                break;
         }
-        // SDL queues all files of one drop at once: deliver them together after the last one
-        SDL_Event next;
-        if (SDL_PeepEvents(&next, 1, SDL_PEEKEVENT, SDL_DROPFILE, SDL_DROPFILE) > 0)
-            return;
+        if (event.drop.file)
+            SDL_free(event.drop.file); // the application frees the file names and texts of drop events
+    }
+
+    /// passes the files of the current drop operation to its window (#1116)
+    private void deliverDroppedFiles() {
         string[] files = _droppedFiles;
+        uint windowId = _dropWindowId;
         _droppedFiles = null;
+        _dropWindowId = 0;
+        _dropBegun = false;
         if (!files.length)
             return;
-        SDLWindow w = dropTargetWindow();
+        SDLWindow w = windowId ? getWindow(windowId) : null;
+        if (!w)
+            w = dropTargetWindow();
         if (!w) {
             Log.w("SDL_DROPFILE: cannot determine target window, ignoring dropped files ", files);
             return;
@@ -1518,9 +1556,8 @@ class SDLPlatform : Platform {
         w.update();
     }
 
-    /// Window to deliver dropped files to.
-    /// The SDL_DROPFILE event isn't used with its window here (drop.windowID is new in SDL 2.0.5),
-    /// so use the window with keyboard focus, or with mouse focus, or the only window.
+    /// Window to deliver dropped files to when the drop events don't tell it (windowID 0: SDL 2.0.4, or a drop
+    /// on the application): the window with keyboard focus, or with mouse focus, or the only window.
     private SDLWindow dropTargetWindow() {
         if (SDL_Window* win = SDL_GetKeyboardFocus())
             if (SDLWindow w = getWindow(SDL_GetWindowID(win)))
@@ -1815,7 +1852,10 @@ class SDLPlatform : Platform {
                         }
                         break;
                     case SDL_DROPFILE:
-                        handleDropFileEvent(event);
+                    case SDL_DROPTEXT:
+                    case SDL_DROPBEGIN:
+                    case SDL_DROPCOMPLETE:
+                        handleDropEvent(event);
                         break;
                     default:
                         // not supported event
