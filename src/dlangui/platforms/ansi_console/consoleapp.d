@@ -127,6 +127,16 @@ class ConsolePlatform : Platform {
     }
 
 
+    /// handle theme change: the widgets of all windows refresh their cached styles, which belong to the replaced
+    /// (destroyed) theme (#1120)
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        if (currentTheme)
+            currentTheme.onThemeChanged();
+        foreach(w; _windowList)
+            w.dispatchThemeChanged();
+    }
+
     ConsoleWindow activeWindow() {
         if (!_windowList.length)
             return null;
