@@ -492,6 +492,19 @@ class Font : RefCountedObject {
         }
         return _capHeight;
     }
+
+    protected int _xHeight = -1;
+    /// height of the lowercase letters above the baseline (top of 'x'), in pixels; between 0 and capHeight
+    @property int xHeight() {
+        checkMetricsCache();
+        if (_xHeight < 0) {
+            int c = capHeight;
+            Glyph * g = getCharGlyph('x', false);
+            int h = g !is null && g.originY > 0 ? g.originY : c * 7 / 10;
+            _xHeight = h > c ? c : (h < 0 ? 0 : h);
+        }
+        return _xHeight;
+    }
     /// returns true if font is italic
     abstract @property bool italic();
     /// returns font face name
@@ -767,6 +780,7 @@ class Font : RefCountedObject {
         _metricsGeneration = FontManager._glyphSettingsGeneration;
         _textSizeCache.clear();
         _capHeight = -1;
+        _xHeight = -1;
         _spaceWidth = -1;
         _ellipsisWidth = -1;
     }

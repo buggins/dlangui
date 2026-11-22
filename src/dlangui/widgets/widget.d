@@ -1623,6 +1623,34 @@ public:
         applyTextAlign(rc, sz, halign, valign, font);
     }
 
+    /**
+        Top of an icon of height iconHeight next to one line of text vertically centered in textArea with font
+        (applyTextAlign), for item widgets with an icon and a label (menus, trees). Centering both by their
+        boxes puts lowercase text visibly below the icon's middle: the text is centered by its capitals, but
+        the eye follows the lowercase letters. The icon's middle goes halfway between the middle of the
+        capitals and the middle of the lowercase letters (x-height). The result is kept inside iconArea.
+        Console builds and missing font metrics: the icon is centered in iconArea.
+    */
+    static int iconTopNextToText(Rect iconArea, int iconHeight, Rect textArea, Font font) {
+        int centered = iconArea.top + (iconArea.height - iconHeight) / 2;
+        static if (WIDGET_STYLE_CONSOLE) {
+            return centered;
+        } else {
+            if (font is null || font.height <= 0 || font.capHeight <= 0 || iconHeight >= iconArea.height)
+                return centered;
+            Rect textRc = textArea;
+            applyTextAlign(textRc, Point(0, font.height), Align.Left, Align.VCenter, font);
+            int baseline = textRc.top + font.baseline;
+            int middle = baseline - (font.capHeight + font.xHeight + 2) / 4;
+            int top = middle - iconHeight / 2;
+            if (top + iconHeight > iconArea.bottom)
+                top = iconArea.bottom - iconHeight;
+            if (top < iconArea.top)
+                top = iconArea.top;
+            return top;
+        }
+    }
+
     static if (!WIDGET_STYLE_CONSOLE) unittest {
         // a font like DejaVu Sans at 13 px: line height 15, baseline 11, capitals 10 px high
         static class TestFont : Font {
@@ -1665,6 +1693,42 @@ public:
         applyTextAlign(rc, Point(50, 30), Align.Left, Align.VCenter, font);
         assert(rc.top == 11 && rc.bottom == 41); // applyAlign: 10
         destroy(font);
+    }
+
+    // an icon next to text: its middle halfway between the middles of the capitals and of the lowercase letters
+    static if (!WIDGET_STYLE_CONSOLE) unittest {
+        // line height 28, baseline 22, capitals 16 px and lowercase letters 8 px high
+        static class TestFont : Font {
+            Glyph _h, _x;
+            this() { _h.originY = 16; _h.blackBoxY = 16; _x.originY = 8; _x.blackBoxY = 8; }
+            override @property int size() { return 24; }
+            override @property int height() { return 28; }
+            override @property int weight() { return 400; }
+            override @property int baseline() { return 22; }
+            override @property bool italic() { return false; }
+            override @property string face() { return "test"; }
+            override @property FontFamily family() { return FontFamily.SansSerif; }
+            override @property bool isNull() { return false; }
+            override Glyph * getCharGlyph(dchar ch, bool withImage = true) { return ch == 'x' ? &_x : &_h; }
+            override void checkpoint() {}
+            override void cleanup() {}
+            override void clearGlyphCache() {}
+        }
+        auto font = new TestFont();
+        scope(exit) destroy(font);
+        assert(font.capHeight == 16 && font.xHeight == 8);
+        Rect area = Rect(0, 0, 20, 40);
+        Rect textArea = Rect(30, 0, 100, 40);
+        // text line box at 6..34, baseline 28: capitals' middle 20 (the area's middle), lowercase middle 24,
+        // icon middle 22: 2 px below centered
+        assert(iconTopNextToText(area, 16, textArea, font) == 14); // centered: 12
+        // kept inside the area
+        assert(iconTopNextToText(area, 38, textArea, font) == 2);
+        // no room or no font: centered
+        assert(iconTopNextToText(area, 40, textArea, font) == 0);
+        assert(iconTopNextToText(area, 16, textArea, null) == 12);
+        // text area lower than the icon area (e.g. label margins): follows the text
+        assert(iconTopNextToText(area, 16, Rect(30, 4, 100, 44), font) == 18);
     }
 
     // ===========================================================
