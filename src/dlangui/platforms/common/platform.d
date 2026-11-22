@@ -110,6 +110,53 @@ unittest {
 }
 
 /**
+ * Client size limits of a window from the min and max size constraints of its main widget, in pixels (#455):
+ * 0 in a limit means no limit. A missing max size (SIZE_UNSPECIFIED) is no limit; a max size smaller than
+ * the min size becomes the min size.
+ */
+void clientSizeLimits(int minWidth, int minHeight, int maxWidth, int maxHeight, out Point minSize, out Point maxSize) {
+    import std.algorithm : max;
+    // values with size flags (SIZE_UNSPECIFIED, FILL_PARENT, WRAP_CONTENT, percents) aren't sizes
+    static int limit(int value) { return value > 0 && value < SIZE_IN_PERCENTS_FLAG ? value : 0; }
+    minSize = Point(limit(minWidth), limit(minHeight));
+    maxSize = Point(limit(maxWidth), limit(maxHeight));
+    if (maxSize.x)
+        maxSize.x = max(maxSize.x, minSize.x);
+    if (maxSize.y)
+        maxSize.y = max(maxSize.y, minSize.y);
+}
+
+/// A client size kept within limits from clientSizeLimits (0: no limit) (#455)
+Point clientSizeWithinLimits(Point size, Point minSize, Point maxSize) {
+    import std.algorithm : min, max;
+    if (maxSize.x)
+        size.x = min(size.x, maxSize.x);
+    if (maxSize.y)
+        size.y = min(size.y, maxSize.y);
+    return Point(max(size.x, minSize.x), max(size.y, minSize.y));
+}
+
+unittest {
+    Point mn, mx;
+    // no constraints: widget defaults (0 and SIZE_UNSPECIFIED)
+    clientSizeLimits(0, 0, SIZE_UNSPECIFIED, SIZE_UNSPECIFIED, mn, mx);
+    assert(mn == Point(0, 0) && mx == Point(0, 0));
+    clientSizeLimits(600, 400, SIZE_UNSPECIFIED, 900, mn, mx);
+    assert(mn == Point(600, 400) && mx == Point(0, 900));
+    // max smaller than min: the min size wins
+    clientSizeLimits(600, 400, 500, 300, mn, mx);
+    assert(mn == Point(600, 400) && mx == Point(600, 400));
+    // sizes that aren't real sizes are no limit
+    clientSizeLimits(FILL_PARENT, -1, WRAP_CONTENT, 0, mn, mx);
+    assert(mn == Point(0, 0) && mx == Point(0, 0));
+
+    Point size = Point(500, 1000);
+    assert(clientSizeWithinLimits(size, Point(0, 0), Point(0, 0)) == size);
+    assert(clientSizeWithinLimits(size, Point(600, 400), Point(0, 900)) == Point(600, 900));
+    assert(clientSizeWithinLimits(size, Point(0, 0), Point(400, 0)) == Point(400, 1000));
+}
+
+/**
  * Limits an outer window rectangle to an area of the screen, e.g. the work area of a monitor (the screen
  * without the taskbar): shrinks the rectangle if it is bigger than the area, then moves it inside (#806).
  * An empty area leaves the rectangle as it is.
@@ -577,6 +624,56 @@ class Window : CustomEventTarget {
         updateWindowOrContentSize();
     }
 
+    /// smallest client size the user can resize the window to (0: no limit, #455); see updateClientSizeLimits
+    protected Point _minClientSize;
+    /// largest client size the user can resize the window to (0: no limit, #455); see updateClientSizeLimits
+    protected Point _maxClientSize;
+
+    /// smallest client size the user can resize the window to, in pixels (0: no limit): the main widget's
+    /// minWidth and minHeight, for a resizable window (#455)
+    @property Point minClientSize() const { return _minClientSize; }
+    /// largest client size the user can resize the window to, in pixels (0: no limit): the main widget's
+    /// maxWidth and maxHeight, for a resizable window (#455)
+    @property Point maxClientSize() const { return _maxClientSize; }
+
+    /**
+        Takes the client size limits of a resizable, not fullscreen window from the min and max size of the main
+        widget (minWidth, minHeight, maxWidth, maxHeight; e.g. `minWidth: 400pt` in DML) and passes changed ones to
+        the backend (#455). Called when the window is shown (resizeNow: true) and when the main widget is measured,
+        so a change of its style applies on the next layout. A window in the normal state outside new limits is
+        resized into them: at once if resizeNow, else after the current layout pass.
+    */
+    protected void updateClientSizeLimits(bool resizeNow) {
+        Point minSize, maxSize;
+        if (_mainWidget && (_flags & WindowFlag.Resizable) && !(_flags & WindowFlag.Fullscreen))
+            clientSizeLimits(_mainWidget.minWidth, _mainWidget.minHeight, _mainWidget.maxWidth, _mainWidget.maxHeight,
+                minSize, maxSize);
+        if (minSize == _minClientSize && maxSize == _maxClientSize)
+            return;
+        _minClientSize = minSize;
+        _maxClientSize = maxSize;
+        applyClientSizeLimits();
+        if (resizeNow)
+            resizeIntoClientSizeLimits();
+        else
+            executeInUiThread(&resizeIntoClientSizeLimits); // not from inside measure()
+    }
+
+    /// resizes a window in the normal state to fit into minClientSize and maxClientSize (#455)
+    protected void resizeIntoClientSizeLimits() {
+        if (_windowState != WindowState.normal || _windowRect.right <= 0 || _windowRect.bottom <= 0)
+            return;
+        Point size = Point(_windowRect.right, _windowRect.bottom);
+        Point newSize = clientSizeWithinLimits(size, _minClientSize, _maxClientSize);
+        if (newSize != size)
+            resizeWindow(newSize);
+    }
+
+    /// backends: make the system keep the user's resizing of the window within minClientSize and maxClientSize
+    /// (0: no limit); called when they change (#455)
+    protected void applyClientSizeLimits() {
+    }
+
     /// keep current position of window scrollbar after its range or page size is changed (e.g. on window resize, #632),
     /// moving it only if it is out of the new range
     private static void keepScrollPositionInRange(ScrollBar scrollBar) {
@@ -702,6 +799,7 @@ class Window : CustomEventTarget {
             _tooltip.popup.requestLayout();
     }
     void measure() {
+        updateClientSizeLimits(false);
         if (_hScrollBar)
             _hScrollBar.measure(_dx, _dy);
 

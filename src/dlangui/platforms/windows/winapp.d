@@ -620,6 +620,27 @@ class Win32Window : Window {
             Rect(work.left, work.top, work.right, work.bottom)));
     }
 
+    /// WM_GETMINMAXINFO: minClientSize and maxClientSize as outer sizes (#455); false if there are no limits.
+    /// The system applies them to the user's resizing, to SetWindowPos and to the maximized size.
+    bool getMinMaxInfo(MINMAXINFO* info) {
+        if (!_hwnd || (_minClientSize == Point(0, 0) && _maxClientSize == Point(0, 0)))
+            return false;
+        RECT frame = RECT(0, 0, 0, 0);
+        AdjustWindowRectEx(&frame, cast(DWORD)GetWindowLongW(_hwnd, GWL_STYLE), FALSE, cast(DWORD)GetWindowLongW(_hwnd, GWL_EXSTYLE));
+        int frameWidth = frame.right - frame.left;
+        int frameHeight = frame.bottom - frame.top;
+        // keep the system's own limits where they are stricter (the smallest size with the caption buttons)
+        if (_minClientSize.x)
+            info.ptMinTrackSize.x = max(info.ptMinTrackSize.x, _minClientSize.x + frameWidth);
+        if (_minClientSize.y)
+            info.ptMinTrackSize.y = max(info.ptMinTrackSize.y, _minClientSize.y + frameHeight);
+        if (_maxClientSize.x)
+            info.ptMaxTrackSize.x = min(info.ptMaxTrackSize.x, _maxClientSize.x + frameWidth);
+        if (_maxClientSize.y)
+            info.ptMaxTrackSize.y = min(info.ptMaxTrackSize.y, _maxClientSize.y + frameHeight);
+        return true;
+    }
+
     protected bool _destroying;
     ~this() {
         if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
@@ -726,6 +747,7 @@ class Win32Window : Window {
             else
                 adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
+        updateClientSizeLimits(true);
 
         adjustPositionDuringShow();
         fitWindowIntoWorkArea();
@@ -2035,6 +2057,9 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // default handler inside DefWindowProc will close window
             break;
         case WM_GETMINMAXINFO:
+            if (window !is null && window.getMinMaxInfo(cast(MINMAXINFO*)lParam))
+                return 0;
+            break;
         case WM_NCCREATE:
         case WM_NCCALCSIZE:
         default:

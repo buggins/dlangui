@@ -470,6 +470,7 @@ class SDLWindow : Window {
             else
                 adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
+        updateClientSizeLimits(true);
 
         adjustPositionDuringShow();
 
@@ -508,6 +509,29 @@ class SDLWindow : Window {
         int w, h;
         SDL_GetWindowSize(_win, &w, &h);
         moveWindow(centeredWindowPosition(w, h, Rect(bounds.x, bounds.y, bounds.x + bounds.w, bounds.y + bounds.h)));
+    }
+
+    /// SDL_SetWindowMinimumSize/MaximumSize (#455); they take sizes in window coordinates (smaller than the
+    /// drawable's pixels on HiDPI, e.g. macOS Retina) and no 0 for "no limit": 1 and a big size instead
+    override protected void applyClientSizeLimits() {
+        if (!_win)
+            return;
+        int winW, winH, drawableW, drawableH;
+        SDL_GetWindowSize(_win, &winW, &winH);
+        SDL_GL_GetDrawableSize(_win, &drawableW, &drawableH);
+        // min sizes rounded up, max sizes down
+        int toWindow(int size, int win, int drawable, int roundUp) {
+            return drawable > win && win > 0 ? (size * win + roundUp * (drawable - 1)) / drawable : size;
+        }
+        enum NO_MAX = 16_384;
+        int minW = _minClientSize.x ? toWindow(_minClientSize.x, winW, drawableW, 1) : 1;
+        int minH = _minClientSize.y ? toWindow(_minClientSize.y, winH, drawableH, 1) : 1;
+        int maxW = _maxClientSize.x ? toWindow(_maxClientSize.x, winW, drawableW, 0) : NO_MAX;
+        int maxH = _maxClientSize.y ? toWindow(_maxClientSize.y, winH, drawableH, 0) : NO_MAX;
+        // SDL refuses a min size bigger than the max size set before: lift the max size first
+        SDL_SetWindowMaximumSize(_win, NO_MAX, NO_MAX);
+        SDL_SetWindowMinimumSize(_win, minW, minH);
+        SDL_SetWindowMaximumSize(_win, maxW, maxH);
     }
 
     override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
