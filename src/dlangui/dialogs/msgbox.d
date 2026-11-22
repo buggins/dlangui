@@ -46,11 +46,12 @@ class MessageBox : Dialog {
         _message = message;
         _actions = buttons;
         _defaultButtonIndex = defaultButtonIndex;
-        if (handler) {
-            dialogResult = delegate (Dialog dlg, const Action action) {
+        // always set: without a dialogResult handler, a dialog window passes the pressed button's action to the
+        // parent window, where e.g. a dialog with the same button closes (#1109); a message box only calls handler
+        dialogResult = delegate (Dialog dlg, const Action action) {
+            if (handler)
                 handler(action);
-            };
-        }
+        };
     }
     /// override to implement creation of dialog controls
     override void initialize() {

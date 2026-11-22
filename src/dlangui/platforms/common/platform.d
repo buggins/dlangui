@@ -2050,8 +2050,9 @@ class Platform {
         }
     }
 
-    protected ulong _uiDialogDisplayMode = DialogDisplayMode.messageBoxInPopup | DialogDisplayMode.inputBoxInPopup;
-    /// returns how dialogs should be displayed - as popup or window
+    // all dialogs in windows (#1109); the console backend shows all of them in popups
+    protected ulong _uiDialogDisplayMode = DialogDisplayMode.allTypesOfDialogsInWindow;
+    /// returns how dialogs should be displayed - as popup or window (DialogDisplayMode flags; default: all in windows)
     @property ulong uiDialogDisplayMode() {
         return _uiDialogDisplayMode;
     }
