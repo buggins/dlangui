@@ -560,10 +560,15 @@ class StatusWidget : VerticalLayout {
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
-        import std.algorithm: min;
-        int minw = min(parentWidth, parentHeight);
-        foreach(lbl; _labels) {
-            lbl.fontSize = minw / 20;
+        import std.algorithm: clamp, min;
+        // label font size from the space the panel gets (#1128): not for an unspecified size (it would ask for a
+        // huge font), and assigned only when it changes, as each assignment copies the style and reloads the font
+        if (parentWidth < SIZE_UNSPECIFIED && parentHeight < SIZE_UNSPECIFIED) {
+            int sz = clamp(min(parentWidth, parentHeight) / 20, 8.pointsToPixels, 48.pointsToPixels);
+            foreach(lbl; _labels) {
+                if (lbl.fontSize != sz)
+                    lbl.fontSize = sz;
+            }
         }
         super.measure(parentWidth, parentHeight);
     }
