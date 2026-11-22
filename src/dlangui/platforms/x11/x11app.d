@@ -579,6 +579,7 @@ class X11Window : DWindow {
             updateClientSizeLimits(true);
 
             adjustPositionDuringShow();
+            fitWindowIntoWorkArea();
 
             _mainWidget.setFocus();
         }
@@ -633,12 +634,15 @@ class X11Window : DWindow {
         _NET_WM_STATE_TOGGLE
     }
 
-    /// centers the window on the work area of the screen (#580): _NET_WORKAREA (of the first desktop; with several
-    /// monitors it may span all of them), else the whole display. Positions are the client area's (see #820).
-    override void centerOnScreen() {
-        if (_windowState == WindowState.maximized || _windowState == WindowState.minimized
-                || _windowState == WindowState.fullscreen)
-            return;
+    /// true if the window is maximized, minimized or fullscreen: then it isn't centered or fitted into the screen
+    protected bool notInNormalState() {
+        return _windowState == WindowState.maximized || _windowState == WindowState.minimized
+            || _windowState == WindowState.fullscreen || (_flags & WindowFlag.Fullscreen);
+    }
+
+    /// the work area of the screen: _NET_WORKAREA (of the first desktop; with several monitors it may span all of
+    /// them), else the whole display
+    protected Rect workArea() {
         Rect area = Rect(0, 0, DisplayWidth(x11display, x11screen), DisplayHeight(x11display, x11screen));
         Atom workArea = XInternAtom(x11display, "_NET_WORKAREA", True);
         if (workArea != None) {
@@ -656,8 +660,119 @@ class X11Window : DWindow {
                 XFree(data);
             }
         }
+        return area;
+    }
+
+    /// sizes of the frame the window manager adds around the window (_NET_FRAME_EXTENTS: left, top, right,
+    /// bottom; 0 when not known yet, e.g. right after the window is mapped)
+    protected Rect frameExtents() {
+        Rect res = Rect(0, 0, 0, 0);
+        Atom extents = XInternAtom(x11display, "_NET_FRAME_EXTENTS", True);
+        if (extents == None)
+            return res;
+        Atom type;
+        int format;
+        c_ulong count, after;
+        ubyte* data;
+        if (XGetWindowProperty(x11display, _win, extents, 0, 4, False, XA_CARDINAL,
+                &type, &format, &count, &after, &data) == 0 && data) {
+            if (format == 32 && count >= 4) {
+                c_long* v = cast(c_long*)data; // left, right, top, bottom
+                res = Rect(cast(int)v[0], cast(int)v[2], cast(int)v[1], cast(int)v[3]);
+            }
+            XFree(data);
+        }
+        return res;
+    }
+
+    /// centers the window on the work area of the screen (#580). Positions are the client area's (see #820),
+    /// the frame is added around it.
+    override void centerOnScreen() {
+        if (notInNormalState())
+            return;
+        Rect frame = frameExtents();
         Rect rc = windowRect; // left, top, client width, client height
-        moveWindow(centeredWindowPosition(rc.right, rc.bottom, area));
+        Point pos = centeredWindowPosition(rc.right + frame.left + frame.right, rc.bottom + frame.top + frame.bottom,
+            workArea());
+        moveWindow(Point(pos.x + frame.left, pos.y + frame.top));
+    }
+
+    /**
+        Limits a client rectangle to the work area of the screen (#1114, as #806 for Win32): with its frame, the
+        window is shrunk if it is bigger, then moved inside if positionKnown. Without a known position (the window
+        manager places the window) only the size is limited.
+    */
+    protected void fitIntoWorkArea(ref int x, ref int y, ref int w, ref int h, bool positionKnown) {
+        import std.algorithm : min;
+        Rect frame = frameExtents();
+        Rect area = workArea();
+        if (area.empty)
+            return;
+        if (!positionKnown) {
+            w = min(w, area.width - frame.left - frame.right);
+            h = min(h, area.height - frame.top - frame.bottom);
+            return;
+        }
+        Rect res = fitWindowRectIntoArea(Rect(x - frame.left, y - frame.top, x + w + frame.right, y + h + frame.bottom), area);
+        x = res.left + frame.left;
+        y = res.top + frame.top;
+        w = res.width - frame.left - frame.right;
+        h = res.height - frame.top - frame.bottom;
+    }
+
+    /// the position of the client area if the window is mapped and on the screen (window managers may map windows
+    /// off-screen before placing them, e.g. WSLg): then it can be fitted into the work area with its position
+    protected bool placedClientPosition(int w, int h, out Point pos) {
+        if (!_mapped)
+            return false;
+        pos = clientPositionOnScreen();
+        return Rect(pos.x, pos.y, pos.x + w, pos.y + h).intersects(workArea());
+    }
+
+    /// a shown window is moved into the work area when the window manager places it (#1114): checked on configure
+    /// events for a short time after it is mapped, as the size set when shown may come after the first placement
+    private bool _fitAfterPlacement;
+    /// ditto: until then, set when the window is mapped
+    private MonoTime _fitAfterPlacementDeadline;
+    /// ditto: the last rectangle requested, not requested again for the configure events before it is reached
+    private Rect _fitAfterPlacementRequested;
+
+    /// ditto; called on configure events of a mapped window
+    protected void fitAfterPlacement() {
+        if (MonoTime.currTime > _fitAfterPlacementDeadline || notInNormalState()) {
+            _fitAfterPlacement = false;
+            return;
+        }
+        int w = _windowRect.right, h = _windowRect.bottom;
+        Point pos;
+        if (w <= 0 || h <= 0 || !placedClientPosition(w, h, pos))
+            return; // not placed yet
+        int x = pos.x, y = pos.y;
+        fitIntoWorkArea(x, y, w, h, true);
+        if ((x != pos.x || y != pos.y || w != _windowRect.right || h != _windowRect.bottom)
+                && Rect(x, y, w, h) != _fitAfterPlacementRequested) {
+            _fitAfterPlacementRequested = Rect(x, y, w, h);
+            Log.d("Window ", Rect(pos.x, pos.y, _windowRect.right, _windowRect.bottom), " (x, y, width, height) placed by the window manager doesn't fit into the screen work area, changed to ", Rect(x, y, w, h));
+            // the size only if it is too big: _windowRect may not have the size requested when shown yet
+            bool shrunk = w != _windowRect.right || h != _windowRect.bottom;
+            setWindowState(WindowState.unspecified, false, Rect(x, y, shrunk ? w : int.min, shrunk ? h : int.min));
+        }
+    }
+
+    /// Shrinks the window, if needed, to fit into the work area of the screen, and moves it inside once it is
+    /// placed (#1114). Positions set by the application are fitted when they are set (setWindowState).
+    protected void fitWindowIntoWorkArea() {
+        _fitAfterPlacement = !_positionCheckPending; // a position set by the application is fitted already
+        _fitAfterPlacementDeadline = MonoTime.currTime + 2.seconds;
+        _fitAfterPlacementRequested = Rect();
+        if (notInNormalState() || _windowRect.right <= 0 || _windowRect.bottom <= 0)
+            return;
+        int x, y, w = _windowRect.right, h = _windowRect.bottom;
+        fitIntoWorkArea(x, y, w, h, false);
+        if (w != _windowRect.right || h != _windowRect.bottom) {
+            Log.d("Window size ", _windowRect.right, "x", _windowRect.bottom, " doesn't fit into the screen work area, changed to ", w, "x", h);
+            resizeWindow(Point(w, h));
+        }
     }
 
     override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
@@ -704,6 +819,37 @@ class X11Window : DWindow {
 
         // change size and/or position
         bool rectChanged = false;
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)
+                && !(_flags & WindowFlag.Fullscreen)) {
+            // keep the window on the screen: e.g. a restored position from a monitor that is gone,
+            // or a size measured from content bigger than the screen (#1114)
+            bool positionSet = newWindowRect.top != int.min && newWindowRect.left != int.min;
+            bool sizeSet = newWindowRect.bottom != int.min && newWindowRect.right != int.min;
+            if (positionSet || sizeSet) {
+                int x = newWindowRect.left, y = newWindowRect.top;
+                int w = sizeSet ? newWindowRect.right : _windowRect.right;
+                int h = sizeSet ? newWindowRect.bottom : _windowRect.bottom;
+                if (w > 0 && h > 0) {
+                    // a size change of a placed window keeps it on the screen too
+                    Point pos;
+                    bool positionKnown = positionSet;
+                    if (!positionSet && placedClientPosition(w, h, pos)) {
+                        x = pos.x;
+                        y = pos.y;
+                        positionKnown = true;
+                    }
+                    fitIntoWorkArea(x, y, w, h, positionKnown);
+                    if (positionSet || (positionKnown && (x != pos.x || y != pos.y))) {
+                        newWindowRect.left = x;
+                        newWindowRect.top = y;
+                    }
+                    if (sizeSet || w != _windowRect.right || h != _windowRect.bottom) {
+                        newWindowRect.right = w;
+                        newWindowRect.bottom = h;
+                    }
+                }
+            }
+        }
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
@@ -1755,6 +1901,8 @@ class X11Platform : Platform {
                     // the actual position: window managers can send synthetic events for positions not reached yet
                     if (w._positionCheckPending && w._mapped)
                         w.checkPosition(w.clientPositionOnScreen());
+                    if (w._fitAfterPlacement && w._mapped)
+                        w.fitAfterPlacement();
                 } else {
                     Log.e("ConfigureNotify: Window not found");
                 }
@@ -1805,6 +1953,7 @@ class X11Platform : Platform {
                         w._mapped = true;
                         if (w._positionCheckPending)
                             w._positionCheckDeadline = MonoTime.currTime + 2.seconds;
+                        w._fitAfterPlacementDeadline = MonoTime.currTime + 2.seconds;
                     }
                     w.handleWindowStateChange(WindowState.normal);
                 }
