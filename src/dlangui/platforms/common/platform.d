@@ -190,6 +190,44 @@ unittest {
     assert(fitWindowRectIntoArea(Rect(-10, -10, 5000, 5000), Rect()) == Rect(-10, -10, 5000, 5000));
 }
 
+/**
+ * Index of the area (e.g. a monitor's work area) that the larger part of a window rectangle is on, for
+ * fitWindowRectIntoArea (#1114): -1 if the rectangle is on none of them (e.g. a position restored from a monitor
+ * that is gone). Empty areas are skipped.
+ */
+ptrdiff_t areaIndexForRect(Rect rc, const(Rect)[] areas) {
+    ptrdiff_t res = -1;
+    long bestOverlap = 0;
+    foreach (i, area; areas) {
+        if (area.empty)
+            continue;
+        Rect overlap = rc;
+        if (!overlap.intersect(area))
+            continue;
+        long size = cast(long)overlap.width * overlap.height;
+        if (size > bestOverlap) {
+            bestOverlap = size;
+            res = i;
+        }
+    }
+    return res;
+}
+
+unittest {
+    // two monitors side by side, the second one smaller; work areas without taskbars
+    const Rect[] areas = [Rect(0, 0, 1920, 1152), Rect(1920, 0, 3200, 984)];
+    assert(areaIndexForRect(Rect(100, 100, 900, 700), areas) == 0);
+    assert(areaIndexForRect(Rect(2000, 100, 2800, 700), areas) == 1);
+    // across both: the one with the larger part
+    assert(areaIndexForRect(Rect(1500, 100, 2300, 700), areas) == 0);
+    assert(areaIndexForRect(Rect(1800, 100, 2600, 700), areas) == 1);
+    // on none
+    assert(areaIndexForRect(Rect(-2000, 100, -1200, 700), areas) == -1);
+    assert(areaIndexForRect(Rect(100, 100, 900, 700), []) == -1);
+    // empty areas (e.g. a display whose bounds can't be read) are skipped
+    assert(areaIndexForRect(Rect(100, 100, 900, 700), [Rect(), Rect(0, 0, 1920, 1152)]) == 1);
+}
+
 /// Dialog display modes - used to configure dialogs should be showed as a popup or window
 enum DialogDisplayMode : ulong {
     /// show all types of dialogs in windows

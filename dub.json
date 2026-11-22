@@ -53,7 +53,7 @@
         {
             "name": "default",
             "versions": ["USE_OPENGL", "EmbedStandardResources", "GL_32"],
-            "versions-posix": ["USE_SDL", "USE_FREETYPE", "SDL_204"],
+            "versions-posix": ["USE_SDL", "USE_FREETYPE", "SDL_205"],
             "versions-windows": ["Unicode"],
             "libs-windows": ["opengl32"],
             "dependencies": {
@@ -86,7 +86,7 @@
         {
             "name": "minimal",
             "versions": ["EmbedStandardResources", "ForceLogs"],
-            "versions-posix": ["USE_SDL", "USE_FREETYPE", "NO_OPENGL", "SDL_204"],
+            "versions-posix": ["USE_SDL", "USE_FREETYPE", "NO_OPENGL", "SDL_205"],
             "versions-windows": ["Unicode" ,"NO_OPENGL"],
             "libs-windows": ["opengl32"],
             "dependencies": {
@@ -98,7 +98,7 @@
         },
         {
             "name": "sdl",
-            "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources", "GL_32", "SDL_204"],
+            "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources", "GL_32", "SDL_205"],
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "bindbc-opengl": "~>1.1.0",

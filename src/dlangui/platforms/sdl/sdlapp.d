@@ -473,6 +473,7 @@ class SDLWindow : Window {
         updateClientSizeLimits(true);
 
         adjustPositionDuringShow();
+        fitWindowIntoWorkArea();
 
         SDL_ShowWindow(_win);
         if (!_shown) {
@@ -497,18 +498,101 @@ class SDLWindow : Window {
         super.handleWindowStateChange(newState, newWindowRect);
     }
 
-    /// centers the window on its display (#580); SDL positions and sizes are the client area's.
-    /// The usable bounds (without taskbars) need SDL 2.0.5, newer than the API used (SDL_204).
+    /// true if the window is maximized, minimized or fullscreen: then it isn't centered or fitted into the screen
+    protected bool notInNormalState() {
+        return !_win || (_flags & WindowFlag.Fullscreen)
+            || (SDL_GetWindowFlags(_win) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED | SDL_WINDOW_FULLSCREEN));
+    }
+
+    /// sizes of the window frame added by the system: left, top, right, bottom (0 when not known, e.g. on X11
+    /// before the window is shown)
+    protected Rect frameSize() {
+        int top, left, bottom, right;
+        if (sdlHasFunction("SDL_GetWindowBordersSize") // new in SDL 2.0.5
+                && SDL_GetWindowBordersSize(_win, &top, &left, &bottom, &right) == 0)
+            return Rect(left, top, right, bottom);
+        version (Windows) {
+            // SDL_GetWindowBordersSize supports Windows only since SDL 2.0.18: compare the outer and client rectangles
+            import core.sys.windows.windows : HWND, RECT, POINT, GetWindowRect, GetClientRect, ClientToScreen;
+            SDL_SysWMinfo info;
+            SDL_VERSION(&info.version_);
+            if (SDL_GetWindowWMInfo(_win, &info) && info.subsystem == SDL_SYSWM_WINDOWS) {
+                HWND hwnd = info.info.win.window;
+                RECT outer, client;
+                POINT origin;
+                if (GetWindowRect(hwnd, &outer) && GetClientRect(hwnd, &client) && ClientToScreen(hwnd, &origin))
+                    return Rect(origin.x - outer.left, origin.y - outer.top,
+                        outer.right - origin.x - client.right, outer.bottom - origin.y - client.bottom);
+            }
+        }
+        return Rect(0, 0, 0, 0);
+    }
+
+    /// the usable bounds of a display (without taskbars); false if not known (SDL_GetDisplayUsableBounds is new in 2.0.5)
+    protected static bool usableBounds(int displayIndex, ref SDL_Rect bounds) {
+        return sdlHasFunction("SDL_GetDisplayUsableBounds") && SDL_GetDisplayUsableBounds(displayIndex, &bounds) == 0;
+    }
+
+    /// the usable bounds (without taskbars) of the display that the larger part of an outer window rectangle
+    /// is on, else of the first display (#1114); the whole display where usable bounds aren't available
+    protected Rect workAreaFor(Rect outer) {
+        Rect[] areas;
+        foreach (i; 0 .. SDL_GetNumVideoDisplays()) {
+            SDL_Rect r;
+            if (usableBounds(i, r) || SDL_GetDisplayBounds(i, &r) == 0)
+                areas ~= Rect(r.x, r.y, r.x + r.w, r.y + r.h);
+            else
+                areas ~= Rect(); // keep the indexes of the displays
+        }
+        ptrdiff_t index = areaIndexForRect(outer, areas);
+        return index >= 0 ? areas[index] : (areas.length ? areas[0] : Rect());
+    }
+
+    /// centers the window on the usable bounds of its display (#580); SDL positions and sizes are the client
+    /// area's, the frame is added around it
     override void centerOnScreen() {
-        if (!_win || (SDL_GetWindowFlags(_win) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED | SDL_WINDOW_FULLSCREEN)))
+        if (notInNormalState())
             return;
         int displayIndex = SDL_GetWindowDisplayIndex(_win);
         SDL_Rect bounds;
-        if (displayIndex < 0 || SDL_GetDisplayBounds(displayIndex, &bounds) != 0)
+        if (displayIndex < 0 || (!usableBounds(displayIndex, bounds) && SDL_GetDisplayBounds(displayIndex, &bounds) != 0))
             return;
         int w, h;
         SDL_GetWindowSize(_win, &w, &h);
-        moveWindow(centeredWindowPosition(w, h, Rect(bounds.x, bounds.y, bounds.x + bounds.w, bounds.y + bounds.h)));
+        Rect frame = frameSize();
+        Point pos = centeredWindowPosition(w + frame.left + frame.right, h + frame.top + frame.bottom,
+            Rect(bounds.x, bounds.y, bounds.x + bounds.w, bounds.y + bounds.h));
+        moveWindow(Point(pos.x + frame.left, pos.y + frame.top));
+    }
+
+    /// Limits a client rectangle (window coordinates) to the work area of the display it is on: with its frame,
+    /// the window is shrunk if it is bigger, then moved inside (#1114, as #806 for Win32)
+    protected void fitIntoWorkArea(ref int x, ref int y, ref int w, ref int h) {
+        Rect frame = frameSize();
+        Rect outer = Rect(x - frame.left, y - frame.top, x + w + frame.right, y + h + frame.bottom);
+        Rect area = workAreaFor(outer);
+        if (area.empty)
+            return;
+        Rect res = fitWindowRectIntoArea(outer, area);
+        x = res.left + frame.left;
+        y = res.top + frame.top;
+        w = res.width - frame.left - frame.right;
+        h = res.height - frame.top - frame.bottom;
+    }
+
+    /// Moves and shrinks the window, if needed, to keep it inside the work area of its display (#1114)
+    protected void fitWindowIntoWorkArea() {
+        if (notInNormalState())
+            return;
+        int x, y, w, h;
+        SDL_GetWindowPosition(_win, &x, &y);
+        SDL_GetWindowSize(_win, &w, &h);
+        Rect rc = Rect(x, y, w, h);
+        fitIntoWorkArea(x, y, w, h);
+        if (Rect(x, y, w, h) != rc) {
+            Log.d("Window ", rc, " (x, y, width, height) doesn't fit into the screen work area, changed to ", Rect(x, y, w, h));
+            setWindowState(WindowState.unspecified, false, Rect(x, y, w, h));
+        }
     }
 
     /// SDL_SetWindowMinimumSize/MaximumSize (#455); they take sizes in window coordinates (smaller than the
@@ -592,21 +676,32 @@ class SDLWindow : Window {
         // change size and/or position
         bool rectChanged = false;
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
-            // change position
-            if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
-                SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
-                startPositionCheck(Point(newWindowRect.left, newWindowRect.top));
+            bool positionSet = newWindowRect.top != int.min && newWindowRect.left != int.min;
+            bool sizeSet = newWindowRect.bottom != int.min && newWindowRect.right != int.min;
+            if (positionSet || sizeSet) {
+                int curX, curY, curW, curH;
+                SDL_GetWindowPosition(_win, &curX, &curY);
+                SDL_GetWindowSize(_win, &curW, &curH);
+                int x = positionSet ? newWindowRect.left : curX;
+                int y = positionSet ? newWindowRect.top : curY;
+                int w = sizeSet ? newWindowRect.right : curW;
+                int h = sizeSet ? newWindowRect.bottom : curH;
+                // keep the window on the screen: e.g. a restored position from a monitor that is gone,
+                // or a size measured from content bigger than the screen (#1114)
+                if (!(_flags & WindowFlag.Fullscreen))
+                    fitIntoWorkArea(x, y, w, h);
+                positionSet = positionSet || x != curX || y != curY;
+                sizeSet = sizeSet || w != curW || h != curH;
+                if (positionSet) {
+                    SDL_SetWindowPosition(_win, x, y);
+                    startPositionCheck(Point(x, y));
+                }
+                if (sizeSet)
+                    SDL_SetWindowSize(_win, w, h);
+                newWindowRect = Rect(positionSet ? x : int.min, positionSet ? y : int.min, sizeSet ? w : int.min, sizeSet ? h : int.min);
                 rectChanged = true;
                 res = true;
             }
-
-            // change size
-            if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
-                SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
-                rectChanged = true;
-                res = true;
-            }
-
         }
 
         if (activate) {
@@ -1424,7 +1519,7 @@ class SDLPlatform : Platform {
     }
 
     /// Window to deliver dropped files to.
-    /// SDL 2.0.4 API (used by dlangui) does not tell the window of SDL_DROPFILE event,
+    /// The SDL_DROPFILE event isn't used with its window here (drop.windowID is new in SDL 2.0.5),
     /// so use the window with keyboard focus, or with mouse focus, or the only window.
     private SDLWindow dropTargetWindow() {
         if (SDL_Window* win = SDL_GetKeyboardFocus())
@@ -1876,6 +1971,14 @@ version (Windows) {
 
 SDLSupport sdlVer;
 
+/// names of the SDL functions that the loaded library lacks (#1114)
+private __gshared bool[string] sdlMissingFunctions;
+
+/// false if the loaded SDL library lacks the function (e.g. functions new in SDL 2.0.5 in SDL 2.0.4)
+private bool sdlHasFunction(string name) {
+    return (name in sdlMissingFunctions) is null;
+}
+
 
 /// Xft.dpi of X11 desktop: -1 if not detected yet, 0 if not available
 private __gshared int _xftDpi = -1;
@@ -1891,7 +1994,7 @@ int sdlDetectScreenDpi(int displayIndex = 0) {
     }
     if (_xftDpi > 0)
         return _xftDpi;
-    if (sdlVer < SDLSupport.v2_0_4) {
+    if (!sdlHasFunction("SDL_GetDisplayDPI")) {
         Log.w("SDL_GetDisplayDPI is not found: cannot detect screen DPI");
         return 0;
     }
@@ -1953,8 +2056,24 @@ int sdlmain(string[] args) {
         import std.exception;
         //DerelictSDL2.missingSymbolCallback = &missingSymFunc;
         // Load the SDL 2 library.
+        size_t errorsBefore = loader.errorCount();
         sdlVer = loadSDL();
-        enforce(sdlVer != SDLSupport.noLibrary && sdlVer != SDLSupport.badLibrary, "bindbc-sdl unable to find SDL2 library");
+        enforce(sdlVer != SDLSupport.noLibrary, "bindbc-sdl unable to find SDL2 library");
+        // "bad library": some functions of the API used (SDL_205) are missing, e.g. SDL_DuplicateSurface, which
+        // bindbc-sdl 1.4 lists for SDL 2.0.5 but is new in 2.0.6, or the 2.0.5 functions in SDL 2.0.4 (#1114).
+        // Only the functions dlangui can't do without stop it; optional ones are checked before they are used.
+        if (sdlVer == SDLSupport.badLibrary) {
+            SDL_version v;
+            SDL_GetVersion(&v);
+            Log.w("SDL ", v.major, ".", v.minor, ".", v.patch, " lacks some functions; missing ones are not used");
+            foreach (info; loader.errors[errorsBefore .. $]) { // the error list is shared with other bindbc libraries
+                if (fromStringz(info.error) != "Missing Symbol")
+                    continue; // e.g. one of the library names that wasn't found
+                string name = fromStringz(info.message).idup;
+                sdlMissingFunctions[name] = true;
+                Log.d("SDL: missing ", name);
+            }
+        }
         sdlCheckMissingSymFunc(loader.errors);
     } catch (Exception e) {
         Log.e("Cannot load SDL2 library", e);
@@ -1963,7 +2082,7 @@ int sdlmain(string[] args) {
 
     // SDL asks X11 compositors to turn off for its windows by default (meant for fullscreen games); KWin then
     // suspends compositing for the whole desktop while the app runs (#952). Ignored by older SDL and elsewhere.
-    SDL_SetHint("SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR", "0"); // SDL_HINT_... (SDL 2.0.8): not declared with SDL_204
+    SDL_SetHint("SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR", "0"); // SDL_HINT_... (SDL 2.0.8): not declared with SDL_205
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
         Log.e("Cannot init SDL2: ", SDL_GetError().to!string());
         return 2;
