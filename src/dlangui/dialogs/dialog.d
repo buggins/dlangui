@@ -88,14 +88,8 @@ class Dialog : VerticalLayout {
     /// set icon resource id
     @property Dialog windowIcon(string iconResourceId) {
         _icon = iconResourceId;
-        static if (BACKEND_GUI) {
-            if (_window) {
-                if (_icon.length == 0)
-                    _window.windowIcon = drawableCache.getImage(Platform.instance.defaultWindowIcon);
-                else
-                    _window.windowIcon = drawableCache.getImage(_icon);
-            }
-        }
+        if (_window)
+            _window.windowIconId = _icon.length ? _icon : Platform.instance.defaultWindowIcon;
         return this;
     }
 
