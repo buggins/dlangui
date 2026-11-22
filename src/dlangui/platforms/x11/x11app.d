@@ -610,6 +610,33 @@ class X11Window : DWindow {
         _NET_WM_STATE_TOGGLE
     }
 
+    /// centers the window on the work area of the screen (#580): _NET_WORKAREA (of the first desktop; with several
+    /// monitors it may span all of them), else the whole display. Positions are the client area's (see #820).
+    override void centerOnScreen() {
+        if (_windowState == WindowState.maximized || _windowState == WindowState.minimized
+                || _windowState == WindowState.fullscreen)
+            return;
+        Rect area = Rect(0, 0, DisplayWidth(x11display, x11screen), DisplayHeight(x11display, x11screen));
+        Atom workArea = XInternAtom(x11display, "_NET_WORKAREA", True);
+        if (workArea != None) {
+            Atom type;
+            int format;
+            c_ulong count, after;
+            ubyte* data;
+            if (XGetWindowProperty(x11display, DefaultRootWindow(x11display), workArea, 0, 4, False, XA_CARDINAL,
+                    &type, &format, &count, &after, &data) == 0 && data) {
+                if (format == 32 && count >= 4) {
+                    c_long* v = cast(c_long*)data; // format 32 properties are arrays of C longs
+                    if (v[2] > 0 && v[3] > 0)
+                        area = Rect(cast(int)v[0], cast(int)v[1], cast(int)(v[0] + v[2]), cast(int)(v[1] + v[3]));
+                }
+                XFree(data);
+            }
+        }
+        Rect rc = windowRect; // left, top, client width, client height
+        moveWindow(centeredWindowPosition(rc.right, rc.bottom, area));
+    }
+
     override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         if (_win == None) {
             return false;
