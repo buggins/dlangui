@@ -496,6 +496,20 @@ class SDLWindow : Window {
         super.handleWindowStateChange(newState, newWindowRect);
     }
 
+    /// centers the window on its display (#580); SDL positions and sizes are the client area's.
+    /// The usable bounds (without taskbars) need SDL 2.0.5, newer than the API used (SDL_204).
+    override void centerOnScreen() {
+        if (!_win || (SDL_GetWindowFlags(_win) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED | SDL_WINDOW_FULLSCREEN)))
+            return;
+        int displayIndex = SDL_GetWindowDisplayIndex(_win);
+        SDL_Rect bounds;
+        if (displayIndex < 0 || SDL_GetDisplayBounds(displayIndex, &bounds) != 0)
+            return;
+        int w, h;
+        SDL_GetWindowSize(_win, &w, &h);
+        moveWindow(centeredWindowPosition(w, h, Rect(bounds.x, bounds.y, bounds.x + bounds.w, bounds.y + bounds.h)));
+    }
+
     override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         // override for particular platforms
 

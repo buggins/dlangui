@@ -86,7 +86,27 @@ enum ShowPosition {
     /// do nothing just show
     dontCare,
     /// window will be centered on parent window
-    parentWindowCenter
+    parentWindowCenter,
+    /// window will be centered on the screen: the work area (without taskbars and panels) of its monitor (#580)
+    screenCenter
+}
+
+/**
+ * Top left corner of a window of the given size centered in an area of the screen (#580). A window bigger
+ * than the area starts at the area's top left corner, so its title bar stays visible.
+ */
+Point centeredWindowPosition(int width, int height, Rect area) {
+    import std.algorithm : max;
+    return Point(area.left + max(0, (area.width - width) / 2), area.top + max(0, (area.height - height) / 2));
+}
+
+unittest {
+    Rect work = Rect(0, 0, 1920, 1152); // 1920x1200 screen, 48 px taskbar at the bottom
+    assert(centeredWindowPosition(800, 600, work) == Point(560, 276));
+    // second monitor on the right, taskbar on the left
+    assert(centeredWindowPosition(800, 600, Rect(1980, 0, 3840, 1200)) == Point(2510, 300));
+    // bigger than the area in one direction: starts at its edge there
+    assert(centeredWindowPosition(2000, 600, work) == Point(0, 276));
 }
 
 /**
@@ -391,12 +411,13 @@ class Window : CustomEventTarget {
 
     protected ShowPosition _showPosition = ShowPosition.parentWindowCenter;
 
-    ///returns current window show position (don't care or parent center)
+    /// returns how the window is positioned when shown (don't care, parent center or screen center)
     @property ShowPosition showPosition() {
         return _showPosition;
     }
 
-    /// sets window position after show (don't care or parent center)
+    /// sets how the window is positioned when shown, before show() (don't care, parent center or screen center);
+    /// the default, parentWindowCenter, leaves a window without a parent where the system puts it
     @property void showPosition(ShowPosition newPosition) {
         _showPosition = newPosition;
     }
@@ -499,6 +520,16 @@ class Window : CustomEventTarget {
         }
     }
 
+    /**
+        Centers the window on the screen: on the work area (the screen without taskbars and panels) of the monitor
+        the window is on (#580). Backends: Win32 (monitor work area), X11 (_NET_WORKAREA, else the whole display;
+        with several monitors that may span all of them), SDL (bounds of the window's display). Does nothing in
+        other backends, and for maximized, minimized and fullscreen windows.
+     */
+    void centerOnScreen() {
+        // override in platform implementation
+    }
+
     ///adjust window position during show()
     protected void adjustPositionDuringShow() {
         final switch (_showPosition) {
@@ -508,6 +539,9 @@ class Window : CustomEventTarget {
                 centerOnParentWindow();
                 break;
             }
+            case ShowPosition.screenCenter:
+                centerOnScreen();
+                break;
         }
     }
 

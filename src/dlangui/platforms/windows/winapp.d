@@ -602,6 +602,24 @@ class Win32Window : Window {
         }
     }
 
+    /// centers the window on the work area of its monitor (#580)
+    override void centerOnScreen() {
+        if (!_hwnd || IsZoomed(_hwnd) || IsIconic(_hwnd) || (_flags & WindowFlag.Fullscreen))
+            return;
+        RECT rc;
+        if (!GetWindowRect(_hwnd, &rc))
+            return;
+        HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitor_info;
+        monitor_info.cbSize = monitor_info.sizeof;
+        if (!hMonitor || !GetMonitorInfo(hMonitor, &monitor_info))
+            return;
+        RECT work = monitor_info.rcWork;
+        // the outer size: moveWindow() places the outer rectangle
+        moveWindow(centeredWindowPosition(rc.right - rc.left, rc.bottom - rc.top,
+            Rect(work.left, work.top, work.right, work.bottom)));
+    }
+
     protected bool _destroying;
     ~this() {
         if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
