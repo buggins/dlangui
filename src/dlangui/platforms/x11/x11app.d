@@ -576,6 +576,7 @@ class X11Window : DWindow {
                 resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
             else
                 adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+            updateClientSizeLimits(true);
 
             adjustPositionDuringShow();
 
@@ -586,6 +587,28 @@ class X11Window : DWindow {
 
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         super.handleWindowStateChange(newState, newWindowRect);
+    }
+
+    /// min and max size hints of a resizable window for the window manager (#455); a window that isn't
+    /// resizable keeps its fixed size hints
+    override protected void applyClientSizeLimits() {
+        if (!_win || !(flags & WindowFlag.Resizable))
+            return;
+        import std.algorithm : max;
+        enum NO_MAX = 32_767;
+        XSizeHints sizeHints;
+        if (_minClientSize != Point(0, 0)) {
+            sizeHints.min_width = max(1, _minClientSize.x);
+            sizeHints.min_height = max(1, _minClientSize.y);
+            sizeHints.flags |= PMinSize;
+        }
+        if (_maxClientSize != Point(0, 0)) {
+            sizeHints.max_width = _maxClientSize.x ? _maxClientSize.x : NO_MAX;
+            sizeHints.max_height = _maxClientSize.y ? _maxClientSize.y : NO_MAX;
+            sizeHints.flags |= PMaxSize;
+        }
+        XSetWMNormalHints(x11display, _win, &sizeHints);
+        XFlush(x11display);
     }
 
     protected final void changeWindowState(int action, Atom firstProperty, Atom secondProperty = None) nothrow
