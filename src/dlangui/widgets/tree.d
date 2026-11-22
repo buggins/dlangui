@@ -783,6 +783,28 @@ class TreeItemWidget : HorizontalLayout {
         addChild(_body);
     }
 
+    override void layout(Rect rc) {
+        super.layout(rc);
+        if (visibility != Visibility.Visible || !_icon || !_label || _icon.visibility != Visibility.Visible)
+            return;
+        // the icon's middle at the middle of the label's letters, not of the row (see Widget.iconTopNextToText)
+        Rect area = _body.pos;
+        Rect bm = _body.margins;
+        Rect bp = _body.padding;
+        area.top += bm.top + bp.top;
+        area.bottom -= bm.bottom + bp.bottom;
+        Rect textArea = _label.pos;
+        Rect lm = _label.margins;
+        Rect lp = _label.padding;
+        textArea.top += lm.top + lp.top;
+        textArea.bottom -= lm.bottom + lp.bottom;
+        Rect iconRc = _icon.pos;
+        int h = _icon.measuredHeight;
+        iconRc.top = iconTopNextToText(Rect(iconRc.left, area.top, iconRc.right, area.bottom), h, textArea, _label.font);
+        iconRc.bottom = iconRc.top + h;
+        _icon.layout(iconRc);
+    }
+
     override bool onKeyEvent(KeyEvent event) {
         if (keyEvent.assigned && keyEvent(this, event))
             return true; // processed by external handler

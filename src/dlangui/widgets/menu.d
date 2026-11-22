@@ -415,8 +415,18 @@ class MenuItemWidget : WidgetGroupDefaultDrawing {
         accelRc.left = accelRc.right - _accelWidth;
         labelRc.left += _iconWidth;
         labelRc.right -= _accelWidth;
-        if (_icon)
+        if (_icon) {
+            // the icon's middle at the middle of the label's letters, not of the label's box
+            Rect textArea = labelRc;
+            Rect m = _label.margins;
+            Rect p = _label.padding;
+            textArea.top += m.top + p.top;
+            textArea.bottom -= m.bottom + p.bottom;
+            int h = _icon.measuredHeight;
+            iconRc.top = iconTopNextToText(iconRc, h, textArea, _label.font);
+            iconRc.bottom = iconRc.top + h;
             _icon.layout(iconRc);
+        }
         if (_accel)
             _accel.layout(accelRc);
         _label.layout(labelRc);
