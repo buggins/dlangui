@@ -87,6 +87,7 @@ private __gshared
     Atom   atom_NET_WM_ICON;
     Atom   atom_NET_WM_NAME;
     Atom   atom_NET_WM_ICON_NAME;
+    Atom   atom_NET_WM_PID;
 
     Atom   atom_NET_WM_STATE;
     Atom   atom_NET_WM_STATE_MODAL;
@@ -130,6 +131,7 @@ static void setupX11Atoms()
     atom_NET_WM_ICON = XInternAtom(x11display, "_NET_WM_ICON", True);
     atom_NET_WM_NAME = XInternAtom(x11display, "_NET_WM_NAME", True);
     atom_NET_WM_ICON_NAME = XInternAtom(x11display, "_NET_WM_ICON_NAME", True);
+    atom_NET_WM_PID = XInternAtom(x11display, "_NET_WM_PID", False);
     atom_NET_WM_STATE = XInternAtom(x11display, "_NET_WM_STATE", True);
     atom_NET_WM_STATE_MODAL = XInternAtom(x11display, "_NET_WM_STATE_MODAL", True);
     atom_NET_WM_STATE_MAXIMIZED_VERT = XInternAtom(x11display, "_NET_WM_STATE_MAXIMIZED_VERT", True);
@@ -386,6 +388,7 @@ class X11Window : DWindow {
             XSetClassHint(x11display, _win, classHint);
             XFree(classHint);
         }
+        setProcessProperties();
 
         _children.reserve(20);
         _parent = cast(X11Window) parent;
@@ -754,6 +757,22 @@ class X11Window : DWindow {
             }
         }
         XChangeProperty(x11display, _win, atom_NET_WM_ICON, XA_CARDINAL, 32, PropModeReplace, cast(ubyte*)propData.ptr, cast(int)propData.length);
+    }
+
+    /// sets WM_CLIENT_MACHINE and _NET_WM_PID: window managers and tools use them to find the process of a window
+    /// (e.g. to kill a hung app); EWMH requires WM_CLIENT_MACHINE with _NET_WM_PID (#1104)
+    private void setProcessProperties() {
+        version (Posix) {
+            import core.sys.posix.unistd : getpid, gethostname;
+            char[256] host;
+            if (gethostname(host.ptr, host.length) != 0)
+                return;
+            host[$ - 1] = 0;
+            XChangeProperty(x11display, _win, XA_WM_CLIENT_MACHINE, XA_STRING, 8, PropModeReplace,
+                cast(ubyte*)host.ptr, cast(int)strlen(host.ptr));
+            c_long pid = getpid();
+            XChangeProperty(x11display, _win, atom_NET_WM_PID, XA_CARDINAL, 32, PropModeReplace, cast(ubyte*)&pid, 1);
+        }
     }
 
     /// sets window icon: the image scaled to the icon sizes up to its own size (never upscaled), and always 32x32
