@@ -513,7 +513,7 @@ class AndroidPlatform : Platform {
     }
 
     @property AndroidWindow activeWindow() {
-        for (int i = cast(int)_windows.length - 1; i >= 0; i++)
+        for (int i = cast(int)_windows.length - 1; i >= 0; i--)
             if (_windows[i]._visible)
                 return _windows[i];
         return null;
@@ -634,12 +634,19 @@ class AndroidPlatform : Platform {
 
     /// calls request layout for all windows
     override void requestLayout() {
+        foreach(w; _windows) {
+            w.requestLayout();
+            w.invalidate();
+        }
     }
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
         super.onThemeChanged();
-        // override and call dispatchThemeChange for all windows
+        if (currentTheme)
+            currentTheme.onThemeChanged();
+        foreach(w; _windows)
+            w.dispatchThemeChanged();
     }
 
 }
