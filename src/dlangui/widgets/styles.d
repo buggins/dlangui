@@ -1505,6 +1505,97 @@ Theme createDefaultTheme() {
     Log.d("Creating default theme");
     Theme res = new Theme("default");
     //res.fontSize(14);
+    // the custom colors of theme_default.xml and console_theme_default.xml, same ids and values (a unittest below
+    // checks it, #1133): some are read with no default, and a missing color is transparent (subpixel text on a
+    // transparent window gets colored fringes, editors show no caret or selection)
+    static struct CustomColor {
+        string id;
+        uint color;
+    }
+    static if (WIDGET_STYLE_CONSOLE) {
+        static immutable CustomColor[] themeColors = [
+            CustomColor(STYLE_COLOR_WINDOW_BACKGROUND, 0x000000),
+            CustomColor(STYLE_COLOR_DIALOG_BACKGROUND, 0x000000),
+            CustomColor("edit_background", 0x000000),
+            CustomColor("edit_caret", 0x000000),
+            CustomColor("edit_caret_replace", 0x000000),
+            CustomColor("editor_matching_bracket_highlight", 0x800000),
+            CustomColor("editor_selection_focused", 0x008080),
+            CustomColor("editor_selection_normal", 0x800080),
+            CustomColor("editor_left_pane_background", COLOR_TRANSPARENT),
+            CustomColor("editor_left_pane_background2", COLOR_TRANSPARENT),
+            CustomColor("editor_left_pane_background3", COLOR_TRANSPARENT),
+            CustomColor("editor_left_pane_line_number_text", 0x808080),
+            CustomColor("editor_left_pane_line_number_text_edited", 0xFFFF00),
+            CustomColor("editor_left_pane_line_number_text_saved", 0x00FF00),
+            CustomColor("editor_left_pane_line_number_text_current_line", 0xFFFFFF),
+            CustomColor("editor_left_pane_line_number_background", COLOR_TRANSPARENT),
+            CustomColor("editor_left_pane_line_number_background_current_line", 0x808080),
+            CustomColor("editor_left_pane_line_icon_color_breakpoint", 0xFF0000),
+            CustomColor("editor_left_pane_line_icon_color_bookmark", 0x00FF00),
+            CustomColor("editor_left_pane_line_icon_color_error", 0x800000),
+            CustomColor("grid_selection_color", 0x008000),
+            CustomColor("grid_selection_color_row", 0x008000),
+            CustomColor("grid_cell_background_fixed", COLOR_TRANSPARENT),
+            CustomColor("grid_cell_border_color", 0xC0C0C0C0),
+            CustomColor("grid_cell_border_color_header", 0xC0202020),
+            CustomColor("grid_cell_text_color_header", 0xFFFFFF),
+            CustomColor("grid_cell_background_header", 0x808080),
+            CustomColor("grid_cell_background_header_selected", 0x008000),
+            CustomColor("file_dialog_dir_name_color", 0xFFFF00),
+        ];
+        static immutable CustomColor[] chartColors = [
+            CustomColor("chart_background_color", 0x000000),
+            CustomColor("chart_axis_color", 0x808080),
+            CustomColor("chart_segment_tag_color", 0xC0C0C0),
+        ];
+    } else {
+        static immutable CustomColor[] themeColors = [
+            CustomColor(STYLE_COLOR_WINDOW_BACKGROUND, 0xFFFFFF),
+            CustomColor(STYLE_COLOR_DIALOG_BACKGROUND, 0xEEEEEE),
+            CustomColor("edit_background", 0xFFFFFF),
+            CustomColor("edit_caret", 0x000000),
+            CustomColor("edit_caret_replace", 0x808080FF),
+            CustomColor("editor_matching_bracket_highlight", 0x60FFE0B0),
+            CustomColor("editor_selection_focused", 0xB060A0FF),
+            CustomColor("editor_selection_normal", 0xD060A0FF),
+            CustomColor("editor_search_highlight_current", 0x60A0C0FF),
+            CustomColor("editor_search_highlight_other", 0x90F0D080),
+            CustomColor("editor_left_pane_background", 0xF4F4F4),
+            CustomColor("editor_left_pane_background2", 0xFFFFFF),
+            CustomColor("editor_left_pane_background3", 0xF0F0F0),
+            CustomColor("editor_left_pane_line_number_text", 0x4060D0),
+            CustomColor("editor_left_pane_line_number_background", 0xF8F8F8),
+            CustomColor("editor_left_pane_line_number_text_edited", 0x8A5A00),
+            CustomColor("editor_left_pane_line_number_text_saved", 0x1A6E1A),
+            CustomColor("editor_left_pane_line_number_text_current_line", 0x1A2F80),
+            CustomColor("editor_left_pane_line_number_background_current_line", 0xDCE4F8),
+            CustomColor("editor_left_pane_mark_changed", 0xFFD040),
+            CustomColor("editor_left_pane_mark_saved", 0x20C020),
+            CustomColor("editor_left_pane_line_icon_color_breakpoint", 0xFF0000),
+            CustomColor("editor_left_pane_line_icon_color_bookmark", 0x0000FF),
+            CustomColor("editor_left_pane_line_icon_color_error", 0x80FF0000),
+            CustomColor("grid_selection_color", 0x804040FF),
+            CustomColor("grid_selection_color_row", 0xC0A0B0FF),
+            CustomColor("grid_cell_background_fixed", 0xC0E0E0E0),
+            CustomColor("grid_cell_border_color", 0xC0C0C0C0),
+            CustomColor("grid_cell_border_color_header", 0xC0202020),
+            CustomColor("grid_cell_background_header", 0xC0909090),
+            CustomColor("grid_cell_background_header_selected", 0x80FFC040),
+            CustomColor("file_dialog_dir_name_color", 0x000080),
+        ];
+        static immutable CustomColor[] chartColors = [
+            CustomColor("chart_background_color", 0xFFFFFF),
+            CustomColor("chart_axis_color", 0xC0C0C0),
+            CustomColor("chart_segment_tag_color", 0xC0C0C0),
+        ];
+    }
+    foreach (c; themeColors)
+        res.setCustomColor(c.id, c.color);
+    // in the style, as in the theme files (only the colors: its padding, margins and size are not copied)
+    Style chart = res.createSubstyle(STYLE_SIMPLE_BAR_CHART);
+    foreach (c; chartColors)
+        chart.setCustomColor(c.id, c.color);
     static if (WIDGET_STYLE_CONSOLE) {
         res.fontSize = 1;
         res.textColor = 0xFFFFFF;
@@ -2473,6 +2564,52 @@ unittest {
     }
     assert(checked > 80, "STYLE_* constants not found");
     assert(!missing.length, "style ids of STYLE_* constants missing in the standard themes:" ~ missing);
+}
+
+/// the fallback theme has the custom colors of the standard theme file: same ids, values and styles (#1133)
+unittest {
+    import std.algorithm.searching : startsWith;
+    import std.format : format;
+    static if (WIDGET_STYLE_CONSOLE)
+        immutable string xml = import("res/console_theme_default.xml");
+    else
+        immutable string xml = import("res/theme_default.xml");
+    Theme fromFile = new Theme("test1133");
+    scope(exit) destroy(fromFile);
+    immutable bool loaded = loadTheme(fromFile, new XmlDocument(xml));
+    assert(loaded);
+    Theme fallback = createDefaultTheme();
+    scope(exit) destroy(fallback);
+    static string diff(string where, const uint[string] expected, const uint[string] actual) {
+        string res;
+        foreach (id, color; expected) {
+            if (id.startsWith("sample_color_"))
+                continue; // examples of the color formats, used by nothing
+            if (const(uint)* p = id in actual) {
+                if (*p != color)
+                    res ~= format("\n  %s%s: %08X, %08X in the file", where, id, *p, color);
+            } else {
+                res ~= "\n  " ~ where ~ id ~ ": missing";
+            }
+        }
+        foreach (id, color; actual)
+            if (id !in expected)
+                res ~= "\n  " ~ where ~ id ~ ": not in the file";
+        return res;
+    }
+    string res = diff("", fromFile._customColors, fallback._customColors);
+    bool[string] styleIds;
+    foreach (id, style; fromFile._byId)
+        styleIds[id] = true;
+    foreach (id, style; fallback._byId)
+        styleIds[id] = true;
+    foreach (id, _; styleIds) {
+        Style expected = fromFile._byId.get(id, null);
+        Style actual = fallback._byId.get(id, null);
+        res ~= diff(id ~ " ", expected ? expected._customColors : null, actual ? actual._customColors : null);
+    }
+    assert(!res.length, "custom colors of the fallback theme differ from " ~ (WIDGET_STYLE_CONSOLE
+            ? "console_theme_default.xml" : "theme_default.xml") ~ ":" ~ res);
 }
 
 // a background change of a theme style reaches the styles that inherit it: derived styles, widget own styles and
