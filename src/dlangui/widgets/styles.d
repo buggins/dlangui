@@ -2279,12 +2279,32 @@ public:
         _drawable.clear();
         _initialized = false;
     }
+    /// drops the cached drawable, which is loaded again on next use: after a theme change, from the cleared drawable
+    /// cache (#1172)
     void onThemeChanged() {
-        if (!_drawableId) {
-            _drawable.clear();
-            _initialized = false;
-        }
+        clear();
     }
+}
+
+unittest {
+    // a custom drawable with a resource id is loaded again after a theme change (#1172)
+    import dlangui.graphics.resources : _drawableCache, DrawableCache;
+    DrawableCache saved = _drawableCache;
+    _drawableCache = new DrawableCache();
+    scope (exit) {
+        destroy(_drawableCache);
+        _drawableCache = saved;
+    }
+    auto attr = new DrawableAttribute("test1172", "#FF0000");
+    scope (exit) destroy(attr);
+    DrawableRef before = attr.drawable; // keeps the old object alive for the comparison
+    scope (exit) before.clear();
+    assert(!before.isNull);
+    _drawableCache.clear(); // as Platform.onThemeChanged() does
+    attr.onThemeChanged();
+    DrawableRef after = attr.drawable;
+    scope (exit) after.clear();
+    assert(!after.isNull && after.get !is before.get);
 }
 
 /// returns custom drawable replacement id for specified id from current theme, or returns passed value if not found or no current theme

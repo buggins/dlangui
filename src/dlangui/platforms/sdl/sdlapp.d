@@ -1591,8 +1591,6 @@ class SDLPlatform : Platform {
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
         super.onThemeChanged();
-        if (currentTheme)
-            currentTheme.onThemeChanged();
         foreach(w; _windowMap)
             w.dispatchThemeChanged();
     }

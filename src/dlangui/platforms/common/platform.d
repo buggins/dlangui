@@ -2323,14 +2323,21 @@ class Platform {
         return dlangui.core.filemanager.showInFileManager(pathName);
     }
 
-    /// handle theme change: e.g. reload some themed resources
+    /// handle theme change: e.g. reload some themed resources; backends override it to call
+    /// Window.dispatchThemeChanged() for all their windows after this
     void onThemeChanged() {
-        // override and call dispatchThemeChange for all windows
-        drawableCache.clear();
+        // the caches don't exist without initResourceManagers() (#1174)
+        if (drawableCache)
+            drawableCache.clear();
         static if (!WIDGET_STYLE_CONSOLE) {
-            imageCache.checkpoint();
-            imageCache.cleanup();
+            if (imageCache) {
+                imageCache.checkpoint();
+                imageCache.cleanup();
+            }
         }
+        // the theme's styles drop the fonts and drawables they cached; in every backend (#1160)
+        if (currentTheme)
+            currentTheme.onThemeChanged();
     }
 
     /// default icon for new created windows
@@ -2373,6 +2380,62 @@ class Platform {
             destroy(_iconProvider);
         }
     }
+}
+
+unittest {
+    // the base Platform.onThemeChanged() drops what the theme's styles cached, for every backend (#1160)
+    import dlangui.widgets.styles : useTestTheme;
+    import dlangui.graphics.resources : _drawableCache, DrawableCache;
+    static class TestPlatform : Platform {
+        override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable,
+                uint width = 0, uint height = 0) { return null; }
+        override void closeWindow(Window w) {}
+        override int enterMessageLoop() { return 0; }
+        override bool hasClipboardText(bool mouseBuffer = false) { return false; }
+        override dstring getClipboardText(bool mouseBuffer = false) { return null; }
+        override void setClipboardText(dstring text, bool mouseBuffer = false) {}
+        override void requestLayout() {}
+    }
+    // a style is added to the theme below: only to a theme created for this test, it is removed at the end
+    if (currentTheme !is null)
+        return;
+    auto _ = useTestTheme();
+    DrawableCache savedDrawables = _drawableCache;
+    _drawableCache = new DrawableCache();
+    scope (exit) {
+        destroy(_drawableCache);
+        _drawableCache = savedDrawables;
+    }
+    static if (!WIDGET_STYLE_CONSOLE) {
+        // onThemeChanged() also cleans up the image cache, which console builds don't have
+        import dlangui.graphics.resources : _imageCache, ImageCache;
+        ImageCache savedImages = _imageCache;
+        _imageCache = new ImageCache();
+        scope (exit) {
+            destroy(_imageCache);
+            _imageCache = savedImages;
+        }
+    }
+    auto platform = new TestPlatform();
+    scope (exit) destroy(platform);
+    Style style = currentTheme.createSubstyle("test1160").backgroundImageId("#FF0000");
+    DrawableRef before = style.backgroundDrawable; // keeps the old object alive for the comparison
+    scope (exit) before.clear();
+    assert(!before.isNull);
+    platform.onThemeChanged();
+    DrawableRef after = style.backgroundDrawable;
+    scope (exit) after.clear();
+    assert(!after.isNull && after.get !is before.get);
+    // without drawable and image caches (no initResourceManagers()) it works too (#1174)
+    DrawableCache testDrawables = _drawableCache;
+    _drawableCache = null;
+    scope (exit) _drawableCache = testDrawables;
+    static if (!WIDGET_STYLE_CONSOLE) {
+        ImageCache testImages = _imageCache;
+        _imageCache = null;
+        scope (exit) _imageCache = testImages;
+    }
+    platform.onThemeChanged();
 }
 
 /// get current platform object instance
