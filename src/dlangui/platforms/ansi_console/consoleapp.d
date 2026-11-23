@@ -131,8 +131,6 @@ class ConsolePlatform : Platform {
     /// (destroyed) theme (#1120)
     override void onThemeChanged() {
         super.onThemeChanged();
-        if (currentTheme)
-            currentTheme.onThemeChanged();
         foreach(w; _windowList)
             w.dispatchThemeChanged();
     }
