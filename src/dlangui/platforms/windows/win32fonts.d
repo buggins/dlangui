@@ -580,6 +580,7 @@ class Win32Font : Font {
 class Win32FontManager : FontManager {
     private FontList _activeFonts;
     private FontDef[] _fontFaces;
+    /// by lowercase face name: face names match case-insensitively, as in the FreeType font manager (#1137)
     private FontDef*[string] _faceByName;
 
     /// override to return list of font faces available
@@ -677,10 +678,8 @@ class Win32FontManager : FontManager {
             // other weights and italic of a family have the same family name; a name that is already
             // registered (also an installed font) isn't added again, but GDI may now use the new font:
             // forget which codepoints the face has
-            if (face.family in _faceByName) {
-                foreach (k, cache; _codepointPresence)
-                    if (k.face == face.family)
-                        cache.clear();
+            if (face.family.toLower in _faceByName) {
+                forgetCodepoints(face.family);
                 installedFacesChanged();
                 continue;
             }
@@ -696,6 +695,14 @@ class Win32FontManager : FontManager {
     }
     /// presence of codepoints in font faces, shared by fonts of all sizes (#886)
     private CodepointPresenceCache*[FaceVariant] _codepointPresence;
+
+    /// forget which codepoints face has, in all weights and italic; the name matches case-insensitively (#1137)
+    private void forgetCodepoints(string face) {
+        import std.uni : icmp;
+        foreach (k, cache; _codepointPresence)
+            if (icmp(k.face, face) == 0)
+                cache.clear();
+    }
 
     /// returns codepoint presence cache for font face, weight and italic
     private CodepointPresenceCache * codepointPresence(string face, int weight, bool italic) {
@@ -787,13 +794,14 @@ class Win32FontManager : FontManager {
         return null;
     }
 
-    /// find font face definition by face only
+    /// find font face definition by face only: the first installed face of a comma separated list; names match
+    /// case-insensitively, and the definition has the registered name (#1137)
     FontDef * findFace(string face) {
         if (face.length == 0)
             return null;
         foreach (f; split(face, ",")) {
             // a list may have spaces after the commas, as the FreeType font manager allows (#1132)
-            if (auto p = f.strip in _faceByName)
+            if (auto p = f.strip.toLower in _faceByName)
                 return *p;
         }
         return null;
@@ -820,11 +828,12 @@ class Win32FontManager : FontManager {
         return &_fontFaces[0];
     }
 
-    /// register enumerated font
+    /// register enumerated font; a name that differs from a registered one only in case replaces it in face
+    /// lookups (#1137)
     bool registerFont(FontFamily family, string fontFace, ubyte pitchAndFamily) {
         Log.d("registerFont(", family, ",", fontFace, ")");
         _fontFaces ~= FontDef(family, fontFace, pitchAndFamily);
-        _faceByName[fontFace] = &_fontFaces[$ - 1];
+        _faceByName[fontFace.toLower] = &_fontFaces[$ - 1];
         installedFacesChanged();
         return true;
     }
@@ -904,4 +913,25 @@ unittest {
     def = fm.findFace(" DlangUI Test Face ,No Such Face 1132");
     assert(def && def.face == "DlangUI Test Face");
     assert(fm.findFace("No Such Face 1132, ") is null);
+}
+
+// face names match case-insensitively, as in the FreeType font manager; the registered name is kept (#1137)
+unittest {
+    auto fm = new Win32FontManager();
+    scope (exit) destroy(fm);
+    fm.registerFont(FontFamily.SansSerif, "DlangUI Test Face", VARIABLE_PITCH | FF_SWISS);
+    foreach (name; ["dlangui test face", "DLANGUI TEST FACE", "No Such Face 1137, dlangUI test FACE"]) {
+        FontDef * def = fm.findFace(name);
+        assert(def && def.face == "DlangUI Test Face", name);
+    }
+    // the codepoint caches of a face are forgotten by a name in another case, in all variants
+    CodepointPresenceCache * regular = fm.codepointPresence("DlangUI Test Face", FontWeight.Normal, false);
+    CodepointPresenceCache * boldItalic = fm.codepointPresence("DlangUI Test Face", FontWeight.Bold, true);
+    CodepointPresenceCache * other = fm.codepointPresence("Other Test Face", FontWeight.Normal, false);
+    foreach (cache; [regular, boldItalic, other])
+        cache.setPresence('A', CodepointPresence.missing);
+    fm.forgetCodepoints("dlangui TEST face");
+    assert(regular.getPresence('A') == CodepointPresence.unknown);
+    assert(boldItalic.getPresence('A') == CodepointPresence.unknown);
+    assert(other.getPresence('A') == CodepointPresence.missing);
 }
