@@ -1701,10 +1701,12 @@ Theme createDefaultTheme() {
                        "╚═╝"],
                     backgroundColor: [0x000080],
                     textColor: [0xFF0000],
-                    ninepatch: [1,1,1,1]
+                    ninepatch: [1,1,1,1],
+                    padding: [1,1,1,1]
                 }
             })
-            .setPadding(0,0,0,0).setMargins(0,0,0,0).minWidth(20)
+            // room for the three-row frame, in the style and the drawable, as in console_theme_default.xml (#1136)
+            .setPadding(1,1,1,1).setMargins(0,0,0,0).minWidth(20)
             .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(1);
         res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
             .setPadding(0,0,0,0).setMargins(0,0,0,0).minWidth(30).minHeight(8).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
