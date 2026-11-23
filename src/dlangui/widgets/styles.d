@@ -1527,6 +1527,8 @@ Theme createDefaultTheme() {
             CustomColor("editor_matching_bracket_highlight", 0x800000),
             CustomColor("editor_selection_focused", 0x008080),
             CustomColor("editor_selection_normal", 0x800080),
+            CustomColor("editor_search_highlight_current", 0x808000),
+            CustomColor("editor_search_highlight_other", 0x808080),
             CustomColor("editor_left_pane_background", COLOR_TRANSPARENT),
             CustomColor("editor_left_pane_background2", COLOR_TRANSPARENT),
             CustomColor("editor_left_pane_background3", COLOR_TRANSPARENT),
