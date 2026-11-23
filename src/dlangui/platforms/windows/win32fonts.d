@@ -733,6 +733,8 @@ class Win32FontManager : FontManager {
                                     );
         destroy(drawbuf);
         Log.i("Found ", _fontFaces.length, " font faces");
+        if (!_fontFaces.length)
+            Log.e("Win32FontManager: GDI found no TrueType font faces, there will be no fonts (#1151)");
         return res!=0;
     }
 
@@ -743,8 +745,8 @@ class Win32FontManager : FontManager {
     override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
         //Log.i("getFont()");
         FontDef * def = findFace(family, face);
-        //Log.i("getFont() found face ", def.face, " by requested face ", face);
         if (def !is null) {
+            //Log.i("getFont() found face ", def.face, " by requested face ", face);
             int index = _activeFonts.find(size, weight, italic, def.family, def.face);
             if (index >= 0)
                 return _activeFonts.get(index);
@@ -810,8 +812,8 @@ class Win32FontManager : FontManager {
         return null;
     }
 
-    /// find font face definition by family and face; the pointer is valid until the next font registration,
-    /// which may move the definitions (#1142)
+    /// find font face definition by family and face, null only if there are no faces; the pointer is valid
+    /// until the next font registration, which may move the definitions (#1142)
     FontDef * findFace(FontFamily family, string face) {
         // by face only
         FontDef * res = findFace(face);
@@ -829,7 +831,8 @@ class Win32FontManager : FontManager {
         res = findFace(FontFamily.SansSerif);
         if (res !is null)
             return res;
-        return &_fontFaces[0];
+        // null when no face is registered (#1151)
+        return _fontFaces.length ? &_fontFaces[0] : null;
     }
 
     /// register enumerated font; a name that differs from a registered one only in case replaces it in face
@@ -951,4 +954,16 @@ unittest {
     fm.registerFont(FontFamily.SansSerif, "DlangUI Other Test Face", VARIABLE_PITCH | FF_SWISS);
     assert(fm.findFace("DlangUI Test Face") is &fm._fontFaces[index]);
     assert(fm.findFace("DlangUI Other Test Face") is &fm._fontFaces[$ - 1]);
+}
+
+// without registered faces (GDI enumerated no TrueType fonts) there is no face and no font (#1151)
+unittest {
+    auto fm = new Win32FontManager();
+    scope (exit) destroy(fm);
+    // the cached installed fallback faces aren't reset (installedFacesChanged() is protected): no fallback
+    // checks here
+    fm._fontFaces = null;
+    fm._faceByName = null;
+    assert(fm.findFace(FontFamily.SansSerif, "Arial") is null);
+    assert(fm.getFont(12, FontWeight.Normal, false, FontFamily.SansSerif, "Arial").isNull);
 }
