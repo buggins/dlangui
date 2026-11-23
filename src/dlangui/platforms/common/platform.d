@@ -384,6 +384,11 @@ class Window : CustomEventTarget {
     protected int _dy;
     protected uint _keyboardModifiers;
     protected uint _backgroundColor;
+    /// theme color id of the background, looked up again on a theme change; null for a color set with
+    /// backgroundColor (#1140)
+    protected string _backgroundColorId = STYLE_COLOR_WINDOW_BACKGROUND;
+    /// background color for a theme without _backgroundColorId
+    protected uint _backgroundColorDefault = DEFAULT_WINDOW_BACKGROUND_COLOR;
     protected Widget _mainWidget;
     protected EventList _eventList;
     protected uint _flags;
@@ -399,7 +404,29 @@ class Window : CustomEventTarget {
 
     @property uint flags() { return _flags; }
     @property uint backgroundColor() const { return _backgroundColor; }
-    @property void backgroundColor(uint color) { _backgroundColor = color; }
+    /// sets a fixed background color: a theme change keeps it
+    @property void backgroundColor(uint color) {
+        _backgroundColor = color;
+        _backgroundColorId = null;
+    }
+    /// theme color id of the background (default: STYLE_COLOR_WINDOW_BACKGROUND); null after backgroundColor was set
+    @property string backgroundColorId() const { return _backgroundColorId; }
+    /// sets the background to the theme color `id` (defaultColor if the theme has none), looked up again when
+    /// the theme changes (#1140); a null id sets the fixed color defaultColor
+    void setBackgroundColorId(string id, uint defaultColor) {
+        _backgroundColorId = id;
+        _backgroundColorDefault = defaultColor;
+        if (id is null)
+            _backgroundColor = defaultColor;
+        updateBackgroundColor();
+    }
+    /// the background color from the current theme, if it is a theme color
+    private void updateBackgroundColor() {
+        if (_backgroundColorId is null)
+            return;
+        _backgroundColor = currentTheme ? currentTheme.customColor(_backgroundColorId, _backgroundColorDefault)
+            : _backgroundColorDefault;
+    }
     @property int width() const { return _dx; }
     @property int height() const { return _dy; }
     @property uint keyboardModifiers() const { return _keyboardModifiers; }
@@ -1071,9 +1098,7 @@ class Window : CustomEventTarget {
     this() {
         _eventList = new EventList();
         _timerQueue = new TimerQueue();
-        _backgroundColor = DEFAULT_WINDOW_BACKGROUND_COLOR;
-        if (currentTheme)
-            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND, DEFAULT_WINDOW_BACKGROUND_COLOR);
+        updateBackgroundColor();
     }
     ~this() {
         if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
@@ -1577,9 +1602,7 @@ class Window : CustomEventTarget {
         }
         if (_tooltip.popup)
             _tooltip.popup.onThemeChanged();
-        if (currentTheme) {
-            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND, DEFAULT_WINDOW_BACKGROUND_COLOR);
-        }
+        updateBackgroundColor();
         invalidate();
     }
 
@@ -2071,6 +2094,47 @@ class Window : CustomEventTarget {
     }
 
 
+}
+
+unittest {
+    // a theme color background follows theme changes, a color set by the application is kept (#1140)
+    import dlangui.widgets.styles : useTestTheme;
+    static class TestWindow : Window {
+        override void show() {}
+        override @property dstring windowCaption() const { return null; }
+        override @property void windowCaption(dstring caption) {}
+        override @property void windowIcon(DrawBufRef icon) {}
+        override void invalidate() {}
+        override void close() {}
+    }
+    // the theme colors are changed below: only in a theme created for this test, it is removed at the end
+    if (currentTheme !is null)
+        return;
+    auto _ = useTestTheme();
+    immutable uint savedWindowColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND);
+    immutable uint savedDialogColor = currentTheme.customColor(STYLE_COLOR_DIALOG_BACKGROUND);
+    TestWindow[] windows = [new TestWindow, new TestWindow, new TestWindow, new TestWindow, new TestWindow];
+    scope(exit) foreach (w; windows) destroy(w);
+    auto window = windows[0], dialog = windows[1], fixed = windows[2], missing = windows[3], fixedById = windows[4];
+    assert(window.backgroundColorId == STYLE_COLOR_WINDOW_BACKGROUND);
+    assert(window.backgroundColor == savedWindowColor);
+    dialog.setBackgroundColorId(STYLE_COLOR_DIALOG_BACKGROUND, DEFAULT_DIALOG_BACKGROUND_COLOR);
+    assert(dialog.backgroundColor == savedDialogColor);
+    fixed.backgroundColor = 0x123456;
+    fixedById.setBackgroundColorId(null, 0x234567);
+    assert(fixedById.backgroundColor == 0x234567);
+    missing.setBackgroundColorId("test_no_such_color_1140", 0x345678);
+    assert(missing.backgroundColor == 0x345678);
+
+    currentTheme.setCustomColor(STYLE_COLOR_WINDOW_BACKGROUND, 0x111111);
+    currentTheme.setCustomColor(STYLE_COLOR_DIALOG_BACKGROUND, 0x222222);
+    foreach (w; windows)
+        w.dispatchThemeChanged();
+    assert(window.backgroundColor == 0x111111);
+    assert(dialog.backgroundColor == 0x222222);
+    assert(fixed.backgroundColor == 0x123456);
+    assert(fixedById.backgroundColor == 0x234567);
+    assert(missing.backgroundColor == 0x345678);
 }
 
 /**
