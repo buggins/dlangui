@@ -3468,13 +3468,9 @@ class EditBox : EditWidgetBase {
             dstring selLine = _content.line(_selectionRange.start.line);
             int start = _selectionRange.start.pos;
             int end = _selectionRange.end.pos;
-            if (start >= selLine.length)
+            if (!isSelectedWord(selLine, start, end))
                 return;
             pattern = selLine[start .. end];
-            if (!isWordChar(pattern[0]) || !isWordChar(pattern[$-1]))
-                return;
-            if (!isWholeWord(selLine, start, end))
-                return;
             // whole word is selected - enable highlight for it
             options = TextSearchFlag.CaseSensitive | TextSearchFlag.WholeWords;
         }
@@ -3521,20 +3517,18 @@ class EditBox : EditWidgetBase {
         return -1;
     }
 
-    static bool isWordChar(dchar ch) {
-        if (ch >= 'a' && ch <= 'z')
-            return true;
-        if (ch >= 'A' && ch <= 'Z')
-            return true;
-        if (ch == '_')
-            return true;
-        return false;
+    /// letters and numbers (std.uni.isAlphaNum, so also e.g. '²', '½', '①') and combining marks of any script, '_',
+    /// and ZWNJ/ZWJ (parts of words in Persian and Indic scripts) make up words, for whole-word search and the
+    /// highlight of a selected word (#1147)
+    static bool isWordChar(dchar ch) @safe pure nothrow @nogc {
+        import std.uni : isAlphaNum, isMark;
+        return ch == '_' || ch == '\u200C' || ch == '\u200D' || isAlphaNum(ch) || isMark(ch);
     }
-    static bool isValidWordBound(dchar innerChar, dchar outerChar) {
+    static bool isValidWordBound(dchar innerChar, dchar outerChar) @safe pure nothrow @nogc {
         return !isWordChar(innerChar) || !isWordChar(outerChar);
     }
     /// returns true if selected range of string is whole word
-    static bool isWholeWord(dstring lineText, size_t start, size_t end) {
+    static bool isWholeWord(dstring lineText, size_t start, size_t end) @safe pure nothrow @nogc {
         if (start >= lineText.length || start >= end)
             return false;
         if (start > 0 && !isValidWordBound(lineText[start], lineText[start - 1]))
@@ -3542,6 +3536,40 @@ class EditBox : EditWidgetBase {
         if (end > 0 && end < lineText.length && !isValidWordBound(lineText[end - 1], lineText[end]))
             return false;
         return true;
+    }
+
+    /// true if lineText[start .. end] is a whole word that starts and ends with word characters: a selection whose
+    /// other occurrences are highlighted
+    static bool isSelectedWord(dstring lineText, size_t start, size_t end) @safe pure nothrow @nogc {
+        if (start >= end || end > lineText.length)
+            return false;
+        return isWordChar(lineText[start]) && isWordChar(lineText[end - 1]) && isWholeWord(lineText, start, end);
+    }
+
+    // non-ASCII letters and digits are word characters (#1147)
+    unittest {
+        assert(isWordChar('a') && isWordChar('Z') && isWordChar('_'));
+        assert(isWordChar('5') && isWordChar('п') && isWordChar('Ж') && isWordChar('é') && isWordChar('λ'));
+        assert(!isWordChar(' ') && !isWordChar('.') && !isWordChar('(') && !isWordChar('-') && !isWordChar('\t'));
+        assert(!isWholeWord("приветствие"d, 0, 6)); // "привет" in "приветствие"
+        assert(isWholeWord("привет мир"d, 0, 6));
+        assert(!isWholeWord("x1"d, 0, 1));
+        assert(!isWholeWord("1x"d, 1, 2));
+        assert(isWholeWord("x + 1"d, 0, 1));
+        assert(!isWholeWord("café"d, 0, 3)); // "caf" in "café"
+        assert(isWholeWord("a.b"d, 2, 3));
+        // combining marks and ZWNJ are parts of words
+        assert(!isWholeWord("cafe\u0301 noir"d, 0, 4)); // "cafe" in decomposed "café"
+        assert(!isWholeWord("हिन्दी"d, 0, 3)); // before the virama
+        assert(!isWholeWord("می\u200Cخواهم"d, 0, 2)); // before ZWNJ
+        // selections whose other occurrences are highlighted
+        assert(isSelectedWord("привет мир"d, 0, 6));
+        assert(isSelectedWord("x1 + y"d, 0, 2));
+        assert(!isSelectedWord("x1 + y"d, 0, 1)); // a part of a word
+        assert(!isSelectedWord(" ab"d, 0, 3)); // starts with a space
+        assert(!isSelectedWord("ab."d, 0, 3)); // ends with a dot
+        assert(!isSelectedWord("ab"d, 0, 3)); // past the end of the line
+        assert(!isSelectedWord("ab"d, 1, 1));
     }
 
     /// find all occurences of text pattern in content; options = bitset of TextSearchFlag
