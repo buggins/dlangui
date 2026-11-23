@@ -390,7 +390,19 @@ class DSFMLPlatform : Platform {
 
     /// calls request layout for all windows
     override void requestLayout() {
-        // TODO:
+        foreach(w; _activeWindows) {
+            w.requestLayout();
+            w.invalidate();
+        }
+    }
+
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        if (currentTheme)
+            currentTheme.onThemeChanged();
+        foreach(w; _activeWindows)
+            w.dispatchThemeChanged();
     }
 
 }
