@@ -3476,25 +3476,66 @@ class EditBox : EditWidgetBase {
         }
         if (!pattern.length)
             return;
-        dstring lineText = _content.line(lineIndex);
-        if (lineText.length < pattern.length)
-            return;
-        ptrdiff_t start = 0;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
+        forEachLineMatch(_content.line(lineIndex), lineIndex, pattern, caseSensitive, wholeWords, _selectionRange,
+            caretPos, (TextRange r, bool current) {
+                highlightLineRange(buf, lineRect, current ? _searchHighlightColorCurrent : _searchHighlightColorOther, r);
+            });
+    }
+
+    /// calls sink for each match of pattern in line lineIndex with text lineText, in order; matches don't overlap
+    static void forEachLineMatch(dstring lineText, int lineIndex, dstring pattern, bool caseSensitive,
+            bool wholeWords, scope void delegate(TextRange r) sink) {
+        if (!pattern.length || lineText.length < pattern.length)
+            return;
+        size_t start = 0;
         for (;;) {
             ptrdiff_t pos = indexOfPattern(lineText[start .. $], pattern, caseSensitive);
             if (pos < 0)
                 break;
-            // found text to highlight
             start += pos;
-            if (!wholeWords || isWholeWord(lineText, start, start + pattern.length)) {
-                TextRange r = TextRange(TextPosition(lineIndex, cast(int)start), TextPosition(lineIndex, cast(int)(start + pattern.length)));
-                uint color = r.isInsideOrNext(caretPos) ? _searchHighlightColorCurrent : _searchHighlightColorOther;
-                highlightLineRange(buf, lineRect, color, r);
-            }
+            if (!wholeWords || isWholeWord(lineText, start, start + pattern.length))
+                sink(TextRange(TextPosition(lineIndex, cast(int)start),
+                    TextPosition(lineIndex, cast(int)(start + pattern.length))));
             start += pattern.length;
         }
+    }
+
+    /// as forEachLineMatch above, with current = true for the current match of the line, chosen as by
+    /// currentMatchIndex() (#1145)
+    static void forEachLineMatch(dstring lineText, int lineIndex, dstring pattern, bool caseSensitive,
+            bool wholeWords, TextRange selection, TextPosition caret, scope void delegate(TextRange r, bool current) sink) {
+        // the selected match may come after a match that ends at the caret: find it first
+        bool selectionIsMatch = false;
+        if (!selection.empty && selection.start.line == lineIndex && selection.end.line == lineIndex)
+            forEachLineMatch(lineText, lineIndex, pattern, caseSensitive, wholeWords, (TextRange r) {
+                if (r == selection)
+                    selectionIsMatch = true;
+            });
+        bool currentFound = false;
+        forEachLineMatch(lineText, lineIndex, pattern, caseSensitive, wholeWords, (TextRange r) {
+            bool current = selectionIsMatch ? r == selection : !currentFound && r.isInsideOrNext(caret);
+            if (current)
+                currentFound = true;
+            sink(r, current);
+        });
+    }
+
+    /// index of the current match in matches (in text order), -1 if there is none: the selected match if the
+    /// selection is one of them, else the first match with the caret inside or right after it. Of two adjacent
+    /// matches, the caret at the end of the first one is also at the start of the second: without a selected
+    /// match, the first is current (#1145)
+    static ptrdiff_t currentMatchIndex(const(TextRange)[] matches, TextRange selection, TextPosition caret)
+            @safe pure nothrow @nogc {
+        if (!selection.empty)
+            foreach (i, r; matches)
+                if (r == selection)
+                    return i;
+        foreach (i, r; matches)
+            if (r.isInsideOrNext(caret))
+                return i;
+        return -1;
     }
 
     /// index of the first occurrence of pattern in text, -1 if there is none, 0 for an empty pattern; without
@@ -3580,68 +3621,58 @@ class EditBox : EditWidgetBase {
             return res;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
-        for (int i = 0; i < _content.length; i++) {
-            dstring lineText = _content.line(i);
-            if (lineText.length < pattern.length)
-                continue;
-            ptrdiff_t start = 0;
-            for (;;) {
-                ptrdiff_t pos = indexOfPattern(lineText[start .. $], pattern, caseSensitive);
-                if (pos < 0)
-                    break;
-                // found text to highlight
-                start += pos;
-                if (!wholeWords || isWholeWord(lineText, start, start + pattern.length)) {
-                    TextRange r = TextRange(TextPosition(i, cast(int)start), TextPosition(i, cast(int)(start + pattern.length)));
-                    res ~= r;
-                }
-                start += pattern.length;
-            }
-        }
+        // the same matches as highlighted (#1145)
+        for (int i = 0; i < _content.length; i++)
+            forEachLineMatch(_content.line(i), i, pattern, caseSensitive, wholeWords, (TextRange r) { res ~= r; });
         return res;
     }
 
-    /// find next occurence of text pattern in content, returns true if found
-    bool findNextPattern(ref TextPosition pos, dstring pattern, uint searchOptions, int direction) {
+    /// find next occurence of text pattern in content, returns true if found; the current match, from which
+    /// direction counts, is the selected match if the selection is one, else the match at pos (#1145)
+    bool findNextPattern(ref TextPosition pos, dstring pattern, uint searchOptions, int direction,
+            TextRange selection = TextRange.init) {
         TextRange[] all = findAll(pattern, searchOptions);
-        if (!all.length)
+        ptrdiff_t index = nextMatchIndex(all, selection, pos, direction);
+        if (index < 0)
             return false;
-        int currentIndex = -1;
-        int nearestIndex = cast(int)all.length;
-        for (int i = 0; i < all.length; i++) {
-            if (all[i].isInsideOrNext(pos)) {
-                currentIndex = i;
-                break;
-            }
+        pos = all[index].start;
+        return true;
+    }
+
+    /// index in matches (in text order) of the match findNextPattern() goes to, -1 if none: direction (-1, 0 or 1)
+    /// counts from the current match (currentMatchIndex()), wrapping around; without a current match, the nearest
+    /// match after pos (direction >= 0) or before it; -1 also when the only match is current and direction isn't 0
+    static ptrdiff_t nextMatchIndex(const(TextRange)[] matches, TextRange selection, TextPosition pos,
+            int direction) @safe pure nothrow @nogc {
+        if (!matches.length)
+            return -1;
+        ptrdiff_t currentIndex = currentMatchIndex(matches, selection, pos);
+        if (currentIndex >= 0) {
+            if (matches.length < 2 && direction != 0)
+                return -1;
+            currentIndex += direction;
+            if (currentIndex < 0)
+                currentIndex = matches.length - 1;
+            else if (currentIndex >= matches.length)
+                currentIndex = 0;
+            return currentIndex;
         }
-        for (int i = 0; i < all.length; i++) {
-            if (pos < all[i].start) {
+        ptrdiff_t nearestIndex = matches.length;
+        foreach (i, r; matches) {
+            if (pos < r.start) {
                 nearestIndex = i;
                 break;
             }
-            if (pos > all[i].end) {
+            if (pos > r.end)
                 nearestIndex = i + 1;
-            }
-        }
-        if (currentIndex >= 0) {
-            if (all.length < 2 && direction != 0)
-                return false;
-            currentIndex += direction;
-            if (currentIndex < 0)
-                currentIndex = cast(int)all.length - 1;
-            else if (currentIndex >= all.length)
-                currentIndex = 0;
-            pos = all[currentIndex].start;
-            return true;
         }
         if (direction < 0)
             nearestIndex--;
         if (nearestIndex < 0)
-            nearestIndex = cast(int)all.length - 1;
-        else if (nearestIndex >= all.length)
+            nearestIndex = matches.length - 1;
+        else if (nearestIndex >= matches.length)
             nearestIndex = 0;
-        pos = all[nearestIndex].start;
-        return true;
+        return nearestIndex;
     }
 
     protected void highlightLineRange(DrawBuf buf, Rect lineRect, uint color, TextRange r) {
@@ -4619,7 +4650,7 @@ class FindPanel : HorizontalLayout {
             return false;
         _editor.setTextToHighlight(currentText, makeSearchFlags);
         TextPosition pos = _editor.caretPos;
-        bool res = _editor.findNextPattern(pos, currentText, makeSearchFlags, back ? -1 : 1);
+        bool res = _editor.findNextPattern(pos, currentText, makeSearchFlags, back ? -1 : 1, _editor.selectionRange);
         if (res) {
             _editor.selectionRange = TextRange(pos, TextPosition(pos.line, pos.pos + cast(int)currentText.length));
             _editor.ensureCaretVisible();
@@ -4636,7 +4667,7 @@ class FindPanel : HorizontalLayout {
             return false;
         _editor.setTextToHighlight(currentText, makeSearchFlags);
         TextPosition pos = _editor.caretPos;
-        bool res = _editor.findNextPattern(pos, currentText, makeSearchFlags, 0);
+        bool res = _editor.findNextPattern(pos, currentText, makeSearchFlags, 0, _editor.selectionRange);
         if (res) {
             _editor.selectionRange = TextRange(pos, TextPosition(pos.line, pos.pos + cast(int)currentText.length));
             _editor.replaceSelectionText(newText);
@@ -4858,6 +4889,62 @@ class EditorMessageBar : HorizontalLayout {
     assert(find("abc"d, ""d, false) == 0);
     assert(find(""d, ""d, false) == 0);
     assert(find(""d, ""d, true) == 0);
+}
+
+// of two adjacent search matches, only one is current: the selected one, else the one Find next would take (#1145)
+unittest {
+    // positions of the matches of "aa" in "aaaaaa", the current one marked with *
+    static string matches(TextRange selection, int caret) {
+        string res;
+        EditBox.forEachLineMatch("aaaaaa"d, 0, "aa"d, true, false, selection, TextPosition(0, caret),
+            (TextRange r, bool current) {
+                import std.conv : to;
+                res ~= (current ? "*" : "") ~ r.start.pos.to!string ~ " ";
+            });
+        return res;
+    }
+    static TextRange sel(int start, int end) { return TextRange(TextPosition(0, start), TextPosition(0, end)); }
+    TextRange none;
+    assert(matches(none, 0) == "*0 2 4 "); // at the start of the first match
+    assert(matches(none, 2) == "*0 2 4 "); // at the end of the first match and the start of the second
+    assert(matches(none, 3) == "0 *2 4 "); // inside the second match
+    assert(matches(none, 6) == "0 2 *4 "); // at the end of the line, right after the last match
+    // a selected match is current, wherever the caret is (Find next leaves it at the end, Shift+Left at the start)
+    assert(matches(sel(0, 2), 2) == "*0 2 4 ");
+    assert(matches(sel(2, 4), 2) == "0 *2 4 ");
+    assert(matches(sel(2, 4), 4) == "0 *2 4 ");
+    // a selection that isn't a match: the caret decides
+    assert(matches(sel(1, 3), 3) == "0 *2 4 ");
+    // a caret on another line: no current match
+    string other;
+    EditBox.forEachLineMatch("aaaa"d, 0, "aa"d, true, false, none, TextPosition(1, 2), (TextRange r, bool current) {
+        other ~= current ? "*" : "-";
+    });
+    assert(other == "--");
+
+    // Find next counts from the same current match
+    TextRange[] all = [sel(0, 2), sel(2, 4), sel(4, 6)];
+    assert(EditBox.currentMatchIndex(all, none, TextPosition(0, 2)) == 0);
+    assert(EditBox.currentMatchIndex(all, sel(2, 4), TextPosition(0, 2)) == 1);
+    assert(EditBox.currentMatchIndex(all, sel(1, 3), TextPosition(0, 3)) == 1);
+    assert(EditBox.currentMatchIndex(all, none, TextPosition(1, 0)) == -1);
+    // Find next (1), Find prev (-1) and Replace (0) from a selected match, with the caret at either end of it
+    foreach (caret; [2, 4]) {
+        assert(EditBox.nextMatchIndex(all, sel(2, 4), TextPosition(0, caret), 1) == 2);
+        assert(EditBox.nextMatchIndex(all, sel(2, 4), TextPosition(0, caret), -1) == 0);
+        assert(EditBox.nextMatchIndex(all, sel(2, 4), TextPosition(0, caret), 0) == 1);
+    }
+    // wrapping around
+    assert(EditBox.nextMatchIndex(all, sel(4, 6), TextPosition(0, 6), 1) == 0);
+    assert(EditBox.nextMatchIndex(all, sel(0, 2), TextPosition(0, 0), -1) == 2);
+    // no current match: the nearest one after or before the caret
+    TextRange[] spaced = [sel(0, 2), sel(5, 7)];
+    assert(EditBox.nextMatchIndex(spaced, none, TextPosition(0, 3), 1) == 1);
+    assert(EditBox.nextMatchIndex(spaced, none, TextPosition(0, 3), -1) == 0);
+    // a single current match: nowhere to go, but Replace takes it
+    assert(EditBox.nextMatchIndex(all[0 .. 1], sel(0, 2), TextPosition(0, 2), 1) == -1);
+    assert(EditBox.nextMatchIndex(all[0 .. 1], sel(0, 2), TextPosition(0, 2), 0) == 0);
+    assert(EditBox.nextMatchIndex(null, none, TextPosition(0, 0), 1) == -1);
 }
 
 //import dlangui.widgets.metadata;
