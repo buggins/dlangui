@@ -791,10 +791,10 @@ class Win32FontManager : FontManager {
     FontDef * findFace(string face) {
         if (face.length == 0)
             return null;
-        string[] faces = split(face, ",");
-        foreach(f; faces) {
-            if (f in _faceByName)
-                return _faceByName[f];
+        foreach (f; split(face, ",")) {
+            // a list may have spaces after the commas, as the FreeType font manager allows (#1132)
+            if (auto p = f.strip in _faceByName)
+                return *p;
         }
         return null;
     }
@@ -892,4 +892,16 @@ unittest {
     FontDef def = FontDef(FontFamily.MonoSpace, "Courier New", FIXED_PITCH | FF_MODERN);
     assert(def.family == FontFamily.MonoSpace && def.face == "Courier New");
     assert(def.pitchAndFamily == (FIXED_PITCH | FF_MODERN));
+}
+
+// a face list may have spaces around the commas (#1132)
+unittest {
+    auto fm = new Win32FontManager();
+    scope (exit) destroy(fm);
+    fm.registerFont(FontFamily.SansSerif, "DlangUI Test Face", VARIABLE_PITCH | FF_SWISS);
+    FontDef * def = fm.findFace("No Such Face 1132, DlangUI Test Face");
+    assert(def && def.face == "DlangUI Test Face");
+    def = fm.findFace(" DlangUI Test Face ,No Such Face 1132");
+    assert(def && def.face == "DlangUI Test Face");
+    assert(fm.findFace("No Such Face 1132, ") is null);
 }
