@@ -38,7 +38,6 @@ public import dlangui.core.editable;
 
 import std.algorithm;
 import std.conv : to;
-import std.typecons : Yes, No;
 import dlangui.core.streams;
 import dlangui.core.stdaction : StandardAction, ACTION_CLOSE, ACTION_IGNORE;
 
@@ -3485,12 +3484,10 @@ class EditBox : EditWidgetBase {
         if (lineText.length < pattern.length)
             return;
         ptrdiff_t start = 0;
-        import std.string : indexOf, CaseSensitive;
-        import std.typecons : Flag;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
         for (;;) {
-            ptrdiff_t pos = lineText[start .. $].indexOf(pattern, caseSensitive ? Yes.caseSensitive : No.caseSensitive);
+            ptrdiff_t pos = indexOfPattern(lineText[start .. $], pattern, caseSensitive);
             if (pos < 0)
                 break;
             // found text to highlight
@@ -3502,6 +3499,26 @@ class EditBox : EditWidgetBase {
             }
             start += pattern.length;
         }
+    }
+
+    /// index of the first occurrence of pattern in text, -1 if there is none, 0 for an empty pattern; without
+    /// caseSensitive, compared with Unicode simple case folding (std.uni.sicmp: one character for one, so a match
+    /// is as long as the pattern; "ς" matches "Σ")
+    static ptrdiff_t indexOfPattern(dstring text, dstring pattern, bool caseSensitive) @safe pure nothrow @nogc {
+        if (!pattern.length)
+            return 0;
+        if (pattern.length > text.length)
+            return -1;
+        if (caseSensitive) {
+            import std.string : indexOf;
+            return text.indexOf(pattern);
+        }
+        // not std.string.indexOf with No.caseSensitive: for dstrings it misses matches (dlang/phobos#11160, #1144)
+        import std.uni : sicmp;
+        foreach (i; 0 .. text.length - pattern.length + 1)
+            if (sicmp(text[i .. i + pattern.length], pattern) == 0)
+                return i;
+        return -1;
     }
 
     static bool isWordChar(dchar ch) {
@@ -3533,7 +3550,6 @@ class EditBox : EditWidgetBase {
         res.assumeSafeAppend();
         if (!pattern.length)
             return res;
-        import std.string : indexOf, CaseSensitive;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
         for (int i = 0; i < _content.length; i++) {
@@ -3542,7 +3558,7 @@ class EditBox : EditWidgetBase {
                 continue;
             ptrdiff_t start = 0;
             for (;;) {
-                ptrdiff_t pos = lineText[start .. $].indexOf(pattern, caseSensitive ? Yes.caseSensitive : No.caseSensitive);
+                ptrdiff_t pos = indexOfPattern(lineText[start .. $], pattern, caseSensitive);
                 if (pos < 0)
                     break;
                 // found text to highlight
@@ -4792,6 +4808,28 @@ class EditorMessageBar : HorizontalLayout {
             return _editor.onMessageAction(this, action);
         return dispatchAction(action);
     }
+}
+
+// case-insensitive search finds every match (#1144: Phobos indexOf with No.caseSensitive missed matches when a pattern
+// character equals the last one in another case)
+@safe unittest {
+    alias find = EditBox.indexOfPattern;
+    assert(find("    TextWidget {"d, "Text"d, false) == 4);
+    assert(find("    TextWidget {"d, "text"d, false) == 4);
+    assert(find("    TextWidget {"d, "TEXTWIDGET"d, false) == 4);
+    assert(find("    TextWidget {"d, "text"d, true) == -1);
+    assert(find("    TextWidget {"d, "Text"d, true) == 4);
+    assert(find("abcdText"d, "tExT"d, false) == 4);
+    assert(find("aXa"d, "xa"d, false) == 1);
+    assert(find("Привет, ПРИВЕТ"d, "привет"d, false) == 0);
+    assert(find("Привет, ПРИВЕТ"d, "ПРИВЕТ"d, true) == 8);
+    assert(find("text"d, "texts"d, false) == -1);
+    assert(find("tex"d, "text"d, false) == -1);
+    assert(find("abc"d, "d"d, false) == -1);
+    assert(find("οδος"d, "ΟΔΟΣ"d, false) == 0); // final sigma, simple case folding
+    assert(find("abc"d, ""d, false) == 0);
+    assert(find(""d, ""d, false) == 0);
+    assert(find(""d, ""d, true) == 0);
 }
 
 //import dlangui.widgets.metadata;
