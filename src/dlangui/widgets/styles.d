@@ -1505,9 +1505,13 @@ Theme createDefaultTheme() {
     Log.d("Creating default theme");
     Theme res = new Theme("default");
     //res.fontSize(14);
+    // window and dialog backgrounds as in console_theme_default.xml and theme_default.xml: without them they are
+    // transparent, and subpixel text drawn on a transparent window gets colored fringes (#1133)
     static if (WIDGET_STYLE_CONSOLE) {
         res.fontSize = 1;
         res.textColor = 0xFFFFFF;
+        res.setCustomColor(STYLE_COLOR_WINDOW_BACKGROUND, 0x000000);
+        res.setCustomColor(STYLE_COLOR_DIALOG_BACKGROUND, 0x000000);
         Style button = res.createSubstyle(STYLE_BUTTON).backgroundColor(0x808080).alignment(Align.Center).setMargins(0, 0, 0, 0).textColor(0x000000);
         //button.createState(State.Selected, State.Selected).backgroundColor(0xFFFFFF);
         button.createState(State.Pressed, State.Pressed).backgroundColor(0xFFFF00);
@@ -1622,6 +1626,8 @@ Theme createDefaultTheme() {
             return makePointSize(Rect(left, top, right, bottom));
         }
         res.fontSize = makePointSize(11); // 15 px at 100%
+        res.setCustomColor(STYLE_COLOR_WINDOW_BACKGROUND, 0xFFFFFF);
+        res.setCustomColor(STYLE_COLOR_DIALOG_BACKGROUND, 0xEEEEEE);
         Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).margins(pt(4,4,4,4));
         res.createSubstyle(STYLE_BUTTON_TRANSPARENT).backgroundImageId("btn_background_transparent").alignment(Align.Center);
         res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
