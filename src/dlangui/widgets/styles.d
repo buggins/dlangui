@@ -233,6 +233,11 @@ immutable string STYLE_COLOR_WINDOW_BACKGROUND = "window_background";
 /// dialog background color resource id
 immutable string STYLE_COLOR_DIALOG_BACKGROUND = "dialog_background";
 
+/// window background color for a theme without STYLE_COLOR_WINDOW_BACKGROUND: as in the standard theme (#1138)
+enum uint DEFAULT_WINDOW_BACKGROUND_COLOR = WIDGET_STYLE_CONSOLE ? 0x000000 : 0xFFFFFF;
+/// dialog background color for a theme without STYLE_COLOR_DIALOG_BACKGROUND: as in the standard theme (#1138)
+enum uint DEFAULT_DIALOG_BACKGROUND_COLOR = WIDGET_STYLE_CONSOLE ? 0x000000 : 0xEEEEEE;
+
 
 
 // Other style constants
@@ -1514,8 +1519,8 @@ Theme createDefaultTheme() {
     }
     static if (WIDGET_STYLE_CONSOLE) {
         static immutable CustomColor[] themeColors = [
-            CustomColor(STYLE_COLOR_WINDOW_BACKGROUND, 0x000000),
-            CustomColor(STYLE_COLOR_DIALOG_BACKGROUND, 0x000000),
+            CustomColor(STYLE_COLOR_WINDOW_BACKGROUND, DEFAULT_WINDOW_BACKGROUND_COLOR),
+            CustomColor(STYLE_COLOR_DIALOG_BACKGROUND, DEFAULT_DIALOG_BACKGROUND_COLOR),
             CustomColor("edit_background", 0x000000),
             CustomColor("edit_caret", 0x000000),
             CustomColor("edit_caret_replace", 0x000000),
@@ -1551,8 +1556,8 @@ Theme createDefaultTheme() {
         ];
     } else {
         static immutable CustomColor[] themeColors = [
-            CustomColor(STYLE_COLOR_WINDOW_BACKGROUND, 0xFFFFFF),
-            CustomColor(STYLE_COLOR_DIALOG_BACKGROUND, 0xEEEEEE),
+            CustomColor(STYLE_COLOR_WINDOW_BACKGROUND, DEFAULT_WINDOW_BACKGROUND_COLOR),
+            CustomColor(STYLE_COLOR_DIALOG_BACKGROUND, DEFAULT_DIALOG_BACKGROUND_COLOR),
             CustomColor("edit_background", 0xFFFFFF),
             CustomColor("edit_caret", 0x000000),
             CustomColor("edit_caret_replace", 0x808080FF),

@@ -1071,9 +1071,9 @@ class Window : CustomEventTarget {
     this() {
         _eventList = new EventList();
         _timerQueue = new TimerQueue();
-        _backgroundColor = 0xFFFFFF;
+        _backgroundColor = DEFAULT_WINDOW_BACKGROUND_COLOR;
         if (currentTheme)
-            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND);
+            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND, DEFAULT_WINDOW_BACKGROUND_COLOR);
     }
     ~this() {
         if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
@@ -1578,7 +1578,7 @@ class Window : CustomEventTarget {
         if (_tooltip.popup)
             _tooltip.popup.onThemeChanged();
         if (currentTheme) {
-            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND);
+            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND, DEFAULT_WINDOW_BACKGROUND_COLOR);
         }
         invalidate();
     }

@@ -212,7 +212,8 @@ class Dialog : VerticalLayout {
                 wflags |= WindowFlag.MeasureSize;
             _window = Platform.instance.createWindow(_caption, _parentWindow, wflags, _initialWidth, _initialHeight);
             windowIcon = _icon;
-            _window.backgroundColor = currentTheme.customColor("dialog_background");
+            _window.backgroundColor = currentTheme.customColor(STYLE_COLOR_DIALOG_BACKGROUND,
+                    DEFAULT_DIALOG_BACKGROUND_COLOR);
             _window.mainWidget = this;
             _window.show();
         }
