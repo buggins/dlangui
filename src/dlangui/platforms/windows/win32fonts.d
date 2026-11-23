@@ -580,8 +580,9 @@ class Win32Font : Font {
 class Win32FontManager : FontManager {
     private FontList _activeFonts;
     private FontDef[] _fontFaces;
-    /// by lowercase face name: face names match case-insensitively, as in the FreeType font manager (#1137)
-    private FontDef*[string] _faceByName;
+    /// index in _fontFaces by lowercase face name: face names match case-insensitively, as in the FreeType font
+    /// manager (#1137); indices, not pointers: appending to _fontFaces may move it (#1142)
+    private size_t[string] _faceByName;
 
     /// override to return list of font faces available
     override FontFaceProps[] getFaces() {
@@ -759,7 +760,8 @@ class Win32FontManager : FontManager {
         }
     }
 
-    /// find font face definition by family only (try to get one of defaults for family if possible)
+    /// find font face definition by family only (try to get one of defaults for family if possible); the
+    /// pointer is valid until the next font registration, which may move the definitions (#1142)
     FontDef * findFace(FontFamily family) {
         FontDef * res = null;
         switch(family) {
@@ -795,19 +797,21 @@ class Win32FontManager : FontManager {
     }
 
     /// find font face definition by face only: the first installed face of a comma separated list; names match
-    /// case-insensitively, and the definition has the registered name (#1137)
+    /// case-insensitively, and the definition has the registered name (#1137); the pointer is valid until the
+    /// next font registration, which may move the definitions (#1142)
     FontDef * findFace(string face) {
         if (face.length == 0)
             return null;
         foreach (f; split(face, ",")) {
             // a list may have spaces after the commas, as the FreeType font manager allows (#1132)
             if (auto p = f.strip.toLower in _faceByName)
-                return *p;
+                return &_fontFaces[*p];
         }
         return null;
     }
 
-    /// find font face definition by family and face
+    /// find font face definition by family and face; the pointer is valid until the next font registration,
+    /// which may move the definitions (#1142)
     FontDef * findFace(FontFamily family, string face) {
         // by face only
         FontDef * res = findFace(face);
@@ -833,7 +837,7 @@ class Win32FontManager : FontManager {
     bool registerFont(FontFamily family, string fontFace, ubyte pitchAndFamily) {
         Log.d("registerFont(", family, ",", fontFace, ")");
         _fontFaces ~= FontDef(family, fontFace, pitchAndFamily);
-        _faceByName[fontFace.toLower] = &_fontFaces[$ - 1];
+        _faceByName[fontFace.toLower] = _fontFaces.length - 1;
         installedFacesChanged();
         return true;
     }
@@ -934,4 +938,17 @@ unittest {
     assert(regular.getPresence('A') == CodepointPresence.unknown);
     assert(boldItalic.getPresence('A') == CodepointPresence.unknown);
     assert(other.getPresence('A') == CodepointPresence.missing);
+}
+
+// face lookups find the entries of _fontFaces, also after the array moved, as appending to it may (#1142)
+unittest {
+    auto fm = new Win32FontManager();
+    scope (exit) destroy(fm);
+    fm.registerFont(FontFamily.SansSerif, "DlangUI Test Face", VARIABLE_PITCH | FF_SWISS);
+    immutable size_t index = fm._fontFaces.length - 1;
+    // whether an append moves the array depends on the GC: move it here
+    fm._fontFaces = fm._fontFaces.dup;
+    fm.registerFont(FontFamily.SansSerif, "DlangUI Other Test Face", VARIABLE_PITCH | FF_SWISS);
+    assert(fm.findFace("DlangUI Test Face") is &fm._fontFaces[index]);
+    assert(fm.findFace("DlangUI Other Test Face") is &fm._fontFaces[$ - 1]);
 }
