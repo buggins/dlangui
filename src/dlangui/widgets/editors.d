@@ -3605,7 +3605,9 @@ class EditBox : EditWidgetBase {
         Rect endrc = textPosToClient(r.end);
         Rect rc = lineRect;
         rc.left = _clientRect.left + startrc.left;
-        rc.right = _clientRect.left + endrc.right;
+        // up to the start of the end position, as the selection: its right is 1 unit further, a cell in console
+        // builds (#1139)
+        rc.right = _clientRect.left + endrc.left;
         if (_wordWrap && !rc.empty)
         {
             wordWrapFillRect(buf, r.start.line, rc, color);
@@ -3643,6 +3645,10 @@ class EditBox : EditWidgetBase {
         //if ((lineIndex & 1))
         //    buf.fillRect(visibleRect, 0xF4808080);
 
+        // console fills are opaque: search matches first, so that a selected match shows the selection (#1139)
+        static if (WIDGET_STYLE_CONSOLE)
+            highlightTextPattern(buf, lineIndex, lineRect, visibleRect);
+
         if (!_selectionRange.empty && _selectionRange.start.line <= lineIndex && _selectionRange.end.line >= lineIndex) {
             // line inside selection
             Rect startrc = textPosToClient(_selectionRange.start);
@@ -3662,7 +3668,8 @@ class EditBox : EditWidgetBase {
             }
         }
 
-        highlightTextPattern(buf, lineIndex, lineRect, visibleRect);
+        static if (!WIDGET_STYLE_CONSOLE)
+            highlightTextPattern(buf, lineIndex, lineRect, visibleRect);
 
         if (_matchingBraces.start.line == lineIndex)  {
             TextRange r = TextRange(_matchingBraces.start, _matchingBraces.start.offset(1));

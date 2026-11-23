@@ -13,6 +13,8 @@
     <color id="editor_matching_bracket_highlight" value="#800000"/>
     <color id="editor_selection_focused" value="#008080"/>
     <color id="editor_selection_normal" value="#800080"/>
+    <color id="editor_search_highlight_current" value="#808000"/>
+    <color id="editor_search_highlight_other" value="#808080"/>
     <color id="editor_left_pane_background" value="#FFFFFFFF"/>
     <color id="editor_left_pane_background2" value="#FFFFFFFF"/>
     <color id="editor_left_pane_background3" value="FFFFFFFF"/>
