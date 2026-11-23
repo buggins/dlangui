@@ -1292,6 +1292,12 @@ public:
 
 }
 
+/// font faces of a theme which doesn't set fontFace (#796): Segoe UI is the Windows UI font since Vista
+version (Windows)
+    immutable string DEFAULT_THEME_FONT_FACE = "Segoe UI,Arial";
+else
+    immutable string DEFAULT_THEME_FONT_FACE = "Arial";
+
 /// Theme - root for style hierarhy.
 class Theme : Style {
     protected Style[string] _byId;
@@ -1307,8 +1313,7 @@ class Theme : Style {
         _fontSize = 9 | SIZE_IN_POINTS_FLAG; // TODO: from settings or screen properties / DPI
         _fontStyle = FONT_STYLE_NORMAL;
         _fontWeight = 400;
-        _fontFace = "Arial"; // TODO: from settings
-        //_fontFace = "Verdana"; // TODO: from settings
+        _fontFace = DEFAULT_THEME_FONT_FACE; // TODO: the system UI font (#796)
         _fontFamily = FontFamily.SansSerif;
         _minHeight = 0;
         _minWidth = 0;
@@ -1500,10 +1505,6 @@ Theme createDefaultTheme() {
     Log.d("Creating default theme");
     Theme res = new Theme("default");
     //res.fontSize(14);
-    version (Windows) {
-        res.fontFace = "Verdana";
-    }
-    //res.fontFace = "Arial Narrow";
     static if (WIDGET_STYLE_CONSOLE) {
         res.fontSize = 1;
         res.textColor = 0xFFFFFF;
@@ -1703,7 +1704,7 @@ Theme createDefaultTheme() {
 
         res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId("editbox_background")
             .padding(pt(4,5,4,5)).margins(pt(2,2,2,2)).minWidth(makePointSize(30))
-            .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(makePointSize(12));
+            .fontFamily(FontFamily.SansSerif).fontSize(makePointSize(12)); // the theme's font face
         res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
             .padding(pt(4,5,4,5)).margins(pt(2,2,2,2)).minWidth(makePointSize(75)).minHeight(makePointSize(45))
             .layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)

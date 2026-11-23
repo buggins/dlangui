@@ -757,6 +757,7 @@ class Win32FontManager : FontManager {
         FontDef * res = null;
         switch(family) {
             case FontFamily.SansSerif:
+                res = findFace("Segoe UI"); if (res !is null) return res; // the Windows UI font since Vista (#796)
                 res = findFace("Arial"); if (res !is null) return res;
                 res = findFace("Tahoma"); if (res !is null) return res;
                 res = findFace("Calibri"); if (res !is null) return res;
