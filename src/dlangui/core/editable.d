@@ -552,6 +552,7 @@ class EditableContent {
         _lines.length = 1; // initial state: single empty line
         _editMarks.length = 1;
         _undoBuffer = new UndoBuffer();
+        newRevision();
     }
 
     @property bool modified() {
@@ -810,6 +811,7 @@ class EditableContent {
 
     /// clear content
     void clear() {
+        newRevision();
         clearUndo();
         clearEditMarks();
         _lines.length = 0;
@@ -1060,7 +1062,17 @@ class EditableContent {
         return m;
     }
 
+    /// identifies the state of the text: a new value with each change of the text (edits, undo and redo, new
+    /// content, clear(); not saving), never the same in two content objects. Positions noted with a value refer to
+    /// this text while it stays the same (#1166)
+    @property ulong revision() const @safe pure nothrow @nogc { return _revision; }
+    private ulong _revision;
+    private static ulong _lastRevision; // per thread, as the UI is
+    private void newRevision() @safe nothrow @nogc { _revision = ++_lastRevision; }
+
     void handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+        if (op.action != EditAction.SaveContent)
+            newRevision();
         // update highlight if necessary
         updateTokenProps(rangeAfter.start.line, rangeAfter.end.line + 1);
         LineIcon[] moved;
@@ -2031,4 +2043,33 @@ unittest {
     assert(icons.remove(0).line == 0 && icons.length == 15 && icons[0].line == 1);
     assert(icons._items[15] is null); // the vacated slot keeps no reference
     assert(icons.findByLineAndType(15, LineIconType.bookmark).line == 15 && icons.findByType(LineIconType.bookmark).length == 15);
+}
+
+// revision changes with edits, undo, redo, new content and clear(), not with saving, and differs between content
+// objects (#1166)
+unittest {
+    auto content = new EditableContent(true);
+    scope (exit) destroy(content);
+    auto other = new EditableContent(true);
+    scope (exit) destroy(other);
+    assert(content.revision != other.revision);
+    content.text = "abc"d;
+    ulong last = content.revision;
+    bool changed() {
+        bool res = content.revision != last;
+        last = content.revision;
+        return res;
+    }
+    assert(content.performOperation(new EditOperation(EditAction.Replace,
+        TextRange(TextPosition(0, 0), TextPosition(0, 1)), ["x"d]), null));
+    assert(changed());
+    assert(content.undo(null) && changed());
+    assert(content.redo(null) && changed());
+    content.notifyContentSaved();
+    assert(!changed());
+    content.text = "new"d;
+    assert(changed());
+    content.clear();
+    assert(changed());
+    assert(content.revision != other.revision);
 }
