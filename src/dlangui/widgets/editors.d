@@ -4203,8 +4203,10 @@ class EditBox : EditWidgetBase {
         } else {
             if (_findPanel.visibility != Visibility.Visible) {
                 _findPanel.visibility = Visibility.Visible;
-                _findPanel.onReopen(); // before setting the text, which drops a scope of other text (#1166)
-                if (txt.length)
+                // a new scope or the panel's own match keeps the find text, else the selected text becomes it; the
+                // scope comes first, as setting the text checks it (#1166, #1179)
+                bool keepText = _findPanel.onReopen();
+                if (txt.length && !keepText)
                     _findPanel.searchText = txt;
                 res = true;
             }
@@ -4499,6 +4501,8 @@ class FindPanel : HorizontalLayout {
     protected ulong _selectionScopeRevision;
     /// the match the panel selected last: not a new scope when the panel is shown again (#1166)
     protected TextRange _lastFoundMatch;
+    /// EditableContent.revision for which _lastFoundMatch is valid
+    protected ulong _lastFoundMatchRevision;
     /// returns true if panel is working in replace mode
     @property bool replaceMode() { return _replaceMode; }
     @property FindPanel replaceMode(bool newMode) {
@@ -4714,13 +4718,30 @@ class FindPanel : HorizontalLayout {
         return true;
     }
 
-    /// the panel is shown again: with the Selection option on, a new selection is the scope; no selection, or the
-    /// match the panel selected (e.g. F3 after Esc), keeps the scope (#1166)
-    void onReopen() {
+    /// the panel is shown again: as decided by reopenDecision(), sets a new scope; returns true if the find text
+    /// should stay (#1166, #1179)
+    bool onReopen() {
         TextRange selection = _editor.selectionRange;
-        if (_cbSelection.checked && !selection.empty && selection != _lastFoundMatch)
+        bool newScope;
+        bool keepText;
+        reopenDecision(selection, _lastFoundMatch, _lastFoundMatchRevision == _editor.content.revision,
+            _cbSelection.checked, _edFind.text.length > 0, newScope, keepText);
+        if (newScope)
             setSelectionScope(selection);
         updateHighlight();
+        return keepText;
+    }
+
+    /// what showing the panel again does with the selection (#1166, #1179). The panel's own match is lastFound while
+    /// the text didn't change since it was found (lastFoundValid), e.g. F3 after Esc: it keeps the scope. A new
+    /// selection becomes the scope (newScope) with the Selection option on. No selection keeps the scope. keepText:
+    /// the find text stays when the selection is the new scope or the panel's own match (its case may differ from the
+    /// find text), unless the find text is empty; else the selected text becomes the find text
+    static void reopenDecision(TextRange selection, TextRange lastFound, bool lastFoundValid, bool selectionOption,
+            bool hasFindText, out bool newScope, out bool keepText) @safe pure nothrow @nogc {
+        bool ownMatch = !selection.empty && lastFoundValid && selection == lastFound;
+        newScope = selectionOption && !selection.empty && !ownMatch;
+        keepText = hasFindText && (ownMatch || newScope);
     }
 
     /// highlights the matches of text, inside the selection scope when the Selection option is on
@@ -4760,6 +4781,7 @@ class FindPanel : HorizontalLayout {
             return false;
         _editor.selectionRange = all[index];
         _lastFoundMatch = all[index];
+        _lastFoundMatchRevision = _editor.content.revision;
         _editor.ensureCaretVisible();
         return true;
     }
@@ -4779,8 +4801,13 @@ class FindPanel : HorizontalLayout {
                 continue;
             _editor.replaceSelectionText(newText); // the caret is at the end of the replacement, nothing selected
             setSelectionScope(scopeAfterReplace(_selectionScope, r, newText.length));
-            if (_backDirection)
+            if (_backDirection) {
                 _editor.setCaretPos(r.start.line, r.start.pos);
+                // the empty selection at the caret, not at the end of the replacement; notified again, so that
+                // listeners see the final state
+                _editor.clearSelection();
+                _editor.handleEditorStateChange();
+            }
             _editor.ensureCaretVisible();
             highlight(currentText, flags);
             return true;
@@ -5145,6 +5172,27 @@ unittest {
     assert(FindPanel.scopeAfterReplace(scope_, range(3, 3, 3, 5), 0) == range(1, 0, 3, 3));
     assert(FindPanel.scopeAfterReplace(scope_, range(2, 3, 2, 5), 7) == scope_);
     assert(FindPanel.scopeAfterReplace(none, range(3, 3, 3, 5), 7) == none);
+}
+
+// showing the panel again: a new selection becomes the scope with the Selection option on, the panel's own match
+// (unless the text changed since) keeps it; the find text stays for both, unless it is empty (#1166, #1179)
+unittest {
+    static TextRange sel(int start, int end) { return TextRange(TextPosition(0, start), TextPosition(0, end)); }
+    static string decide(TextRange selection, bool lastFoundValid, bool selectionOption, bool hasFindText) {
+        bool newScope;
+        bool keepText;
+        FindPanel.reopenDecision(selection, sel(2, 4), lastFoundValid, selectionOption, hasFindText, newScope,
+            keepText);
+        return (newScope ? "scope" : "-") ~ " " ~ (keepText ? "keep" : "set");
+    }
+    TextRange none;
+    assert(decide(sel(2, 4), true, true, true) == "- keep"); // the panel's own match (F3 after Esc)
+    assert(decide(sel(2, 4), true, false, true) == "- keep"); // also without the option: the find text keeps its case
+    assert(decide(sel(2, 4), false, true, true) == "scope keep"); // the same positions after an edit: a new selection
+    assert(decide(sel(0, 6), true, true, true) == "scope keep"); // a new selection with the option on
+    assert(decide(sel(0, 6), true, false, true) == "- set"); // with the option off: the selected text is the find text
+    assert(decide(sel(0, 6), true, true, false) == "scope set"); // an empty find text takes the selected text
+    assert(decide(none, true, true, true) == "- set"); // no selection: the scope stays (there is no text to set)
 }
 
 //import dlangui.widgets.metadata;
