@@ -397,9 +397,13 @@ class Win32Window : Window {
     /// the client size setWindowState() is setting, (0, 0) if none: kept if the window gets to a monitor with
     /// another scale on the way (WM_GETDPISCALEDSIZE, #1163)
     private Point _requestedClientSize;
-    /// SCREEN_DPI when the client size last changed: the DPI the size is made for, while SCREEN_DPI may have changed
-    /// since for another window (#1163)
+    /// SCREEN_DPI when the client size last changed in the normal state: the DPI the size is made for, while
+    /// SCREEN_DPI may have changed since for another window (#1163, #1187)
     private int _sizeDpi;
+    /// setWindowState() is moving or resizing the window (#1187)
+    private bool _inSetWindowState;
+    /// the user is moving or sizing the window (between WM_ENTERSIZEMOVE and WM_EXITSIZEMOVE, #1187)
+    private bool _inSizeMove;
 
     HWND _hwnd;
     dstring _caption;
@@ -515,7 +519,8 @@ class Win32Window : Window {
             // the client size scaled; resizeWindow() adds the frame for the monitor's DPI
             RECT client;
             if (GetClientRect(_hwnd, &client))
-                resizeWindow(Point(client.right * SCREEN_DPI / oldDpi, client.bottom * SCREEN_DPI / oldDpi));
+                resizeWindow(Point(scaleForDpi(client.right, oldDpi, SCREEN_DPI),
+                    scaleForDpi(client.bottom, oldDpi, SCREEN_DPI)));
         }
 
         isInitialized = true;
@@ -589,11 +594,12 @@ class Win32Window : Window {
         return res;
     }
 
-    /// Limits an outer window rectangle (screen coordinates) to the work area of the monitor it is on
-    /// (the screen without the taskbar): shrinks it if it is bigger, then moves it inside (#806).
-    protected void fitIntoWorkArea(ref int x, ref int y, ref int w, ref int h) {
+    /// Limits an outer window rectangle (screen coordinates) to the work area of the monitor it is on, or of the
+    /// monitor of onMonitor if given (the screen without the taskbar): shrinks it if it is bigger, then moves it
+    /// inside (#806).
+    protected void fitIntoWorkArea(ref int x, ref int y, ref int w, ref int h, RECT* onMonitor = null) {
         RECT rc = RECT(x, y, x + w, y + h);
-        HMONITOR hMonitor = MonitorFromRect(&rc, MONITOR_DEFAULTTONEAREST);
+        HMONITOR hMonitor = MonitorFromRect(onMonitor ? onMonitor : &rc, MONITOR_DEFAULTTONEAREST);
         MONITORINFO monitor_info;
         monitor_info.cbSize = monitor_info.sizeof;
         if (!hMonitor || !GetMonitorInfo(hMonitor, &monitor_info))
@@ -640,32 +646,76 @@ class Win32Window : Window {
     }
 
     /// WM_DPICHANGED: the window moved to a monitor with another scale, or the scale changed (#1163). SCREEN_DPI
-    /// follows (it is global: with windows on monitors of different scales, the last change wins), and the window
-    /// takes the rectangle Windows suggests, with the size from dpiScaledSize()
+    /// follows (it is global: with windows on monitors of different scales, the last change wins). The window takes
+    /// the rectangle Windows suggests (while the user drags it, for a change of the system scale, for a snapped
+    /// window), with the size from dpiScaledSize() in it when the user drags it (WM_GETDPISCALEDSIZE). Windows sends
+    /// that message only for dragging, so when setWindowState() moves the window, or the content keeps its scale (an
+    /// override), the size from dpiScaledSize() is applied here, kept in the work area of the new monitor (#1187;
+    /// with an override this also applies to a snapped window, which then loses its snapped size). A fullscreen
+    /// window covers the new monitor. A maximized or minimized one keeps its size (the suggested rectangle is for a
+    /// restored window), only its frame is recomputed for the new DPI
     void onDpiChanged(uint dpi, RECT* suggested) {
+        bool keepsScale = overrideScreenDPI != 0 || !isSupportedScreenDpi(dpi);
         _platform.setSystemScreenDpi(dpi);
         scaleClientSizeLimitsToScreenDpi(); // not holding the window at its old size
-        if (suggested)
-            SetWindowPos(_hwnd, null, suggested.left, suggested.top, suggested.right - suggested.left,
-                suggested.bottom - suggested.top, SWP_NOZORDER | SWP_NOACTIVATE);
+        if (IsIconic(_hwnd) || IsZoomed(_hwnd)) {
+            SetWindowPos(_hwnd, null, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            return;
+        }
+        if (_flags & WindowFlag.Fullscreen) {
+            // the monitor the window moves to: the suggested rectangle is on it
+            MONITORINFO monitor;
+            monitor.cbSize = MONITORINFO.sizeof;
+            HMONITOR hMonitor = suggested ? MonitorFromRect(suggested, MONITOR_DEFAULTTONEAREST)
+                : MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+            if (hMonitor && GetMonitorInfo(hMonitor, &monitor)) {
+                RECT r = monitor.rcMonitor;
+                SetWindowPos(_hwnd, null, r.left, r.top, r.right - r.left, r.bottom - r.top,
+                    SWP_NOZORDER | SWP_NOACTIVATE);
+            }
+            return;
+        }
+        if (!suggested)
+            return;
+        int x = suggested.left;
+        int y = suggested.top;
+        int w = suggested.right - suggested.left;
+        int h = suggested.bottom - suggested.top;
+        SIZE size;
+        if ((_inSetWindowState || (!_inSizeMove && keepsScale)) && dpiScaledSize(dpi, size)) {
+            w = size.cx;
+            h = size.cy;
+            fitIntoWorkArea(x, y, w, h, suggested); // on the new monitor, not one the bigger size overlaps more
+        }
+        SetWindowPos(_hwnd, null, x, y, w, h, SWP_NOZORDER | SWP_NOACTIVATE);
+        _sizeDpi = SCREEN_DPI; // also if the size didn't change
     }
 
-    /// WM_GETDPISCALEDSIZE: the window size for newDpi (#1163), with the frame for newDpi: the client size
-    /// setWindowState() is setting, else the current one scaled from the SCREEN_DPI it was made for to the one after
-    /// this change (newDpi; SCREEN_DPI with an override or an unsupported DPI). So a dialog created on another monitor
-    /// and moved over its parent keeps its size, and after a change of the system scale each window is resized, also
-    /// when an earlier one changed SCREEN_DPI already. False for minimized and maximized windows: Windows sizes them
+    /// SCREEN_DPI after a change of the monitor DPI to dpi: dpi itself, or SCREEN_DPI with an override or an
+    /// unsupported dpi
+    private static int contentDpiAfterChange(uint dpi) {
+        return overrideScreenDPI == 0 && isSupportedScreenDpi(dpi) ? dpi : SCREEN_DPI;
+    }
+
+    /// The window size for newDpi (#1163, #1187), with the frame for newDpi: the client size setWindowState() is
+    /// setting, else the current one scaled from the SCREEN_DPI it was made for to the one after this change (newDpi;
+    /// SCREEN_DPI with an override or an unsupported DPI), so that a dialog created on another monitor and moved over
+    /// its parent keeps its size. Answers WM_GETDPISCALEDSIZE (sent while the user drags the window) and is applied
+    /// by onDpiChanged() during setWindowState() and with an override. False for minimized, maximized and fullscreen
+    /// windows
     bool dpiScaledSize(uint newDpi, ref SIZE size) {
-        if (IsIconic(_hwnd) || IsZoomed(_hwnd))
+        if (IsIconic(_hwnd) || IsZoomed(_hwnd) || (_flags & WindowFlag.Fullscreen))
             return false;
         Point client = _requestedClientSize;
         if (client == Point(0, 0)) {
             RECT rc;
             if (!GetClientRect(_hwnd, &rc))
                 return false;
-            int newScreenDpi = overrideScreenDPI == 0 && isSupportedScreenDpi(newDpi) ? newDpi : SCREEN_DPI;
+            int newScreenDpi = contentDpiAfterChange(newDpi);
             int sizeDpi = _sizeDpi > 0 ? _sizeDpi : SCREEN_DPI;
-            client = Point(rc.right * newScreenDpi / sizeDpi, rc.bottom * newScreenDpi / sizeDpi);
+            client = Point(scaleForDpi(rc.right, sizeDpi, newScreenDpi),
+                scaleForDpi(rc.bottom, sizeDpi, newScreenDpi));
         }
         RECT frame = windowFrame(_hwnd, newDpi);
         size.cx = client.x + frame.right - frame.left;
@@ -937,9 +987,12 @@ class Win32Window : Window {
                     flags |= SWP_NOSIZE;
                 // a move to a monitor with another scale on the way keeps the requested client size (#1163)
                 Point savedRequest = _requestedClientSize;
+                bool savedInSetWindowState = _inSetWindowState;
                 _requestedClientSize = sizeSet ? Point(w - frameWidth, h - frameHeight) : Point(0, 0);
+                _inSetWindowState = true;
                 SetWindowPos(_hwnd, NULL, x, y, w, h, flags);
                 _requestedClientSize = savedRequest;
+                _inSetWindowState = savedInSetWindowState;
                 // the rectangle reached, of a window in normal state (a minimized one has an iconic rectangle)
                 RECT reached;
                 RECT client;
@@ -2017,7 +2070,9 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         window.handleWindowStateChange(state,
                             Rect(pos.x, pos.y, dx, dy));
                         if (window.width != dx || window.height != dy) {
-                            window._sizeDpi = SCREEN_DPI; // the size is made for it (#1163)
+                            // the size is made for it (#1163); a maximized or minimized one's isn't (#1187)
+                            if (state == WindowState.normal || state == WindowState.hidden)
+                                window._sizeDpi = SCREEN_DPI;
                             window.onResize(dx, dy);
                             InvalidateRect(hwnd, null, FALSE);
                         }
@@ -2149,6 +2204,14 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DragFinish(hdrop);
             }
             return 0;
+        case WM_ENTERSIZEMOVE:
+            if (window !is null)
+                window._inSizeMove = true;
+            break;
+        case WM_EXITSIZEMOVE:
+            if (window !is null)
+                window._inSizeMove = false;
+            break;
         case WM_GETDPISCALEDSIZE:
             // before WM_DPICHANGED: the window size at the new DPI, if not scaled linearly (#1163)
             if (window !is null && lParam && window.dpiScaledSize(cast(uint)wParam, *cast(SIZE*)lParam))

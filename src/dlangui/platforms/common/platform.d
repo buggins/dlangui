@@ -752,8 +752,10 @@ class Window : CustomEventTarget {
         _clientSizeLimitsDpi = toDpi;
         if (fromDpi <= 0 || fromDpi == toDpi || (_minClientSize == Point(0, 0) && _maxClientSize == Point(0, 0)))
             return;
-        _minClientSize = Point(_minClientSize.x * toDpi / fromDpi, _minClientSize.y * toDpi / fromDpi);
-        _maxClientSize = Point(_maxClientSize.x * toDpi / fromDpi, _maxClientSize.y * toDpi / fromDpi);
+        _minClientSize = Point(scaleForDpi(_minClientSize.x, fromDpi, toDpi),
+            scaleForDpi(_minClientSize.y, fromDpi, toDpi));
+        _maxClientSize = Point(scaleForDpi(_maxClientSize.x, fromDpi, toDpi),
+            scaleForDpi(_maxClientSize.y, fromDpi, toDpi));
         applyClientSizeLimits();
     }
 

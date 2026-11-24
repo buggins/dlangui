@@ -380,6 +380,25 @@ bool isSupportedScreenDpi(int dpi) @safe pure nothrow @nogc {
     return dpi >= 72 && dpi <= 500;
 }
 
+/// value (a size in pixels) made for fromDpi, scaled to toDpi, rounded to the nearest pixel: sizes scaled back and
+/// forth don't drift by more than a pixel (#1187); value itself if fromDpi isn't positive
+int scaleForDpi(int value, int fromDpi, int toDpi) @safe pure nothrow @nogc {
+    if (fromDpi <= 0 || fromDpi == toDpi)
+        return value;
+    long scaled = cast(long)value * toDpi;
+    return cast(int)((scaled >= 0 ? scaled + fromDpi / 2 : scaled - fromDpi / 2) / fromDpi);
+}
+
+///
+unittest {
+    assert(scaleForDpi(1001, 96, 144) == 1502); // 1501.5
+    assert(scaleForDpi(1502, 144, 96) == 1001); // 1001.33: back where it was
+    assert(scaleForDpi(1000, 96, 120) == 1250);
+    assert(scaleForDpi(7, 96, 96) == 7);
+    assert(scaleForDpi(7, 0, 96) == 7);
+    assert(scaleForDpi(-3, 2, 3) == -5); // -4.5, rounded away from zero like positive values
+}
+
 /// call to disable automatic screen DPI detection, use provided one instead (pass 0 to disable override and use value detected by platform)
 @property void overrideScreenDPI(int dpi = BASE_DPI) @trusted nothrow @nogc {
     static if (WIDGET_STYLE_CONSOLE) {

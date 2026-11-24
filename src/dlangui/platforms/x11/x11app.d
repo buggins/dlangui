@@ -688,7 +688,7 @@ class X11Window : DWindow {
         int w = _windowRect.right > 0 ? _windowRect.right : _dx;
         int h = _windowRect.bottom > 0 ? _windowRect.bottom : _dy;
         // setWindowState() keeps a placed window inside the work area, moving it only if needed
-        resizeWindow(Point(max(w * newDpi / oldDpi, 1), max(h * newDpi / oldDpi, 1)));
+        resizeWindow(Point(max(scaleForDpi(w, oldDpi, newDpi), 1), max(scaleForDpi(h, oldDpi, newDpi), 1)));
     }
 
     /// centers the window on the work area of the screen (#580). Positions are the client area's (see #820),
@@ -2248,10 +2248,10 @@ class X11Platform : Platform {
         // also when a change came in the nested pumpEvents() of getClipboardText() and no event follows
         applyResourcesChange();
     }
-    /// desktop settings changed: applied in the outermost pumpEvents() only, and not while getClipboardText() waits
-    /// (also when it is called outside the message loop): not while code that pastes is running (#1162)
+    /// desktop settings changed: applied in the outermost pumpEvents() only, and not during getClipboardText() (also
+    /// when it is called outside the message loop): not while code that pastes is running (#1162, #1187)
     private void applyResourcesChange() {
-        if (_resourcesChanged && _pumpEventsDepth == 1 && !waitingForSelection && !allWindowsClosed()) {
+        if (_resourcesChanged && _pumpEventsDepth == 1 && !_readingClipboard && !allWindowsClosed()) {
             _resourcesChanged = false;
             x11OnResourcesChanged();
         }
@@ -2282,8 +2282,13 @@ class X11Platform : Platform {
     }
 
     protected bool waitingForSelection;
+    /// getClipboardText() is running, until it has read the selection: desktop settings changes wait (#1187)
+    private bool _readingClipboard;
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
+        bool wasReading = _readingClipboard;
+        _readingClipboard = true;
+        scope (exit) _readingClipboard = wasReading;
         const selectionType = mouseBuffer ? XA_PRIMARY : atom_CLIPBOARD;
         auto owner = XGetSelectionOwner(x11display, selectionType);
         if (owner == None) {
@@ -2481,6 +2486,11 @@ private const(char)[] x11ResourceManagerString() {
 private void x11OnResourcesChanged() {
     import dlangui.platforms.common.xftdpi : parseXftDpi;
     int xftDpi = parseXftDpi(x11ResourceManagerString());
+    // the property is rewritten for other settings too (cursor theme, xrdb -merge): only a new Xft.dpi counts, so
+    // that a SCREEN_DPI set otherwise stays (#1187)
+    if (xftDpi == x11XftDpi)
+        return;
+    x11XftDpi = xftDpi;
     Log.d("X11: RESOURCE_MANAGER changed, Xft.dpi=", xftDpi);
     int oldDpi = SCREEN_DPI;
     if (!Platform.instance.setSystemScreenDpi(xftDpi ? xftDpi : BASE_DPI))
@@ -2493,10 +2503,14 @@ private void x11OnResourcesChanged() {
     }
 }
 
+/// the last Xft.dpi read from RESOURCE_MANAGER, 0 if not set (#1187)
+private int x11XftDpi;
+
 /// set screen DPI from Xft.dpi desktop setting, if available (#706); otherwise keep default DPI
 private void x11UpdateScreenDpi() {
     import dlangui.platforms.common.xftdpi : parseXftDpi;
     int xftDpi = parseXftDpi(x11ResourceManagerString());
+    x11XftDpi = xftDpi;
     if (xftDpi) {
         SCREEN_DPI = xftDpi;
         Log.i("X11: screen DPI from Xft.dpi=", xftDpi, ", using ", systemScreenDPI);
