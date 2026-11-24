@@ -394,6 +394,12 @@ private enum uint WM_MOUSEHWHEEL_ = 0x020E;
 
 class Win32Window : Window {
     Win32Platform _platform;
+    /// the client size setWindowState() is setting, (0, 0) if none: kept if the window gets to a monitor with
+    /// another scale on the way (WM_GETDPISCALEDSIZE, #1163)
+    private Point _requestedClientSize;
+    /// SCREEN_DPI when the client size last changed: the DPI the size is made for, while SCREEN_DPI may have changed
+    /// since for another window (#1163)
+    private int _sizeDpi;
 
     HWND _hwnd;
     dstring _caption;
@@ -417,6 +423,7 @@ class Win32Window : Window {
         if (!_dy)
             _dy = 400 * SCREEN_DPI / BASE_DPI;
         _platform = platform;
+        _sizeDpi = SCREEN_DPI;
         _caption = windowCaption;
         _windowState = WindowState.hidden;
         _flags = flags;
@@ -497,6 +504,18 @@ class Win32Window : Window {
             // initializing GL support without it crashed (#862); if it fails, the window paints with GDI
             if (useOpengl)
                 useOpengl = sharedGLContext.initGLBindings(hDC);
+        }
+        // the first window created on a monitor with another scale than the primary one (#1163): the scale of that
+        // monitor, and a window size for it; later windows (e.g. dialogs, moved over their parent afterwards) don't
+        // rescale the others, they follow WM_DPICHANGED
+        uint dpi = windowDpi(_hwnd);
+        int oldDpi = SCREEN_DPI;
+        if (dpi && platform._windowMap.length == 1 && !_w32parent && platform.setSystemScreenDpi(dpi)
+                && !(flags & WindowFlag.Fullscreen)) {
+            // the client size scaled; resizeWindow() adds the frame for the monitor's DPI
+            RECT client;
+            if (GetClientRect(_hwnd, &client))
+                resizeWindow(Point(client.right * SCREEN_DPI / oldDpi, client.bottom * SCREEN_DPI / oldDpi));
         }
 
         isInitialized = true;
@@ -620,13 +639,46 @@ class Win32Window : Window {
             Rect(work.left, work.top, work.right, work.bottom)));
     }
 
+    /// WM_DPICHANGED: the window moved to a monitor with another scale, or the scale changed (#1163). SCREEN_DPI
+    /// follows (it is global: with windows on monitors of different scales, the last change wins), and the window
+    /// takes the rectangle Windows suggests, with the size from dpiScaledSize()
+    void onDpiChanged(uint dpi, RECT* suggested) {
+        _platform.setSystemScreenDpi(dpi);
+        scaleClientSizeLimitsToScreenDpi(); // not holding the window at its old size
+        if (suggested)
+            SetWindowPos(_hwnd, null, suggested.left, suggested.top, suggested.right - suggested.left,
+                suggested.bottom - suggested.top, SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+
+    /// WM_GETDPISCALEDSIZE: the window size for newDpi (#1163), with the frame for newDpi: the client size
+    /// setWindowState() is setting, else the current one scaled from the SCREEN_DPI it was made for to the one after
+    /// this change (newDpi; SCREEN_DPI with an override or an unsupported DPI). So a dialog created on another monitor
+    /// and moved over its parent keeps its size, and after a change of the system scale each window is resized, also
+    /// when an earlier one changed SCREEN_DPI already. False for minimized and maximized windows: Windows sizes them
+    bool dpiScaledSize(uint newDpi, ref SIZE size) {
+        if (IsIconic(_hwnd) || IsZoomed(_hwnd))
+            return false;
+        Point client = _requestedClientSize;
+        if (client == Point(0, 0)) {
+            RECT rc;
+            if (!GetClientRect(_hwnd, &rc))
+                return false;
+            int newScreenDpi = overrideScreenDPI == 0 && isSupportedScreenDpi(newDpi) ? newDpi : SCREEN_DPI;
+            int sizeDpi = _sizeDpi > 0 ? _sizeDpi : SCREEN_DPI;
+            client = Point(rc.right * newScreenDpi / sizeDpi, rc.bottom * newScreenDpi / sizeDpi);
+        }
+        RECT frame = windowFrame(_hwnd, newDpi);
+        size.cx = client.x + frame.right - frame.left;
+        size.cy = client.y + frame.bottom - frame.top;
+        return true;
+    }
+
     /// WM_GETMINMAXINFO: minClientSize and maxClientSize as outer sizes (#455); false if there are no limits.
     /// The system applies them to the user's resizing, to SetWindowPos and to the maximized size.
     bool getMinMaxInfo(MINMAXINFO* info) {
         if (!_hwnd || (_minClientSize == Point(0, 0) && _maxClientSize == Point(0, 0)))
             return false;
-        RECT frame = RECT(0, 0, 0, 0);
-        AdjustWindowRectEx(&frame, cast(DWORD)GetWindowLongW(_hwnd, GWL_STYLE), FALSE, cast(DWORD)GetWindowLongW(_hwnd, GWL_EXSTYLE));
+        RECT frame = windowFrame(_hwnd);
         int frameWidth = frame.right - frame.left;
         int frameHeight = frame.bottom - frame.top;
         // keep the system's own limits where they are stricter (the smallest size with the caption buttons)
@@ -867,8 +919,7 @@ class Win32Window : Window {
                 // the size is the client size; the outer size adds the frame and the caption
                 // of this window's style (dialog frame metrics are too thin for a resizable window,
                 // and a restored window got smaller on every start)
-                RECT frame = RECT(0, 0, 0, 0);
-                AdjustWindowRectEx(&frame, cast(DWORD)GetWindowLongW(_hwnd, GWL_STYLE), FALSE, cast(DWORD)GetWindowLongW(_hwnd, GWL_EXSTYLE));
+                RECT frame = windowFrame(_hwnd);
                 int frameWidth = frame.right - frame.left;
                 int frameHeight = frame.bottom - frame.top;
                 RECT current;
@@ -884,8 +935,19 @@ class Win32Window : Window {
                     flags |= SWP_NOMOVE;
                 if (!sizeSet && w == current.right - current.left && h == current.bottom - current.top)
                     flags |= SWP_NOSIZE;
+                // a move to a monitor with another scale on the way keeps the requested client size (#1163)
+                Point savedRequest = _requestedClientSize;
+                _requestedClientSize = sizeSet ? Point(w - frameWidth, h - frameHeight) : Point(0, 0);
                 SetWindowPos(_hwnd, NULL, x, y, w, h, flags);
-                newWindowRect = Rect(x, y, sizeSet ? w - frameWidth : int.min, sizeSet ? h - frameHeight : int.min);
+                _requestedClientSize = savedRequest;
+                // the rectangle reached, of a window in normal state (a minimized one has an iconic rectangle)
+                RECT reached;
+                RECT client;
+                if (!IsIconic(_hwnd) && !IsZoomed(_hwnd) && GetWindowRect(_hwnd, &reached)
+                        && GetClientRect(_hwnd, &client))
+                    newWindowRect = Rect(reached.left, reached.top, client.right, client.bottom);
+                else
+                    newWindowRect = Rect(x, y, sizeSet ? w - frameWidth : int.min, sizeSet ? h - frameHeight : int.min);
                 rectChanged = true;
                 res = true;
             }
@@ -1569,6 +1631,63 @@ class Win32Platform : Platform {
     }
 }
 
+/// sent to a per-monitor DPI aware window when its DPI changes (winuser.h; not in druntime)
+private enum UINT WM_DPICHANGED = 0x02E0;
+/// ditto, before WM_DPICHANGED: asks the window for its size at the new DPI (per monitor v2, Windows 10 1703+)
+private enum UINT WM_GETDPISCALEDSIZE = 0x02E4;
+
+/// declares the process DPI aware, so that Windows doesn't stretch its windows as bitmaps: per monitor where
+/// available (Windows 10 1703+), getting WM_DPICHANGED when a window moves to a monitor with another scale or the scale
+/// changes (#1163), else system DPI aware
+private void setProcessDpiAwareness() {
+    HMODULE user32 = LoadLibraryA("user32.dll");
+    if (!user32)
+        return;
+    alias SetProcessDpiAwarenessContextFunc = extern(Windows) BOOL function(HANDLE);
+    auto setContext = cast(SetProcessDpiAwarenessContextFunc)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
+    enum HANDLE DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = cast(HANDLE)-4;
+    if (setContext && setContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+        return;
+    alias SetProcessDPIAwareFunc = extern(Windows) BOOL function();
+    auto setAware = cast(SetProcessDPIAwareFunc)GetProcAddress(user32, "SetProcessDPIAware");
+    if (setAware)
+        setAware();
+}
+
+/// the frame and caption around a client area of window hwnd, for dpi or else the DPI of its monitor (#1163):
+/// AdjustWindowRectExForDpi where available (Windows 10 1607+), else AdjustWindowRectEx (system DPI metrics)
+private RECT windowFrame(HWND hwnd, uint dpi = 0) {
+    alias AdjustWindowRectExForDpiFunc = extern(Windows) BOOL function(RECT*, DWORD, BOOL, DWORD, UINT);
+    static AdjustWindowRectExForDpiFunc adjustForDpi;
+    static bool loaded;
+    if (!loaded) {
+        loaded = true;
+        if (HMODULE user32 = GetModuleHandleA("user32.dll"))
+            adjustForDpi = cast(AdjustWindowRectExForDpiFunc)GetProcAddress(user32, "AdjustWindowRectExForDpi");
+    }
+    RECT frame = RECT(0, 0, 0, 0);
+    DWORD style = cast(DWORD)GetWindowLongW(hwnd, GWL_STYLE);
+    DWORD exStyle = cast(DWORD)GetWindowLongW(hwnd, GWL_EXSTYLE);
+    if (!dpi)
+        dpi = windowDpi(hwnd);
+    if (!adjustForDpi || !dpi || !adjustForDpi(&frame, style, FALSE, exStyle, dpi))
+        AdjustWindowRectEx(&frame, style, FALSE, exStyle);
+    return frame;
+}
+
+/// DPI of the monitor the window is on (GetDpiForWindow, Windows 10 1607+), 0 if not available
+private uint windowDpi(HWND hwnd) {
+    alias GetDpiForWindowFunc = extern(Windows) UINT function(HWND);
+    static GetDpiForWindowFunc getDpi;
+    static bool loaded;
+    if (!loaded) {
+        loaded = true;
+        if (HMODULE user32 = GetModuleHandleA("user32.dll"))
+            getDpi = cast(GetDpiForWindowFunc)GetProcAddress(user32, "GetDpiForWindow");
+    }
+    return getDpi ? getDpi(hwnd) : 0;
+}
+
 // catches Throwable to show uncaught errors in a message box (GUI apps have no console)
 @("nolint(dscanner.suspicious.catch_em_all)")
 extern(Windows)
@@ -1579,12 +1698,7 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
     try {
         Runtime.initialize();
 
-        // call SetProcessDPIAware to support HI DPI - fix by Kapps
-        auto ulib = LoadLibraryA("user32.dll");
-        alias SetProcessDPIAwareFunc = int function();
-        auto setDpiFunc = cast(SetProcessDPIAwareFunc)GetProcAddress(ulib, "SetProcessDPIAware");
-        if(setDpiFunc) // Should never fail, but just in case...
-            setDpiFunc();
+        setProcessDpiAwareness();
 
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
         // TODO: fix hanging on multithreading app
@@ -1608,12 +1722,7 @@ int DLANGUIWinMainProfile(string[] args)
     int result;
 
     try {
-        // call SetProcessDPIAware to support HI DPI - fix by Kapps
-        auto ulib = LoadLibraryA("user32.dll");
-        alias SetProcessDPIAwareFunc = int function();
-        auto setDpiFunc = cast(SetProcessDPIAwareFunc)GetProcAddress(ulib, "SetProcessDPIAware");
-        if(setDpiFunc) // Should never fail, but just in case...
-            setDpiFunc();
+        setProcessDpiAwareness();
 
         result = myWinMainProfile(args);
     }
@@ -1908,6 +2017,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         window.handleWindowStateChange(state,
                             Rect(pos.x, pos.y, dx, dy));
                         if (window.width != dx || window.height != dy) {
+                            window._sizeDpi = SCREEN_DPI; // the size is made for it (#1163)
                             window.onResize(dx, dy);
                             InvalidateRect(hwnd, null, FALSE);
                         }
@@ -2038,6 +2148,19 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     window.handleDroppedFiles(files);
                 DragFinish(hdrop);
             }
+            return 0;
+        case WM_GETDPISCALEDSIZE:
+            // before WM_DPICHANGED: the window size at the new DPI, if not scaled linearly (#1163)
+            if (window !is null && lParam && window.dpiScaledSize(cast(uint)wParam, *cast(SIZE*)lParam))
+                return TRUE;
+            return FALSE;
+        case WM_DPICHANGED:
+            // the window moved to a monitor with another scale, or the scale changed (#1163)
+            if (window !is null)
+                window.onDpiChanged(HIWORD(wParam), cast(RECT*)lParam);
+            else if (RECT* suggested = cast(RECT*)lParam) // the rectangle Windows suggests for the new DPI
+                SetWindowPos(hwnd, null, suggested.left, suggested.top, suggested.right - suggested.left,
+                    suggested.bottom - suggested.top, SWP_NOZORDER | SWP_NOACTIVATE);
             return 0;
         case WM_CLOSE:
             if (window !is null) {

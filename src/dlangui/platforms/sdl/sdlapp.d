@@ -387,15 +387,8 @@ class SDLWindow : Window {
             // HiDPI scaling (e.g. macOS Retina): drawable is bigger than the window
             if (drawableW > width && drawableH > height && width > 0 && height > 0)
                 dpi = BASE_DPI * drawableW / width;
-            int oldDpi = SCREEN_DPI;
-            SCREEN_DPI = dpi;
-            if (SCREEN_DPI == oldDpi)
-                return false;
-            Log.i("SCREEN_DPI is changed from ", oldDpi, " to ", SCREEN_DPI);
-            // reload fonts and images cached for the old DPI
-            _platform.onThemeChanged();
-            _platform.requestLayout();
-            return true;
+            // reloads fonts and images cached for the old DPI
+            return _platform.setSystemScreenDpi(dpi);
         }
     }
 

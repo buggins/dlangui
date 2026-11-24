@@ -685,6 +685,20 @@ class X11Window : DWindow {
         return res;
     }
 
+    /// the screen DPI changed from oldDpi to newDpi while the app runs: the window keeps its size in physical terms,
+    /// as on Win32, though not beyond the work area (#1162); maximized, minimized and fullscreen windows stay
+    void scaleForDpiChange(int oldDpi, int newDpi) {
+        import std.algorithm : max;
+        scaleClientSizeLimitsToScreenDpi(); // also for maximized windows: for the restored size
+        if (notInNormalState() || oldDpi <= 0 || newDpi <= 0)
+            return;
+        // the size of the last configure event, which may be newer than the last onResize()
+        int w = _windowRect.right > 0 ? _windowRect.right : _dx;
+        int h = _windowRect.bottom > 0 ? _windowRect.bottom : _dy;
+        // setWindowState() keeps a placed window inside the work area, moving it only if needed
+        resizeWindow(Point(max(w * newDpi / oldDpi, 1), max(h * newDpi / oldDpi, 1)));
+    }
+
     /// centers the window on the work area of the screen (#580). Positions are the client area's (see #820),
     /// the frame is added around it.
     override void centerOnScreen() {
@@ -1908,6 +1922,13 @@ class X11Platform : Platform {
                 }
                 break;
             case PropertyNotify:
+                if (event.xproperty.window == RootWindow(x11display, 0)) {
+                    // desktop settings such as Xft.dpi (#1162): applied by pumpEvents(), not in the middle of
+                    // waiting for the clipboard
+                    if (event.xproperty.atom == XA_RESOURCE_MANAGER)
+                        _resourcesChanged = true;
+                    break;
+                }
                 if (event.xproperty.atom == atom_NET_WM_STATE && event.xproperty.state == PropertyNewValue) {
                     X11Window w = findWindow(event.xproperty.window);
                     if (w) {
@@ -2229,6 +2250,8 @@ class X11Platform : Platform {
 
     protected void pumpEvents()
     {
+        _pumpEventsDepth++;
+        scope (exit) _pumpEventsDepth--;
         XFlush(x11display);
         // Note:  only events we set the mask for are detected!
         while(numberOfPendingEvents())
@@ -2238,8 +2261,23 @@ class X11Platform : Platform {
             XEvent event;        /* the XEvent declaration !!! */
             XNextEvent(x11display, &event);
             processXEvent(event);
+            applyResourcesChange();
+        }
+        // also when a change came in the nested pumpEvents() of getClipboardText() and no event follows
+        applyResourcesChange();
+    }
+    /// desktop settings changed: applied in the outermost pumpEvents() only, and not while getClipboardText() waits
+    /// (also when it is called outside the message loop): not while code that pastes is running (#1162)
+    private void applyResourcesChange() {
+        if (_resourcesChanged && _pumpEventsDepth == 1 && !waitingForSelection && !allWindowsClosed()) {
+            _resourcesChanged = false;
+            x11OnResourcesChanged();
         }
     }
+    /// nesting of pumpEvents(): getClipboardText() calls it while waiting
+    private int _pumpEventsDepth;
+    /// RESOURCE_MANAGER (desktop settings such as Xft.dpi) changed, not handled yet
+    private bool _resourcesChanged;
 
     /**
      * Starts application message loop.
@@ -2443,11 +2481,44 @@ class TimerThread : Thread {
 }
 
 
+/// the X resource manager string (desktop settings such as Xft.dpi) from the RESOURCE_MANAGER property of the root
+/// window of screen 0, as Xlib reads it (other screens don't have it), null if it is not set; read again each time,
+/// while XResourceManagerString() keeps the value from when the display was opened (#1162)
+private const(char)[] x11ResourceManagerString() {
+    Atom type;
+    int format;
+    c_ulong length, remaining;
+    ubyte* data;
+    if (XGetWindowProperty(x11display, RootWindow(x11display, 0), XA_RESOURCE_MANAGER, 0, int.max / 4, False,
+            XA_STRING, &type, &format, &length, &remaining, &data) != 0 || !data)
+        return null;
+    scope (exit) XFree(data);
+    if (type != XA_STRING || format != 8)
+        return null;
+    return (cast(char*)data)[0 .. length].dup;
+}
+
+/// the desktop settings changed while the app runs: a new Xft.dpi rescales the UI (#1162); without Xft.dpi, the
+/// default DPI, as at startup
+private void x11OnResourcesChanged() {
+    import dlangui.platforms.common.xftdpi : parseXftDpi;
+    int xftDpi = parseXftDpi(x11ResourceManagerString());
+    Log.d("X11: RESOURCE_MANAGER changed, Xft.dpi=", xftDpi);
+    int oldDpi = SCREEN_DPI;
+    if (!Platform.instance.setSystemScreenDpi(xftDpi ? xftDpi : BASE_DPI))
+        return;
+    if (auto x11platform = cast(X11Platform)Platform.instance) {
+        // a copy: resizing runs layout and application code, which may create or close windows
+        foreach (w; x11platform._windowMap.values)
+            if (x11platform._windowMap.get(w._win, null) is w)
+                w.scaleForDpiChange(oldDpi, SCREEN_DPI);
+    }
+}
+
 /// set screen DPI from Xft.dpi desktop setting, if available (#706); otherwise keep default DPI
 private void x11UpdateScreenDpi() {
     import dlangui.platforms.common.xftdpi : parseXftDpi;
-    char* resources = XResourceManagerString(x11display);
-    int xftDpi = resources ? parseXftDpi(fromStringz(resources)) : 0;
+    int xftDpi = parseXftDpi(x11ResourceManagerString());
     if (xftDpi) {
         SCREEN_DPI = xftDpi;
         Log.i("X11: screen DPI from Xft.dpi=", xftDpi, ", using ", systemScreenDPI);
@@ -2485,6 +2556,11 @@ extern(C) int DLANGUImain(string[] args)
         Log.e("Cannot open X11 display");
         return 1;
     }
+    // PropertyNotify for the root window of screen 0, where RESOURCE_MANAGER is: desktop settings such as Xft.dpi
+    // changed (#1162); before reading them, so that no change is missed. It comes for every root property change
+    // (window managers change some on each focus change; the clipboard buffer of setClipboardText() is there too),
+    // the others are skipped in processXEvent()
+    XSelectInput(x11display, RootWindow(x11display, 0), PropertyChangeMask);
     x11UpdateScreenDpi();
     x11display2 = XOpenDisplay(null);
     if (!x11display2) {
