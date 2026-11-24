@@ -290,6 +290,12 @@ class X11Window : DWindow {
 
     int _cachedWidth, _cachedHeight;
     private bool _mapped;
+    /// hidden by hideWindow() until mapped again: _NET_WM_STATE changes are ignored (some window managers write an
+    /// empty list or delete it when a window is withdrawn, events queued before can still say iconified) (#1190)
+    private bool _withdrawn;
+    /// mapped now (MapNotify until UnmapNotify): _NET_WM_STATE changes of a window the window manager unmapped
+    /// (e.g. on another desktop) don't make it normal or maximized (#1190)
+    private bool _viewable;
     // #820: correction of a position set by the application
     private bool _positionCheckPending;
     private Point _positionWanted;
@@ -524,6 +530,8 @@ class X11Window : DWindow {
             _positionCheckPending = false;
             return;
         }
+        if (wmStateNotNormal())
+            return; // a maximized window isn't moved; the check ends at its deadline
         if (abs(dx) > 100 || abs(dy) > 100)
             return; // not placed yet (some window managers map the window off-screen first)
         if (_positionCorrections > 0 && pos == _positionCorrected)
@@ -602,6 +610,46 @@ class X11Window : DWindow {
         }
         XSetWMNormalHints(x11display, _win, &sizeHints);
         XFlush(x11display);
+    }
+
+    /// the state the window manager set in _NET_WM_STATE: minimized, fullscreen, maximized or normal (also when
+    /// the property is not set: no window manager, or none of these states); unspecified if it can't be read;
+    /// ignoreHidden: the state without _NET_WM_STATE_HIDDEN (of a mapped window, which isn't iconified)
+    protected final WindowState wmState(bool ignoreHidden = false) {
+        Atom type;
+        int format;
+        ubyte* properties;
+        c_ulong count, overflow;
+        if (XGetWindowProperty(x11display, _win, atom_NET_WM_STATE, 0, int.max / 4, False, XA_ATOM, &type, &format,
+                &count, &overflow, &properties) != 0)
+            return WindowState.unspecified;
+        scope (exit) if (properties) XFree(properties);
+        bool minimized, maximizedH, maximizedV, fullscreen;
+        if (type == XA_ATOM && format == 32 && properties) {
+            foreach (atom; (cast(c_ulong*)properties)[0 .. count]) { // format 32 properties are arrays of C longs
+                if (atom == atom_NET_WM_STATE_HIDDEN)
+                    minimized = !ignoreHidden;
+                else if (atom == atom_NET_WM_STATE_FULLSCREEN)
+                    fullscreen = true; // reported since #1190: setWindowState() doesn't record it
+                else if (atom == atom_NET_WM_STATE_MAXIMIZED_HORZ)
+                    maximizedH = true;
+                else if (atom == atom_NET_WM_STATE_MAXIMIZED_VERT)
+                    maximizedV = true;
+            }
+        }
+        if (minimized)
+            return WindowState.minimized;
+        if (fullscreen)
+            return WindowState.fullscreen;
+        return maximizedH && maximizedV ? WindowState.maximized : WindowState.normal;
+    }
+
+    /// true if the window manager set a maximized, fullscreen or minimized state: read from the property, as
+    /// the configure events of a state change can come before its PropertyNotify (openbox), and the state
+    /// requested isn't recorded (#1190); a refused request leaves the window normal
+    private bool wmStateNotNormal() {
+        WindowState state = wmState();
+        return state != WindowState.normal && state != WindowState.unspecified;
     }
 
     protected final void changeWindowState(int action, Atom firstProperty, Atom secondProperty = None) nothrow
@@ -749,6 +797,10 @@ class X11Window : DWindow {
             _fitAfterPlacement = false;
             return;
         }
+        if (wmStateNotNormal()) {
+            _fitAfterPlacement = false;
+            return;
+        }
         int w = _windowRect.right, h = _windowRect.bottom;
         Point pos;
         if (w <= 0 || h <= 0 || !placedClientPosition(w, h, pos))
@@ -786,27 +838,54 @@ class X11Window : DWindow {
             return false;
         }
         bool result = false;
+        // maximized, minimized, fullscreen and normal are states a window manager sets: they are requested only when
+        // one runs (else false), and not recorded here: the window manager reports them (PropertyNotify of
+        // _NET_WM_STATE), when and if they change (#1190)
+        WindowState recordedState = newState;
         switch(newState) {
             case WindowState.maximized:
-                changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
-                result = true;
-                break;
             case WindowState.minimized:
-                if (XIconifyWindow(x11display, _win, x11screen))
+            case WindowState.normal:
+            case WindowState.fullscreen:
+                // a window not shown yet will be shown normal (show() applies the client size limits to it then)
+                recordedState = newState == WindowState.normal && !_mapped ? WindowState.normal
+                    : WindowState.unspecified;
+                if (newState == WindowState.normal && _mapped
+                        && (_withdrawn || _windowState == WindowState.minimized)) {
+                    // maps a window hidden by hideWindow() or iconified (ICCCM; not one the window manager unmapped
+                    // on another desktop: that could switch desktops); needs no window manager, MapNotify reports
+                    // the state
+                    XMapWindow(x11display, _win);
                     result = true;
+                }
+                if (!x11WindowManagerRunning()) {
+                    // nothing to do for a shown normal window
+                    result = result || (newState == WindowState.normal && _mapped
+                        && _windowState == WindowState.normal);
+                    break;
+                }
+                result = true;
+                if (newState == WindowState.maximized) {
+                    changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MAXIMIZED_HORZ,
+                        atom_NET_WM_STATE_MAXIMIZED_VERT);
+                } else if (newState == WindowState.minimized) {
+                    result = XIconifyWindow(x11display, _win, x11screen) != 0;
+                } else if (newState == WindowState.normal) {
+                    changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_MAXIMIZED_HORZ,
+                        atom_NET_WM_STATE_MAXIMIZED_VERT);
+                    changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_FULLSCREEN);
+                    // EWMH window managers may ignore it, but some (openbox) restore an iconified window: also one
+                    // whose iconify request they haven't handled yet, which the mapping above doesn't (#1190)
+                    changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_HIDDEN);
+                } else {
+                    changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
+                }
                 break;
             case WindowState.hidden:
-                XUnmapWindow(x11display, _win);
-                result = true;
-                break;
-            case WindowState.normal:
-                changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
-                changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_HIDDEN);
-                changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_FULLSCREEN);
-                result = true;
-                break;
-            case WindowState.fullscreen:
-                changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
+                // withdraws an iconified window too (ICCCM: its own unmap is a no-op, the window manager needs the
+                // synthetic UnmapNotify), as XUnmapWindow alone left it on the taskbar (#1190)
+                XWithdrawWindow(x11display, _win, x11screen);
+                _withdrawn = true;
                 result = true;
                 break;
             default:
@@ -881,12 +960,13 @@ class X11Window : DWindow {
         //needed here to make _windowRect and _windowState valid
         //example: change size by resizeWindow() and make some calculations using windowRect
         if (rectChanged) {
-            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
+            handleWindowStateChange(recordedState,
+                Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
                 newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right,
                 newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
         }
         else
-            handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
+            handleWindowStateChange(recordedState, RECT_VALUE_IS_NOT_SET);
 
 
         return result;
@@ -1911,41 +1991,19 @@ class X11Platform : Platform {
                         _resourcesChanged = true;
                     break;
                 }
-                if (event.xproperty.atom == atom_NET_WM_STATE && event.xproperty.state == PropertyNewValue) {
+                if (event.xproperty.atom == atom_NET_WM_STATE && event.xproperty.state == PropertyDelete) {
+                    // the window manager removed all states (#1190)
                     X11Window w = findWindow(event.xproperty.window);
-                    if (w) {
-                        Atom type;
-                        int format;
-                        ubyte* properties;
-                        c_ulong dataLength, overflow;
-                        if (XGetWindowProperty(x11display, event.xproperty.window, atom_NET_WM_STATE,
-                            0, int.max/4, False, AnyPropertyType, &type, &format, &dataLength, &overflow, &properties) == 0) {
-                            scope(exit) XFree(properties);
-                            // check for minimized
-                            bool minimized = false;
-                            for (int i=0; i < dataLength ; i++) {
-                                if (((cast(c_ulong*)properties)[i]) == atom_NET_WM_STATE_HIDDEN) {
-                                    w.handleWindowStateChange(WindowState.minimized);
-                                    minimized = true;
-                                }
-                            }
-                            if (!minimized) {
-                                bool maximizedH = false;
-                                bool maximizedV = false;
-                                for (int i=0; i < dataLength ; i++) {
-                                    if (((cast(c_ulong*)properties)[i]) == atom_NET_WM_STATE_MAXIMIZED_VERT)
-                                        maximizedV = true;
-                                    if (((cast(c_ulong*)properties)[i]) == atom_NET_WM_STATE_MAXIMIZED_HORZ)
-                                        maximizedH = true;
-                                }
-
-                                if (maximizedV && maximizedH)
-                                    w.handleWindowStateChange(WindowState.maximized);
-                                else
-                                    w.handleWindowStateChange(WindowState.normal);
-
-                            }
-                        }
+                    if (w && !w._withdrawn && w._viewable)
+                        w.handleWindowStateChange(WindowState.normal);
+                } else if (event.xproperty.atom == atom_NET_WM_STATE && event.xproperty.state == PropertyNewValue) {
+                    X11Window w = findWindow(event.xproperty.window);
+                    // an unmapped window becomes only minimized: an iconified window can be unmapped (hidden)
+                    // before _NET_WM_STATE_HIDDEN is set
+                    if (w && !w._withdrawn) {
+                        WindowState state = w.wmState();
+                        if (w._viewable || state == WindowState.minimized)
+                            w.handleWindowStateChange(state);
                     }
                 }
                 break;
@@ -1958,12 +2016,22 @@ class X11Platform : Platform {
                             w._positionCheckDeadline = MonoTime.currTime + 2.seconds;
                         w._fitAfterPlacementDeadline = MonoTime.currTime + 2.seconds;
                     }
-                    w.handleWindowStateChange(WindowState.normal);
+                    w._withdrawn = false;
+                    w._viewable = true;
+                    // normal without a window manager; a window restored from the taskbar can be maximized (#1190);
+                    // a mapped window isn't iconified, though the window manager may remove HIDDEN only after mapping
+                    WindowState state = w.wmState(true);
+                    if (state == WindowState.unspecified)
+                        state = WindowState.normal;
+                    w.handleWindowStateChange(state);
                 }
                 break;
             case UnmapNotify:
                 X11Window w = findWindow(event.xunmap.window);
-                if (w) {
+                if (w)
+                    w._viewable = false;
+                // an iconified window is unmapped too: it stays minimized (_NET_WM_STATE_HIDDEN, #1190)
+                if (w && w.windowState != WindowState.minimized) {
                     w.handleWindowStateChange(WindowState.hidden);
                 }
                 break;
@@ -2463,6 +2531,14 @@ class TimerThread : Thread {
     }
 }
 
+
+/// true if a window manager runs (#1190): it selects SubstructureRedirectMask on the root window (only one client
+/// can); window managers without EWMH (ICCCM only, e.g. twm) are found too
+private bool x11WindowManagerRunning() {
+    XWindowAttributes attributes;
+    return XGetWindowAttributes(x11display, RootWindow(x11display, x11screen), &attributes) != 0
+        && (attributes.all_event_masks & SubstructureRedirectMask) != 0;
+}
 
 /// the X resource manager string (desktop settings such as Xft.dpi) from the RESOURCE_MANAGER property of the root
 /// window of screen 0, as Xlib reads it (other screens don't have it), null if it is not set; read again each time,

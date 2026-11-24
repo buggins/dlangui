@@ -485,8 +485,16 @@ class Window : CustomEventTarget {
              || state == WindowState.minimized
              || state == WindowState.maximized
              || state == WindowState.normal)) {
-             setWindowState(state, false, rect);
-             return true;
+            if (state == WindowState.minimized || state == WindowState.fullscreen) {
+                // the rect is the normal window's, and backends apply a rect only to a normal window: restore it
+                // first; a window closed while minimized starts normal, not minimized (#1190)
+                setWindowState(WindowState.normal, false, rect);
+                if (state == WindowState.fullscreen)
+                    setWindowState(state);
+            } else {
+                setWindowState(state, false, rect);
+            }
+            return true;
         }
         return false;
     }
