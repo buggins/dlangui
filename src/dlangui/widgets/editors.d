@@ -1472,13 +1472,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return _textToHighlight;
     }
     /// set text to highlight -- e.g. for search
+    /// (a match is marked as the current one only on the caret line, or when it is selected)
     void setTextToHighlight(dstring pattern, uint textToHighlightOptions) {
         setTextToHighlight(pattern, textToHighlightOptions, WHOLE_TEXT_RANGE, false);
+        _textToHighlightFindNext = false;
     }
-    /// sets the text pattern to highlight: only its matches inside scope_, a range of the current text (other than
-    /// WHOLE_TEXT_RANGE, nothing is highlighted after the text changes, until it is set again) (#1166); back: the
-    /// current match is the one Find prev takes, else the one Find next takes (#1165)
+    /// sets the text pattern to highlight for a search with Find next, as in the Find panel: the current match, the
+    /// selected match (the one Replace takes), else the one Find next takes, is marked wherever it is (#1177). Only
+    /// matches inside scope_ are highlighted, a range of the current text (other than WHOLE_TEXT_RANGE, nothing is
+    /// highlighted after the text changes, until it is set again) (#1166); back: the current match is the one Find
+    /// prev takes, else the one Find next takes (#1165)
     void setTextToHighlight(dstring pattern, uint textToHighlightOptions, TextRange scope_, bool back) {
+        _textToHighlightFindNext = true;
         _textToHighlight = pattern;
         _textToHighlightOptions = textToHighlightOptions;
         _textToHighlightScope = scope_;
@@ -1491,6 +1496,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected bool _textToHighlightScoped;
     protected ulong _textToHighlightRevision;
     protected bool _textToHighlightBack;
+    protected bool _textToHighlightFindNext;
 
     /// Used instead of using clientToTextPos for mouse input when in word wrap mode
     protected TextPosition wordWrapMouseOffset(int x, int y) {
@@ -3506,10 +3512,184 @@ class EditBox : EditWidgetBase {
             }
             back = _textToHighlightBack;
         }
-        forEachLineMatch(_content.line(lineIndex), lineIndex, pattern, caseSensitive, wholeWords, scope_,
-            _selectionRange, caretPos, back, (TextRange r, bool current) {
-                highlightLineRange(buf, lineRect, current ? _searchHighlightColorCurrent : _searchHighlightColorOther, r);
+        // the current match may be on another line (#1177); a selected word is the current match of its own
+        TextRange current = _textToHighlight.length
+            ? currentSearchMatch(pattern, options, scope_, back, _textToHighlightFindNext) : _selectionRange;
+        forEachLineMatch(_content.line(lineIndex), lineIndex, pattern, caseSensitive, wholeWords, scope_, current,
+            (TextRange r, bool isCurrent) {
+                highlightLineRange(buf, lineRect, isCurrent ? _searchHighlightColorCurrent : _searchHighlightColorOther,
+                    r);
             });
+    }
+
+    // the current match of the highlighted pattern, cached (#1177): searched again only when something it depends on
+    // changes, not on each repaint
+    private static struct CurrentMatchKey {
+        ulong revision;
+        dstring pattern;
+        uint options;
+        TextRange scope_;
+        TextRange selection;
+        TextPosition caret;
+        bool back;
+        bool anyLine;
+    }
+    private CurrentMatchKey _currentMatchKey;
+    private TextRange _currentMatch;
+    private bool _currentMatchValid;
+    // all matches, when the search outward from the caret gives up: then caret moves pick from them (#1177)
+    private static struct MatchesKey {
+        ulong revision;
+        dstring pattern;
+        uint options;
+        TextRange scope_;
+    }
+    private MatchesKey _matchesKey;
+    private TextRange[] _matches;
+    private bool _matchesValid;
+    /// lines and characters searched outward from the caret for the current match before giving up
+    private enum int CURRENT_MATCH_SEARCH_LINES = 1000;
+    private enum size_t CURRENT_MATCH_SEARCH_CHARS = 100_000;
+    /// milliseconds with the text unchanged before all matches are collected, when there is none near the caret
+    private enum int COLLECT_MATCHES_DELAY = 300;
+    // the timer collecting all matches, and for which text and pattern
+    private ulong _collectMatchesTimer;
+    private long _collectMatchesTimerSet; // currentTimeMillis when it was set
+    private MatchesKey _collectMatchesKey;
+
+    override void setTextToHighlight(dstring pattern, uint textToHighlightOptions, TextRange scope_, bool back) {
+        // all matches of another pattern, if collected or about to be (#1177)
+        if (pattern != _matchesKey.pattern || textToHighlightOptions != _matchesKey.options
+                || scope_ != _matchesKey.scope_) {
+            _matches = null;
+            _matchesValid = false;
+        }
+        if (_collectMatchesTimer && (pattern != _collectMatchesKey.pattern
+                || textToHighlightOptions != _collectMatchesKey.options || scope_ != _collectMatchesKey.scope_)) {
+            cancelTimer(_collectMatchesTimer);
+            _collectMatchesTimer = 0;
+        }
+        super.setTextToHighlight(pattern, textToHighlightOptions, scope_, back);
+    }
+    alias setTextToHighlight = EditWidgetBase.setTextToHighlight;
+
+    override bool onTimer(ulong id) {
+        if (id == _collectMatchesTimer) {
+            _collectMatchesTimer = 0;
+            // the text is unchanged since the search gave up: collect all matches and show the current one
+            if (_content.revision == _collectMatchesKey.revision) {
+                _matches = FindPanel.matchesInScope(findAll(_collectMatchesKey.pattern, _collectMatchesKey.options),
+                    _collectMatchesKey.scope_);
+                _matchesKey = _collectMatchesKey;
+                _matchesValid = true;
+                _currentMatchValid = false;
+                invalidate();
+            }
+            return false;
+        }
+        return super.onTimer(id);
+    }
+
+    /// the current match of pattern inside scope_, as found by findCurrentMatch(); when there is none near the caret,
+    /// chosen by currentMatchIndex() among all matches, collected once the text stays unchanged for a moment, so that
+    /// typing doesn't search the whole text each time; until then, none (#1177)
+    protected TextRange currentSearchMatch(dstring pattern, uint options, TextRange scope_, bool back, bool anyLine) {
+        CurrentMatchKey key = CurrentMatchKey(_content.revision, pattern, options, scope_, _selectionRange, _caretPos,
+            back, anyLine);
+        if (_currentMatchValid && key == _currentMatchKey)
+            return _currentMatch;
+        MatchesKey matchesKey = MatchesKey(_content.revision, pattern, options, scope_);
+        if (anyLine && _matchesValid && matchesKey == _matchesKey) {
+            ptrdiff_t index = currentMatchIndex(_matches, _selectionRange, _caretPos, back);
+            _currentMatch = index >= 0 ? _matches[index] : TextRange.init;
+        } else if (!findCurrentMatch(_content.length, (int line) => _content.line(line), pattern,
+                (options & TextSearchFlag.CaseSensitive) != 0, (options & TextSearchFlag.WholeWords) != 0, scope_,
+                _selectionRange, _caretPos, back, anyLine, CURRENT_MATCH_SEARCH_LINES, CURRENT_MATCH_SEARCH_CHARS,
+                _currentMatch)) {
+            // started again by edits, not by caret moves
+            // also when the timer should have fired long ago: the window can drop it, e.g. while the editor is moved
+            long now = currentTimeMillis;
+            if (!_collectMatchesTimer || matchesKey != _collectMatchesKey
+                    || now - _collectMatchesTimerSet > 2 * COLLECT_MATCHES_DELAY) {
+                if (_collectMatchesTimer)
+                    cancelTimer(_collectMatchesTimer);
+                _collectMatchesKey = matchesKey;
+                _collectMatchesTimer = setTimer(COLLECT_MATCHES_DELAY);
+                _collectMatchesTimerSet = now;
+            }
+        }
+        _currentMatchKey = key;
+        _currentMatchValid = true;
+        return _currentMatch;
+    }
+
+    /// finds the current match of pattern among its matches inside scope_ in lines 0 .. lineCount - 1, the one
+    /// currentMatchIndex() chooses, by searching outward from the caret rather than the whole text (#1177): the
+    /// selected match if the selection is one, else the first match that ends after the caret (searching back: the
+    /// last one that starts before it), wrapping around; TextRange.init if there is none. Without anyLine, only the
+    /// selected match or one on the caret line, without wrapping around (a highlight without Find next). Returns
+    /// false if it gave up after searching maxLines lines or maxChars characters; current is TextRange.init then
+    static bool findCurrentMatch(int lineCount, scope dstring delegate(int line) lineText, dstring pattern,
+            bool caseSensitive, bool wholeWords, TextRange scope_, TextRange selection, TextPosition caret, bool back,
+            bool anyLine, int maxLines, size_t maxChars, out TextRange current) {
+        import std.algorithm : max, min;
+        bool inScope(TextRange r) { return r.start >= scope_.start && r.end <= scope_.end; }
+        int searched = 0;
+        size_t searchedChars = 0;
+        // the match on line chosen by pred, the first one in the search direction
+        TextRange onLine(int line, scope bool delegate(TextRange r) pred) {
+            dstring text = lineText(line);
+            searched++;
+            searchedChars += text.length;
+            TextRange res;
+            forEachLineMatch(text, line, pattern, caseSensitive, wholeWords, (TextRange r) {
+                if (inScope(r) && pred(r) && (back || res.empty))
+                    res = r;
+            });
+            return res;
+        }
+        bool any(TextRange r) { return true; }
+        if (!pattern.length)
+            return true;
+        // matches are single-line
+        int selLine = selection.start.line;
+        if (!selection.empty && selLine == selection.end.line && selLine >= 0 && selLine < lineCount
+                && onLine(selLine, (TextRange r) => r == selection) == selection) {
+            current = selection;
+            return true;
+        }
+        // the lines that can have matches in the scope
+        int first = max(0, scope_.start.line);
+        int last = min(lineCount - 1, scope_.end.line);
+        int line = caret.line;
+        if (line >= first && line <= last) {
+            current = onLine(line, back ? (TextRange r) => r.start < caret : (TextRange r) => r.end > caret);
+            if (!current.empty)
+                return true;
+        }
+        if (!anyLine)
+            return true;
+        // the lines in search order, after the caret line, then wrapping around up to it: 1 found, 0 not found on
+        // line i, -1 gave up
+        int search(int i) {
+            if (searched >= maxLines || searchedChars >= maxChars)
+                return -1;
+            current = onLine(i, &any);
+            return current.empty ? 0 : 1;
+        }
+        int res = 0;
+        if (!back) {
+            for (int i = max(line + 1, first); i <= last && !res; i++)
+                res = search(i);
+            for (int i = first; i <= min(line, last) && !res; i++)
+                res = search(i);
+        } else {
+            for (int i = min(line - 1, last); i >= first && !res; i--)
+                res = search(i);
+            for (int i = last; i >= max(line, first) && !res; i--)
+                res = search(i);
+        }
+        return res >= 0;
     }
 
     /// calls sink for each match of pattern in line lineIndex with text lineText, in order; matches don't overlap
@@ -3531,58 +3711,28 @@ class EditBox : EditWidgetBase {
     }
 
     /// as forEachLineMatch above, only the matches inside scope_ (WHOLE_TEXT_RANGE for all), with current = true
-    /// for the current match chosen as by currentMatchIndex(), on the caret line only (#1145, #1165, #1166)
+    /// for the one equal to current (#1145, #1166, #1177)
     static void forEachLineMatch(dstring lineText, int lineIndex, dstring pattern, bool caseSensitive,
-            bool wholeWords, TextRange scope_, TextRange selection, TextPosition caret, bool back,
-            scope void delegate(TextRange r, bool current) sink) {
-        bool inScope(TextRange r) { return r.start >= scope_.start && r.end <= scope_.end; }
-        // the current match may come after other matches (a selected match after one that ends after the caret, the
-        // last match that starts before the caret): find it first; an empty range is never a match
-        TextRange current;
-        bool selectionOnLine = !selection.empty && selection.start.line == lineIndex && selection.end.line == lineIndex;
-        if (selectionOnLine || caret.line == lineIndex) {
-            bool selected = false;
-            bool found = false;
-            forEachLineMatch(lineText, lineIndex, pattern, caseSensitive, wholeWords, (TextRange r) {
-                if (selected || !inScope(r))
-                    return;
-                if (selectionOnLine && r == selection) {
-                    current = r;
-                    selected = true;
-                } else if (caret.line == lineIndex && (back ? r.start < caret : !found && r.end > caret)) {
-                    current = r;
-                    found = true;
-                }
-            });
-        }
+            bool wholeWords, TextRange scope_, TextRange current, scope void delegate(TextRange r, bool current) sink) {
         forEachLineMatch(lineText, lineIndex, pattern, caseSensitive, wholeWords, (TextRange r) {
-            if (inScope(r))
+            if (r.start >= scope_.start && r.end <= scope_.end)
                 sink(r, r == current);
         });
     }
 
-    /// index of the current match in matches (in text order), -1 if there is none: the selected match if the
-    /// selection is one of them, else the match Find next and Replace take, the first one that ends after the caret
-    /// (the match the caret is in, or the next one; without wrapping around), or when searching back (back) the one
-    /// Find prev takes, the last one that starts before the caret. Of two adjacent matches, the caret at the end of
-    /// the first one is at the start of the second: without a selected match, the second is current, or the first
-    /// one when searching back (#1145, #1165)
+    /// index of the current match in matches (in text order), -1 if there are none: the selected match if the
+    /// selection is one of them, else the match Find next and Replace take (nextMatchIndex()): the first one that
+    /// ends after the caret (the match the caret is in, or the next one), or the first one if none does; searching
+    /// back (back), the last one that starts before the caret, or the last one if none does. Of two adjacent
+    /// matches, the caret at the end of the first one is at the start of the second: without a selected match, the
+    /// second is current, or the first one when searching back (#1145, #1165, #1177)
     static ptrdiff_t currentMatchIndex(const(TextRange)[] matches, TextRange selection, TextPosition caret,
             bool back = false) @safe pure nothrow @nogc {
         if (!selection.empty)
             foreach (i, r; matches)
                 if (r == selection)
                     return i;
-        if (back) {
-            foreach_reverse (i, r; matches)
-                if (r.start < caret)
-                    return i;
-            return -1;
-        }
-        foreach (i, r; matches)
-            if (r.end > caret)
-                return i;
-        return -1;
+        return nextMatchIndex(matches, TextRange.init, caret, back ? -1 : 1);
     }
 
     /// index of the first occurrence of pattern in text, -1 if there is none, 0 for an empty pattern; without
@@ -5057,12 +5207,16 @@ class EditorMessageBar : HorizontalLayout {
 }
 
 // of two adjacent search matches, only one is current: the selected one, else the one Find next and Replace take
-// (#1145, #1165); with a scope, only the matches inside it (#1166)
+// (#1145, #1165, #1177); with a scope, only the matches inside it (#1166)
 unittest {
     // positions of the matches of "aa" in "aaaaaa", the current one marked with *
     static string matches(TextRange selection, int caret, TextRange scope_ = WHOLE_TEXT_RANGE, bool back = false) {
+        TextRange current;
+        bool settled = EditBox.findCurrentMatch(1, (int line) => "aaaaaa"d, "aa"d, true, false, scope_, selection,
+            TextPosition(0, caret), back, true, int.max, size_t.max, current);
+        assert(settled);
         string res;
-        EditBox.forEachLineMatch("aaaaaa"d, 0, "aa"d, true, false, scope_, selection, TextPosition(0, caret), back,
+        EditBox.forEachLineMatch("aaaaaa"d, 0, "aa"d, true, false, scope_, current,
             (TextRange r, bool current) {
                 import std.conv : to;
                 res ~= (current ? "*" : "") ~ r.start.pos.to!string ~ " ";
@@ -5074,20 +5228,22 @@ unittest {
     assert(matches(none, 0) == "*0 2 4 "); // at the start of the first match
     assert(matches(none, 2) == "0 *2 4 "); // at the end of the first match and the start of the second
     assert(matches(none, 3) == "0 *2 4 "); // inside the second match
-    assert(matches(none, 6) == "0 2 4 "); // at the end of the line: the next match would be on another line
+    assert(matches(none, 6) == "*0 2 4 "); // after the last match: Find next wraps around to the first one
     // a selected match is current, wherever the caret is (Find next leaves it at the end, Shift+Left at the start)
     assert(matches(sel(0, 2), 2) == "*0 2 4 ");
     assert(matches(sel(2, 4), 2) == "0 *2 4 ");
     assert(matches(sel(2, 4), 4) == "0 *2 4 ");
     // a selection that isn't a match: the caret decides
     assert(matches(sel(1, 3), 3) == "0 *2 4 ");
-    // a caret on another line: no current match
-    string other;
-    EditBox.forEachLineMatch("aaaa"d, 0, "aa"d, true, false, WHOLE_TEXT_RANGE, none, TextPosition(1, 2), false,
-        (TextRange r, bool current) {
-            other ~= current ? "*" : "-";
-        });
-    assert(other == "--");
+    // the current match on another line than the caret (#1177): "foo foo" and "foo", the caret at the end of the
+    // first line; Find next takes the match on the second line, Find prev from its start the second "foo" before it
+    dstring[] lines = ["foo foo"d, "foo"d];
+    TextRange[] foos;
+    foreach (i, line; lines)
+        EditBox.forEachLineMatch(line, cast(int)i, "foo"d, true, false, (TextRange r) { foos ~= r; });
+    assert(foos.length == 3);
+    assert(EditBox.currentMatchIndex(foos, none, TextPosition(0, 7)) == 2);
+    assert(EditBox.currentMatchIndex(foos, none, TextPosition(1, 0), true) == 1);
     // a scope: the matches inside it, the current one among them
     assert(matches(none, 0, sel(2, 6)) == "*2 4 ");
     assert(matches(sel(0, 2), 2, sel(2, 6)) == "*2 4 "); // the selected match is outside the scope
@@ -5096,18 +5252,19 @@ unittest {
     assert(matches(none, 2, WHOLE_TEXT_RANGE, true) == "*0 2 4 "); // at the end of the first match
     assert(matches(none, 3, WHOLE_TEXT_RANGE, true) == "0 *2 4 "); // inside the second match
     assert(matches(none, 6, WHOLE_TEXT_RANGE, true) == "0 2 *4 "); // at the end of the line
-    assert(matches(none, 0, WHOLE_TEXT_RANGE, true) == "0 2 4 "); // at the start: the previous match is elsewhere
+    assert(matches(none, 0, WHOLE_TEXT_RANGE, true) == "0 2 *4 "); // at the start: Find prev wraps around
     assert(matches(sel(2, 4), 6, WHOLE_TEXT_RANGE, true) == "0 *2 4 "); // a selected match is current
     assert(matches(none, 6, sel(0, 4), true) == "0 *2 "); // the last one in the scope
 
-    // the current match: the selected one, else the first one that ends after the caret
+    // the current match: the selected one, else the first one that ends after the caret, wrapping around
     TextRange[] all = [sel(0, 2), sel(2, 4), sel(4, 6)];
     assert(EditBox.currentMatchIndex(all, none, TextPosition(0, 2)) == 1);
     assert(EditBox.currentMatchIndex(all, sel(2, 4), TextPosition(0, 2)) == 1);
     assert(EditBox.currentMatchIndex(all, sel(1, 3), TextPosition(0, 3)) == 1);
-    assert(EditBox.currentMatchIndex(all, none, TextPosition(1, 0)) == -1);
+    assert(EditBox.currentMatchIndex(all, none, TextPosition(1, 0)) == 0);
     assert(EditBox.currentMatchIndex(all, none, TextPosition(0, 2), true) == 0);
-    assert(EditBox.currentMatchIndex(all, none, TextPosition(0, 0), true) == -1);
+    assert(EditBox.currentMatchIndex(all, none, TextPosition(0, 0), true) == 2);
+    assert(EditBox.currentMatchIndex(null, none, TextPosition(0, 0)) == -1);
     assert(EditBox.currentMatchIndex(all, sel(2, 4), TextPosition(0, 6), true) == 1);
     // Find next (1), Find prev (-1) and direction 0 from a selected match, with the caret at either end of it
     foreach (caret; [2, 4]) {
@@ -5126,6 +5283,81 @@ unittest {
     assert(EditBox.nextMatchIndex(all[0 .. 1], sel(0, 2), TextPosition(0, 2), 1) == 0);
     assert(EditBox.nextMatchIndex(all[0 .. 1], sel(0, 2), TextPosition(0, 2), -1) == 0);
     assert(EditBox.nextMatchIndex(null, none, TextPosition(0, 0), 1) == -1);
+}
+
+// the current match found outward from the caret is the one currentMatchIndex() chooses among all matches, for every
+// caret position, selection, direction and scope, also when the search may give up after a few lines (#1177)
+unittest {
+    static TextRange range(int startLine, int startPos, int endLine, int endPos) {
+        return TextRange(TextPosition(startLine, startPos), TextPosition(endLine, endPos));
+    }
+    dstring[][] texts = [["foo foo"d, ""d, "xfoo foo"d, "foo"d], ["foofoo"d, "foo  foo"d, ""d, "fo"d, "foo"d],
+        ["bar"d, "foo"d, "bar"d], ["bar"d]];
+    TextRange[] scopes = [WHOLE_TEXT_RANGE, range(0, 2, 2, 5), range(1, 0, 1, 8), range(2, 1, 2, 1),
+        range(5, 0, 9, 0)];
+    foreach (lines; texts) {
+        TextRange[] all;
+        foreach (i, line; lines)
+            EditBox.forEachLineMatch(line, cast(int)i, "foo"d, true, false, (TextRange r) { all ~= r; });
+        foreach (scope_; scopes) {
+            TextRange[] inScope = FindPanel.matchesInScope(all, scope_);
+            // no selection, each match, and a selection that isn't a match
+            TextRange[] selections = [TextRange.init, range(0, 1, 0, 4)] ~ all;
+            foreach (selection; selections)
+            foreach (back; [false, true])
+            foreach (int line; 0 .. cast(int)lines.length + 1)
+            foreach (int pos; 0 .. (line < lines.length ? cast(int)lines[line].length : 0) + 1) {
+                TextPosition caret = TextPosition(line, pos);
+                ptrdiff_t index = EditBox.currentMatchIndex(inScope, selection, caret, back);
+                TextRange expected = index >= 0 ? inScope[index] : TextRange.init;
+                TextRange found;
+                bool settled = EditBox.findCurrentMatch(cast(int)lines.length, (int i) => lines[i], "foo"d, true,
+                    false, scope_, selection, caret, back, true, int.max, size_t.max, found);
+                assert(settled && found == expected);
+                // a search that may give up: if it doesn't, the same match; else none
+                settled = EditBox.findCurrentMatch(cast(int)lines.length, (int i) => lines[i], "foo"d, true, false,
+                    scope_, selection, caret, back, true, 2, size_t.max, found);
+                assert(found == (settled ? expected : TextRange.init));
+            }
+        }
+    }
+    // giving up after maxLines lines or maxChars characters searched outward from the caret
+    dstring[] sparse = ["foo"d, "1234567890"d, ""d, ""d, ""d];
+    static bool settles(dstring[] lines, int maxLines, size_t maxChars, out TextRange found) {
+        return EditBox.findCurrentMatch(cast(int)lines.length, (int i) => lines[i], "foo"d, true, false,
+            WHOLE_TEXT_RANGE, TextRange.init, TextPosition(1, 0), false, true, maxLines, maxChars, found);
+    }
+    TextRange found;
+    assert(!settles(sparse, 3, size_t.max, found));
+    assert(!settles(sparse, int.max, 10, found)); // the caret line alone has 10 characters
+    assert(settles(sparse, 5, 13, found));
+    assert(found == range(0, 0, 0, 3)); // wrapped around to the first line
+}
+
+// without anyLine (a highlight without Find next): only the selected match or one after the caret on its line (before
+// it when searching back), never wrapping around (#1177)
+unittest {
+    static TextRange range(int startLine, int startPos, int endLine, int endPos) {
+        return TextRange(TextPosition(startLine, startPos), TextPosition(endLine, endPos));
+    }
+    dstring[] lines = ["foo foo"d, "bar"d, "foo"d];
+    static TextRange current(dstring[] lines, TextRange selection, int line, int pos, bool back) {
+        TextRange res;
+        // a single line searched, never giving up
+        bool settled = EditBox.findCurrentMatch(cast(int)lines.length, (int i) => lines[i], "foo"d, true, false,
+            WHOLE_TEXT_RANGE, selection, TextPosition(line, pos), back, false, 1, 1, res);
+        assert(settled);
+        return res;
+    }
+    TextRange none;
+    assert(current(lines, none, 0, 0, false) == range(0, 0, 0, 3)); // the caret at a match
+    assert(current(lines, none, 0, 3, false) == range(0, 4, 0, 7)); // the next one on the line
+    assert(current(lines, none, 0, 7, false) == none); // after the last match of the line: not the one on line 2
+    assert(current(lines, none, 1, 1, false) == none); // a line without matches
+    assert(current(lines, none, 0, 7, true) == range(0, 4, 0, 7)); // searching back: the one before the caret
+    assert(current(lines, none, 2, 0, true) == none); // before the first match of the line: not the ones on line 0
+    assert(current(lines, range(2, 0, 2, 3), 0, 0, false) == range(2, 0, 2, 3)); // a selected match on another line
+    assert(current(lines, range(0, 1, 0, 4), 1, 0, false) == none); // a selection that isn't a match
 }
 
 // without a selected match, Find next takes the match at or after the caret, Find prev the one at or before it,
