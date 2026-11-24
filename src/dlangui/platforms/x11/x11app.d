@@ -122,23 +122,26 @@ private __gshared
 static void setupX11Atoms()
 {
     assert(x11display !is null, "X Connection must be established before getting atoms");
-    //TODO: not sure which atoms should be taken with or without onlyIfExists flag
-    atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", True);
-    atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", True);
-    atom_TARGETS     = XInternAtom(x11display, "TARGETS", True);
+    // all with only_if_exists = False: the atoms are created if no window manager or other client did yet (e.g. on
+    // Xvfb), so they are never None (#1181). Window manager hints set with them are data a window manager reads (also
+    // one started later); the selection atoms are needed by the clipboard calls. With an atom of None, requests such as
+    // XChangeProperty and XGetSelectionOwner fail with BadAtom, and Xlib's default error handler exits the app
+    atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", False);
+    atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", False);
+    atom_TARGETS     = XInternAtom(x11display, "TARGETS", False);
     atom_WM_PROTOCOLS = XInternAtom(x11display, "WM_PROTOCOLS", False);
     atom_WM_DELETE_WINDOW = XInternAtom(x11display, "WM_DELETE_WINDOW", False);
-    atom_NET_WM_ICON = XInternAtom(x11display, "_NET_WM_ICON", True);
-    atom_NET_WM_NAME = XInternAtom(x11display, "_NET_WM_NAME", True);
-    atom_NET_WM_ICON_NAME = XInternAtom(x11display, "_NET_WM_ICON_NAME", True);
+    atom_NET_WM_ICON = XInternAtom(x11display, "_NET_WM_ICON", False);
+    atom_NET_WM_NAME = XInternAtom(x11display, "_NET_WM_NAME", False);
+    atom_NET_WM_ICON_NAME = XInternAtom(x11display, "_NET_WM_ICON_NAME", False);
     atom_NET_WM_PID = XInternAtom(x11display, "_NET_WM_PID", False);
-    atom_NET_WM_STATE = XInternAtom(x11display, "_NET_WM_STATE", True);
-    atom_NET_WM_STATE_MODAL = XInternAtom(x11display, "_NET_WM_STATE_MODAL", True);
-    atom_NET_WM_STATE_MAXIMIZED_VERT = XInternAtom(x11display, "_NET_WM_STATE_MAXIMIZED_VERT", True);
-    atom_NET_WM_STATE_MAXIMIZED_HORZ = XInternAtom(x11display, "_NET_WM_STATE_MAXIMIZED_HORZ", True);
-    atom_NET_WM_STATE_HIDDEN = XInternAtom(x11display, "_NET_WM_STATE_HIDDEN", True);
-    atom_NET_WM_STATE_FULLSCREEN = XInternAtom(x11display, "_NET_WM_STATE_FULLSCREEN", True);
-    atom_MOTIF_WM_HINTS = XInternAtom(x11display, "_MOTIF_WM_HINTS", True);
+    atom_NET_WM_STATE = XInternAtom(x11display, "_NET_WM_STATE", False);
+    atom_NET_WM_STATE_MODAL = XInternAtom(x11display, "_NET_WM_STATE_MODAL", False);
+    atom_NET_WM_STATE_MAXIMIZED_VERT = XInternAtom(x11display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+    atom_NET_WM_STATE_MAXIMIZED_HORZ = XInternAtom(x11display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+    atom_NET_WM_STATE_HIDDEN = XInternAtom(x11display, "_NET_WM_STATE_HIDDEN", False);
+    atom_NET_WM_STATE_FULLSCREEN = XInternAtom(x11display, "_NET_WM_STATE_FULLSCREEN", False);
+    atom_MOTIF_WM_HINTS = XInternAtom(x11display, "_MOTIF_WM_HINTS", False);
 
     atom_DLANGUI_TIMER_EVENT     = XInternAtom(x11display, "DLANGUI_TIMER_EVENT", False);
     atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
@@ -404,19 +407,12 @@ class X11Window : DWindow {
             sizeHints.flags = PMaxSize | PMinSize;
             XSetWMNormalHints(x11display, _win, &sizeHints);
         }
-        if (flags & WindowFlag.Fullscreen) {
-            if (atom_NET_WM_STATE_FULLSCREEN != None) {
-                changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
-            }
-            else
-                Log.w("Missing _NET_WM_STATE_FULLSCREEN atom");
-        }
+        if (flags & WindowFlag.Fullscreen)
+            changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
         if (flags & WindowFlag.Borderless) {
-            if (atom_MOTIF_WM_HINTS != None) {
-                MwmHints hints;
-                hints.flags = MWM_HINTS_DECORATIONS;
-                XChangeProperty(x11display, _win, atom_MOTIF_WM_HINTS, atom_MOTIF_WM_HINTS, 32, PropModeReplace, cast(ubyte*)&hints, hints.sizeof / 4);
-            }
+            MwmHints hints;
+            hints.flags = MWM_HINTS_DECORATIONS;
+            XChangeProperty(x11display, _win, atom_MOTIF_WM_HINTS, atom_MOTIF_WM_HINTS, 32, PropModeReplace, cast(ubyte*)&hints, hints.sizeof / 4);
         }
         if (flags & WindowFlag.Modal) {
             if (_parent) {
@@ -424,11 +420,7 @@ class X11Window : DWindow {
             } else {
                 Log.w("Top-level modal window");
             }
-            if (atom_NET_WM_STATE_MODAL != None) {
-                changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MODAL);
-            } else {
-                Log.w("Missing _NET_WM_STATE_MODAL atom");
-            }
+            changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MODAL);
         }
         /* this routine determines which types of input are allowed in
                the input.  see the appropriate section for details...
@@ -796,10 +788,8 @@ class X11Window : DWindow {
         bool result = false;
         switch(newState) {
             case WindowState.maximized:
-                if (atom_NET_WM_STATE != None && atom_NET_WM_STATE_MAXIMIZED_HORZ != None && atom_NET_WM_STATE_MAXIMIZED_VERT != None) {
-                    changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
-                    result = true;
-                }
+                changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
+                result = true;
                 break;
             case WindowState.minimized:
                 if (XIconifyWindow(x11display, _win, x11screen))
@@ -810,22 +800,14 @@ class X11Window : DWindow {
                 result = true;
                 break;
             case WindowState.normal:
-                if (atom_NET_WM_STATE != None &&
-                    atom_NET_WM_STATE_MAXIMIZED_HORZ != None &&
-                    atom_NET_WM_STATE_MAXIMIZED_VERT != None &&
-                    atom_NET_WM_STATE_HIDDEN != None)
-                {
-                    changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
-                    changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_HIDDEN);
-                    changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_FULLSCREEN);
-                    result = true;
-                }
+                changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
+                changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_HIDDEN);
+                changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_FULLSCREEN);
+                result = true;
                 break;
             case WindowState.fullscreen:
-                if (atom_NET_WM_STATE != None && atom_NET_WM_STATE_FULLSCREEN != None) {
-                    changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
-                    result = true;
-                }
+                changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
+                result = true;
                 break;
             default:
                 break;
@@ -2353,10 +2335,6 @@ class X11Platform : Platform {
 
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override void setClipboardText(dstring text, bool mouseBuffer = false) {
-        if (!mouseBuffer && atom_CLIPBOARD == None) {
-            Log.e("No CLIPBOARD atom available");
-            return;
-        }
         auto selection = mouseBuffer ? XA_PRIMARY : atom_CLIPBOARD;
         XWindow xwindow = None;
         // Find any top-level window
