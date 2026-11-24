@@ -713,6 +713,7 @@ class Window : CustomEventTarget {
         if (_mainWidget && (_flags & WindowFlag.Resizable) && !(_flags & WindowFlag.Fullscreen))
             clientSizeLimits(_mainWidget.minWidth, _mainWidget.minHeight, _mainWidget.maxWidth, _mainWidget.maxHeight,
                 minSize, maxSize);
+        _clientSizeLimitsDpi = SCREEN_DPI; // also when unchanged: they are for it now
         if (minSize == _minClientSize && maxSize == _maxClientSize)
             return;
         _minClientSize = minSize;
@@ -737,6 +738,23 @@ class Window : CustomEventTarget {
     /// backends: make the system keep the user's resizing of the window within minClientSize and maxClientSize
     /// (0: no limit); called when they change (#455)
     protected void applyClientSizeLimits() {
+    }
+
+    /// SCREEN_DPI when the client size limits were set
+    protected int _clientSizeLimitsDpi;
+
+    /// SCREEN_DPI changed since the client size limits (pixels) were set: scales them to it now, so that they don't
+    /// hold the window at its old size when the backend resizes it for the new DPI; the next layout takes them from
+    /// the main widget again (#1162, #1163)
+    protected void scaleClientSizeLimitsToScreenDpi() {
+        int fromDpi = _clientSizeLimitsDpi;
+        int toDpi = SCREEN_DPI;
+        _clientSizeLimitsDpi = toDpi;
+        if (fromDpi <= 0 || fromDpi == toDpi || (_minClientSize == Point(0, 0) && _maxClientSize == Point(0, 0)))
+            return;
+        _minClientSize = Point(_minClientSize.x * toDpi / fromDpi, _minClientSize.y * toDpi / fromDpi);
+        _maxClientSize = Point(_maxClientSize.x * toDpi / fromDpi, _maxClientSize.y * toDpi / fromDpi);
+        applyClientSizeLimits();
     }
 
     /// keep current position of window scrollbar after its range or page size is changed (e.g. on window resize, #632),
@@ -2340,6 +2358,27 @@ class Platform {
             currentTheme.onThemeChanged();
     }
 
+    /// a DPI rejected by setSystemScreenDpi() was warned about
+    private bool _rejectedScreenDpiWarned;
+
+    /// sets the screen DPI detected by the backend (SCREEN_DPI, unless overridden), e.g. after the desktop scale
+    /// changed while the app runs; on a change of SCREEN_DPI, reloads the fonts and images cached for the old DPI and
+    /// lays the windows out again (#1162, #1163). Returns true if SCREEN_DPI changed
+    bool setSystemScreenDpi(int dpi) {
+        int oldDpi = SCREEN_DPI;
+        SCREEN_DPI = dpi;
+        if (systemScreenDPI != dpi && !_rejectedScreenDpiWarned) {
+            _rejectedScreenDpiWarned = true; // once: SDL calls this on every resize
+            Log.w("Screen DPI ", dpi, " is outside the supported range, keeping ", systemScreenDPI);
+        }
+        if (SCREEN_DPI == oldDpi)
+            return false;
+        Log.i("SCREEN_DPI is changed from ", oldDpi, " to ", SCREEN_DPI);
+        onThemeChanged();
+        requestLayout();
+        return true;
+    }
+
     /// default icon for new created windows
     private string _defaultWindowIcon = "dlangui-logo1";
 
@@ -2436,6 +2475,42 @@ unittest {
         scope (exit) _imageCache = testImages;
     }
     platform.onThemeChanged();
+}
+
+// setSystemScreenDpi() reloads the theme and lays the windows out again only when SCREEN_DPI changes (#1162, #1163)
+unittest {
+    static class DpiTestPlatform : Platform {
+        int themeChanges;
+        int layouts;
+        override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable,
+                uint width = 0, uint height = 0) { return null; }
+        override void closeWindow(Window w) {}
+        override int enterMessageLoop() { return 0; }
+        override bool hasClipboardText(bool mouseBuffer = false) { return false; }
+        override dstring getClipboardText(bool mouseBuffer = false) { return null; }
+        override void setClipboardText(dstring text, bool mouseBuffer = false) {}
+        override void requestLayout() { layouts++; }
+        override void onThemeChanged() { themeChanges++; }
+    }
+    immutable int savedDpi = systemScreenDPI;
+    immutable int savedOverride = overrideScreenDPI;
+    scope (exit) {
+        SCREEN_DPI = savedDpi;
+        overrideScreenDPI = savedOverride;
+    }
+    overrideScreenDPI = 0;
+    SCREEN_DPI = 96;
+    auto platform = new DpiTestPlatform();
+    scope (exit) destroy(platform);
+    assert(!platform.setSystemScreenDpi(96) && platform.themeChanges == 0 && platform.layouts == 0);
+    assert(platform.setSystemScreenDpi(144) && SCREEN_DPI == 144);
+    assert(platform.themeChanges == 1 && platform.layouts == 1);
+    static if (!WIDGET_STYLE_CONSOLE) {
+        // with an override, SCREEN_DPI stays: nothing to reload
+        overrideScreenDPI = 120;
+        assert(!platform.setSystemScreenDpi(96) && systemScreenDPI == 96 && SCREEN_DPI == 120);
+        assert(platform.themeChanges == 1 && platform.layouts == 1);
+    }
 }
 
 /// get current platform object instance
