@@ -949,7 +949,9 @@ class Win32Window : Window {
                 break;
             case WindowState.normal:
                 if (_windowState != WindowState.normal || activate) {
-                    ShowWindow(_hwnd, activate ? SW_SHOWNORMAL : SW_SHOWNA); // SW_RESTORE
+                    // SW_SHOWNOACTIVATE restores a maximized or minimized window too; SW_SHOWNA kept it in its
+                    // state (#1191)
+                    ShowWindow(_hwnd, activate ? SW_SHOWNORMAL : SW_SHOWNOACTIVATE);
                     res = true;
                 }
                 break;
