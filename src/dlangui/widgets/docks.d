@@ -398,8 +398,9 @@ class DockWindow : WindowFrame {
         return this;
     }
 
-    this(string ID) {
-        super(ID);
+    /// showCloseButton = false: no close button in the caption, e.g. when the app has no way to show the window again
+    this(string ID, bool showCloseButton = true) {
+        super(ID, showCloseButton);
         focusGroup = true;
     }
 
@@ -479,6 +480,25 @@ unittest {
         assert(host.bodyWidget is null);
         host.layout(Rect(0, 0, 1000, 800));
     }
+}
+
+/// the close button of the caption can be hidden (#1226)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    import dlangui.widgets.controls : ImageButton;
+    auto _ = useTestTheme();
+    auto withButton = new DockWindow("with");
+    scope(exit) destroy(withButton);
+    auto withoutButton = new DockWindow("without", false);
+    scope(exit) destroy(withoutButton);
+    assert(withButton.childById!ImageButton("DOCK_WINDOW_CAPTION_CLOSE_BUTTON").visibility == Visibility.Visible);
+    assert(withoutButton.childById!ImageButton("DOCK_WINDOW_CAPTION_CLOSE_BUTTON").visibility == Visibility.Gone);
+    // also later, e.g. in a subclass that calls super(ID)
+    withButton.showCloseButton = false;
+    assert(!withButton.showCloseButton);
+    assert(withButton.childById!ImageButton("DOCK_WINDOW_CAPTION_CLOSE_BUTTON").visibility == Visibility.Gone);
+    withoutButton.showCloseButton = true;
+    assert(withoutButton.childById!ImageButton("DOCK_WINDOW_CAPTION_CLOSE_BUTTON").visibility == Visibility.Visible);
 }
 
 /// initial dock space: not taken from a layout without size, default 20%, settable, clamped to 10..40% (#762)

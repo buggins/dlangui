@@ -396,7 +396,8 @@ class EditFrame : AppFrame {
         leftPanel.addChild(propCaption);
         leftPanel.addChild(propList);
 
-        auto leftDockWin = new DockWindow("left dock");
+        // no close buttons on the docks: dmledit has no handler for them and no way to show a closed dock again (#1226)
+        auto leftDockWin = new DockWindow("left dock", false);
         leftDockWin.caption.text = "Widgets"d;
         leftDockWin.bodyWidget = leftPanel;
         leftDockWin.dockAlignment = DockAlignment.Left;
@@ -451,7 +452,7 @@ class EditFrame : AppFrame {
         previewLayout.addChild(previewControls);
         previewLayout.addChild(_preview);
 
-        auto previewDockWin = new DockWindow("preview");
+        auto previewDockWin = new DockWindow("preview", false);
         previewDockWin.caption.text = "Preview"d;
         previewDockWin.bodyWidget = previewLayout;
         previewDockWin.dockAlignment = DockAlignment.Right;

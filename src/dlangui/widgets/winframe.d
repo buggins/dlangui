@@ -42,6 +42,15 @@ class WindowFrame : VerticalLayout {
 
     @property TextWidget caption() { return _caption; }
 
+    /// close button in the caption (default: shown; hide it when the app doesn't handle closeButtonClick)
+    @property bool showCloseButton() const { return _showCloseButton; }
+    /// ditto
+    @property void showCloseButton(bool show) {
+        _showCloseButton = show;
+        if (_closeButton)
+            _closeButton.visibility = show ? Visibility.Visible : Visibility.Gone;
+    }
+
     this(string ID, bool showCloseButton = true) {
         super(ID);
         _showCloseButton = showCloseButton;
