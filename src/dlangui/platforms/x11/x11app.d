@@ -296,6 +296,20 @@ class X11Window : DWindow {
     /// mapped now (MapNotify until UnmapNotify): _NET_WM_STATE changes of a window the window manager unmapped
     /// (e.g. on another desktop) don't make it normal or maximized (#1190)
     private bool _viewable;
+    /// show() was called: until then, states are set in the _NET_WM_STATE property and WM_HINTS (#1197)
+    private bool _shown;
+    /// when minimizeWindow() sent an iconify request (init: none pending) (#1198)
+    private MonoTime _iconifyRequested;
+    /// restoreWindow() came while the iconify request was pending: mapped again when the iconify is reported (#1198)
+    private bool _restoreAfterIconify;
+    /// WM_HINTS initial_state is IconicState: a map from the withdrawn state iconifies the window (#1198)
+    private bool _initialIconic;
+    /// mapped from the withdrawn state with IconicState and not mapped (viewable) since: restoreWindow() maps it,
+    /// also when the window manager reports no state (ICCCM only) (#1197)
+    private bool _shownIconic;
+    /// the serial of the map request that showed a window hidden by hideWindow() again (0: none): events from the
+    /// window manager with this serial or later come after it, earlier ones from before (#1197)
+    private c_ulong _mapRequestSerial;
     // #820: correction of a position set by the application
     private bool _positionCheckPending;
     private Point _positionWanted;
@@ -413,8 +427,7 @@ class X11Window : DWindow {
             sizeHints.flags = PMaxSize | PMinSize;
             XSetWMNormalHints(x11display, _win, &sizeHints);
         }
-        if (flags & WindowFlag.Fullscreen)
-            changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
+        // fullscreen and modal states: set when the window is mapped (prepareMapFromWithdrawn, #1189)
         if (flags & WindowFlag.Borderless) {
             MwmHints hints;
             hints.flags = MWM_HINTS_DECORATIONS;
@@ -426,7 +439,6 @@ class X11Window : DWindow {
             } else {
                 Log.w("Top-level modal window");
             }
-            changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MODAL);
         }
         /* this routine determines which types of input are allowed in
                the input.  see the appropriate section for details...
@@ -546,10 +558,73 @@ class X11Window : DWindow {
     /// show window
     override void show() {
         Log.d("X11Window.show");
-        XMapRaised(x11display, _win);
+        if (_shown && _withdrawn && _mapRequestSerial != 0) {
+            // mapped again since hideWindow() (by a state request or show()), MapNotify not received yet: only
+            // raised, as its state and size were set when it was mapped (#1197)
+            XRaiseWindow(x11display, _win);
+            if (_mainWidget)
+                _mainWidget.setFocus();
+            XFlush(x11display);
+            return;
+        }
+        bool fromWithdrawn = !_shown || _withdrawn;
+        bool wasHidden = _shown && _withdrawn;
+        bool ewmh = fromWithdrawn && x11WindowManagerSupportsWmState();
+        // a window hidden by hideWindow() is shown normal (states requested while hidden map it at once), also
+        // with a window manager that keeps or rewrites maximized or fullscreen when it handles the withdraw (#1197)
+        if (wasHidden)
+            setInitialWmState(WindowState.normal, ewmh);
+        if (fromWithdrawn)
+            prepareMapFromWithdrawn(ewmh);
+        // maximized or fullscreen before it is mapped (requested before show(), or the Fullscreen flag): sized
+        // first, as the window manager keeps that size for a restore, and may restore a mapped maximized window
+        // that is resized or moved; the window manager places it (#1197)
+        WindowState requested = fromWithdrawn ? wmState() : WindowState.unspecified;
+        bool sizeBeforeMap = requested == WindowState.maximized || requested == WindowState.fullscreen;
+        _shown = true;
+        if (sizeBeforeMap) {
+            initOpenGLDuringShow();
+            adjustSizeDuringShow();
+            // the position for a restore, and the one the window gets if the window manager refuses the state
+            if (_mainWidget)
+                adjustPositionDuringShow();
+            mapDuringShow(wasHidden, ewmh);
+            // fitted into the work area when placed if the window manager refuses the state (e.g. for a window
+            // that isn't resizable); fitAfterPlacement() does nothing for a maximized or fullscreen window
+            _fitAfterPlacement = !_positionCheckPending;
+            _fitAfterPlacementDeadline = MonoTime.currTime + 2.seconds;
+            _fitAfterPlacementRequested = Rect();
+        } else {
+            mapDuringShow(wasHidden, ewmh);
+            initOpenGLDuringShow();
+            adjustSizeDuringShow();
+            if (_mainWidget) {
+                adjustPositionDuringShow();
+                fitWindowIntoWorkArea();
+            }
+        }
+        if (_mainWidget)
+            _mainWidget.setFocus();
+        XFlush(x11display);
+    }
 
+    /// maps and raises the window in show() (and activateWindow() of a hidden window)
+    private void mapDuringShow(bool wasHidden, bool ewmh) {
+        XMapRaised(x11display, _win);
+        // hidden by hideWindow() (also before the first show()): stays withdrawn until the window manager handled
+        // the map request, see checkMapRequestHandled; the serial of the last request, the map (XMapRaised sends
+        // a raise first)
+        if (_withdrawn)
+            _mapRequestSerial = x11display.request;
+        if (wasHidden)
+            sendFlagStates(ewmh);
+    }
+
+    /// creates the OpenGL context in show() (also for a window that isn't mapped yet); once: show() can be called
+    /// again, e.g. after hideWindow()
+    private void initOpenGLDuringShow() {
         static if (ENABLE_OPENGL) {
-            if (_enableOpengl) {
+            if (_enableOpengl && !_glc) {
                 _glc = glXCreateContext(x11display, x11visual, null, GL_TRUE);
                 if (!_glc) {
                     _enableOpengl = false;
@@ -570,20 +645,18 @@ class X11Window : DWindow {
             // the global state (and the glyph cache callback it sets) follows what the window uses (#873)
             setOpenglEnabled(_enableOpengl);
         }
-        if (_mainWidget) {
-            _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-            if (flags & WindowFlag.MeasureSize)
-                resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
-            else
-                adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
-            updateClientSizeLimits(true);
+    }
 
-            adjustPositionDuringShow();
-            fitWindowIntoWorkArea();
-
-            _mainWidget.setFocus();
-        }
-        XFlush(x11display);
+    /// sizes the window to its main widget in show()
+    private void adjustSizeDuringShow() {
+        if (!_mainWidget)
+            return;
+        _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+        if (flags & WindowFlag.MeasureSize)
+            resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
+        else
+            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+        updateClientSizeLimits(true);
     }
 
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
@@ -650,6 +723,135 @@ class X11Window : DWindow {
     private bool wmStateNotNormal() {
         WindowState state = wmState();
         return state != WindowState.normal && state != WindowState.unspecified;
+    }
+
+    /// adds the states to (or removes them from) the _NET_WM_STATE property: for a window that isn't mapped yet,
+    /// whose state the window manager reads from it when the window is mapped (EWMH) (#1189, #1197)
+    private void setWmStateProperty(bool add, const(Atom)[] states...) {
+        import std.algorithm : canFind, remove;
+        Atom[] list;
+        Atom type;
+        int format;
+        c_ulong count, after;
+        ubyte* data;
+        if (XGetWindowProperty(x11display, _win, atom_NET_WM_STATE, 0, int.max / 4, False, XA_ATOM, &type, &format,
+                &count, &after, &data) == 0 && data) {
+            if (type == XA_ATOM && format == 32)
+                list = (cast(Atom*)data)[0 .. count].dup; // format 32 properties are arrays of C longs, as Atom
+            XFree(data);
+        }
+        foreach (state; states) {
+            if (add && !list.canFind(state))
+                list ~= state;
+            else if (!add)
+                list = list.remove!(a => a == state);
+        }
+        XChangeProperty(x11display, _win, atom_NET_WM_STATE, XA_ATOM, 32, PropModeReplace, cast(ubyte*)list.ptr,
+            cast(int)list.length);
+    }
+
+    /// whether the window is iconified when it is mapped from the withdrawn state (ICCCM WM_HINTS initial_state)
+    private void setInitialIconic(bool iconic) {
+        XWMHints hints;
+        if (XWMHints* old = XGetWMHints(x11display, _win)) {
+            hints = *old;
+            XFree(old);
+        }
+        hints.flags |= StateHint;
+        hints.nitial_state = iconic ? IconicState : NormalState; // sic: the field's name in the x11 bindings
+        XSetWMHints(x11display, _win, &hints);
+        _initialIconic = iconic;
+    }
+
+    /// the state requested for a window that isn't mapped (not shown yet, or hidden by hideWindow()), for the
+    /// window manager to apply when it is mapped (#1197): iconified by WM_HINTS (ICCCM), the other states in the
+    /// _NET_WM_STATE property only for a window manager that supports it, as wmState() reads it back
+    private void setInitialWmState(WindowState state, bool ewmh) {
+        setInitialIconic(state == WindowState.minimized);
+        if (!ewmh)
+            return;
+        // the new state replaces an earlier one, also one the window manager left when the window was withdrawn;
+        // the Fullscreen flag keeps the window fullscreen; iconified by WM_HINTS only
+        bool maximized = state == WindowState.maximized;
+        bool fullscreen = state == WindowState.fullscreen || (flags & WindowFlag.Fullscreen);
+        setWmStateProperty(maximized, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
+        setWmStateProperty(fullscreen, atom_NET_WM_STATE_FULLSCREEN);
+        if (state != WindowState.minimized)
+            setWmStateProperty(false, atom_NET_WM_STATE_HIDDEN);
+    }
+
+    /// before the window is mapped from the withdrawn state (not shown yet, or hidden by hideWindow()): the
+    /// fullscreen and modal states of its flags, which window managers remove when a window is withdrawn (#1189);
+    /// an iconic map counts as an iconify request, for a restoreWindow() that comes before it is reported (#1198)
+    private void prepareMapFromWithdrawn(bool ewmh) {
+        if (ewmh) {
+            if (flags & WindowFlag.Fullscreen)
+                setWmStateProperty(true, atom_NET_WM_STATE_FULLSCREEN);
+            if (flags & WindowFlag.Modal)
+                setWmStateProperty(true, atom_NET_WM_STATE_MODAL);
+        }
+        _shownIconic = _initialIconic;
+        if (_initialIconic)
+            _iconifyRequested = MonoTime.currTime;
+    }
+
+    /// after a window hidden by hideWindow() is mapped again: the fullscreen and modal states of its flags as
+    /// messages too, as the window manager may delete the property when it handles the withdraw only after it was
+    /// written (#1189)
+    private void sendFlagStates(bool ewmh) {
+        if (!ewmh)
+            return;
+        if (flags & WindowFlag.Fullscreen)
+            changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
+        if (flags & WindowFlag.Modal)
+            changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_MODAL);
+    }
+
+    /// a _NET_WM_STATE change with this serial: a window hidden by hideWindow() and mapped iconified again isn't
+    /// withdrawn any more when the window manager reports it iconified (it gets no MapNotify, which ends the
+    /// withdrawn state of the others) (#1197). The X server gives an event the serial of the last request from
+    /// this client it processed: changes before the map request reached the server have a smaller one and are
+    /// still ignored; a late handling of the withdraw can have a later one, so only an iconified state counts.
+    private void checkMapRequestHandled(c_ulong serial) {
+        if (_withdrawn && _shownIconic && _mapRequestSerial != 0 && serial >= _mapRequestSerial
+                && wmState() == WindowState.minimized) {
+            _withdrawn = false;
+            _mapRequestSerial = 0;
+        }
+    }
+
+    /// an iconify request was sent in the last 2 seconds and isn't reported yet (#1198)
+    private bool iconifyPending() {
+        return _iconifyRequested != MonoTime.init && MonoTime.currTime < _iconifyRequested + 2.seconds;
+    }
+
+    /// the window manager iconified the window: a restoreWindow() that came while the request was pending maps it
+    /// again (#1198); called on _NET_WM_STATE_HIDDEN and on UnmapNotify, as window managers set HIDDEN before they
+    /// unmap the window (openbox) and mapping a mapped window does nothing
+    private void onIconified() {
+        if (_viewable)
+            return; // the UnmapNotify comes later
+        bool restore = _restoreAfterIconify && iconifyPending();
+        _restoreAfterIconify = false;
+        _iconifyRequested = MonoTime.init;
+        if (restore) {
+            XMapWindow(x11display, _win);
+            XFlush(x11display);
+        }
+    }
+
+    /// asks the window manager to activate the window (EWMH _NET_ACTIVE_WINDOW from an application); it also
+    /// deiconifies it (#1198)
+    private void sendActiveWindow() {
+        XEvent ev;
+        ev.xclient.type = ClientMessage;
+        ev.xclient.window = _win;
+        ev.xclient.message_type = XInternAtom(x11display, "_NET_ACTIVE_WINDOW", False);
+        ev.xclient.format = 32;
+        ev.xclient.data.l[0] = 1; // source indication: application
+        ev.xclient.data.l[1] = CurrentTime;
+        XSendEvent(x11display, RootWindow(x11display, x11screen), false, SubstructureNotifyMask|SubstructureRedirectMask,
+            &ev);
     }
 
     protected final void changeWindowState(int action, Atom firstProperty, Atom secondProperty = None) nothrow
@@ -838,6 +1040,8 @@ class X11Window : DWindow {
             return false;
         }
         bool result = false;
+        bool mappedFromWithdrawn = false; // mapped below: not mapped (raised) again for activate
+        bool rejected = false; // the state can't be requested: false, also when activate shows the window
         // maximized, minimized, fullscreen and normal are states a window manager sets: they are requested only when
         // one runs (else false), and not recorded here: the window manager reports them (PropertyNotify of
         // _NET_WM_STATE), when and if they change (#1190)
@@ -850,18 +1054,65 @@ class X11Window : DWindow {
                 // a window not shown yet will be shown normal (show() applies the client size limits to it then)
                 recordedState = newState == WindowState.normal && !_mapped ? WindowState.normal
                     : WindowState.unspecified;
-                if (newState == WindowState.normal && _mapped
-                        && (_withdrawn || _windowState == WindowState.minimized)) {
-                    // maps a window hidden by hideWindow() or iconified (ICCCM; not one the window manager unmapped
-                    // on another desktop: that could switch desktops); needs no window manager, MapNotify reports
-                    // the state
+                if (newState != WindowState.normal)
+                    _restoreAfterIconify = false;
+                bool wmRunning = x11WindowManagerRunning();
+                bool ewmh = false;
+                if (!_shown || _withdrawn) {
+                    // a window that isn't mapped can be shown iconified by a window manager, and maximized or
+                    // fullscreen by one that supports _NET_WM_STATE
+                    ewmh = x11WindowManagerSupportsWmState(wmRunning);
+                    bool supported = newState == WindowState.normal || (wmRunning
+                        && (newState == WindowState.minimized || ewmh));
+                    if (!supported) {
+                        rejected = true;
+                        break;
+                    }
+                }
+                if (!_shown) {
+                    // not mapped yet: window managers ignore _NET_WM_STATE messages for it; it gets the state from
+                    // the _NET_WM_STATE property and WM_HINTS when show() maps it (EWMH, ICCCM) (#1197)
+                    if (wmRunning)
+                        setInitialWmState(newState, ewmh);
+                    result = true;
+                    break;
+                }
+                if (_withdrawn) {
+                    // hidden by hideWindow(): shown again in the requested state, from the _NET_WM_STATE property
+                    // and WM_HINTS; the _NET_WM_STATE messages below too, as the window manager may delete the
+                    // property when it handles the withdraw after it was written (#1197)
+                    setInitialWmState(newState, ewmh);
+                    prepareMapFromWithdrawn(ewmh);
+                    if (activate && newState != WindowState.minimized)
+                        XMapRaised(x11display, _win);
+                    else
+                        XMapWindow(x11display, _win);
+                    // stays withdrawn until the window manager handled the map request (an iconified window
+                    // gets no MapNotify): its events from the withdraw are ignored; the serial of the map request
+                    _mapRequestSerial = x11display.request;
+                    mappedFromWithdrawn = true;
+                    sendFlagStates(ewmh);
+                    result = true;
+                    if (!wmRunning || newState == WindowState.minimized)
+                        break;
+                } else if (newState == WindowState.normal
+                        && (_windowState == WindowState.minimized || _shownIconic)) {
+                    // iconified: mapped again (ICCCM; not a window the window manager unmapped on another desktop:
+                    // that could switch desktops); needs no window manager, MapNotify reports the state; also a
+                    // window shown iconified, which window managers without _NET_WM_STATE don't report
+                    if (_shownIconic) {
+                        // also when the window manager hasn't handled its first map yet: then it reads WM_HINTS
+                        // later; the map deiconifies it, so a pending iconify ends (no restore when it is reported)
+                        setInitialIconic(false);
+                        _iconifyRequested = MonoTime.init;
+                        _restoreAfterIconify = false;
+                    }
                     XMapWindow(x11display, _win);
                     result = true;
                 }
-                if (!x11WindowManagerRunning()) {
+                if (!wmRunning) {
                     // nothing to do for a shown normal window
-                    result = result || (newState == WindowState.normal && _mapped
-                        && _windowState == WindowState.normal);
+                    result = result || (newState == WindowState.normal && _windowState == WindowState.normal);
                     break;
                 }
                 result = true;
@@ -870,13 +1121,25 @@ class X11Window : DWindow {
                         atom_NET_WM_STATE_MAXIMIZED_VERT);
                 } else if (newState == WindowState.minimized) {
                     result = XIconifyWindow(x11display, _win, x11screen) != 0;
+                    if (result)
+                        _iconifyRequested = MonoTime.currTime;
                 } else if (newState == WindowState.normal) {
                     changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_MAXIMIZED_HORZ,
                         atom_NET_WM_STATE_MAXIMIZED_VERT);
-                    changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_FULLSCREEN);
+                    // the Fullscreen flag keeps the window fullscreen, as before show() (setInitialWmState)
+                    if (!(flags & WindowFlag.Fullscreen))
+                        changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_FULLSCREEN);
                     // EWMH window managers may ignore it, but some (openbox) restore an iconified window: also one
-                    // whose iconify request they haven't handled yet, which the mapping above doesn't (#1190)
+                    // whose iconify request they haven't handled yet (#1190)
                     changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_HIDDEN);
+                    // others don't: mapping a window that is still mapped does nothing, so it is mapped again when
+                    // the iconify is reported (#1198)
+                    bool iconifying = iconifyPending();
+                    if (iconifying)
+                        _restoreAfterIconify = true;
+                    // activation deiconifies in EWMH window managers, also ones that keep iconified windows mapped
+                    if (activate && (_windowState == WindowState.minimized || iconifying))
+                        sendActiveWindow();
                 } else {
                     changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_FULLSCREEN);
                 }
@@ -886,16 +1149,27 @@ class X11Window : DWindow {
                 // synthetic UnmapNotify), as XUnmapWindow alone left it on the taskbar (#1190)
                 XWithdrawWindow(x11display, _win, x11screen);
                 _withdrawn = true;
+                _mapRequestSerial = 0;
+                _shownIconic = false;
+                _restoreAfterIconify = false;
+                _iconifyRequested = MonoTime.init;
+                // a later map from the withdrawn state (show(), activateWindow()) shows it normal (#1197): its
+                // _NET_WM_STATE is set then, after the window manager handled the withdraw; a window not shown yet
+                // keeps the state requested for it
+                if (_shown)
+                    setInitialIconic(false);
                 result = true;
                 break;
             default:
                 break;
         }
 
-        // change size and/or position
+        // change size and/or position: of a normal window, and of a window not shown yet, whose geometry the window
+        // manager keeps for a restore when it maps it maximized or fullscreen (restoreWindowState(), #1197)
         bool rectChanged = false;
-        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)
-                && !(_flags & WindowFlag.Fullscreen)) {
+        bool rectApplies = newState == WindowState.normal || newState == WindowState.unspecified
+            || (!_shown && (newState == WindowState.maximized || newState == WindowState.fullscreen));
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && rectApplies && !(_flags & WindowFlag.Fullscreen)) {
             // keep the window on the screen: e.g. a restored position from a monitor that is gone,
             // or a size measured from content bigger than the screen (#1114)
             bool positionSet = newWindowRect.top != int.min && newWindowRect.left != int.min;
@@ -925,7 +1199,7 @@ class X11Window : DWindow {
                 }
             }
         }
-        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && rectApplies) {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 XMoveWindow(x11display, _win, newWindowRect.left, newWindowRect.top);
@@ -951,9 +1225,37 @@ class X11Window : DWindow {
             }
         }
 
-        if (activate) {
-            XMapRaised(x11display, _win);
-            result = true;
+        // shown and activated also when the state was rejected: then normal, and the result stays false
+        bool showNow = false;
+        if (activate && !mappedFromWithdrawn) {
+            if (!_shown) {
+                // shown, as on Win32: show() maps and raises it after creating its OpenGL context and sizing it;
+                // at the end, as it can resize the window
+                showNow = true;
+            } else if (newState != WindowState.minimized || rejected) {
+                // not for a minimize request: mapping deiconifies the window
+                bool wasHidden = _withdrawn;
+                bool ewmh = wasHidden && x11WindowManagerSupportsWmState();
+                if (wasHidden) {
+                    // a window hidden by hideWindow() is shown normal, as by show()
+                    setInitialWmState(WindowState.normal, ewmh);
+                    prepareMapFromWithdrawn(ewmh);
+                } else if (_shownIconic) {
+                    // shown iconified: as restoreWindow(), also when the window manager hasn't handled the first
+                    // map yet; the map deiconifies it, so a pending iconify ends
+                    setInitialIconic(false);
+                    _iconifyRequested = MonoTime.init;
+                    _restoreAfterIconify = false;
+                } else if (newState != WindowState.normal && iconifyPending()) {
+                    // an iconify request is pending, so mapping does nothing yet: as restoreWindow() (#1198), which
+                    // did this already for a normal request
+                    _restoreAfterIconify = true;
+                    sendActiveWindow();
+                }
+                mapDuringShow(wasHidden, ewmh);
+            }
+            if (!rejected)
+                result = true;
         }
         XFlush(x11display);
 
@@ -968,7 +1270,8 @@ class X11Window : DWindow {
         else
             handleWindowStateChange(recordedState, RECT_VALUE_IS_NOT_SET);
 
-
+        if (showNow)
+            show();
         return result;
     }
 
@@ -1998,10 +2301,14 @@ class X11Platform : Platform {
                         w.handleWindowStateChange(WindowState.normal);
                 } else if (event.xproperty.atom == atom_NET_WM_STATE && event.xproperty.state == PropertyNewValue) {
                     X11Window w = findWindow(event.xproperty.window);
+                    if (w)
+                        w.checkMapRequestHandled(event.xproperty.serial);
                     // an unmapped window becomes only minimized: an iconified window can be unmapped (hidden)
                     // before _NET_WM_STATE_HIDDEN is set
                     if (w && !w._withdrawn) {
                         WindowState state = w.wmState();
+                        if (state == WindowState.minimized)
+                            w.onIconified();
                         if (w._viewable || state == WindowState.minimized)
                             w.handleWindowStateChange(state);
                     }
@@ -2017,7 +2324,9 @@ class X11Platform : Platform {
                         w._fitAfterPlacementDeadline = MonoTime.currTime + 2.seconds;
                     }
                     w._withdrawn = false;
+                    w._mapRequestSerial = 0;
                     w._viewable = true;
+                    w._shownIconic = false;
                     // normal without a window manager; a window restored from the taskbar can be maximized (#1190);
                     // a mapped window isn't iconified, though the window manager may remove HIDDEN only after mapping
                     WindowState state = w.wmState(true);
@@ -2028,11 +2337,18 @@ class X11Platform : Platform {
                 break;
             case UnmapNotify:
                 X11Window w = findWindow(event.xunmap.window);
-                if (w)
+                if (w) {
                     w._viewable = false;
-                // an iconified window is unmapped too: it stays minimized (_NET_WM_STATE_HIDDEN, #1190)
-                if (w && w.windowState != WindowState.minimized) {
-                    w.handleWindowStateChange(WindowState.hidden);
+                    // unmapped by the window manager while an iconify request is pending: iconified (also by
+                    // window managers that set _NET_WM_STATE_HIDDEN only after unmapping, or never: ICCCM only),
+                    // so restoreWindow() maps it again (#1198)
+                    if (!w._withdrawn && w.iconifyPending()) {
+                        w.handleWindowStateChange(WindowState.minimized);
+                        w.onIconified();
+                    } else if (w.windowState != WindowState.minimized) {
+                        // an iconified window is unmapped too: it stays minimized (_NET_WM_STATE_HIDDEN, #1190)
+                        w.handleWindowStateChange(WindowState.hidden);
+                    }
                 }
                 break;
             case Expose:
@@ -2538,6 +2854,28 @@ private bool x11WindowManagerRunning() {
     XWindowAttributes attributes;
     return XGetWindowAttributes(x11display, RootWindow(x11display, x11screen), &attributes) != 0
         && (attributes.all_event_masks & SubstructureRedirectMask) != 0;
+}
+
+/// true if a window manager that supports _NET_WM_STATE runs (EWMH: listed in _NET_SUPPORTED of the root window):
+/// it reads the property when a window is mapped, and updates it (#1197); ICCCM-only window managers (twm) don't;
+/// wmRunning: x11WindowManagerRunning(), if the caller has it
+private bool x11WindowManagerSupportsWmState(bool wmRunning = x11WindowManagerRunning()) {
+    import std.algorithm : canFind;
+    if (!wmRunning)
+        return false;
+    Atom supported = XInternAtom(x11display, "_NET_SUPPORTED", True);
+    if (supported == None)
+        return false;
+    Atom type;
+    int format;
+    c_ulong count, after;
+    ubyte* data;
+    if (XGetWindowProperty(x11display, RootWindow(x11display, x11screen), supported, 0, int.max / 4, False, XA_ATOM,
+            &type, &format, &count, &after, &data) != 0 || !data)
+        return false;
+    scope (exit) XFree(data);
+    // format 32 properties are arrays of C longs, as Atom
+    return type == XA_ATOM && format == 32 && (cast(Atom*)data)[0 .. count].canFind(atom_NET_WM_STATE);
 }
 
 /// the X resource manager string (desktop settings such as Xft.dpi) from the RESOURCE_MANAGER property of the root
