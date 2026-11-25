@@ -423,6 +423,9 @@ class Win32Window : Window {
     /// setWindowState(WindowState.fullscreen) before show(): show() sizes and places the window as usual, then makes
     /// it fullscreen before showing it, so it leaves fullscreen with that size and position (#1196)
     private bool _fullscreenOnShow;
+    /// setWindowState(WindowState.maximized) before show(): show() shows the window maximized, after sizing and
+    /// placing it, so it is restored to that rectangle (#1200)
+    private bool _maximizeOnShow;
     bool useOpengl;
 
     /// win32 only - return window handle
@@ -675,8 +678,16 @@ class Win32Window : Window {
     /// restored window), only its frame is recomputed for the new DPI
     void onDpiChanged(uint dpi, RECT* suggested) {
         bool keepsScale = overrideScreenDPI != 0 || !isSupportedScreenDpi(dpi);
+        int oldScreenDpi = SCREEN_DPI;
         _platform.setSystemScreenDpi(dpi);
         scaleClientSizeLimitsToScreenDpi(); // not holding the window at its old size
+        if (IsIconic(_hwnd) || IsZoomed(_hwnd) || _fullscreen) {
+            // the normal rectangle saved for it follows the scale, as the one Windows restores does (#1200)
+            if (_normalWindowRect.right > 0 && _normalWindowRect.bottom > 0 && oldScreenDpi > 0) {
+                _normalWindowRect.right = max(1, scaleForDpi(_normalWindowRect.right, oldScreenDpi, SCREEN_DPI));
+                _normalWindowRect.bottom = max(1, scaleForDpi(_normalWindowRect.bottom, oldScreenDpi, SCREEN_DPI));
+            }
+        }
         if (IsIconic(_hwnd) || IsZoomed(_hwnd)) {
             SetWindowPos(_hwnd, null, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
@@ -889,9 +900,11 @@ class Win32Window : Window {
             if (_fullscreenOnShow)
                 enterFullscreen(false);
             _fullscreenOnShow = false;
-            // (also a window made fullscreen while hidden by hideWindow())
-            ShowWindow(_hwnd, SW_SHOWNORMAL);
-            _windowState = _fullscreen ? WindowState.fullscreen : WindowState.normal;
+            // (also a window made fullscreen while hidden by hideWindow()); maximized if requested before (#1200)
+            bool maximize = _maximizeOnShow && !_fullscreen;
+            _maximizeOnShow = false;
+            ShowWindow(_hwnd, maximize ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
+            _windowState = _fullscreen ? WindowState.fullscreen : maximize ? WindowState.maximized : WindowState.normal;
         }
         _shown = true;
         if (_mainWidget)
@@ -963,6 +976,12 @@ class Win32Window : Window {
                 break;
             case WindowState.maximized:
                 _fullscreenOnShow = false;
+                if (!_shown && !(_flags & WindowFlag.Fullscreen)) {
+                    // shown maximized by show(), after sizing and placing it (#1200)
+                    _maximizeOnShow = true;
+                    res = true;
+                    break;
+                }
                 if (_flags & WindowFlag.Fullscreen) {
                     // the flag keeps it fullscreen, as on X11: only restored from minimized, as for normal (#1196)
                     if (IsIconic(_hwnd)) {
@@ -981,6 +1000,7 @@ class Win32Window : Window {
                 break;
             case WindowState.minimized:
                 _fullscreenOnShow = false;
+                _maximizeOnShow = false;
                 if (_windowState != WindowState.minimized || activate) {
                     ShowWindow(_hwnd, activate ? SW_SHOWMINIMIZED : SW_MINIMIZE);
                     res = true;
@@ -994,6 +1014,7 @@ class Win32Window : Window {
                 break;
             case WindowState.fullscreen:
                 if (!_shown) {
+                    _maximizeOnShow = false;
                     _fullscreenOnShow = true; // made fullscreen by show(), after sizing and placing it
                     res = true;
                     break;
@@ -1002,6 +1023,12 @@ class Win32Window : Window {
                 break;
             case WindowState.normal:
                 _fullscreenOnShow = false;
+                _maximizeOnShow = false;
+                if (!_shown && !activate) {
+                    // shown by show(); a rectangle is applied below (restoreWindowState(), #1200)
+                    res = true;
+                    break;
+                }
                 if (_fullscreen && !(_flags & WindowFlag.Fullscreen)) {
                     // the style and placement from before (#1196)
                     leaveFullscreen(activate ? SW_SHOWNORMAL : SW_SHOWNOACTIVATE);
@@ -1155,6 +1182,11 @@ class Win32Window : Window {
         if (_destroying)
             return;
         super.handleWindowStateChange(newState, newWindowRect);
+    }
+
+    /// not maximized, minimized or fullscreen now (the state Windows reports): the rectangle is the normal one (#1200)
+    override protected bool isNormalStateNow() {
+        return _hwnd && !IsZoomed(_hwnd) && !IsIconic(_hwnd) && !_fullscreen;
     }
 
     HICON _icon; // ICON_BIG

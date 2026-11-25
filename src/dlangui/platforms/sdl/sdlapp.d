@@ -501,6 +501,11 @@ class SDLWindow : Window {
         super.handleWindowStateChange(newState, newWindowRect);
     }
 
+    /// not maximized, minimized or fullscreen now (SDL's window flags): the rectangle is the normal one (#1200)
+    override protected bool isNormalStateNow() {
+        return !notInNormalState();
+    }
+
     /// true if the window is maximized, minimized or fullscreen: then it isn't centered or fitted into the screen
     protected bool notInNormalState() {
         return !_win || (_flags & WindowFlag.Fullscreen)
@@ -679,9 +684,7 @@ class SDLWindow : Window {
                     break;
                 if (_windowState != WindowState.normal) {
                     SDL_RestoreWindow(_win);
-                    // not after leaving fullscreen: the rectangle recorded is the fullscreen one, SDL restores the
-                    // windowed one (#1201)
-                    version(linux) if (!wasFullscreen) {
+                    version(linux) {
                         // On linux with Cinnamon desktop, changing window state from for example minimized reset windows size
                         // and/or position to values from create window (last tested on Cinamon 3.4.6 with SDL 2.0.4)
                         //
@@ -695,11 +698,15 @@ class SDLWindow : Window {
                         // 6. Restore window clicking on taskbar
                         // 7. The first main window has old position/size
                         // Xfce works OK without this fix
+                        // The rectangle of the normal state when the window leaves maximized or fullscreen (windowRect
+                        // is that one, which this made the normal one, #1200, #1201); from minimized the rectangle it
+                        // had, as SDL may bring it back maximized
+                        Rect normal = (sdlFlags & SDL_WINDOW_MINIMIZED) ? _windowRect : normalWindowRect;
                         if (newWindowRect.bottom == int.min && newWindowRect.right == int.min)
-                            SDL_SetWindowSize(_win, _windowRect.right, _windowRect.bottom);
+                            SDL_SetWindowSize(_win, normal.right, normal.bottom);
 
                         if (newWindowRect.top == int.min && newWindowRect.left == int.min)
-                            SDL_SetWindowPosition(_win, _windowRect.left, _windowRect.top);
+                            SDL_SetWindowPosition(_win, normal.left, normal.top);
                     }
                 }
                 res = true;
