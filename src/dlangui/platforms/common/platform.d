@@ -2351,8 +2351,12 @@ class Platform {
         return dlangui.core.filemanager.showInFileManager(pathName);
     }
 
-    /// handle theme change: e.g. reload some themed resources; backends override it to call
-    /// Window.dispatchThemeChanged() for all their windows after this
+    /// calls dg for each window of the platform; every backend implements it, so that e.g. a theme change reaches
+    /// all windows (#1173)
+    protected abstract void forEachWindow(scope void delegate(Window) dg);
+
+    /// handle theme change: reloads themed resources, and lets the widgets of all windows drop what they cached
+    /// from the old theme (Window.dispatchThemeChanged())
     void onThemeChanged() {
         // the caches don't exist without initResourceManagers() (#1174)
         if (drawableCache)
@@ -2366,6 +2370,8 @@ class Platform {
         // the theme's styles drop the fonts and drawables they cached; in every backend (#1160)
         if (currentTheme)
             currentTheme.onThemeChanged();
+        // in the base class, so that no backend leaves its windows with stale fonts and drawables (#1173)
+        forEachWindow((w) { w.dispatchThemeChanged(); });
     }
 
     /// a DPI rejected by setSystemScreenDpi() was warned about
@@ -2435,6 +2441,16 @@ unittest {
     // the base Platform.onThemeChanged() drops what the theme's styles cached, for every backend (#1160)
     import dlangui.widgets.styles : useTestTheme;
     import dlangui.graphics.resources : _drawableCache, DrawableCache;
+    static class TestWindow : Window {
+        int themeChanges; // the base Platform.onThemeChanged() reaches the windows (#1173)
+        override void dispatchThemeChanged() { themeChanges++; super.dispatchThemeChanged(); }
+        override void show() {}
+        override @property dstring windowCaption() const { return null; }
+        override @property void windowCaption(dstring caption) {}
+        override @property void windowIcon(DrawBufRef icon) {}
+        override void invalidate() {}
+        override void close() {}
+    }
     static class TestPlatform : Platform {
         override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable,
                 uint width = 0, uint height = 0) { return null; }
@@ -2444,6 +2460,8 @@ unittest {
         override dstring getClipboardText(bool mouseBuffer = false) { return null; }
         override void setClipboardText(dstring text, bool mouseBuffer = false) {}
         override void requestLayout() {}
+        TestWindow window;
+        override protected void forEachWindow(scope void delegate(Window) dg) { dg(window); }
     }
     // a style is added to the theme below: only to a theme created for this test, it is removed at the end
     if (currentTheme !is null)
@@ -2467,6 +2485,8 @@ unittest {
     }
     auto platform = new TestPlatform();
     scope (exit) destroy(platform);
+    platform.window = new TestWindow();
+    scope (exit) destroy(platform.window);
     Style style = currentTheme.createSubstyle("test1160").backgroundImageId("#FF0000");
     DrawableRef before = style.backgroundDrawable; // keeps the old object alive for the comparison
     scope (exit) before.clear();
@@ -2475,6 +2495,7 @@ unittest {
     DrawableRef after = style.backgroundDrawable;
     scope (exit) after.clear();
     assert(!after.isNull && after.get !is before.get);
+    assert(platform.window.themeChanges == 1);
     // without drawable and image caches (no initResourceManagers()) it works too (#1174)
     DrawableCache testDrawables = _drawableCache;
     _drawableCache = null;
@@ -2501,6 +2522,7 @@ unittest {
         override void setClipboardText(dstring text, bool mouseBuffer = false) {}
         override void requestLayout() { layouts++; }
         override void onThemeChanged() { themeChanges++; }
+        override protected void forEachWindow(scope void delegate(Window) dg) {}
     }
     immutable int savedDpi = systemScreenDPI;
     immutable int savedOverride = overrideScreenDPI;

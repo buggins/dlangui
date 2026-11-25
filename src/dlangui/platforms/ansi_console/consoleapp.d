@@ -127,12 +127,10 @@ class ConsolePlatform : Platform {
     }
 
 
-    /// handle theme change: the widgets of all windows refresh their cached styles, which belong to the replaced
-    /// (destroyed) theme (#1120)
-    override void onThemeChanged() {
-        super.onThemeChanged();
+    /// calls dg for each window (Platform.forEachWindow: theme changes reach all windows, #1173)
+    override protected void forEachWindow(scope void delegate(Window) dg) {
         foreach(w; _windowList)
-            w.dispatchThemeChanged();
+            dg(w);
     }
 
     ConsoleWindow activeWindow() {
