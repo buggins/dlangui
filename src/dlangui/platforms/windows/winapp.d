@@ -457,6 +457,9 @@ class Win32Window : Window {
         }
 
 
+        // re-created below with multisampling, which needs OpenGL; the window that stays must get `this` as its
+        // creation parameter, else WM_CREATE doesn't register it (#1186)
+        bool recreateForMultisampling = platform.getMultisamples > 0 && openglEnabled;
         _hwnd = CreateWindowW(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
                             ws,  // window style
@@ -467,7 +470,7 @@ class Win32Window : Window {
                             parenthwnd,                 // parent window handle
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
-                            platform.getMultisamples ? cast(void*)null : cast(void*)this); // creation parameters
+                            recreateForMultisampling ? cast(void*)null : cast(void*)this); // creation parameters
         static if (ENABLE_OPENGL) {
             /* initialize OpenGL rendering */
             HDC hDC = GetDC(_hwnd);
@@ -475,7 +478,7 @@ class Win32Window : Window {
             if (openglEnabled) {
                 useOpengl = sharedGLContext.init(hDC);
 
-                if(platform.multisamples != 0)
+                if (recreateForMultisampling)
                 {
                     sharedGLContext.uninit();
                     ReleaseDC(_hwnd, hDC);
