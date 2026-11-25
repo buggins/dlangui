@@ -74,7 +74,7 @@ immutable dstring SAMPLE_SOURCE_CODE =
 q{VerticalLayout {
     id: vlayout
     margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
-    padding: Rect { 5, 4, 3, 2 } // same as Rect { left: 5; top: 4; right: 3; bottom: 2 }
+    padding: Rect { 5, 4, 3, 2 } // left, top, right, bottom
     TextWidget {
         /* this widget can be accessed via id myLabel1
             e.g. w.childById!TextWidget("myLabel1")
@@ -91,12 +91,14 @@ q{VerticalLayout {
     CheckBox{ id: cb1; text: "Some checkbox" }
     HorizontalLayout {
         RadioButton { id: rb1; text: "Radio Button 1" }
-        RadioButton { id: rb1; text: "Radio Button 2" }
+        RadioButton { id: rb2; text: "Radio Button 2" }
     }
     HorizontalLayout {
         ImageTextButton { id: btn1; text: "Open folder"; drawableId: "folder" }
-        // orientation: Vertical puts the icon above the text
-        ImageTextButton { id: btn2; text: "Apply"; drawableId: "dialog-ok-apply"; orientation: Vertical }
+        ImageTextButton {
+            id: btn2; text: "Apply"; drawableId: "dialog-ok-apply"
+            orientation: Vertical // icon above the text
+        }
     }
 }
 };
@@ -344,34 +346,37 @@ class EditFrame : AppFrame {
         // the lists own their adapters and destroy them with their item widgets (#970)
         widgetsList.ownAdapter = sla;
 
+        // the two lists share the height of the left panel: 60% for the widgets, the rest for the properties (fixed
+        // min heights made the window content taller than the window; weights would follow the item counts, #1223)
         auto leftPanel = new VerticalLayout();
+        leftPanel.layoutWidth = FILL_PARENT;
         leftPanel.layoutHeight = FILL_PARENT;
+        widgetsList.layoutWidth = FILL_PARENT;
+        widgetsList.layoutHeight = makePercentSize(60);
+        propList.layoutWidth = FILL_PARENT;
+        propList.layoutHeight = FILL_PARENT;
 
-        widgetsList.minHeight=800;
-        propList.minHeight=600;
-
-        leftPanel.addChild(new TextWidget().text("Widgets").backgroundColor(0xdddddd).minHeight(50) );
         leftPanel.addChild(widgetsList);
-        leftPanel.addChild(new TextWidget().text("Widget properties").backgroundColor(0xdddddd).minHeight(50));
+        // header in the style of the dock window captions (follows the theme, also in the console)
+        auto propCaption = new HorizontalLayout();
+        propCaption.styleId = STYLE_DOCK_WINDOW_CAPTION;
+        propCaption.layoutWidth = FILL_PARENT;
+        auto propCaptionLabel = new TextWidget(null, "Widget properties"d);
+        propCaptionLabel.styleId = STYLE_DOCK_WINDOW_CAPTION_LABEL;
+        propCaption.addChild(propCaptionLabel);
+        leftPanel.addChild(propCaption);
         leftPanel.addChild(propList);
 
         auto leftDockWin = new DockWindow("left dock");
-
+        leftDockWin.caption.text = "Widgets"d;
         leftDockWin.bodyWidget = leftPanel;
         leftDockWin.dockAlignment = DockAlignment.Left;
-        leftDockWin.layoutWidth = makePercentSize(25);
         leftDockWin.layoutHeight = FILL_PARENT;
         dockHost.addDockedWindow(leftDockWin);
 
         _editor = new DMLSourceEdit();
         _editor.text = SAMPLE_SOURCE_CODE;
-
-        auto editorDockWin = new DockWindow("editor");
-        editorDockWin.layoutWidth = makePercentSize(50);
-        editorDockWin.bodyWidget = _editor;
-        editorDockWin.dockAlignment = DockAlignment.Left;
-        editorDockWin.layoutHeight = FILL_PARENT;
-        dockHost.addDockedWindow(editorDockWin);
+        _editor.focusGroup = true; // as when it was in a DockWindow
 
         VerticalLayout previewLayout = new VerticalLayout();
         previewLayout.layoutHeight = FILL_PARENT;
@@ -418,13 +423,19 @@ class EditFrame : AppFrame {
         previewLayout.addChild(_preview);
 
         auto previewDockWin = new DockWindow("preview");
-        previewDockWin.layoutWidth = makePercentSize(25);
+        previewDockWin.caption.text = "Preview"d;
         previewDockWin.bodyWidget = previewLayout;
         previewDockWin.dockAlignment = DockAlignment.Right;
 
         previewDockWin.layoutHeight = FILL_PARENT;
-        dockHost.bodyWidget = editorDockWin;
+        // the editor is the body of the dock host, not a docked window: added as both (in a DockWindow), it was in
+        // the host's children twice and took half of the left dock area (#1223)
+        dockHost.bodyWidget = _editor;
         dockHost.addDockedWindow(previewDockWin);
+        // dock sizes in percent of the window width: 20% (the library default) for the lists; the preview needs
+        // room for its check boxes and the sample
+        dockHost.setInitialSpace(DockAlignment.Left, 20);
+        dockHost.setInitialSpace(DockAlignment.Right, 35);
 
         return dockHost;
     }
