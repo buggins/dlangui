@@ -1693,24 +1693,25 @@ Theme createDefaultTheme() {
         //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
         //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
-        res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId(q{
-                {
-                    text: [
-                       "╔═╗",
-                       "║ ║",
-                       "╚═╝"],
-                    backgroundColor: [0x000080],
-                    textColor: [0xFF0000],
-                    ninepatch: [1,1,1,1],
-                    padding: [1,1,1,1]
-                }
-            })
+        // the frame of an editor in the given color
+        static string editLineFrame(string color) {
+            return `{ text: ["╔═╗", "║ ║", "╚═╝"], backgroundColor: [0x000080], textColor: [` ~ color
+                ~ `], ninepatch: [1,1,1,1], padding: [1,1,1,1] }`;
+        }
+        Style editLine = res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId(editLineFrame("0xFF0000"))
             // room for the three-row frame, in the style and the drawable, as in console_theme_default.xml (#1136)
             .setPadding(1,1,1,1).setMargins(0,0,0,0).minWidth(20)
             .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(1);
-        res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
-            .setPadding(0,0,0,0).setMargins(0,0,0,0).minWidth(30).minHeight(8).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
+        // the focused editor: a yellow frame, the focus color of console_theme_default.xml (#1170)
+        editLine.createState(State.Focused, State.Focused).backgroundImageId(editLineFrame("0xFFFF00"));
+        // a text frame and sizes as in console_theme_default.xml: the GUI's editbox_background isn't a console
+        // resource (#1170)
+        Style editBox = res.createSubstyle(STYLE_EDIT_BOX)
+            .backgroundImageId("{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}")
+            .setPadding(1,1,0,0).setMargins(0,0,0,0).minWidth(8).minHeight(3).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
             .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(1);
+        editBox.createState(State.Focused, State.Focused)
+            .backgroundImageId("{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}");
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundColor(0x000080).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_WARNING).backgroundColor(0x808000).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_ERROR).backgroundColor(0x800000).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
@@ -2593,6 +2594,25 @@ unittest {
     }
     assert(checked > 80, "STYLE_* constants not found");
     assert(!missing.length, "style ids of STYLE_* constants missing in the standard themes:" ~ missing);
+}
+
+/// the console fallback theme frames EditLine and EditBox with text drawables, in another color when focused (#1170)
+static if (WIDGET_STYLE_CONSOLE) unittest {
+    import dlangui.graphics.resources : createTextDrawable;
+    import std.algorithm.searching : canFind;
+    Theme theme = createDefaultTheme();
+    scope(exit) destroy(theme);
+    foreach (id; [STYLE_EDIT_LINE, STYLE_EDIT_BOX]) {
+        Style normal = theme.get(id);
+        Style focused = normal.forState(State.Focused);
+        // yellow when focused, as in console_theme_default.xml
+        assert(focused.backgroundImageId.canFind("0xFFFF00") && !normal.backgroundImageId.canFind("0xFFFF00"), id);
+        foreach (drawableId; [normal.backgroundImageId, focused.backgroundImageId]) {
+            Drawable d = createTextDrawable(drawableId);
+            assert(d !is null, id ~ ": " ~ drawableId);
+            destroy(d);
+        }
+    }
 }
 
 /// the fallback theme has the custom colors of the standard theme file: same ids, values and styles (#1133)
