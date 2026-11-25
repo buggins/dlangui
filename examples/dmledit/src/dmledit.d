@@ -73,19 +73,19 @@ class DMLSourceEdit : SourceEdit {
 immutable dstring SAMPLE_SOURCE_CODE =
 q{VerticalLayout {
     id: vlayout
-    margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
-    padding: Rect { 5, 4, 3, 2 } // left, top, right, bottom
+    margins: Rect { left: 5pt; right: 3pt; top: 2pt; bottom: 4pt } // pt: scaled with the screen DPI
+    padding: Rect { 5pt, 4pt, 3pt, 2pt } // left, top, right, bottom
     TextWidget {
         /* this widget can be accessed via id myLabel1
             e.g. w.childById!TextWidget("myLabel1")
         */
         id: myLabel1
-        text: "Some text"; padding: 5
+        text: "Some text"; padding: 5pt
         enabled: false
     }
     TextWidget {
         id: myLabel2
-        text: "More text"; margins: 5
+        text: "More text"; margins: 5pt
         enabled: true
     }
     CheckBox{ id: cb1; text: "Some checkbox" }
