@@ -409,6 +409,8 @@ class Win32Window : Window {
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
     private Win32Window _w32parent;
+    /// the monitor a fullscreen window was created on, which show() covers (#1193)
+    private Rect _fullscreenRect;
     bool useOpengl;
 
     /// win32 only - return window handle
@@ -438,7 +440,8 @@ class Win32Window : Window {
             ws |= WS_OVERLAPPED | WS_CAPTION | WS_CAPTION | WS_BORDER | WS_SYSMENU;
         //if (flags & WindowFlag.Fullscreen)
         //    ws |= SDL_WINDOW_FULLSCREEN;
-        Rect screenRc = getScreenDimensions();
+        // a fullscreen window covers its parent's monitor (#1193); without a parent, the primary one
+        Rect screenRc = monitorRect(parenthwnd);
         Log.d("Screen dimensions: ", screenRc);
 
         int x = CW_USEDEFAULT;
@@ -446,6 +449,7 @@ class Win32Window : Window {
 
         if (flags & WindowFlag.Fullscreen) {
             // fullscreen
+            _fullscreenRect = screenRc;
             x = screenRc.left;
             y = screenRc.top;
             _dx = screenRc.width;
@@ -575,23 +579,22 @@ class Win32Window : Window {
         }
     }
 
+    /// the rectangle of the monitor of this window (the primary monitor before the window is created)
     protected Rect getScreenDimensions() {
-        MONITORINFO monitor_info;
-        monitor_info.cbSize = monitor_info.sizeof;
-        HMONITOR hMonitor;
-        if (_hwnd) {
-            hMonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
-        } else {
-            hMonitor = MonitorFromPoint(POINT(0,0), MONITOR_DEFAULTTOPRIMARY);
+        return monitorRect(_hwnd);
+    }
+
+    /// the rectangle of the monitor of window, or of the primary monitor if window is null or its monitor can't be
+    /// read (e.g. it was just disconnected) (#1193)
+    protected static Rect monitorRect(HWND window) {
+        MONITORINFO info;
+        info.cbSize = info.sizeof;
+        HMONITOR hMonitor = window ? MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST) : null;
+        if (!hMonitor || !GetMonitorInfo(hMonitor, &info)) {
+            hMonitor = MonitorFromPoint(POINT(0, 0), MONITOR_DEFAULTTOPRIMARY);
+            GetMonitorInfo(hMonitor, &info);
         }
-        GetMonitorInfo(hMonitor,
-                       &monitor_info);
-        Rect res;
-        res.left = monitor_info.rcMonitor.left;
-        res.top = monitor_info.rcMonitor.top;
-        res.right = monitor_info.rcMonitor.right;
-        res.bottom = monitor_info.rcMonitor.bottom;
-        return res;
+        return Rect(info.rcMonitor.left, info.rcMonitor.top, info.rcMonitor.right, info.rcMonitor.bottom);
     }
 
     /// Limits an outer window rectangle (screen coordinates) to the work area of the monitor it is on, or of the
@@ -851,12 +854,18 @@ class Win32Window : Window {
         }
         updateClientSizeLimits(true);
 
-        adjustPositionDuringShow();
-        fitWindowIntoWorkArea();
+        // a fullscreen window stays on the monitor it was created on: centering it over its parent or fitting it into
+        // a work area could move it to another monitor (#1193)
+        if (!(_flags & WindowFlag.Fullscreen)) {
+            adjustPositionDuringShow();
+            fitWindowIntoWorkArea();
+        }
 
         if (_flags & WindowFlag.Fullscreen) {
-            Rect rc = getScreenDimensions();
-            SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, rc.width, rc.height, SWP_SHOWWINDOW);
+            // the monitor it was created on, also if a content size change above moved it (only the primary
+            // monitor is at (0, 0)) (#1193)
+            Rect rc = _fullscreenRect;
+            SetWindowPos(_hwnd, HWND_TOPMOST, rc.left, rc.top, rc.width, rc.height, SWP_SHOWWINDOW);
             _windowState = WindowState.fullscreen;
         } else {
             ShowWindow(_hwnd, SW_SHOWNORMAL);
