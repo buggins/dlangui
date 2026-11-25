@@ -396,11 +396,10 @@ class DSFMLPlatform : Platform {
         }
     }
 
-    /// handle theme change: e.g. reload some themed resources
-    override void onThemeChanged() {
-        super.onThemeChanged();
+    /// calls dg for each window (Platform.forEachWindow: theme changes reach all windows, #1173)
+    override protected void forEachWindow(scope void delegate(dlangui.platforms.common.platform.Window) dg) {
         foreach(w; _activeWindows)
-            w.dispatchThemeChanged();
+            dg(w);
     }
 
 }

@@ -640,11 +640,10 @@ class AndroidPlatform : Platform {
         }
     }
 
-    /// handle theme change: e.g. reload some themed resources
-    override void onThemeChanged() {
-        super.onThemeChanged();
+    /// calls dg for each window (Platform.forEachWindow: theme changes reach all windows, #1173)
+    override protected void forEachWindow(scope void delegate(Window) dg) {
         foreach(w; _windows)
-            w.dispatchThemeChanged();
+            dg(w);
     }
 
 }

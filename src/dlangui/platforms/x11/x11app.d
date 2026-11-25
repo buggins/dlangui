@@ -2761,11 +2761,10 @@ class X11Platform : Platform {
         return false;
     }
 
-    /// handle theme change: e.g. reload some themed resources
-    override void onThemeChanged() {
-        super.onThemeChanged();
+    /// calls dg for each window (Platform.forEachWindow: theme changes reach all windows, #1173)
+    override protected void forEachWindow(scope void delegate(DWindow) dg) {
         foreach(w; _windowMap)
-            w.dispatchThemeChanged();
+            dg(w);
     }
 
 }
