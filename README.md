@@ -4,7 +4,17 @@ Dlang UI
 
 Cross platform GUI for D. Widgets, layouts, styles, themes, unicode, i18n, OpenGL based acceleration.
 
-![screenshot](http://buggins.github.io/dlangui/screenshots/screenshot-example1-windows.png "Screenshot of widgets demo app example1")
+![example1 widget demo](https://buggins.github.io/dlangui/screenshots/screenshot-example1-windows.png "Screenshot of widgets demo app example1")
+
+example1, the widget demo (`dub run dlangui:example1`).
+
+[![DlangIDE, dark theme](https://buggins.github.io/dlangui/screenshots/screenshot-dlangide-dark.png "DlangIDE: an IDE for D written with DlangUI")](https://github.com/buggins/dlangide)
+
+[DlangIDE](https://github.com/buggins/dlangide), an IDE for D written with DlangUI (dark theme).
+
+![dmledit](https://buggins.github.io/dlangui/screenshots/screenshot-dmledit.png "dmledit: DML editor with live preview")
+
+dmledit, a DML editor with live preview (`dub run dlangui:dmledit`).
 
 
 GitHub page: [https://github.com/buggins/dlangui](https://github.com/buggins/dlangui)
@@ -17,7 +27,7 @@ Wiki: [https://github.com/buggins/dlangui/wiki/Home](https://github.com/buggins/
 
 Getting Started Tutorial: [https://github.com/buggins/dlangui/wiki/Getting-Started](https://github.com/buggins/dlangui/wiki/Getting-Started)
 
-Old project site with screenshots (not updated since 2017): [http://buggins.github.io/dlangui](http://buggins.github.io/dlangui)
+Old project site (pages not updated since 2017): [https://buggins.github.io/dlangui](https://buggins.github.io/dlangui)
 
 Coding style: [https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md](https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md)
 
