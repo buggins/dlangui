@@ -446,12 +446,28 @@ class Window : CustomEventTarget {
 
     Signal!OnMainWidgetChange mainWidgetChange;
 
-    /// save window state to setting object
+    /// the window rectangle of the normal state (as windowRect: position, client size), kept while the window is
+    /// maximized, minimized or fullscreen; windowRect if none was recorded (#1200)
+    @property Rect normalWindowRect() const {
+        return _normalWindowRect.right > 0 && _normalWindowRect.bottom > 0 ? _normalWindowRect : _windowRect;
+    }
+    /// ditto
+    protected Rect _normalWindowRect;
+
+    /// true if the window is in the normal state (or hidden, e.g. not shown yet) as the system reports it now:
+    /// handleWindowStateChange() keeps its rectangles as normalWindowRect. Backends override it where the state is
+    /// recorded later than the rectangle changes (#1200)
+    protected bool isNormalStateNow() {
+        return _windowState == WindowState.normal || _windowState == WindowState.hidden;
+    }
+
+    /// save window state to setting object; the rectangle is the normal window's, also of a maximized, minimized or
+    /// fullscreen window, so that restoreWindowState() gives it back when the window leaves that state (#1200)
     void saveWindowState(Setting setting) {
         if (!setting)
             return;
         WindowState state = windowState;
-        Rect rect = windowRect;
+        Rect rect = state == WindowState.normal ? windowRect : normalWindowRect;
         if (state == WindowState.fullscreen
             || state == WindowState.minimized
             || state == WindowState.maximized
@@ -485,11 +501,12 @@ class Window : CustomEventTarget {
              || state == WindowState.minimized
              || state == WindowState.maximized
              || state == WindowState.normal)) {
-            if (state == WindowState.minimized || state == WindowState.fullscreen) {
+            if (state != WindowState.normal) {
                 // the rect is the normal window's, and backends apply a rect only to a normal window: restore it
-                // first; a window closed while minimized starts normal, not minimized (#1190)
+                // first, also for a maximized one, which gets it back when it is restored (#1200); a window closed
+                // while minimized starts normal, not minimized (#1190)
                 setWindowState(WindowState.normal, false, rect);
-                if (state == WindowState.fullscreen)
+                if (state == WindowState.fullscreen || state == WindowState.maximized)
                     setWindowState(state);
             } else {
                 setWindowState(state, false, rect);
@@ -598,6 +615,9 @@ class Window : CustomEventTarget {
             _windowRect = newWindowRect;
             //Log.d("Window ", windowCaption, " rect changed - ", newWindowRect);
             signalWindow = true;
+            // the rectangle of the normal state, for saveWindowState() of a maximized or fullscreen window (#1200)
+            if (isNormalStateNow())
+                _normalWindowRect = _windowRect;
         }
 
         if(newState == WindowState.minimized)
@@ -2122,6 +2142,48 @@ class Window : CustomEventTarget {
     }
 
 
+}
+
+/// saveWindowState() saves the normal rectangle of a maximized window, restoreWindowState() gives it back as the
+/// normal rectangle before maximizing (#1200)
+unittest {
+    import dlangui.core.settings : Setting;
+    import dlangui.widgets.styles : useTestTheme;
+    import std.format : format;
+    static class StateTestWindow : Window {
+        string[] calls;
+        override void show() {}
+        override @property dstring windowCaption() const { return null; }
+        override @property void windowCaption(dstring caption) {}
+        override @property void windowIcon(DrawBufRef icon) {}
+        override void invalidate() {}
+        override void close() {}
+        override bool setWindowState(WindowState newState, bool activate = false,
+                Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+            calls ~= format("%s %s", newState, newWindowRect == RECT_VALUE_IS_NOT_SET ? "-" : format("%s", newWindowRect));
+            return true;
+        }
+        void report(WindowState state, Rect rc) { handleWindowStateChange(state, rc); }
+    }
+    auto _ = useTestTheme();
+    auto w = new StateTestWindow();
+    scope(exit) destroy(w);
+    Rect normal = Rect(100, 50, 800, 600);
+    w.report(WindowState.normal, normal);
+    w.report(WindowState.maximized, Rect(0, 0, 1920, 1040));
+    assert(w.normalWindowRect == normal);
+    auto setting = new Setting();
+    w.saveWindowState(setting);
+    assert(setting.getInteger("windowState") == WindowState.maximized);
+    assert(setting.getInteger("windowPositionLeft") == 100 && setting.getInteger("windowPositionTop") == 50);
+    assert(setting.getInteger("windowWidth") == 800 && setting.getInteger("windowHeight") == 600);
+    assert(w.restoreWindowState(setting));
+    assert(w.calls == [format("%s %s", WindowState.normal, normal), format("%s -", WindowState.maximized)],
+        format("%s", w.calls));
+    // a normal window saves its own rectangle
+    w.report(WindowState.normal, Rect(10, 20, 300, 200));
+    w.saveWindowState(setting);
+    assert(setting.getInteger("windowState") == WindowState.normal && setting.getInteger("windowWidth") == 300);
 }
 
 unittest {

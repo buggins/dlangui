@@ -663,6 +663,13 @@ class X11Window : DWindow {
         super.handleWindowStateChange(newState, newWindowRect);
     }
 
+    /// not maximized, minimized or fullscreen now: read from _NET_WM_STATE, as the configure events of a state change
+    /// can come before its PropertyNotify (#1190); the rectangle is the normal one (#1200)
+    override protected bool isNormalStateNow() {
+        // also not while recorded minimized: ICCCM-only window managers don't set _NET_WM_STATE_HIDDEN (#1198)
+        return _win != None && _windowState != WindowState.minimized && !wmStateNotNormal();
+    }
+
     /// min and max size hints of a resizable window for the window manager (#455); a window that isn't
     /// resizable keeps its fixed size hints
     override protected void applyClientSizeLimits() {
