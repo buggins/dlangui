@@ -215,21 +215,38 @@ class DockHost : WidgetGroupDefaultDrawing {
     protected DockSpace _leftSpace;
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
+    /// set the body widget (null: none); the previous body is destroyed
     @property void bodyWidget(Widget widget) {
+        if (widget is _bodyWidget)
+            return; // replacing it with itself would destroy it (#1225)
+        // a widget that is a child already (e.g. added as a docked window) must not be in the children twice
+        if (widget) {
+            int index = _children.indexOf(widget);
+            if (index >= 0)
+                _children.remove(index);
+        }
         _children.replace(widget, _bodyWidget);
         _bodyWidget = widget;
-        _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        _bodyWidget.parent = this;
+        if (widget) {
+            widget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            widget.parent = this;
+        }
+        requestLayout();
     }
 
     void addDockedWindow(DockWindow dockWin) {
         addChild(dockWin);
     }
 
+    /// remove a docked window (a direct child, not the body) and return it, or null if there is none with this id
     DockWindow removeDockedWindow(string id) {
-        DockWindow res = childById!DockWindow(id);
-        if (res)
-            removeChild(id);
+        int index = _children.indexOf(id);
+        if (index < 0)
+            return null;
+        DockWindow res = cast(DockWindow)_children.get(index);
+        if (!res || res is _bodyWidget)
+            return null; // not a docked window (#1225)
+        removeChild(index);
         return res;
     }
 
@@ -286,8 +303,8 @@ class DockHost : WidgetGroupDefaultDrawing {
         DockWindow[] list;
         for (int i = 0; i < _children.count; i++) {
             DockWindow item = cast(DockWindow)_children.get(i);
-            if (!item)
-                continue; // not a docked window
+            if (!item || item is _bodyWidget)
+                continue; // not a docked window; a DockWindow can also be the body (#1225)
             if(item.dockAlignment == alignType && item.visibility == Visibility.Visible) {
                 list ~= item;
             }
@@ -351,17 +368,10 @@ class DockHost : WidgetGroupDefaultDrawing {
             pwidth -= m.left + m.right + p.left + p.right;
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
-        // measure children
+        // measure children, the body widget among them (it is one of the children: measured once, #1225)
         Point sz;
-        Point bodySize;
-        if (_bodyWidget) {
-            _bodyWidget.measure(pwidth, pheight);
-            bodySize.x = _bodyWidget.measuredWidth;
-            bodySize.y = _bodyWidget.measuredHeight;
-        }
         for (int i = 0; i < _children.count; i++) {
             Widget item = _children.get(i);
-            // TODO: fix
             if (item.visibility != Visibility.Gone) {
                 item.measure(pwidth, pheight);
                 if (sz.x < item.measuredWidth)
@@ -401,6 +411,74 @@ class DockWindow : WindowFrame {
     //protected Widget createBodyWidget() {
     //    return new Widget("DOCK_WINDOW_BODY");
     //}
+}
+
+/// the body widget is not a docked window, also when it is a DockWindow, and it is measured once (#1225)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    static class MeasureCounter : Widget {
+        int count;
+        override void measure(int parentWidth, int parentHeight) {
+            count++;
+            super.measure(parentWidth, parentHeight);
+        }
+    }
+    {
+        auto host = new DockHost();
+        scope(exit) destroy(host);
+        auto counter = new MeasureCounter();
+        host.bodyWidget = counter;
+        host.measure(1000, 800);
+        assert(counter.count == 1);
+    }
+    {
+        auto host = new DockHost();
+        scope(exit) destroy(host);
+        auto bodyWin = new DockWindow("body"); // default alignment: Right
+        host.bodyWidget = bodyWin;
+        auto right = new DockWindow("right");
+        right.dockAlignment = DockAlignment.Right;
+        host.addDockedWindow(right);
+        assert(host.getDockedWindowList(DockAlignment.Right) == [right]);
+        // the right docked window gets the full height of the right area, the body the rest of the width
+        host.layout(Rect(0, 0, 1000, 800));
+        // the host's client rect: theme margins and padding of DOCK_HOST may apply
+        immutable Rect m = host.margins, p = host.padding;
+        immutable Rect rc = Rect(m.left + p.left, m.top + p.top, 1000 - m.right - p.right, 800 - m.bottom - p.bottom);
+        assert(right.pos.top == rc.top && right.pos.bottom == rc.bottom && right.pos.right == rc.right);
+        assert(bodyWin.pos.left == rc.left && bodyWin.pos.right == right.pos.left);
+        // removeDockedWindow: not the body; a docked window is removed and returned
+        assert(host.removeDockedWindow("body") is null && host.bodyWidget is bodyWin);
+        assert(host.removeDockedWindow("right") is right && host.getDockedWindowList(DockAlignment.Right).length == 0);
+        destroy(right);
+        assert(host.removeDockedWindow("right") is null);
+    }
+    {
+        auto host = new DockHost();
+        scope(exit) destroy(host);
+        int countOf(Widget w) {
+            int n;
+            for (int i = 0; i < host.childCount; i++)
+                if (host.child(i) is w)
+                    n++;
+            return n;
+        }
+        // setting the same body again doesn't destroy it
+        auto w = new Widget("w");
+        host.bodyWidget = w;
+        host.bodyWidget = w;
+        assert(host.bodyWidget is w && w.id == "w" && countOf(w) == 1);
+        // a docked window that becomes the body is a child once
+        auto dock = new DockWindow("dock");
+        host.addDockedWindow(dock);
+        host.bodyWidget = dock; // destroys w
+        assert(host.bodyWidget is dock && countOf(dock) == 1);
+        // no body
+        host.bodyWidget = null; // destroys dock
+        assert(host.bodyWidget is null);
+        host.layout(Rect(0, 0, 1000, 800));
+    }
 }
 
 /// initial dock space: not taken from a layout without size, default 20%, settable, clamped to 10..40% (#762)
