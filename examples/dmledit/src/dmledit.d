@@ -6,6 +6,7 @@ import dlangui.dialogs.dialog;
 import dlangui.dml.dmlhighlight;
 import dlangui.widgets.metadata;
 import std.array : replaceFirst;
+import std.string : indexOf, lastIndexOf;
 import std.algorithm;
 import std.stdio;
 import std.array;
@@ -73,7 +74,8 @@ class DMLSourceEdit : SourceEdit {
 immutable dstring SAMPLE_SOURCE_CODE =
 q{VerticalLayout {
     id: vlayout
-    margins: Rect { left: 5pt; right: 3pt; top: 2pt; bottom: 4pt } // pt: scaled with the screen DPI
+    // sizes in pt: scaled with the screen DPI
+    margins: Rect { left: 5pt; right: 3pt; top: 2pt; bottom: 4pt }
     padding: Rect { 5pt, 4pt, 3pt, 2pt } // left, top, right, bottom
     TextWidget {
         /* this widget can be accessed via id myLabel1
@@ -103,6 +105,33 @@ q{VerticalLayout {
 }
 };
 
+/// type name for the "Widget properties" list: the D aliases string, dstring and wstring instead of immutable(char)[]
+/// and so on, and no module paths (Rect, UIString[] instead of dlangui.core.types.Rect, dlangui.core.i18n.UIString[])
+string propertyTypeName(const TypeInfo type) {
+    string name = type.toString();
+    // element type and array suffixes
+    size_t end = name.length;
+    while (end >= 2 && name[end - 2 .. end] == "[]")
+        end -= 2;
+    string elem = name[0 .. end];
+    string suffix = name[end .. $];
+    if (suffix.length) {
+        if (elem == "immutable(char)")
+            return "string" ~ suffix[2 .. $];
+        if (elem == "immutable(dchar)")
+            return "dstring" ~ suffix[2 .. $];
+        if (elem == "immutable(wchar)")
+            return "wstring" ~ suffix[2 .. $];
+    }
+    if (elem.indexOf('(') < 0) {
+        // a plain type name (not qualified, not a template instance): drop the module path
+        auto dot = elem.lastIndexOf('.');
+        if (dot >= 0)
+            elem = elem[dot + 1 .. $];
+    }
+    return elem ~ suffix;
+}
+
 /// property list of a DML widget class, for the "Widget properties" list
 dstring[] widgetPropertyList(string widgetClass) {
     dstring[] res;
@@ -110,7 +139,7 @@ dstring[] widgetPropertyList(string widgetClass) {
         auto mp = meta.properties;
         mp.sort!("a.name < b.name");
         foreach (const ref prop; mp)
-            res ~= toUTF32(prop.name ~ "   [" ~ to!string(prop.type) ~ "]");
+            res ~= toUTF32(prop.name ~ "   [" ~ propertyTypeName(prop.type) ~ "]");
     }
     return res;
 }
