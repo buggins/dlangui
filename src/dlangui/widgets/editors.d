@@ -3755,23 +3755,23 @@ class EditBox : EditWidgetBase {
         return -1;
     }
 
-    /// letters and numbers (std.uni.isAlphaNum, so also e.g. '²', '½', '①') and combining marks of any script, '_',
-    /// and ZWNJ/ZWJ (parts of words in Persian and Indic scripts) make up words, for whole-word search and the
-    /// highlight of a selected word (#1147)
+    /// characters that make up words, for whole-word search and the highlight of a selected word (#1147): the same
+    /// as for word selection and moving by words (EditableContent.isWordChar)
     static bool isWordChar(dchar ch) @safe pure nothrow @nogc {
-        import std.uni : isAlphaNum, isMark;
-        return ch == '_' || ch == '\u200C' || ch == '\u200D' || isAlphaNum(ch) || isMark(ch);
+        return EditableContent.isWordChar(ch);
     }
     static bool isValidWordBound(dchar innerChar, dchar outerChar) @safe pure nothrow @nogc {
         return !isWordChar(innerChar) || !isWordChar(outerChar);
     }
-    /// returns true if selected range of string is whole word
+    /// returns true if selected range of string is whole word; combining marks and ZWNJ/ZWJ are parts of the word
+    /// before them, as for word selection (EditableContent.isWordCharAt, #1168)
     static bool isWholeWord(dstring lineText, size_t start, size_t end) @safe pure nothrow @nogc {
+        alias w = EditableContent.isWordCharAt;
         if (start >= lineText.length || start >= end)
             return false;
-        if (start > 0 && !isValidWordBound(lineText[start], lineText[start - 1]))
+        if (start > 0 && w(lineText, start) && w(lineText, start - 1))
             return false;
-        if (end > 0 && end < lineText.length && !isValidWordBound(lineText[end - 1], lineText[end]))
+        if (end > 0 && end < lineText.length && w(lineText, end - 1) && w(lineText, end))
             return false;
         return true;
     }
@@ -3781,7 +3781,8 @@ class EditBox : EditWidgetBase {
     static bool isSelectedWord(dstring lineText, size_t start, size_t end) @safe pure nothrow @nogc {
         if (start >= end || end > lineText.length)
             return false;
-        return isWordChar(lineText[start]) && isWordChar(lineText[end - 1]) && isWholeWord(lineText, start, end);
+        alias w = EditableContent.isWordCharAt;
+        return w(lineText, start) && w(lineText, end - 1) && isWholeWord(lineText, start, end);
     }
 
     // non-ASCII letters and digits are word characters (#1147)
@@ -3800,6 +3801,9 @@ class EditBox : EditWidgetBase {
         assert(!isWholeWord("cafe\u0301 noir"d, 0, 4)); // "cafe" in decomposed "café"
         assert(!isWholeWord("हिन्दी"d, 0, 3)); // before the virama
         assert(!isWholeWord("می\u200Cخواهم"d, 0, 2)); // before ZWNJ
+        // but not a variation selector after a symbol, or a joiner in an emoji sequence (#1168)
+        assert(isSelectedWord("abc\u2764\uFE0Fdef"d, 5, 8));
+        assert(isWholeWord("\U0001F468\u200Dabc"d, 2, 5));
         // selections whose other occurrences are highlighted
         assert(isSelectedWord("привет мир"d, 0, 6));
         assert(isSelectedWord("x1 + y"d, 0, 2));

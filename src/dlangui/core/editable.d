@@ -680,6 +680,7 @@ class EditableContent {
         performOperation(op, this);
     }
 
+    /// not used by wordBounds() any more, which counts combining marks as parts of words (isWordCharAt, #1168)
     static alias isAlphaForWordSelection = isAlNum;
 
     /// get word bounds by position
@@ -693,23 +694,21 @@ class EditableContent {
         int p = pos.pos;
         if (p < 0 || p > s.length || s.length == 0)
             return res;
-        dchar leftChar = p > 0 ? s[p - 1] : 0;
-        dchar rightChar = p < s.length - 1 ? s[p + 1] : 0;
-        dchar centerChar = p < s.length ? s[p] : 0;
-        if (isAlphaForWordSelection(centerChar)) {
+        // combining marks and ZWNJ/ZWJ are parts of the word they follow (#1168)
+        if (isWordCharAt(s, p)) {
             // ok
-        } else if (isAlphaForWordSelection(leftChar)) {
+        } else if (isWordCharAt(s, p - 1)) {
             p--;
-        } else if (isAlphaForWordSelection(rightChar)) {
+        } else if (isWordCharAt(s, p + 1)) {
             p++;
         } else {
             return res;
         }
         int start = p;
         int end = p;
-        while (start > 0 && isAlphaForWordSelection(s[start - 1]))
+        while (start > 0 && isWordCharAt(s, start - 1))
             start--;
-        while (end  + 1 < s.length && isAlphaForWordSelection(s[end + 1]))
+        while (end  + 1 < s.length && isWordCharAt(s, end + 1))
             end++;
         end++;
         res.start.pos = start;
@@ -1251,12 +1250,47 @@ class EditableContent {
         static import std.uni;
         return isDigit(ch) || isAlpha(ch);
     }
+    /// letters and numbers (std.uni.isAlphaNum, so also e.g. '²', '½', '①') and combining marks of any script, '_',
+    /// and ZWNJ/ZWJ (parts of words in Persian and Indic scripts) make up words, without context: for whole-word
+    /// search and the highlight of a selected word (EditBox, #1147); word selection and moving by words use
+    /// isWordCharAt (#1168)
+    static bool isWordChar(dchar ch) @safe pure nothrow @nogc {
+        return ch == '_' || isAlphaNum(ch) || isWordJoiner(ch);
+    }
+    /// a combining mark (std.uni.isMark, also variation selectors) or ZWNJ/ZWJ: part of the cluster before it
+    private static bool isWordJoiner(dchar ch) @safe pure nothrow @nogc {
+        import std.uni : isMark;
+        return ch == '\u200C' || ch == '\u200D' || isMark(ch);
+    }
+    private static bool isAlphaNum(dchar ch) @safe pure nothrow @nogc {
+        static import std.uni;
+        return std.uni.isAlphaNum(ch);
+    }
+    /// the character before the combining marks and ZWNJ/ZWJ at txt[i], or txt[i] itself; 0 outside txt. At most
+    /// 30 of them are skipped (the longest cluster of the Unicode stream-safe format), so scanning a line of
+    /// thousands of marks stays linear: a longer run counts as no word
+    static dchar baseCharAt(const(dchar)[] txt, ptrdiff_t i) @safe pure nothrow @nogc {
+        if (i < 0 || i >= txt.length)
+            return 0;
+        for (int skipped = 0; i > 0 && isWordJoiner(txt[i]) && skipped < 30; skipped++)
+            i--;
+        return txt[i];
+    }
+    /// txt[i] is part of a word (false outside txt): a letter, number or '_', or a combining mark or ZWNJ/ZWJ after
+    /// one, so the marks of a decomposed letter or an Indic syllable are inside a word, while a joiner in an emoji
+    /// sequence or a variation selector after a symbol isn't (#1168)
+    static bool isWordCharAt(const(dchar)[] txt, ptrdiff_t i) @safe pure nothrow @nogc {
+        if (i < 0 || i >= txt.length)
+            return false;
+        dchar base = baseCharAt(txt, i);
+        return base == '_' || isAlphaNum(base);
+    }
     static bool isLowerAlpha(dchar ch) pure nothrow {
         static import std.uni;
         return std.uni.isLower(ch) || ch == '_';
     }
     static alias isUpperAlpha = std.uni.isUpper;
-    static bool isPunct(dchar ch) pure nothrow {
+    static bool isPunct(dchar ch) @safe pure nothrow @nogc {
         switch(ch) {
             case '.':
             case ',':
@@ -1268,7 +1302,7 @@ class EditableContent {
                 return false;
         }
     }
-    static bool isBracket(dchar ch) pure nothrow {
+    static bool isBracket(dchar ch) @safe pure nothrow @nogc {
         switch(ch) {
             case '(':
             case ')':
@@ -1282,8 +1316,28 @@ class EditableContent {
         }
     }
 
+    /// word bounds without context; moveByWord() uses isWordBoundAt, which counts combining marks as parts of words
     static bool isWordBound(dchar thischar, dchar nextchar) {
         return  (isAlNum(thischar) && !isAlNum(nextchar))
+            || (isPunct(thischar) && !isPunct(nextchar))
+            || (isBracket(thischar) && !isBracket(nextchar))
+            || (thischar != ' ' && nextchar == ' ');
+    }
+
+    /// isWordBound for the characters at txt[i] and txt[next] (a space outside the line, tabs as spaces): combining
+    /// marks and ZWNJ/ZWJ count as parts of the word they follow (isWordCharAt, #1168)
+    static bool isWordBoundAt(const(dchar)[] txt, ptrdiff_t i, ptrdiff_t next) @safe pure nothrow @nogc {
+        static dchar charAt(const(dchar)[] txt, ptrdiff_t i) {
+            dchar ch = i >= 0 && i < txt.length ? txt[i] : ' ';
+            return ch == '\t' ? ' ' : ch;
+        }
+        // never between a character and a combining mark or joiner after it, also after punctuation
+        ptrdiff_t later = i > next ? i : next;
+        if (later >= 0 && later < txt.length && isWordJoiner(txt[later]))
+            return false;
+        dchar thischar = charAt(txt, i);
+        dchar nextchar = charAt(txt, next);
+        return (isWordCharAt(txt, i) && !isWordCharAt(txt, next))
             || (isPunct(thischar) && !isPunct(nextchar))
             || (isBracket(thischar) && !isBracket(nextchar))
             || (thischar != ' ' && nextchar == ' ');
@@ -1309,14 +1363,10 @@ class EditableContent {
                 int found = -1;
                 for (int i = p.pos - 1; i > 0; i--) {
                     // check if position i + 1 is after word end
-                    dchar thischar = i >= 0 && i < linelen ? txt[i] : ' ';
-                    if (thischar == '\t')
-                        thischar = ' ';
-                    dchar nextchar = i - 1 >= 0 && i - 1 < linelen ? txt[i - 1] : ' ';
-                    if (nextchar == '\t')
-                        nextchar = ' ';
-                    if (isWordBound(thischar, nextchar)
-                        || (camelCasePartsAsWords && isUpperAlpha(thischar) && isLowerAlpha(nextchar))) {
+                    // camel case: the letter before the marks of a decomposed letter (#1168)
+                    if (isWordBoundAt(txt, i, i - 1)
+                        || (camelCasePartsAsWords && i < linelen && isUpperAlpha(txt[i])
+                            && isLowerAlpha(baseCharAt(txt, i - 1)))) {
                             found = i;
                             break;
                         }
@@ -1340,14 +1390,10 @@ class EditableContent {
                 int found = -1;
                 for (int i = p.pos; i < linelen; i++) {
                     // check if position i + 1 is after word end
-                    dchar thischar = txt[i];
-                    if (thischar == '\t')
-                        thischar = ' ';
-                    dchar nextchar = i < linelen - 1 ? txt[i + 1] : ' ';
-                    if (nextchar == '\t')
-                        nextchar = ' ';
-                    if (isWordBound(thischar, nextchar)
-                        || (camelCasePartsAsWords && isLowerAlpha(thischar) && isUpperAlpha(nextchar))) {
+                    // camel case: the letter before the marks of a decomposed letter (#1168)
+                    if (isWordBoundAt(txt, i, i + 1)
+                        || (camelCasePartsAsWords && i + 1 < linelen && isLowerAlpha(baseCharAt(txt, i))
+                            && isUpperAlpha(txt[i + 1]))) {
                             found = i + 1;
                             break;
                         }
@@ -2072,4 +2118,58 @@ unittest {
     content.clear();
     assert(changed());
     assert(content.revision != other.revision);
+}
+
+/// combining marks and ZWNJ are parts of words for word selection and moving by words (#1168)
+unittest {
+    auto content = new EditableContent(false);
+    // positions on line 0 (TextPosition.opEquals takes a ref)
+    bool word(int pos, int start, int end) {
+        TextRange r = content.wordBounds(TextPosition(0, pos));
+        return r.start.line == 0 && r.start.pos == start && r.end.line == 0 && r.end.pos == end;
+    }
+    bool move(int pos, int direction, int expected, bool camelCase = false) {
+        TextPosition p = content.moveByWord(TextPosition(0, pos), direction, camelCase);
+        return p.line == 0 && p.pos == expected;
+    }
+    // decomposed "café": 'e' and U+0301
+    content.text = "x cafe\u0301 y"d;
+    assert(word(3, 2, 7));
+    assert(word(6, 2, 7));
+    assert(move(2, 1, 7));
+    assert(move(7, -1, 2));
+    // Devanagari: virama U+094D and vowel sign U+0947 inside the word
+    content.text = "\u0928\u092E\u0938\u094D\u0924\u0947 x"d;
+    assert(word(0, 0, 6));
+    assert(move(0, 1, 6));
+    // Persian: ZWNJ U+200C inside the word
+    content.text = "\u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u0645 x"d;
+    assert(word(1, 0, 8));
+    assert(move(0, 1, 8));
+    // punctuation and spaces still end words
+    content.text = "ab.cd ef"d;
+    assert(word(0, 0, 2));
+    assert(move(0, 1, 2));
+    // but not a joiner in an emoji sequence (man ZWJ woman), or a variation selector after a symbol
+    content.text = "\U0001F468\u200D\U0001F469 x"d;
+    assert(word(0, 0, 0) && word(1, 1, 1));
+    assert(move(0, 1, 3));
+    content.text = "abc\u2764\uFE0Fdef"d;
+    assert(word(6, 5, 8));
+    assert(move(8, -1, 5));
+    // camel case parts after a decomposed letter: "caféBar"
+    content.text = "cafe\u0301Bar"d;
+    assert(move(0, 1, 5, true) && move(8, -1, 5, true));
+    assert(move(0, 1, 8));
+    // a mark after punctuation stays with it
+    content.text = "x.\u0301 y"d;
+    assert(move(1, 1, 3) && move(3, -1, 1));
+    // a long run of marks stays linear: word selection ends after the 30th mark, moving by words doesn't stop
+    // before a mark
+    dchar[] zalgo = "a"d.dup;
+    foreach (k; 0 .. 100_000)
+        zalgo ~= '\u0301';
+    content.text = cast(dstring)(zalgo ~ " b"d);
+    assert(word(0, 0, 31));
+    assert(move(0, 1, 100_001) && move(100_001, -1, 0));
 }
