@@ -411,6 +411,18 @@ class Win32Window : Window {
     private Win32Window _w32parent;
     /// the monitor a fullscreen window was created on, which show() covers (#1193)
     private Rect _fullscreenRect;
+    /// the window covers its monitor as a popup: created with WindowFlag.Fullscreen, or switched by
+    /// setWindowState(WindowState.fullscreen) (#1196); WM_WINDOWPOSCHANGED reports it as fullscreen
+    private bool _fullscreen;
+    /// the style and placement before setWindowState(WindowState.fullscreen), put back when it leaves (#1196)
+    private LONG_PTR _styleBeforeFullscreen;
+    /// ditto
+    private WINDOWPLACEMENT _placementBeforeFullscreen;
+    /// show() was called
+    private bool _shown;
+    /// setWindowState(WindowState.fullscreen) before show(): show() sizes and places the window as usual, then makes
+    /// it fullscreen before showing it, so it leaves fullscreen with that size and position (#1196)
+    private bool _fullscreenOnShow;
     bool useOpengl;
 
     /// win32 only - return window handle
@@ -433,6 +445,7 @@ class Win32Window : Window {
         _caption = windowCaption;
         _windowState = WindowState.hidden;
         _flags = flags;
+        _fullscreen = (flags & WindowFlag.Fullscreen) != 0;
         uint ws = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
         if (flags & WindowFlag.Resizable)
             ws |= WS_OVERLAPPEDWINDOW;
@@ -620,7 +633,7 @@ class Win32Window : Window {
 
     /// Moves and shrinks the window, if needed, to keep it inside the work area of its monitor (#806).
     protected void fitWindowIntoWorkArea() {
-        if (!_hwnd || IsZoomed(_hwnd) || IsIconic(_hwnd) || (_flags & WindowFlag.Fullscreen))
+        if (!_hwnd || IsZoomed(_hwnd) || IsIconic(_hwnd) || _fullscreen)
             return;
         RECT rc;
         if (!GetWindowRect(_hwnd, &rc))
@@ -635,7 +648,7 @@ class Win32Window : Window {
 
     /// centers the window on the work area of its monitor (#580)
     override void centerOnScreen() {
-        if (!_hwnd || IsZoomed(_hwnd) || IsIconic(_hwnd) || (_flags & WindowFlag.Fullscreen))
+        if (!_hwnd || IsZoomed(_hwnd) || IsIconic(_hwnd) || _fullscreen)
             return;
         RECT rc;
         if (!GetWindowRect(_hwnd, &rc))
@@ -669,7 +682,7 @@ class Win32Window : Window {
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
             return;
         }
-        if (_flags & WindowFlag.Fullscreen) {
+        if (_fullscreen) {
             // the monitor the window moves to: the suggested rectangle is on it
             MONITORINFO monitor;
             monitor.cbSize = MONITORINFO.sizeof;
@@ -711,7 +724,7 @@ class Win32Window : Window {
     /// by onDpiChanged() during setWindowState() and with an override. False for minimized, maximized and fullscreen
     /// windows
     bool dpiScaledSize(uint newDpi, ref SIZE size) {
-        if (IsIconic(_hwnd) || IsZoomed(_hwnd) || (_flags & WindowFlag.Fullscreen))
+        if (IsIconic(_hwnd) || IsZoomed(_hwnd) || _fullscreen)
             return false;
         Point client = _requestedClientSize;
         if (client == Point(0, 0)) {
@@ -732,7 +745,8 @@ class Win32Window : Window {
     /// WM_GETMINMAXINFO: minClientSize and maxClientSize as outer sizes (#455); false if there are no limits.
     /// The system applies them to the user's resizing, to SetWindowPos and to the maximized size.
     bool getMinMaxInfo(MINMAXINFO* info) {
-        if (!_hwnd || (_minClientSize == Point(0, 0) && _maxClientSize == Point(0, 0)))
+        // none for a fullscreen window, which covers its monitor (#1196)
+        if (!_hwnd || _fullscreen || (_minClientSize == Point(0, 0) && _maxClientSize == Point(0, 0)))
             return false;
         RECT frame = windowFrame(_hwnd);
         int frameWidth = frame.right - frame.left;
@@ -859,7 +873,7 @@ class Win32Window : Window {
 
         // a fullscreen window stays on the monitor it was created on: centering it over its parent or fitting it into
         // a work area could move it to another monitor (#1193)
-        if (!(_flags & WindowFlag.Fullscreen)) {
+        if (!_fullscreen) {
             adjustPositionDuringShow();
             fitWindowIntoWorkArea();
         }
@@ -871,9 +885,15 @@ class Win32Window : Window {
             SetWindowPos(_hwnd, HWND_TOPMOST, rc.left, rc.top, rc.width, rc.height, SWP_SHOWWINDOW);
             _windowState = WindowState.fullscreen;
         } else {
+            // requested before show(): made fullscreen now, sized and placed, still hidden (#1196)
+            if (_fullscreenOnShow)
+                enterFullscreen(false);
+            _fullscreenOnShow = false;
+            // (also a window made fullscreen while hidden by hideWindow())
             ShowWindow(_hwnd, SW_SHOWNORMAL);
-            _windowState = WindowState.normal;
+            _windowState = _fullscreen ? WindowState.fullscreen : WindowState.normal;
         }
+        _shown = true;
         if (_mainWidget)
             _mainWidget.setFocus();
         SetFocus(_hwnd);
@@ -942,12 +962,25 @@ class Win32Window : Window {
                 }
                 break;
             case WindowState.maximized:
-                if (_windowState != WindowState.maximized || activate) {
+                _fullscreenOnShow = false;
+                if (_flags & WindowFlag.Fullscreen) {
+                    // the flag keeps it fullscreen, as on X11: only restored from minimized, as for normal (#1196)
+                    if (IsIconic(_hwnd)) {
+                        ShowWindow(_hwnd, activate ? SW_RESTORE : SW_SHOWNOACTIVATE);
+                        res = true;
+                    }
+                    break;
+                }
+                if (_fullscreen) {
+                    leaveFullscreen(activate ? SW_SHOWMAXIMIZED : SW_MAXIMIZE);
+                    res = true;
+                } else if (_windowState != WindowState.maximized || activate) {
                     ShowWindow(_hwnd, activate ? SW_SHOWMAXIMIZED : SW_MAXIMIZE);
                     res = true;
                 }
                 break;
             case WindowState.minimized:
+                _fullscreenOnShow = false;
                 if (_windowState != WindowState.minimized || activate) {
                     ShowWindow(_hwnd, activate ? SW_SHOWMINIMIZED : SW_MINIMIZE);
                     res = true;
@@ -959,8 +992,24 @@ class Win32Window : Window {
                     res = true;
                 }
                 break;
+            case WindowState.fullscreen:
+                if (!_shown) {
+                    _fullscreenOnShow = true; // made fullscreen by show(), after sizing and placing it
+                    res = true;
+                    break;
+                }
+                res = enterFullscreen(activate);
+                break;
             case WindowState.normal:
-                if (_windowState != WindowState.normal || activate) {
+                _fullscreenOnShow = false;
+                if (_fullscreen && !(_flags & WindowFlag.Fullscreen)) {
+                    // the style and placement from before (#1196)
+                    leaveFullscreen(activate ? SW_SHOWNORMAL : SW_SHOWNOACTIVATE);
+                    res = true;
+                } else if (_fullscreen && !IsIconic(_hwnd)) {
+                    // a WindowFlag.Fullscreen window stays fullscreen, as on X11; it is only restored from minimized
+                    // (below)
+                } else if (_windowState != WindowState.normal || activate) {
                     // SW_SHOWNOACTIVATE restores a maximized or minimized window too; SW_SHOWNA kept it in its
                     // state (#1191)
                     ShowWindow(_hwnd, activate ? SW_SHOWNORMAL : SW_SHOWNOACTIVATE);
@@ -973,7 +1022,9 @@ class Win32Window : Window {
         }
         // change size and/or position
         bool rectChanged = false;
-        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
+        // not for a fullscreen window, which covers its monitor (#1196)
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)
+                && !_fullscreen) {
             UINT flags = SWP_NOOWNERZORDER | SWP_NOZORDER;
             if (!activate)
                 flags |= SWP_NOACTIVATE;
@@ -1020,15 +1071,65 @@ class Win32Window : Window {
             }
         }
 
+        // the state isn't recorded here: WM_WINDOWPOSCHANGED reports the one reached (sent during ShowWindow() and
+        // SetWindowPos()), so a request that Windows ignores or changes isn't recorded as requested (#1195)
         if (rectChanged) {
-            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
+            handleWindowStateChange(WindowState.unspecified, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
                 newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right,
                 newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
         }
-        else
-            handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
 
         return res;
+    }
+
+    /// styles a fullscreen window doesn't have: the frame, caption and system menu
+    private enum LONG_PTR STYLES_NOT_IN_FULLSCREEN = WS_CAPTION | WS_THICKFRAME | WS_SYSMENU | WS_MINIMIZEBOX
+        | WS_MAXIMIZEBOX | WS_BORDER | WS_DLGFRAME | WS_MAXIMIZE;
+
+    /// switches to fullscreen at runtime (#1196): a popup covering the window's monitor; the style and placement
+    /// (normal rectangle, maximized) are saved for leaveFullscreen(). A minimized window is restored first. A hidden
+    /// one stays hidden (show() shows it)
+    private bool enterFullscreen(bool activate) {
+        if (_fullscreen) {
+            if (IsIconic(_hwnd))
+                ShowWindow(_hwnd, activate ? SW_RESTORE : SW_SHOWNOACTIVATE);
+            else if (activate && !IsWindowVisible(_hwnd))
+                ShowWindow(_hwnd, SW_SHOW); // hidden by hideWindow()
+            else if (activate)
+                SetForegroundWindow(_hwnd);
+            return true;
+        }
+        if (IsIconic(_hwnd))
+            ShowWindow(_hwnd, activate ? SW_RESTORE : SW_SHOWNOACTIVATE);
+        _placementBeforeFullscreen.length = WINDOWPLACEMENT.sizeof;
+        if (!GetWindowPlacement(_hwnd, &_placementBeforeFullscreen))
+            return false;
+        _styleBeforeFullscreen = GetWindowLongPtr(_hwnd, GWL_STYLE);
+        Rect rc = getScreenDimensions();
+        _fullscreen = true; // before SetWindowPos: WM_WINDOWPOSCHANGED reports fullscreen
+        SetWindowLongPtr(_hwnd, GWL_STYLE, (_styleBeforeFullscreen & ~STYLES_NOT_IN_FULLSCREEN) | WS_POPUP);
+        // HWND_TOP, not HWND_TOPMOST as for WindowFlag.Fullscreen: a topmost window would stay above the other
+        // applications after switching to them
+        SetWindowPos(_hwnd, HWND_TOP, rc.left, rc.top, rc.width, rc.height,
+            SWP_NOOWNERZORDER | SWP_FRAMECHANGED | (activate ? 0 : SWP_NOACTIVATE));
+        return true;
+    }
+
+    /// leaves the fullscreen set by enterFullscreen(): the saved style, and the saved placement shown with showCmd
+    /// (SW_SHOWNORMAL, SW_MAXIMIZE, ...; also a hidden window, as ShowWindow() does without fullscreen) (#1196)
+    private void leaveFullscreen(int showCmd) {
+        _fullscreen = false; // before the placement: WM_WINDOWPOSCHANGED reports the state reached
+        // the frame and caption from before; the state bits of now (the style saved before show() has no
+        // WS_VISIBLE, a minimized window keeps WS_MINIMIZE, WS_DISABLED may have changed since), the placement
+        // below decides maximized or normal
+        enum LONG_PTR stateBits = WS_VISIBLE | WS_MINIMIZE | WS_MAXIMIZE | WS_DISABLED;
+        LONG_PTR current = GetWindowLongPtr(_hwnd, GWL_STYLE);
+        SetWindowLongPtr(_hwnd, GWL_STYLE, (_styleBeforeFullscreen & ~stateBits) | (current & stateBits));
+        WINDOWPLACEMENT placement = _placementBeforeFullscreen;
+        placement.showCmd = showCmd;
+        SetWindowPlacement(_hwnd, &placement);
+        SetWindowPos(_hwnd, null, 0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_FRAMECHANGED | SWP_NOACTIVATE);
     }
 
     void onCreate() {
@@ -2065,9 +2166,6 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         window.handleWindowStateChange(WindowState.minimized);
                     }
                     else {
-                        WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
-                        //Log.d("WM_WINDOWPOSCHANGED: ", *pos);
-
                         GetClientRect(hwnd, &rect);
                         int dx = rect.right - rect.left;
                         int dy = rect.bottom - rect.top;
@@ -2077,11 +2175,15 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         else if (IsIconic(hwnd))
                             state = WindowState.minimized;
                         else if (IsWindowVisible(hwnd))
-                            state = WindowState.normal;
+                            state = window._fullscreen ? WindowState.fullscreen : WindowState.normal; // #1196
                         else
                             state = WindowState.hidden;
+                        // the position reached: WINDOWPOS has the position passed, also with SWP_NOMOVE (e.g. the
+                        // frame change when the window leaves fullscreen, #1196)
+                        RECT outer;
+                        GetWindowRect(hwnd, &outer);
                         window.handleWindowStateChange(state,
-                            Rect(pos.x, pos.y, dx, dy));
+                            Rect(outer.left, outer.top, dx, dy));
                         if (window.width != dx || window.height != dy) {
                             // the size is made for it (#1163); a maximized or minimized one's isn't (#1187)
                             if (state == WindowState.normal || state == WindowState.hidden)
