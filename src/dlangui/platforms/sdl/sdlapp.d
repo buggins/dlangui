@@ -150,12 +150,8 @@ class SDLWindow : Window {
 
     private void restoreModalChilds() {
         foreach (SDLWindow w;_children) {
-            if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden) {
-                if (w._windowState == WindowState.maximized)
-                    w.activateWindow();
-                else
-                    w.restoreWindow(true);
-            }
+            if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden)
+                w.restoreForModal();
 
             w.restoreModalChilds();
         }
@@ -190,7 +186,21 @@ class SDLWindow : Window {
         }
 
         for (size_t i = tempWin.length ; i-- > 0 ; )
-            tempWin[i].restoreWindow(true);
+            tempWin[i].restoreForModal();
+    }
+
+    /// shows a window again with its modal parent or child: restored and activated; a maximized or fullscreen one
+    /// keeps its state (SDL_RestoreWindow() brings a minimized fullscreen window back fullscreen), while
+    /// restoreWindow() would make it normal (#1201)
+    private void restoreForModal() {
+        immutable uint sdlFlags = SDL_GetWindowFlags(_win);
+        if (_windowState == WindowState.maximized || (sdlFlags & SDL_WINDOW_FULLSCREEN)) {
+            if (sdlFlags & SDL_WINDOW_MINIMIZED)
+                SDL_RestoreWindow(_win);
+            activateWindow();
+        } else {
+            restoreWindow(true);
+        }
     }
 
     private void minimizeParentWindows() {
@@ -621,7 +631,24 @@ class SDLWindow : Window {
 
         // change state
         switch(newState) {
+            case WindowState.fullscreen:
+                // desktop fullscreen: the window covers its display, which keeps its mode (#1201); a fullscreen one
+                // (e.g. WindowFlag.Fullscreen, exclusive) stays as it is
+                res = (SDL_GetWindowFlags(_win) & SDL_WINDOW_FULLSCREEN)
+                    || SDL_SetWindowFullscreen(_win, cast(SDL_WindowFlags)SDL_WINDOW_FULLSCREEN_DESKTOP) == 0;
+                break;
             case WindowState.maximized:
+                if ((_flags & WindowFlag.Fullscreen) && (SDL_GetWindowFlags(_win) & SDL_WINDOW_FULLSCREEN)) {
+                    // the flag keeps it fullscreen, as on Win32 and X11: only restored from minimized (#1201); a
+                    // Borderless one isn't fullscreen (create())
+                    if (SDL_GetWindowFlags(_win) & SDL_WINDOW_MINIMIZED) {
+                        SDL_RestoreWindow(_win);
+                        res = true;
+                    }
+                    break;
+                }
+                if (!leaveFullscreen())
+                    break;
                 if (_windowState != WindowState.maximized)
                     SDL_MaximizeWindow(_win);
                 res = true;
@@ -637,9 +664,24 @@ class SDLWindow : Window {
                 res = true;
                 break;
             case WindowState.normal:
+                immutable uint sdlFlags = SDL_GetWindowFlags(_win);
+                immutable bool wasFullscreen = (sdlFlags & SDL_WINDOW_FULLSCREEN) != 0;
+                if (wasFullscreen && (_flags & WindowFlag.Fullscreen)) {
+                    // a WindowFlag.Fullscreen window stays fullscreen, as on Win32 and X11: only restored from
+                    // minimized (#1201)
+                    if (sdlFlags & SDL_WINDOW_MINIMIZED) {
+                        SDL_RestoreWindow(_win);
+                        res = true;
+                    }
+                    break;
+                }
+                if (!leaveFullscreen())
+                    break;
                 if (_windowState != WindowState.normal) {
                     SDL_RestoreWindow(_win);
-                    version(linux) {
+                    // not after leaving fullscreen: the rectangle recorded is the fullscreen one, SDL restores the
+                    // windowed one (#1201)
+                    version(linux) if (!wasFullscreen) {
                         // On linux with Cinnamon desktop, changing window state from for example minimized reset windows size
                         // and/or position to values from create window (last tested on Cinamon 3.4.6 with SDL 2.0.4)
                         //
@@ -668,7 +710,9 @@ class SDLWindow : Window {
 
         // change size and/or position
         bool rectChanged = false;
-        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
+        // not for a fullscreen window: for an exclusive one, a size change changes the display mode (#1201)
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)
+                && !(SDL_GetWindowFlags(_win) & SDL_WINDOW_FULLSCREEN)) {
             bool positionSet = newWindowRect.top != int.min && newWindowRect.left != int.min;
             bool sizeSet = newWindowRect.bottom != int.min && newWindowRect.right != int.min;
             if (positionSet || sizeSet) {
@@ -702,17 +746,45 @@ class SDLWindow : Window {
             res = true;
         }
 
+        // fullscreen is switched at once, and SDL sends no window event for it: the state SDL reports for a
+        // fullscreen request, so a failed one isn't recorded, and for a normal or maximized request that leaves the
+        // window fullscreen (WindowFlag.Fullscreen, or leaving failed); minimize and hide requests are recorded as
+        // before, SDL reports them later on X11 (#1201)
+        WindowState recordedState = newState;
+        if (newState == WindowState.fullscreen
+                || ((newState == WindowState.normal || newState == WindowState.maximized)
+                    && (SDL_GetWindowFlags(_win) & SDL_WINDOW_FULLSCREEN)))
+            recordedState = sdlWindowState(); // e.g. still minimized: the RESTORED event reports fullscreen later
         //needed here to make _windowRect and _windowState valid before SDL_WINDOWEVENT_RESIZED/SDL_WINDOWEVENT_MOVED/SDL_WINDOWEVENT_MINIMIZED/SDL_WINDOWEVENT_MAXIMIZED etc handled
         //example: change size by resizeWindow() and make some calculations using windowRect
         if (rectChanged) {
-            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
+            handleWindowStateChange(recordedState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
                 newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right,
                 newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
         }
         else
-            handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
+            handleWindowStateChange(recordedState, RECT_VALUE_IS_NOT_SET);
 
         return res;
+    }
+
+    /// leaves fullscreen set by setWindowState(WindowState.fullscreen); false if that failed (#1201)
+    private bool leaveFullscreen() {
+        return !(SDL_GetWindowFlags(_win) & SDL_WINDOW_FULLSCREEN) || SDL_SetWindowFullscreen(_win, cast(SDL_WindowFlags)0) == 0;
+    }
+
+    /// the state SDL reports: minimized, hidden, fullscreen, maximized or normal (#1201)
+    WindowState sdlWindowState() {
+        uint flags = SDL_GetWindowFlags(_win);
+        if (flags & SDL_WINDOW_MINIMIZED)
+            return WindowState.minimized;
+        if (flags & SDL_WINDOW_HIDDEN)
+            return WindowState.hidden;
+        if (flags & SDL_WINDOW_FULLSCREEN)
+            return WindowState.fullscreen;
+        if (flags & SDL_WINDOW_MAXIMIZED)
+            return WindowState.maximized;
+        return WindowState.normal;
     }
 
     override @property Window parentWindow() {
@@ -1704,8 +1776,12 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_SHOWN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN - ", w.windowCaption);
-                                if (w.windowState()!=WindowState.normal)
-                                    w.handleWindowStateChange(WindowState.normal);
+                                // also fullscreen or maximized; a state set since the event was sent is kept (#1201)
+                                if (w.windowState() == WindowState.hidden || w.windowState() == WindowState.minimized) {
+                                    WindowState state = w.sdlWindowState();
+                                    if (state != w.windowState())
+                                        w.handleWindowStateChange(state);
+                                }
                                 if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 break;
@@ -1743,20 +1819,27 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_MAXIMIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED - ", w.windowCaption);
-                                if (w.windowState()!=WindowState.maximized)
-                                    w.handleWindowStateChange(WindowState.maximized);
+                                // fullscreen wins: some window managers report both (#1201)
+                                {
+                                    WindowState state = w.sdlWindowState();
+                                    if (state != w.windowState())
+                                        w.handleWindowStateChange(state);
+                                }
                                 _windowsMinimized = false;
                                 break;
                             case SDL_WINDOWEVENT_RESTORED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESTORED - ", w.windowCaption);
                                 _windowsMinimized = false;
-                                if (w.flags & WindowFlag.Modal) {
+                                // the parents and the window itself, keeping fullscreen and maximized (#1201)
+                                if (w.flags & WindowFlag.Modal)
                                     w.restoreParentWindows();
-                                    w.restoreWindow(true);
-                                }
 
-                                if (w.windowState()!=WindowState.normal)
-                                    w.handleWindowStateChange(WindowState.normal);
+                                // restored from minimized: also to fullscreen or maximized (#1201)
+                                {
+                                    WindowState state = w.sdlWindowState();
+                                    if (state != w.windowState())
+                                        w.handleWindowStateChange(state);
+                                }
 
                                 if (w.hasVisibleModalChild())
                                     w.restoreModalChilds();
