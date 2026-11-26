@@ -1629,6 +1629,33 @@ class Win32Window : Window {
         return res;
     }
 
+    /// the WM_SYSCHAR characters onSysChar() tries as hotkeys: letters outside ASCII. ASCII letters were tried as
+    /// keys (KEY_A..KEY_Z) already, and digits and punctuation aren't Alt hotkeys on Win32 (#1240)
+    static bool isSysCharHotkey(dchar ch) {
+        import std.uni : isAlpha;
+        return ch >= 0x80 && isAlpha(ch); // also no halves of surrogate pairs (not letters)
+    }
+
+    unittest {
+        assert(isSysCharHotkey('ф') && isSysCharHotkey('Ф') && isSysCharHotkey('é') && isSysCharHotkey('ά'));
+        assert(!isSysCharHotkey('a') && !isSysCharHotkey('F')); // tried as keys
+        assert(!isSysCharHotkey('1') && !isSysCharHotkey('.') && !isSysCharHotkey(' ') && !isSysCharHotkey('\x1B'));
+        assert(!isSysCharHotkey(0xD83D) && !isSysCharHotkey('§'));
+    }
+
+    /// the character of an Alt+key that no widget took as a key (WM_SYSCHAR): tried as a hotkey of widgets with
+    /// wantsKeyTracking (MainMenu), e.g. Alt+Ф for "&Файл", whose key arrives as KEY_A; never typed into the
+    /// focused widget (#1240)
+    protected bool onSysChar(dchar ch) {
+        if (!isSysCharHotkey(ch))
+            return false;
+        dchar[1] text = [ch];
+        bool res = dispatchKeyTrackingEvent(new KeyEvent(KeyAction.Text, 0, _keyFlags | KeyFlag.Alt, text.idup));
+        if (res)
+            update();
+        return res;
+    }
+
     /// request window redraw
     override void invalidate() {
         InvalidateRect(_hwnd, null, FALSE);
@@ -2323,11 +2350,12 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
         case WM_SYSCHAR:
             // the character of an Alt+key the app handled (e.g. a MainMenu hotkey): not a native menu key (#1239).
+            // Otherwise the character may be a hotkey the key code doesn't give, e.g. a non-Latin one (#1240).
             // Alt+Space still opens the window menu: an app doesn't take that system shortcut (#1238)
             if (window !is null) {
                 bool keyHandled = window._sysKeyDownHandled;
                 window._sysKeyDownHandled = false;
-                if (keyHandled && wParam != ' ')
+                if (wParam != ' ' && (keyHandled || window.onSysChar(cast(dchar)wParam)))
                     return 0;
             }
             break;
