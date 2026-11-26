@@ -146,7 +146,9 @@ static if (ENABLE_OPENGL) {
 
         pixelFormat = multisamples > 0 ? sharedGLContext.multisampleFormat(hDC, multisamples) : ChoosePixelFormat(hDC, &pfd);
         if (pixelFormat == 0) {
-            Log.e("ChoosePixelFormat failed.");
+            // no format with that many samples: the caller falls back to a window without multisampling (#1210)
+            if (multisamples == 0)
+                Log.e("ChoosePixelFormat failed.");
             return false;
         }
 
@@ -278,28 +280,17 @@ static if (ENABLE_OPENGL) {
             return true;
         }
 
-        /// A helper function to reinit a context to use multisampling
+        /// A helper function to reinit a context to use multisampling; a failure doesn't set _error: init() can
+        /// still create a context without multisampling (#1210)
         bool reinit(HDC hDC, int samples)
         {
             if(setupPixelFormat(hDC, samples))
             {
                 _hPalette = setupPalette(hDC);
                 _hGLRC = wglCreateContext(hDC);
-                if (_hGLRC) {
-                    return true;
-                }
-                else
-                {
-                    _error = true;
-                    return false;
-                }
+                return _hGLRC !is null;
             }
-            else
-            {
-                Log.e("Cannot reinit pixel format");
-                _error = true;
-                return false;
-            }
+            return false;
         }
 
         void uninit() {
@@ -343,7 +334,7 @@ static if (ENABLE_OPENGL) {
                 WGL_STENCIL_BITS_ARB, 0,
                 WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
                 WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
-                WGL_SAMPLES_ARB, Platform.instance.multisamples,
+                WGL_SAMPLES_ARB, samples,
                 0
             ];
 
@@ -353,6 +344,8 @@ static if (ENABLE_OPENGL) {
                 Log.e("wglChoosePixelFormatARB failed. GetLastError=%x".format(GetLastError()));
                 return 0;
             }
+            if (numFormats == 0)
+                return 0; // none with that many samples
 
             return pixelFormat;
         }
@@ -368,9 +361,12 @@ static if (ENABLE_OPENGL) {
             ];
             bind(hDC);
             wglCreateContextAttribsARB = cast(PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-            HGLRC tmpRC = wglCreateContextAttribsARB(hDC, null, attribs.ptr);
-            if(!tmpRC)
+            HGLRC tmpRC = wglCreateContextAttribsARB ? wglCreateContextAttribsARB(hDC, null, attribs.ptr) : null;
+            if(!tmpRC) {
+                // the context from reinit() stays
+                unbind(hDC);
                 return false;
+            }
             wglMakeCurrent(hDC, null);
             wglDeleteContext(_hGLRC);
             _hGLRC = tmpRC;
@@ -500,6 +496,9 @@ class Win32Window : Window {
 
                 if (recreateForMultisampling)
                 {
+                    // a multisampled pixel format is chosen with an extension function that init() loads with its
+                    // context; without one (no OpenGL), the window is still re-created: see recreateForMultisampling
+                    bool canMultisample = useOpengl && wglChoosePixelFormatARB !is null;
                     sharedGLContext.uninit();
                     ReleaseDC(_hwnd, hDC);
 
@@ -518,12 +517,20 @@ class Win32Window : Window {
                         cast(void*)this);                // creation parameters
 
                     hDC = GetDC(_hwnd);
-                    useOpengl = sharedGLContext.reinit(hDC, platform.multisamples);
-
-                    if(!sharedGLContext.createCoreRC(hDC))
-                    {
-                        Log.d("Unable to create Core OpenGL");
-                        throw new Exception("Unable to create Core OpenGL");
+                    useOpengl = canMultisample && sharedGLContext.reinit(hDC, platform.multisamples);
+                    if (useOpengl) {
+                        if (!sharedGLContext.createCoreRC(hDC))
+                            Log.w("Unable to create Core OpenGL context: using the multisampled default context");
+                    } else if (canMultisample) {
+                        // no pixel format with that many samples (e.g. more than the driver offers): OpenGL without
+                        // multisampling, as without the setting, also for later windows; if that fails too, the window
+                        // paints with GDI (#1210)
+                        Log.w("No OpenGL pixel format with ", platform.multisamples, " samples: multisampling disabled");
+                        platform.multisamples = 0;
+                        // a window keeps a pixel format once it is set: if reinit() set one but got no context, this
+                        // window paints with GDI (init() would fail and turn OpenGL off for later windows too)
+                        if (GetPixelFormat(hDC) == 0)
+                            useOpengl = sharedGLContext.init(hDC);
                     }
                 }
             }
