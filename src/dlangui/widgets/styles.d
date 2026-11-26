@@ -1615,7 +1615,9 @@ Theme createDefaultTheme() {
         res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
         //buttonLabel.createState(State.Hovered, State.Hovered).textColor(0x800000);
         //buttonLabel.createState(State.Focused, State.Focused).textColor(0x000080);
-        res.createSubstyle(STYLE_BUTTON_TRANSPARENT).backgroundImageId("btn_background_transparent").alignment(Align.Center);
+        // drawables of the console styles below are text or color drawables, as in console_theme_default.xml: the
+        // image ids of the GUI theme aren't console resources (#1211)
+        res.createSubstyle(STYLE_BUTTON_TRANSPARENT).alignment(Align.Center).setMargins(0, 0, 0, 0);
         res.createSubstyle(STYLE_BUTTON_IMAGE).alignment(Align.Center).textColor(0x000000);
         res.createSubstyle(STYLE_TEXT).setMargins(0, 0, 0, 0).setPadding(0, 0, 0, 0);
         res.createSubstyle(STYLE_HSPACER).layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
@@ -1626,72 +1628,68 @@ Theme createDefaultTheme() {
         //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
         //button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
         //button.createState(State.Hovered, State.Hovered).backgroundImageId("btn_default_small_normal_hover");
-        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_UP, "scrollbar_btn_up");
-        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_DOWN, "scrollbar_btn_down");
-        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_LEFT, "scrollbar_btn_left");
-        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_RIGHT, "scrollbar_btn_right");
-        res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_VERTICAL, "scrollbar_indicator_vertical");
-        res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "scrollbar_indicator_horizontal");
+        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_UP, "{'▲' #FFFF00}");
+        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_DOWN, "{'▼' #FFFF00}");
+        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_LEFT, "{'◄' #FFFF00}");
+        res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_RIGHT, "{'►' #FFFF00}");
+        // no image: the indicator is drawn by the background of its button style (an empty text in the theme file)
+        res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_VERTICAL, "@null");
+        res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "@null");
 
-        Style scrollbar = res.createSubstyle(STYLE_SCROLLBAR);
-        scrollbar.backgroundColor(0xC0808080);
-        button.createSubstyle(STYLE_SCROLLBAR_BUTTON);
-        res.createSubstyle(STYLE_SLIDER);
-        Style scrollbarPage = res.createSubstyle(STYLE_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
-        scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
-        scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
-        Style sliderPage = res.createSubstyle(STYLE_SLIDER_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
-        sliderPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
-        sliderPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
+        res.createSubstyle(STYLE_SCROLLBAR).backgroundImageId("{'░' 0x808000 stretch}").alignment(Align.Center);
+        // not a child of BUTTON: no hover and focus colors of buttons
+        res.createSubstyle(STYLE_SCROLLBAR_BUTTON).backgroundImageId("{' ' bc 0x808000 stretch}").alignment(Align.Center)
+            .createState(State.Pressed, State.Pressed).backgroundImageId("{' ' bc 0xFFFF00 stretch}");
+        // the arrow buttons
+        res.createSubstyle(STYLE_SCROLLBAR_BUTTON_TRANSPARENT).backgroundImageId("{'░' 0x808000 stretch}").alignment(Align.Center);
+        res.createSubstyle(STYLE_SLIDER).backgroundImageId("{'═' 0x808080 stretch}").alignment(Align.Center)
+            .setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_VERTICAL, "{'■' #000000 bc #FFFF00}")
+            .setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "{'■' #000000 bc #FFFF00}");
+        // page areas draw nothing (the GUI's semi-transparent colors were skipped by the console anyway)
+        res.createSubstyle(STYLE_PAGE_SCROLL).backgroundImageId("@null")
+            .createSubstyle(STYLE_SLIDER_PAGE_SCROLL);
 
-        Style tabUp = res.createSubstyle(STYLE_TAB_UP);
-        tabUp.backgroundImageId("tab_up_background");
-        tabUp.layoutWidth(FILL_PARENT);
-        tabUp.createState(State.Selected, State.Selected).backgroundImageId("tab_up_backgrond_selected");
+        // tabs: colors instead of the GUI images, and text colors that go with them
+        res.createSubstyle(STYLE_TAB_UP).layoutWidth(FILL_PARENT).setMargins(2,0,2,0);
         Style tabUpButtonText = res.createSubstyle(STYLE_TAB_UP_BUTTON_TEXT);
-        tabUpButtonText.textColor(0x000000).alignment(Align.Center);
-        tabUpButtonText.createState(State.Selected, State.Selected).textColor(0x000000);
-        tabUpButtonText.createState(State.Selected|State.Focused, State.Selected|State.Focused).textColor(0x000000);
-        tabUpButtonText.createState(State.Focused, State.Focused).textColor(0x000000);
-        tabUpButtonText.createState(State.Hovered, State.Hovered).textColor(0xFFE0E0);
-        Style tabUpButton = res.createSubstyle(STYLE_TAB_UP_BUTTON);
-        tabUpButton.backgroundImageId("tab_btn_up");
-        //tabUpButton.backgroundImageId("tab_btn_up_normal");
-        //tabUpButton.createState(State.Selected, State.Selected).backgroundImageId("tab_btn_up_selected");
-        //tabUpButton.createState(State.Selected|State.Focused, State.Selected|State.Focused).backgroundImageId("tab_btn_up_focused_selected");
-        //tabUpButton.createState(State.Focused, State.Focused).backgroundImageId("tab_btn_up_focused");
-        //tabUpButton.createState(State.Hovered, State.Hovered).backgroundImageId("tab_btn_up_hover");
-        Style tabHost = res.createSubstyle(STYLE_TAB_HOST);
-        tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        tabHost.backgroundColor(0xF0F0F0);
-        Style tabWidget = res.createSubstyle(STYLE_TAB_WIDGET);
-        tabWidget.setPadding(3,3,3,3).backgroundColor(0xEEEEEE);
-        //tabWidget.backgroundImageId("frame_blue");
-        //res.dumpStats();
+        tabUpButtonText.textColor(0x808080).alignment(Align.Center).setMargins(1,0,1,0);
+        tabUpButtonText.createState(State.Selected, State.Selected).textColor(0xFFFFFF);
+        tabUpButtonText.createState(State.Hovered, State.Hovered).textColor(0x808000);
+        Style tabUpButton = res.createSubstyle(STYLE_TAB_UP_BUTTON).backgroundColor(0x000000);
+        tabUpButton.createState(State.Selected, State.Selected).backgroundColor(0x000080);
+        res.createSubstyle(STYLE_TAB_HOST).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).backgroundColor(0x000000);
+        res.createSubstyle(STYLE_TAB_WIDGET).backgroundColor(0x000000);
 
-        res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-        res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
-        Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
-        menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
-        menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
-        menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
-        menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
-        res.createSubstyle(STYLE_MENU_ICON).setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
-        res.createSubstyle(STYLE_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
-        res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
-        res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
+        res.createSubstyle(STYLE_MAIN_MENU).backgroundImageId("{' ' bc 0x808080 stretch}").layoutWidth(FILL_PARENT)
+            .layoutWeight(0).textColor(0x000000);
+        Style mainMenuItem = res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(0,0,0,0)
+            .backgroundImageId("{' ' bc 0x808080 stretch}").textFlags(TEXT_FLAGS_USE_PARENT);
+        mainMenuItem.createState(State.Selected, State.Selected).backgroundImageId("{' ' bc 0xFFFFFF stretch}");
+        // menu items and labels: margins in cells, black text on gray, as in console_theme_default.xml (the GUI
+        // pixel paddings and margins were rows and columns here)
+        Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(0,0,0,0).textColor(0x000000)
+            .backgroundImageId("{' ' bc 0x808080 stretch}");
+        menuItem.createState(State.Selected, State.Selected).backgroundImageId("{' ' bc 0xFFFFFF stretch}");
+        res.createSubstyle(STYLE_MENU_ICON).setMargins(0,0,0,0).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
+        res.createSubstyle(STYLE_MENU_LABEL).setMargins(1,0,1,0).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys)
+            .textColor(0x000000).createState(State.Enabled,0).textColor(0xC0C0C0);
+        res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(1,0,1,0).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT)
+            .textColor(0x000000).createState(State.Enabled,0).textColor(0xC0C0C0);
+        res.createSubstyle(STYLE_MENU_ACCEL).setMargins(1,0,1,0).alignment(Align.VCenter|Align.Left)
+            .textColor(0x000000).createState(State.Enabled,0).textColor(0xC0C0C0);
+        res.createSubstyle(STYLE_MENU_SEPARATOR).backgroundImageId("{'─' tc 0x808080 bc 0xFFFFFFFF stretch}");
 
-        res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
-        //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
-        //transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
-        //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
-        //transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xD0FFFF00);
+        res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("@null").setPadding(0,0,0,0);
 
-        res.createSubstyle(STYLE_POPUP_MENU).backgroundImageId("popup_menu_background_normal");
+        res.createSubstyle(STYLE_POPUP_MENU)
+            .backgroundImageId("{'╔═╗' '║ ║' '╚═╝' bc 0x808080 tc 0xC0C0C0 ninepatch 1 1 1 1 padding 1 1 1 1}");
 
-        res.createSubstyle(STYLE_LIST_ITEM).backgroundImageId("list_item_background");
-        //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
-        //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
+        Style listItem = res.createSubstyle(STYLE_LIST_ITEM);
+        listItem.createState(State.Pressed, State.Pressed).backgroundImageId("{'░' 0x808000 stretch}").textColor(0x000000);
+        listItem.createState(State.Selected|State.Focused, State.Selected|State.Focused)
+            .backgroundImageId("{' ' bc 0xFFFF00 stretch}").textColor(0x000000);
+        listItem.createState(State.Selected, State.Selected).backgroundImageId("{' ' bc 0x808080 stretch}").textColor(0x000000);
+        listItem.createState(State.Hovered, State.Hovered).textColor(0x800080);
 
         // the frame of an editor in the given color
         static string editLineFrame(string color) {
@@ -1711,6 +1709,13 @@ Theme createDefaultTheme() {
             .setPadding(1,1,0,0).setMargins(0,0,0,0).minWidth(8).minHeight(3).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
             .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(1);
         editBox.createState(State.Focused, State.Focused)
+            .backgroundImageId("{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}");
+        // LogWidget and the list of the file dialog, framed as in console_theme_default.xml (#1211)
+        editBox.createSubstyle(STYLE_LOG_WIDGET);
+        Style listBox = res.createSubstyle(STYLE_LIST_BOX)
+            .backgroundImageId("{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}")
+            .setPadding(1,1,1,1).setMargins(0,0,0,0).minWidth(8).minHeight(3).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        listBox.createState(State.Focused, State.Focused)
             .backgroundImageId("{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}");
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_INFO).backgroundColor(0x000080).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
         res.createSubstyle(STYLE_EDIT_MESSAGE_BAR_WARNING).backgroundColor(0x808000).setPadding(1,0,0,0).layoutWidth(FILL_PARENT);
@@ -1827,16 +1832,23 @@ version (unittest) {
     /// Theme for unittests that create widgets (#987): `auto _ = useTestTheme();` sets the default theme when
     /// there is none, and removes it at the end of the scope. The currentTheme setter destroys the previous
     /// theme, so a theme set by someone else is kept. The SVG current color, which the setter changes, is
-    /// restored too.
+    /// restored too. A drawable cache is set the same way, when there is none: styles with text or color drawables
+    /// (the console theme) get their background drawables from it (#1211). Image ids still need an image cache.
     @mustuse struct TestThemeGuard {
         private Theme _createdTheme;
         private uint _savedSvgColor;
+        private DrawableCache _createdDrawableCache;
         @disable this(this);
         ~this() {
             // only the theme created here, if it is still the current one
             if (_createdTheme !is null && _currentTheme is _createdTheme) {
                 currentTheme = null;
                 svgCurrentColor = _savedSvgColor;
+            }
+            // after the theme, which releases the drawables of its styles
+            if (_createdDrawableCache !is null && _drawableCache is _createdDrawableCache) {
+                destroy(_drawableCache);
+                _drawableCache = null;
             }
         }
     }
@@ -1848,6 +1860,10 @@ version (unittest) {
             res._createdTheme = createDefaultTheme();
             currentTheme = res._createdTheme;
         }
+        if (_drawableCache is null) {
+            res._createdDrawableCache = new DrawableCache();
+            _drawableCache = res._createdDrawableCache;
+        }
         return res;
     }
 
@@ -1858,16 +1874,21 @@ version (unittest) {
             _currentTheme = savedTheme;
             svgCurrentColor = savedSvgColor;
         }
+        DrawableCache savedDrawables = _drawableCache;
+        scope(exit) _drawableCache = savedDrawables;
         // no theme set: the default theme for the scope, then no theme and the SVG color as before
         _currentTheme = null;
         svgCurrentColor = 0x123456;
+        _drawableCache = null;
         {
             auto _ = useTestTheme();
             assert(currentTheme !is null);
             assert(svgCurrentColor != 0x123456); // the default theme's text color
+            assert(drawableCache !is null); // and a drawable cache for the scope (#1211)
         }
         assert(currentTheme is null);
         assert(svgCurrentColor == 0x123456);
+        assert(drawableCache is null);
         // a theme set by someone else is kept
         Theme theme = new Theme("test");
         scope(exit) destroy(theme);
@@ -2613,6 +2634,47 @@ static if (WIDGET_STYLE_CONSOLE) unittest {
             destroy(d);
         }
     }
+}
+
+/// every drawable of the console fallback theme is a text drawable, @null or a console resource, and LOG_WIDGET and
+/// LIST_BOX are defined (#1211)
+static if (WIDGET_STYLE_CONSOLE) unittest {
+    import dlangui.graphics.resources : createTextDrawable;
+    import std.algorithm.searching : canFind;
+    import std.path : baseName, stripExtension;
+    import std.string : lineSplitter, strip;
+    bool[string] resources; // ids of the embedded console resources
+    foreach (line; import("console_standard_resources.list").lineSplitter)
+        if (line.strip.length)
+            resources[line.strip.baseName.stripExtension] = true;
+    Theme theme = createDefaultTheme();
+    scope(exit) destroy(theme);
+    string bad;
+    void check(string where, string drawableId) {
+        if (!drawableId.length || drawableId == COLOR_DRAWABLE || drawableId == "@null" || drawableId in resources)
+            return;
+        if (drawableId[0] == '{') {
+            Drawable d = createTextDrawable(drawableId);
+            if (d !is null) {
+                destroy(d);
+                return;
+            }
+        }
+        bad ~= "\n  " ~ where ~ ": " ~ drawableId;
+    }
+    void checkStyle(string where, Style style) {
+        check(where, style._backgroundImageId);
+        foreach (key, attr; style._customDrawables._customDrawables)
+            check(where ~ " " ~ key, attr.drawableId);
+        foreach (state; style._substates)
+            checkStyle(where ~ " (state)", state);
+    }
+    checkStyle("theme", theme);
+    foreach (id, style; theme._byId)
+        checkStyle(id, style);
+    assert(!bad.length, "drawables of the console fallback theme that aren't console drawables:" ~ bad);
+    assert(theme._byId.get(STYLE_LOG_WIDGET, null) && theme.get(STYLE_LOG_WIDGET).parentStyle is theme.get(STYLE_EDIT_BOX));
+    assert(theme._byId.get(STYLE_LIST_BOX, null) && theme.get(STYLE_LIST_BOX).backgroundImageId.canFind("┌─┐"));
 }
 
 /// the fallback theme has the custom colors of the standard theme file: same ids, values and styles (#1133)
