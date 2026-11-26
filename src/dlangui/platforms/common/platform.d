@@ -1424,13 +1424,15 @@ class Window : CustomEventTarget {
                 focus = focus.parent;
             }
         }
+        // a widget with wantsKeyTracking (MainMenu: Alt+letter hotkeys) that takes the key handles it: the backend
+        // must know, e.g. Win32 then doesn't pass the key on to DefWindowProc (#1239)
         if (modal) {
             if (dispatchKeyEvent(modal, event))
-                return res;
+                return true;
             return modal.onKeyEvent(event) || res;
         } else if (_mainWidget) {
             if (dispatchKeyEvent(_mainWidget, event))
-                return res;
+                return true;
             return _mainWidget.onKeyEvent(event) || res;
         }
         return res;

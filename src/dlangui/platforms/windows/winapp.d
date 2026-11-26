@@ -1511,6 +1511,9 @@ class Win32Window : Window {
 
 
     protected uint _keyFlags;
+    /// true if the app handled the last WM_SYSKEYDOWN: the WM_SYSCHAR that TranslateMessage makes of the same key
+    /// doesn't go to DefWindowProc, which would look for it in the window's native menu and beep (#1239)
+    protected bool _sysKeyDownHandled;
 
     protected void updateKeyFlags(KeyAction action, KeyFlag flag, uint preserveFlag) {
         if (action == KeyAction.KeyDown)
@@ -2304,8 +2307,21 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         break;
                 }
 
-                if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)new_vk, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
+                bool handled = window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)new_vk, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN);
+                // set by every key message: only the WM_SYSCHAR right after a handled WM_SYSKEYDOWN is dropped
+                window._sysKeyDownHandled = message == WM_SYSKEYDOWN && handled;
+                if (handled)
                     return 0; // processed
+            }
+            break;
+        case WM_SYSCHAR:
+            // the character of an Alt+key the app handled (e.g. a MainMenu hotkey): not a native menu key (#1239).
+            // Alt+Space still opens the window menu: an app doesn't take that system shortcut (#1238)
+            if (window !is null) {
+                bool keyHandled = window._sysKeyDownHandled;
+                window._sysKeyDownHandled = false;
+                if (keyHandled && wParam != ' ')
+                    return 0;
             }
             break;
         case WM_UNICHAR:
