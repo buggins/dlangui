@@ -1389,6 +1389,19 @@ class Window : CustomEventTarget {
         return false;
     }
 
+    /// dispatch a key event only to widgets with wantsKeyTracking (MainMenu hotkeys), not to the focused widget:
+    /// for characters a backend gets as hotkeys rather than text, e.g. the Win32 WM_SYSCHAR of Alt+Ф (#1240)
+    protected bool dispatchKeyTrackingEvent(KeyEvent event) {
+        if (hasModalWindowsAbove() || !_firstDrawCalled)
+            return false;
+        // as dispatchKeyEvent(): no empty text and no control characters
+        if (event.action == KeyAction.Text && (!event.text.length || event.text[0] < ' ' || event.text[0] == 0x7F))
+            return false;
+        PopupWidget modal = modalPopup();
+        Widget root = modal ? modal : _mainWidget;
+        return root !is null && dispatchKeyEvent(root, event);
+    }
+
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
         if (hasModalWindowsAbove() || !_firstDrawCalled)
@@ -2227,6 +2240,74 @@ unittest {
     assert(fixed.backgroundColor == 0x123456);
     assert(fixedById.backgroundColor == 0x234567);
     assert(missing.backgroundColor == 0x345678);
+}
+
+unittest {
+    // a key tracking event reaches widgets with wantsKeyTracking (MainMenu), not the focused widget (#1240)
+    import dlangui.widgets.styles : useTestTheme;
+    import dlangui.widgets.layouts : VerticalLayout;
+    static class TestWindow : Window {
+        override void show() {}
+        override @property dstring windowCaption() const { return null; }
+        override @property void windowCaption(dstring caption) {}
+        override @property void windowIcon(DrawBufRef icon) {}
+        override void invalidate() {}
+        override void close() {}
+    }
+    static class TestPlatform : Platform { // hasModalWindowsAbove() asks the platform
+        override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable,
+                uint width = 0, uint height = 0) { return null; }
+        override void closeWindow(Window w) {}
+        override int enterMessageLoop() { return 0; }
+        override bool hasClipboardText(bool mouseBuffer = false) { return false; }
+        override dstring getClipboardText(bool mouseBuffer = false) { return null; }
+        override void setClipboardText(dstring text, bool mouseBuffer = false) {}
+        override void requestLayout() {}
+        override protected void forEachWindow(scope void delegate(Window) dg) {}
+    }
+    // records the text it gets; an editor takes any text, the menu only its hotkey
+    static class TextRecorder : Widget {
+        bool tracking;
+        dstring received;
+        this(string id, bool tracking) { super(id); this.tracking = tracking; }
+        override @property bool wantsKeyTracking() { return tracking; }
+        override bool onKeyEvent(KeyEvent event) {
+            if (event.action != KeyAction.Text)
+                return false;
+            received ~= event.text;
+            return !tracking || event.text == "ф"d;
+        }
+    }
+    auto _ = useTestTheme();
+    Platform savedPlatform = Platform._instance;
+    auto testPlatform = new TestPlatform();
+    Platform._instance = testPlatform;
+    scope (exit) {
+        Platform._instance = savedPlatform;
+        destroy(testPlatform);
+    }
+    auto window = new TestWindow();
+    scope (exit) destroy(window);
+    auto editor = new TextRecorder("editor", false);
+    auto menu = new TextRecorder("menu", true);
+    auto layout = new VerticalLayout("layout");
+    layout.addChild(menu);
+    layout.addChild(editor);
+    window.mainWidget = layout;
+    window._focusedWidget = editor;
+    window._firstDrawCalled = true;
+    // the menu's hotkey: taken by the menu
+    assert(window.dispatchKeyTrackingEvent(new KeyEvent(KeyAction.Text, 0, KeyFlag.Alt, "ф"d)));
+    // no hotkey: not handled (the backend passes it on), and never typed into the editor
+    assert(!window.dispatchKeyTrackingEvent(new KeyEvent(KeyAction.Text, 0, KeyFlag.Alt, "щ"d)));
+    // no empty text or control characters
+    assert(!window.dispatchKeyTrackingEvent(new KeyEvent(KeyAction.Text, 0, KeyFlag.Alt, ""d)));
+    assert(!window.dispatchKeyTrackingEvent(new KeyEvent(KeyAction.Text, 0, KeyFlag.Alt, "\x1B"d)));
+    assert(menu.received == "фщ"d);
+    assert(editor.received.length == 0);
+    // the normal dispatch gives text to the focused widget first
+    assert(window.dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, KeyFlag.Alt, "щ"d)));
+    assert(editor.received == "щ"d);
 }
 
 /**
