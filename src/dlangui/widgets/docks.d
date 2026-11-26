@@ -127,6 +127,25 @@ struct DockSpace {
             _resizer.visibility = Visibility.Gone;
         }
     }
+    /**
+        Size the area is expected to get at the next layout, for DockHost.measure() (#1234), the same as beforeLayout()
+        computes: dockCount - number of visible docked windows, baseSize - host client width (left/right) or height
+        (top/bottom), SIZE_UNSPECIFIED if not known.
+
+        Returns 0 without docked windows, -1 if the size can't be told (base size unknown, area not laid out yet).
+    */
+    int expectedSpace(size_t dockCount, int baseSize) const {
+        if (!dockCount)
+            return 0;
+        if (baseSize == SIZE_UNSPECIFIED || baseSize <= 0)
+            return _space > 0 ? _space : -1;
+        int space = _space > 0 ? _space : baseSize * _initialPercent / 100;
+        if (space < baseSize * 1 / 10)
+            space = baseSize * 1 / 10;
+        if (space > baseSize * 4 / 10)
+            space = baseSize * 4 / 10;
+        return space;
+    }
     void layout(Rect rc) {
         int rsWidth = 3; // resizer width
         if (_space) {
@@ -368,17 +387,73 @@ class DockHost : WidgetGroupDefaultDrawing {
             pwidth -= m.left + m.right + p.left + p.right;
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
-        // measure children, the body widget among them (it is one of the children: measured once, #1225)
+        // dock areas (#1234), in layoutPriority order like layout(): each one takes its space from the part of the
+        // client rect the areas before it left, and spans the rest of it across. Its space is the size the next
+        // layout gives it, a percentage of the client size; if that isn't known and the area was never laid out,
+        // the largest measured size of its docked windows: only an estimate, the layout gives it the percentage of
+        // the real size. Docked windows share the cross size of their area equally.
+        int[4] spaces; // by DockAlignment
+        int[4] crossSizes; // by DockAlignment: the cross size the docked windows of the area need
+        int availWidth = pwidth;
+        int availHeight = pheight;
+        foreach (a; _layoutPriority) {
+            immutable bool horizontal = a == DockAlignment.Left || a == DockAlignment.Right; // space is a width
+            DockWindow[] docks = getDockedWindowList(a);
+            int space = dockSpace(a).expectedSpace(docks.length, horizontal ? pwidth : pheight);
+            immutable int dockSize = space > 0 ? space : SIZE_UNSPECIFIED;
+            int crossShare = horizontal ? availHeight : availWidth;
+            if (crossShare != SIZE_UNSPECIFIED && docks.length)
+                crossShare /= cast(int)docks.length;
+            int maxSize, maxCross;
+            foreach (d; docks) {
+                if (horizontal)
+                    d.measure(dockSize, crossShare);
+                else
+                    d.measure(crossShare, dockSize);
+                immutable int size = horizontal ? d.measuredWidth : d.measuredHeight;
+                immutable int cross = horizontal ? d.measuredHeight : d.measuredWidth;
+                if (maxSize < size)
+                    maxSize = size;
+                if (maxCross < cross)
+                    maxCross = cross;
+            }
+            if (space < 0)
+                space = maxSize;
+            spaces[a] = space;
+            crossSizes[a] = maxCross * cast(int)docks.length;
+            if (horizontal && availWidth != SIZE_UNSPECIFIED)
+                availWidth = availWidth > space ? availWidth - space : 0;
+            if (!horizontal && availHeight != SIZE_UNSPECIFIED)
+                availHeight = availHeight > space ? availHeight - space : 0;
+        }
+        // the body gets the rest of the client rect
         Point sz;
+        if (_bodyWidget && _bodyWidget.visibility != Visibility.Gone) {
+            _bodyWidget.measure(availWidth, availHeight);
+            sz = Point(_bodyWidget.measuredWidth, _bodyWidget.measuredHeight);
+        }
+        // add the areas around it, the last laid out first: each adds its space and needs its cross size across
+        foreach_reverse (a; _layoutPriority) {
+            if (a == DockAlignment.Left || a == DockAlignment.Right) {
+                sz.x += spaces[a];
+                if (sz.y < crossSizes[a])
+                    sz.y = crossSizes[a];
+            } else {
+                sz.y += spaces[a];
+                if (sz.x < crossSizes[a])
+                    sz.x = crossSizes[a];
+            }
+        }
+        // other children (the resizers; docked windows that aren't visible) are measured, but not counted: the
+        // resizers lie inside the dock areas
         for (int i = 0; i < _children.count; i++) {
             Widget item = _children.get(i);
-            if (item.visibility != Visibility.Gone) {
-                item.measure(pwidth, pheight);
-                if (sz.x < item.measuredWidth)
-                    sz.x = item.measuredWidth;
-                if (sz.y < item.measuredHeight)
-                    sz.y = item.measuredHeight;
-            }
+            if (item is _bodyWidget || item.visibility == Visibility.Gone)
+                continue;
+            if (auto d = cast(DockWindow)item)
+                if (d.visibility == Visibility.Visible)
+                    continue; // measured above
+            item.measure(pwidth, pheight);
         }
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
@@ -480,6 +555,109 @@ unittest {
         assert(host.bodyWidget is null);
         host.layout(Rect(0, 0, 1000, 800));
     }
+}
+
+/// measure: the body is measured with the size left after the dock areas, which are added to the host's size (#1234)
+unittest {
+    import dlangui.widgets.styles : useTestTheme;
+    auto _ = useTestTheme();
+    static class BodyWidget : Widget {
+        int lastParentWidth, lastParentHeight;
+        override void measure(int parentWidth, int parentHeight) {
+            lastParentWidth = parentWidth;
+            lastParentHeight = parentHeight;
+            super.measure(parentWidth, parentHeight);
+        }
+    }
+    // docked windows with a fixed measured size: a real caption can't be measured without a font manager
+    static class FixedDock : DockWindow {
+        int fixedWidth, fixedHeight;
+        int lastParentWidth, lastParentHeight;
+        this(string ID, DockAlignment a, int w, int h) {
+            super(ID);
+            dockAlignment = a;
+            fixedWidth = w;
+            fixedHeight = h;
+        }
+        override void measure(int parentWidth, int parentHeight) {
+            lastParentWidth = parentWidth;
+            lastParentHeight = parentHeight;
+            _measuredWidth = fixedWidth;
+            _measuredHeight = fixedHeight;
+        }
+    }
+    auto host = new DockHost();
+    scope(exit) destroy(host);
+    // the host's client size: theme margins and padding of DOCK_HOST may apply
+    immutable Rect m = host.margins, p = host.padding;
+    immutable int extraWidth = m.left + m.right + p.left + p.right;
+    immutable int extraHeight = m.top + m.bottom + p.top + p.bottom;
+    immutable int clientWidth = 1000 - extraWidth, clientHeight = 800 - extraHeight;
+    auto bodyWidget = new BodyWidget();
+    host.bodyWidget = bodyWidget;
+    bodyWidget.minWidth = 600;
+    bodyWidget.minHeight = 300;
+    // no docked windows: the body's size
+    host.measure(1000, 800);
+    assert(bodyWidget.lastParentWidth == clientWidth && bodyWidget.lastParentHeight == clientHeight);
+    assert(host.measuredWidth == 600 + extraWidth && host.measuredHeight == 300 + extraHeight);
+    // a right dock: 20% of the client width by default, also before the first layout
+    auto right = new FixedDock("right", DockAlignment.Right, 50, 100);
+    host.addDockedWindow(right);
+    immutable int rightSpace = clientWidth * 20 / 100;
+    host.measure(1000, 800);
+    assert(bodyWidget.lastParentWidth == clientWidth - rightSpace && bodyWidget.lastParentHeight == clientHeight);
+    assert(right.lastParentWidth == rightSpace && right.lastParentHeight == clientHeight);
+    assert(host.measuredWidth == 600 + rightSpace + extraWidth);
+    // the same after a layout
+    host.layout(Rect(0, 0, 1000, 800));
+    assert(host.dockSpaceSize(DockAlignment.Right) == rightSpace);
+    host.measure(1000, 800);
+    assert(bodyWidget.lastParentWidth == clientWidth - rightSpace);
+    assert(host.measuredWidth == 600 + rightSpace + extraWidth);
+    // unknown size: the size from the last layout
+    host.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+    assert(bodyWidget.lastParentWidth == SIZE_UNSPECIFIED && bodyWidget.lastParentHeight == SIZE_UNSPECIFIED);
+    assert(host.measuredWidth == 600 + rightSpace + extraWidth);
+    // a top dock wider than the body and the right area together: laid out first (default layoutPriority), the top
+    // area spans the full client width, the right area the height below it
+    auto top = new FixedDock("top", DockAlignment.Top, 900, 50);
+    host.addDockedWindow(top);
+    immutable int topSpace = clientHeight * 20 / 100;
+    host.measure(1000, 800);
+    assert(top.lastParentWidth == clientWidth && top.lastParentHeight == topSpace);
+    assert(right.lastParentWidth == rightSpace && right.lastParentHeight == clientHeight - topSpace);
+    assert(bodyWidget.lastParentWidth == clientWidth - rightSpace);
+    assert(bodyWidget.lastParentHeight == clientHeight - topSpace);
+    assert(host.measuredWidth == 900 + extraWidth);
+    assert(host.measuredHeight == 300 + topSpace + extraHeight);
+    // two docked windows in the right area share its height
+    auto right2 = new FixedDock("right2", DockAlignment.Right, 60, 250);
+    host.addDockedWindow(right2);
+    host.measure(1000, 800);
+    assert(right.lastParentHeight == (clientHeight - topSpace) / 2 && right2.lastParentHeight == right.lastParentHeight);
+    assert(host.measuredHeight == 2 * 250 + topSpace + extraHeight);
+    host.removeDockedWindow("right2");
+    destroy(right2);
+    // the right area laid out first: it spans the full height, the top area the width left of it
+    host.layoutPriority = [DockAlignment.Right, DockAlignment.Top, DockAlignment.Left, DockAlignment.Bottom];
+    host.measure(1500, 800);
+    assert(right.lastParentWidth == rightSpace && right.lastParentHeight == clientHeight);
+    assert(top.lastParentWidth == 1500 - extraWidth - rightSpace && top.lastParentHeight == topSpace);
+    assert(host.measuredWidth == 900 + rightSpace + extraWidth);
+    assert(host.measuredHeight == 300 + topSpace + extraHeight);
+    // a new host with unknown size, never laid out: the measured size of the docked window
+    auto host2 = new DockHost();
+    scope(exit) destroy(host2);
+    auto left = new FixedDock("left", DockAlignment.Left, 150, 200);
+    auto left2 = new FixedDock("left2", DockAlignment.Left, 120, 250);
+    host2.addDockedWindow(left);
+    host2.addDockedWindow(left2);
+    host2.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+    assert(left.lastParentWidth == SIZE_UNSPECIFIED);
+    // the widest docked window; two windows share the height of the area
+    assert(host2.measuredWidth == 150 + extraWidth);
+    assert(host2.measuredHeight == 2 * 250 + extraHeight);
 }
 
 /// the close button of the caption can be hidden (#1226)
