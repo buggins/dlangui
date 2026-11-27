@@ -1223,3 +1223,566 @@ unittest {
     assert(parseFileUriList("file:///a%zzb%2") == ["/a%zzb%2"]);
     assert(parseFileUriList("file:///100%25") == ["/100%"]);
 }
+
+/**
+Writes `data` as the whole content of file `path` (created if missing) without leaving a truncated or half-written
+file when writing fails (#1277).
+
+The data goes to a new temporary file in the same directory first (created exclusively, never through an existing
+file or link), is flushed to the disk, and then replaces the file in one step: POSIX `rename()`; on Windows
+`ReplaceFileW`, which keeps the original's attributes, ACL and creation time (or `MoveFileExW` for a new file). On
+POSIX the temporary file is readable by its owner only until it gets the original's group and permission bits,
+before the data is written. If anything fails before the replace, the temporary file is deleted and the original is
+untouched; that includes a full disk.
+
+The file is written in place instead, as a plain overwrite, when replacing it would change what it is:
+- `atomic` is false;
+- it isn't a regular file: a symbolic link (written through the link), another reparse point (Windows), a device
+  or a FIFO;
+- it has more than one hard link (a rename would split it from its other names);
+- it belongs to another user, or (POSIX) its group can't be given to the new file;
+- creating files in its directory isn't allowed (permissions, a read-only file system, a too long name);
+- Windows refuses to replace it (another program has it open without allowing that).
+
+`sync` also flushes an in-place write to the disk, and on POSIX the directory after a replace, so that the new name
+survives a crash right after the save.
+
+`written` gets the state of the written file, read from its open handle after the data was flushed.
+
+The data is kept in memory by the caller, so the whole file is encoded before it is written.
+
+Returns false (and logs why) if the file couldn't be written; with an in-place write the file may then be truncated,
+as with any plain overwrite.
+*/
+bool writeFileSafely(string path, const(ubyte)[] data, out FileState written, bool atomic = true, bool sync = false) {
+    import dlangui.core.filewatch : normalizedFilePath;
+    string target = normalizedFilePath(path);
+    try {
+        bool existing;
+        if (!atomic || !canReplaceByRename(target, existing))
+            return writeInPlace(target, data, sync, written);
+        std.stdio.File f;
+        string tmp;
+        final switch (createTempFile(target, existing, f, tmp)) {
+            case CreateStatus.created:
+                break;
+            case CreateStatus.notAllowed:
+                return writeInPlace(target, data, sync, written);
+            case CreateStatus.exists:
+            case CreateStatus.failed:
+                return false; // e.g. a full disk: the original is untouched
+        }
+        try {
+            if (existing && !takeOverAttributes(f, target)) {
+                f.close();
+                removeQuietly(tmp);
+                Log.w("writeFileSafely: cannot give the group of ", target, " to a new file, writing it in place");
+                return writeInPlace(target, data, sync, written);
+            }
+            // flushed to the disk before the replace, or a crash soon after it can leave an empty file
+            writeAndClose(f, tmp, data, true, written, target);
+        } catch (Exception e) {
+            if (f.isOpen)
+                f.close();
+            removeQuietly(tmp);
+            Log.e("writeFileSafely: cannot write ", tmp, ": ", e.msg);
+            return false; // the original is untouched
+        }
+        final switch (replaceByTemp(target, tmp)) {
+            case ReplaceResult.replaced:
+                if (sync)
+                    syncDirectoryOf(target);
+                return true;
+            case ReplaceResult.failed:
+                removeQuietly(tmp);
+                return false;
+            case ReplaceResult.writeInPlace:
+                removeQuietly(tmp);
+                return writeInPlace(target, data, sync, written);
+            case ReplaceResult.tempKept:
+                return false; // the data is in the temporary file, named in the log
+        }
+    } catch (Exception e) {
+        Log.e("writeFileSafely: cannot write ", target, ": ", e.msg);
+        return false;
+    }
+}
+
+import dlangui.core.filewatch : FileState;
+static import std.stdio;
+
+version (unittest) {
+    // called after the data was written to the temporary file (its name) and before it is closed; may throw
+    package __gshared void delegate(string tmp) safeWriteTestHook;
+}
+
+private enum ReplaceResult { replaced, failed, writeInPlace, tempKept }
+private enum CreateStatus { created, exists, notAllowed, failed }
+
+// a temporary file name next to target: name.ext.~dlangui-<random>.tmp
+private string safeWriteTempName(string target) {
+    import std.format : format;
+    import std.random : uniform;
+    return format("%s.~dlangui-%08x%08x.tmp", target, uniform!uint, uniform!uint);
+}
+
+// creates a new temporary file next to target, retrying when the name exists; logs failures
+private CreateStatus createTempFile(string target, bool ownerOnly, out std.stdio.File file, out string name) {
+    foreach (attempt; 0 .. 16) {
+        name = safeWriteTempName(target);
+        int error;
+        CreateStatus status = createNewFile(name, ownerOnly, file, error);
+        final switch (status) {
+            case CreateStatus.created:
+                return status;
+            case CreateStatus.exists:
+                continue;
+            case CreateStatus.notAllowed:
+                Log.w("writeFileSafely: cannot create a temporary file for ", target, " (error ", error,
+                        "), writing it in place");
+                return status;
+            case CreateStatus.failed:
+                Log.e("writeFileSafely: cannot create a temporary file for ", target, ", error ", error);
+                return status;
+        }
+    }
+    Log.e("writeFileSafely: no free temporary file name for ", target);
+    return CreateStatus.failed;
+}
+
+// writes data, flushes (and syncs), reads the state of the written file from the handle (path: the name it gets)
+private void writeAndClose(ref std.stdio.File f, string fileName, const(ubyte)[] data, bool sync,
+        out FileState written, string path) {
+    scope (exit)
+        f.close();
+    f.rawWrite(data);
+    version (unittest) {
+        if (safeWriteTestHook)
+            safeWriteTestHook(fileName);
+    }
+    f.flush();
+    if (sync)
+        f.sync();
+    written = FileState.read(f, path);
+}
+
+private bool writeInPlace(string target, const(ubyte)[] data, bool sync, out FileState written) {
+    try {
+        std.stdio.File f = openInPlace(target);
+        writeAndClose(f, target, data, sync, written, target);
+        return true;
+    } catch (Exception e) {
+        Log.e("writeFileSafely: cannot write ", target, ": ", e.msg);
+        return false;
+    }
+}
+
+version (Posix) {
+    import core.sys.posix.sys.stat : stat_t, lstat, stat, fstat, fchmod, S_IFMT, S_IFREG;
+    import core.sys.posix.unistd : access, geteuid, fchown, close, unlink, fsync, W_OK;
+    import core.sys.posix.sys.types : uid_t;
+    import core.sys.posix.fcntl : open, O_WRONLY, O_RDONLY, O_CREAT, O_EXCL;
+    import core.stdc.errno : errno, ENOENT, EEXIST, EACCES, EPERM, EROFS, ENAMETOOLONG;
+    import std.string : toStringz;
+    private import std.conv : octal;
+
+    // replacing target by a rename keeps what it is: no file yet, or a regular file of the current user without
+    // other hard links, in a directory where files can be created
+    // @trusted: lstat/access get zero-terminated copies and a local buffer
+    private bool canReplaceByRename(string target, out bool existing) @trusted {
+        stat_t st;
+        if (lstat(toStringz(target), &st) != 0)
+            return errno == ENOENT; // a new file; another error: the plain write reports it
+        existing = true;
+        if ((st.st_mode & S_IFMT) != S_IFREG || st.st_nlink > 1 || st.st_uid != geteuid())
+            return false;
+        return access(toStringz(dirName(target)), W_OK) == 0;
+    }
+
+    // errors creating a file where writing the existing file may still work; not a full disk or quota
+    private bool createErrorAllowsInPlace(int error) @safe pure nothrow @nogc {
+        return error == EACCES || error == EPERM || error == EROFS || error == ENAMETOOLONG;
+    }
+
+    // a new file, never an existing file or link (O_EXCL); ownerOnly: mode 0600 until takeOverAttributes, else the
+    // default mode of new files (umask)
+    // @trusted: open/close/unlink get a zero-terminated copy; the descriptor belongs to `file` after fdopen
+    private CreateStatus createNewFile(string name, bool ownerOnly, out std.stdio.File file, out int error) @trusted {
+        int fd = open(toStringz(name), O_WRONLY | O_CREAT | O_EXCL, ownerOnly ? octal!600 : octal!666);
+        if (fd < 0) {
+            error = errno;
+            if (error == EEXIST)
+                return CreateStatus.exists;
+            return createErrorAllowsInPlace(error) ? CreateStatus.notAllowed : CreateStatus.failed;
+        }
+        try {
+            file.fdopen(fd, "wb");
+        } catch (Exception e) {
+            close(fd);
+            unlink(toStringz(name));
+            return CreateStatus.failed;
+        }
+        return CreateStatus.created;
+    }
+
+    // gives the new file the group and permission bits of target; false if the group can't be given
+    // @trusted: stat/fstat/fchown/fchmod on a local buffer and the open descriptor of `tmp`
+    private bool takeOverAttributes(ref std.stdio.File tmp, string target) @trusted {
+        stat_t st, own;
+        if (stat(toStringz(target), &st) != 0)
+            return true; // gone meanwhile: the replace creates it anew
+        int fd = tmp.fileno;
+        if (fstat(fd, &own) == 0 && own.st_gid != st.st_gid && fchown(fd, cast(uid_t)-1, st.st_gid) != 0)
+            return false;
+        fchmod(fd, st.st_mode & octal!7777); // after fchown, which may clear set-id bits
+        return true;
+    }
+
+    private std.stdio.File openInPlace(string target) {
+        return std.stdio.File(target, "wb");
+    }
+
+    private void removeQuietly(string fn) {
+        try {
+            if (exists(fn))
+                remove(fn);
+        } catch (Exception e) {
+            Log.w("cannot delete ", fn, ": ", e.msg);
+        }
+    }
+
+    private ReplaceResult replaceByTemp(string target, string tmp) {
+        try {
+            rename(tmp, target);
+            return ReplaceResult.replaced;
+        } catch (Exception e) {
+            Log.e("writeFileSafely: cannot replace ", target, ": ", e.msg);
+            return ReplaceResult.failed;
+        }
+    }
+
+    // @trusted: open/fsync/close of a descriptor that doesn't leave the function
+    private void syncDirectoryOf(string target) @trusted {
+        int fd = open(toStringz(dirName(target)), O_RDONLY);
+        if (fd >= 0) {
+            fsync(fd);
+            close(fd);
+        }
+    }
+} else version (Windows) {
+    import core.sys.windows.windows;
+    import dlangui.core.filewatch : longPathName;
+
+    private const(wchar)* winName(string name) {
+        return toUTF16z(longPathName(name));
+    }
+
+    // replacing target keeps what it is: no file yet, or a plain file (no reparse point, directory or device)
+    // without other hard links
+    // @trusted: Win32 calls with zero-terminated copies and a local buffer; the handle doesn't leave the function
+    private bool canReplaceByRename(string target, out bool existing) @trusted {
+        DWORD attrs = GetFileAttributesW(winName(target));
+        if (attrs == INVALID_FILE_ATTRIBUTES) {
+            DWORD err = GetLastError();
+            return err == ERROR_FILE_NOT_FOUND; // a new file; another error: the plain write reports it
+        }
+        existing = true;
+        if (attrs & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE))
+            return false;
+        HANDLE h = CreateFileW(winName(target), FILE_READ_ATTRIBUTES,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, null, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, null);
+        if (h == INVALID_HANDLE_VALUE)
+            return true;
+        scope (exit)
+            CloseHandle(h);
+        BY_HANDLE_FILE_INFORMATION info;
+        return !GetFileInformationByHandle(h, &info) || info.nNumberOfLinks <= 1;
+    }
+
+    // errors creating a file where writing the existing file may still work; not a full disk or quota
+    private bool createErrorAllowsInPlace(int error) @safe pure nothrow @nogc {
+        return error == ERROR_ACCESS_DENIED || error == ERROR_WRITE_PROTECT || error == ERROR_FILENAME_EXCED_RANGE
+            || error == ERROR_INVALID_NAME;
+    }
+
+    // a new file, never an existing file or link (CREATE_NEW); its ACL comes from the directory
+    // @trusted: CreateFileW with a zero-terminated copy; the handle belongs to `file` after windowsHandleOpen
+    private CreateStatus createNewFile(string name, bool ownerOnly, out std.stdio.File file, out int error) @trusted {
+        HANDLE h = CreateFileW(winName(name), GENERIC_WRITE, FILE_SHARE_READ, null, CREATE_NEW, FILE_ATTRIBUTE_NORMAL,
+                null);
+        if (h == INVALID_HANDLE_VALUE) {
+            error = cast(int)GetLastError();
+            if (error == ERROR_FILE_EXISTS || error == ERROR_ALREADY_EXISTS)
+                return CreateStatus.exists;
+            return createErrorAllowsInPlace(error) ? CreateStatus.notAllowed : CreateStatus.failed;
+        }
+        try {
+            file.windowsHandleOpen(h, "wb");
+        } catch (Exception e) {
+            CloseHandle(h);
+            DeleteFileW(winName(name));
+            return CreateStatus.failed;
+        }
+        return CreateStatus.created;
+    }
+
+    private bool takeOverAttributes(ref std.stdio.File tmp, string target) {
+        return true; // ReplaceFileW gives the new file the original's attributes and ACL
+    }
+
+    // opens target for writing from its start, emptied; works for hidden files and files other programs have open
+    // with write sharing, and for long paths
+    // @trusted: Win32 calls with zero-terminated copies; the handle belongs to the File after windowsHandleOpen
+    private std.stdio.File openInPlace(string target) @trusted {
+        import std.exception : ErrnoException;
+        HANDLE h = CreateFileW(winName(target), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, null, OPEN_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL, null);
+        if (h == INVALID_HANDLE_VALUE)
+            throw new Exception("cannot open " ~ target ~ " for writing, error " ~ errorCode(GetLastError()));
+        if (!SetEndOfFile(h)) {
+            DWORD err = GetLastError();
+            CloseHandle(h);
+            throw new Exception("cannot empty " ~ target ~ ", error " ~ errorCode(err));
+        }
+        std.stdio.File f;
+        try {
+            f.windowsHandleOpen(h, "wb");
+        } catch (Exception e) {
+            CloseHandle(h);
+            throw e;
+        }
+        return f;
+    }
+
+    private string errorCode(DWORD err) @safe pure {
+        import std.conv : to;
+        return to!string(err);
+    }
+
+    // @trusted: DeleteFileW with a zero-terminated copy
+    private void removeQuietly(string fn) @trusted {
+        if (!DeleteFileW(winName(fn)) && GetLastError() != ERROR_FILE_NOT_FOUND)
+            Log.w("cannot delete ", fn, ", error ", GetLastError());
+    }
+
+    // @trusted: ReplaceFileW with zero-terminated copies; returns 0 or the error
+    private DWORD replaceFile(string target, string tmp) @trusted {
+        return ReplaceFileW(winName(target), winName(tmp), null, REPLACEFILE_IGNORE_MERGE_ERRORS, null, null)
+            ? 0 : GetLastError();
+    }
+
+    // @trusted: MoveFileExW with zero-terminated copies; returns 0 or the error
+    private DWORD moveFile(string from, string to, bool replaceExisting) @trusted {
+        DWORD flags = MOVEFILE_WRITE_THROUGH | (replaceExisting ? MOVEFILE_REPLACE_EXISTING : 0);
+        return MoveFileExW(winName(from), winName(to), flags) ? 0 : GetLastError();
+    }
+
+    private ReplaceResult replaceByTemp(string target, string tmp) {
+        DWORD err = replaceFile(target, tmp);
+        if (err == 0)
+            return ReplaceResult.replaced;
+        switch (err) {
+            case ERROR_FILE_NOT_FOUND:
+                // no original: a new file, or deleted meanwhile
+                err = moveFile(tmp, target, true);
+                if (err == 0)
+                    return ReplaceResult.replaced;
+                break;
+            case ERROR_UNABLE_TO_MOVE_REPLACEMENT:
+            case ERROR_UNABLE_TO_MOVE_REPLACEMENT_2:
+                // the original is deleted (or, _2, renamed); the data is still in the temporary file under its name
+                DWORD moveErr = moveFile(tmp, target, false);
+                if (moveErr == 0)
+                    return ReplaceResult.replaced;
+                Log.e("writeFileSafely: cannot replace ", target, " (error ", err, ", then ", moveErr,
+                        "), the saved data is in ", tmp);
+                return ReplaceResult.tempKept;
+            case ERROR_SHARING_VIOLATION:
+            case ERROR_ACCESS_DENIED:
+            case ERROR_USER_MAPPED_FILE:
+                // open in another program that doesn't allow replacing it: it may still allow writing it
+                Log.w("writeFileSafely: cannot replace ", target, " (error ", err, "), writing it in place");
+                return ReplaceResult.writeInPlace;
+            default:
+                break;
+        }
+        Log.e("writeFileSafely: cannot replace ", target, ", error ", err);
+        return ReplaceResult.failed;
+    }
+
+    private void syncDirectoryOf(string target) {
+        // NTFS commits the rename with its metadata; there is no directory handle to flush
+    }
+} else {
+    private bool canReplaceByRename(string target, out bool existing) {
+        existing = exists(target);
+        return !existing || isFile(target);
+    }
+
+    private bool createErrorAllowsInPlace(int error) {
+        return true;
+    }
+
+    private CreateStatus createNewFile(string name, bool ownerOnly, out std.stdio.File file, out int error) {
+        if (exists(name))
+            return CreateStatus.exists;
+        try {
+            file = std.stdio.File(name, "wb");
+            return CreateStatus.created;
+        } catch (Exception e) {
+            return CreateStatus.notAllowed;
+        }
+    }
+
+    private bool takeOverAttributes(ref std.stdio.File tmp, string target) {
+        return true;
+    }
+
+    private std.stdio.File openInPlace(string target) {
+        return std.stdio.File(target, "wb");
+    }
+
+    private void removeQuietly(string fn) {
+        try {
+            if (exists(fn))
+                remove(fn);
+        } catch (Exception e) {
+            Log.w("cannot delete ", fn, ": ", e.msg);
+        }
+    }
+
+    private ReplaceResult replaceByTemp(string target, string tmp) {
+        try {
+            rename(tmp, target);
+            return ReplaceResult.replaced;
+        } catch (Exception e) {
+            Log.e("writeFileSafely: cannot replace ", target, ": ", e.msg);
+            return ReplaceResult.failed;
+        }
+    }
+
+    private void syncDirectoryOf(string target) {
+    }
+}
+
+unittest {
+    import std.conv : to;
+    import std.datetime.systime : Clock;
+    import std.range : walkLength;
+    import dlangui.core.filewatch : FileChangeKind;
+    string dir = buildPath(tempDir, "dlangui-safe-write-test-" ~ to!string(Clock.currStdTime));
+    mkdirRecurse(dir);
+    scope (exit)
+        rmdirRecurse(dir);
+    string fn = buildPath(dir, "a.txt");
+    size_t filesInDir() { return dirEntries(dir, SpanMode.shallow).walkLength; }
+    FileState written;
+
+    // a new file, then a replaced one: the content, no temporary file left, the written state
+    assert(writeFileSafely(fn, cast(const(ubyte)[])"first", written));
+    assert(readText(fn) == "first" && filesInDir() == 1);
+    assert(written.exists && written.size == 5 && written.compareTo(FileState.read(fn)) == FileChangeKind.unchanged);
+    FileState before = FileState.read(fn);
+    assert(writeFileSafely(fn, cast(const(ubyte)[])"second!", written));
+    assert(readText(fn) == "second!" && filesInDir() == 1);
+    FileState after = FileState.read(fn);
+    assert(written.size == 7 && written.compareTo(after) == FileChangeKind.unchanged);
+    assert(written.modified == after.modified); // the time read from the handle stays after closing
+    if (before.hasFileId && after.hasFileId)
+        assert(before.fileId != after.fileId); // replaced by the temporary file
+
+    // in place when asked: the same file
+    assert(writeFileSafely(fn, cast(const(ubyte)[])"third", written, false));
+    assert(readText(fn) == "third");
+    if (after.hasFileId)
+        assert(FileState.read(fn).fileId == after.fileId);
+
+    // a failed write leaves the original and no temporary file
+    safeWriteTestHook = (string tmp) { throw new Exception("simulated write error"); };
+    assert(!writeFileSafely(fn, cast(const(ubyte)[])"lost", written));
+    safeWriteTestHook = null;
+    assert(readText(fn) == "third" && filesInDir() == 1);
+
+    // a temporary file name that exists (e.g. a planted link) is never written through
+    {
+        string taken = buildPath(dir, "taken.tmp");
+        std.file.write(taken, "keep");
+        std.stdio.File f;
+        int error;
+        assert(createNewFile(taken, true, f, error) == CreateStatus.exists && !f.isOpen);
+        assert(readText(taken) == "keep");
+        remove(taken);
+    }
+
+    version (Posix) {
+        import core.sys.posix.unistd : symlink, link;
+        import core.stdc.errno : ENOSPC, EDQUOT;
+        // a full disk or quota while creating the temporary file fails without touching the original
+        assert(createErrorAllowsInPlace(EACCES) && createErrorAllowsInPlace(EROFS));
+        assert(!createErrorAllowsInPlace(ENOSPC) && !createErrorAllowsInPlace(EDQUOT));
+        // only regular files are replaced
+        bool existing;
+        assert(!canReplaceByRename("/dev/null", existing) && existing);
+        assert(!canReplaceByRename(dir, existing));
+        assert(canReplaceByRename(buildPath(dir, "new.txt"), existing) && !existing);
+        // a new file gets the default mode of new files
+        string fresh = buildPath(dir, "fresh.txt"), plain = buildPath(dir, "plain.txt");
+        assert(writeFileSafely(fresh, cast(const(ubyte)[])"x", written));
+        std.file.write(plain, "x");
+        assert((getAttributes(fresh) & octal!777) == (getAttributes(plain) & octal!777));
+        remove(fresh);
+        remove(plain);
+        // permission bits are kept; a private file's new content is never readable by others while written
+        setAttributes(fn, octal!600);
+        uint tmpMode = uint.max;
+        safeWriteTestHook = (string tmp) { tmpMode = getAttributes(tmp) & octal!777; };
+        assert(writeFileSafely(fn, cast(const(ubyte)[])"private", written));
+        safeWriteTestHook = null;
+        assert(tmpMode == octal!600 && (getAttributes(fn) & octal!777) == octal!600);
+        setAttributes(fn, octal!640);
+        assert(writeFileSafely(fn, cast(const(ubyte)[])"mode", written));
+        assert((getAttributes(fn) & octal!777) == octal!640);
+        // a symbolic link stays a link, its target gets the content
+        string linkName = buildPath(dir, "link.txt");
+        assert(symlink(toStringz(fn), toStringz(linkName)) == 0);
+        assert(writeFileSafely(linkName, cast(const(ubyte)[])"via link", written));
+        assert(isSymlink(linkName) && readText(fn) == "via link");
+        remove(linkName);
+        // a file with another hard link stays shared
+        string hard = buildPath(dir, "hard.txt");
+        assert(link(toStringz(fn), toStringz(hard)) == 0);
+        assert(writeFileSafely(fn, cast(const(ubyte)[])"both names", written));
+        assert(readText(hard) == "both names");
+        remove(hard);
+    }
+    version (Windows) {
+        import std.array : replicate;
+        assert(createErrorAllowsInPlace(ERROR_ACCESS_DENIED) && !createErrorAllowsInPlace(ERROR_DISK_FULL));
+        bool existing;
+        assert(!canReplaceByRename(dir, existing) && existing);
+        // ReplaceFileW keeps the original's attributes; an in-place write works for a hidden file too
+        setAttributes(fn, getAttributes(fn) | FILE_ATTRIBUTE_HIDDEN);
+        assert(writeFileSafely(fn, cast(const(ubyte)[])"hidden", written));
+        assert(readText(fn) == "hidden" && (getAttributes(fn) & FILE_ATTRIBUTE_HIDDEN));
+        assert(writeFileSafely(fn, cast(const(ubyte)[])"hidden 2", written, false));
+        assert(readText(fn) == "hidden 2" && (getAttributes(fn) & FILE_ATTRIBUTE_HIDDEN));
+        setAttributes(fn, getAttributes(fn) & ~FILE_ATTRIBUTE_HIDDEN);
+        // open in another program that doesn't allow deleting or replacing it, but allows writing: written in place
+        HANDLE other = CreateFileW(toUTF16z(fn), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, null,
+                OPEN_EXISTING, 0, null);
+        assert(other != INVALID_HANDLE_VALUE);
+        bool ok = writeFileSafely(fn, cast(const(ubyte)[])"while open", written);
+        CloseHandle(other);
+        assert(ok && readText(fn) == "while open" && filesInDir() == 1);
+        // a path longer than MAX_PATH: created, then replaced
+        string longDir = buildPath(dir, "d".replicate(200 - dir.length > 100 ? 200 - dir.length : 100));
+        mkdir(longDir);
+        string longName = buildPath(longDir, "f".replicate(100) ~ ".txt");
+        assert(longName.length > MAX_PATH);
+        assert(writeFileSafely(longName, cast(const(ubyte)[])"long 1", written));
+        assert(writeFileSafely(longName, cast(const(ubyte)[])"long 22", written));
+        assert(readText(`\\?\` ~ longName) == "long 22" && FileState.read(longName).size == 7);
+        remove(`\\?\` ~ longName);
+        rmdir(longDir);
+    }
+}

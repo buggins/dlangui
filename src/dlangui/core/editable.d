@@ -1725,27 +1725,68 @@ class EditableContent {
         return res;
     }
 
+    protected bool _atomicSave = true;
+    protected bool _syncOnSave;
+
+    /**
+    save(filename) writes a temporary file and replaces the file with it, so a failed save (e.g. a full disk)
+    leaves the file as it was (#1277); files whose identity a replace would change (links, other owners) are still
+    written in place, see `writeFileSafely`. False: always write the file in place.
+    */
+    @property bool atomicSave() const {
+        return _atomicSave;
+    }
+    /// ditto
+    @property EditableContent atomicSave(bool flag) {
+        _atomicSave = flag;
+        return this;
+    }
+
+    /**
+    save(filename) also flushes in-place writes to the disk, and the directory after a replace (POSIX), so that the
+    save survives a crash right after it. The data of an atomic save is always flushed before the replace.
+    */
+    @property bool syncOnSave() const {
+        return _syncOnSave;
+    }
+    /// ditto
+    @property EditableContent syncOnSave(bool flag) {
+        _syncOnSave = flag;
+        return this;
+    }
+
+    // the text encoded in format, as save writes it
+    protected ubyte[] encodeText(string filename, TextFileFormat format) {
+        auto mem = new MemoryOutputStream();
+        OutputLineStream writer = new OutputLineStream(mem, filename, format);
+        for (int i = 0; i < _lines.length; i++)
+            writer.writeLine(_lines[i]);
+        writer.close();
+        return mem.data;
+    }
+
+    // after the text was written completely: the content is saved
+    protected void markSaved(TextFileFormat format) {
+        _format = format;
+        _undoBuffer.saved();
+        _invalidCharCount = 0; // the saved file has U+FFFD instead of the invalid bytes
+        _invalidCharPositions = null;
+        notifyContentSaved();
+    }
+
     /// save to output stream in specified format
     bool save(OutputStream stream, string filename, TextFileFormat format) {
         if (!filename)
             filename = _filename;
-        _format = format;
-        import dlangui.core.linestream;
         try {
             debug(FileFormats)Log.d("creating output stream, file=", filename, " format=", format);
-            OutputLineStream writer = new OutputLineStream(stream, filename, format);
-            bool closed = false;
-            scope(exit) if (!closed) writer.close();
-            for (int i = 0; i < _lines.length; i++) {
-                writer.writeLine(_lines[i]);
+            ubyte[] data = encodeText(filename, format);
+            // written and closed before marking the content saved: write errors (e.g. a full disk) show up here (#956)
+            {
+                scope(exit) stream.close();
+                stream.write(data);
             }
-            // flush and close before marking the content saved: write errors (e.g. a full disk) show up here (#956)
-            closed = true;
-            writer.close();
-            _undoBuffer.saved();
-            _invalidCharCount = 0; // the saved file has U+FFFD instead of the invalid bytes
-            _invalidCharPositions = null;
-            notifyContentSaved();
+            markSaved(format);
             return true;
         } catch (Exception e) {
             Log.e("Exception while trying to write file ", filename, " ", e.toString);
@@ -1757,24 +1798,42 @@ class EditableContent {
         return save(stream, filename, _format);
     }
     /// save to file in specified format
+    /**
+    Save to file in specified format: through a temporary file that replaces it (`atomicSave`, #1277), so a failed
+    save leaves the file as it was. The whole text is encoded in memory first. The content is marked saved only after the file is completely written, and the
+    saved file becomes the new `fileState`, with the checksum of the bytes written (and `fileContent`, with
+    `keepFileContent`).
+    */
     bool save(string filename, TextFileFormat format) {
+        import dlangui.core.files : writeFileSafely;
+        import dlangui.core.filewatch : fileChecksum;
         if (!filename)
             filename = _filename;
         try {
-            bool res;
-            {
-                OutputStream f = new FileOutputStream(filename);
-                scope(exit) { f.close(); }
-                res = save(f, filename, format);
+            ubyte[] data = encodeText(filename, format);
+            FileState written;
+            if (!writeFileSafely(filename, data, written, _atomicSave, _syncOnSave))
+                return false;
+            markSaved(format);
+            // the new baseline: the file now under that name, if it is the one written (same identity, size and time
+            // as read from the written file's handle); else another program changed it meanwhile
+            FileState now = FileState.read(filename);
+            bool ours = now.exists && written.exists && !now.unknown && !written.unknown
+                && now.size == data.length && now.modified == written.modified
+                && (!now.hasFileId || !written.hasFileId || now.fileId == written.fileId);
+            if (ours) {
+                now.checksum = fileChecksum(data);
+                now.hasChecksum = true;
             }
-            if (res) {
-                // the saved file is the new baseline; read after closing it (#1276; #1277 captures it exactly and
-                // keeps the saved bytes for fileContent)
-                _fileState = FileState.read(filename, true);
-                _fileStateUncertain = false;
+            _fileState = now;
+            _fileStateUncertain = !ours;
+            if (_keepFileContent) {
+                import std.exception : assumeUnique;
+                _fileContent = assumeUnique(data); // not used after this
+            } else {
                 _fileContent = null;
             }
-            return res;
+            return true;
         } catch (Exception e) {
             Log.e("Exception while trying to save file ", filename, " ", e.toString);
             return false;
@@ -2103,9 +2162,25 @@ unittest {
     assert(content.performOperation(op, null));
     assert(content.save(fn));
     import std.file : getSize;
-    assert(content.fileState.size == getSize(fn) && content.fileState.hasChecksum && content.fileContent is null);
+    assert(content.fileState.size == getSize(fn) && content.fileState.hasChecksum && !content.fileStateUncertain);
+    { static import std.file; assert(content.fileContent == cast(immutable(ubyte)[])std.file.read(fn)); } // saved bytes (#1277)
     assert(content.fileState.compareTo(FileState.read(fn, true)) == FileChangeKind.unchanged);
     content.keepFileContent = false;
+
+    // a save that fails while writing leaves the file as it was, and the text modified (#1277)
+    {
+        import dlangui.core.files : safeWriteTestHook;
+        FileState saved = content.fileState;
+        auto op2 = new EditOperation(EditAction.Replace, TextRange(TextPosition(0, 0), TextPosition(0, 0)), ["X"d]);
+        assert(content.performOperation(op2, null) && content.modified);
+        safeWriteTestHook = (string tmp) { throw new Exception("simulated full disk"); };
+        scope (exit) safeWriteTestHook = null;
+        assert(!content.save(fn));
+        assert(content.modified);
+        assert(saved.compareTo(FileState.read(fn, true)) == FileChangeKind.unchanged);
+        safeWriteTestHook = null;
+        assert(content.save(fn) && !content.modified);
+    }
 
     // a failed load leaves nothing of the previous file: a directory isn't loaded, and has no file state
     assert(content.load(fn) && content.fileState.exists);
