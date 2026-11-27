@@ -22,7 +22,7 @@ import dlangui.core.signals;
 import dlangui.core.collections;
 import dlangui.core.linestream;
 import dlangui.core.streams;
-import dlangui.core.filewatch : FileState;
+public import dlangui.core.filewatch : FileState, FileChangeKind;
 static import std.stdio;
 import std.algorithm;
 import std.conv : to;
@@ -1572,6 +1572,142 @@ class EditableContent {
         static void delegate(int attempt) testHookAfterRead;
     }
 
+    /**
+    Compares the file on disk with `fileState`, the state of the file when it was loaded or saved (#1278):
+    `unchanged`, `modified`, `deleted`, or `created` when a file that was missing at load time has appeared. Content
+    that didn't come from a file is always `unchanged`, and so is a file whose state can't be read now.
+
+    Size, time and file id are compared first. The file is read and compared by content when only the time or file
+    id differs (a file touched, or replaced by a copy) and the content was loaded with a checksum, and always when
+    `fileStateUncertain` is set (the file changed while it was loaded); the checksum of the bytes loaded decides, and
+    with `keepFileContent` the bytes themselves. Identical content then becomes the new baseline, so the next check
+    doesn't read the file again, and the state is no longer uncertain. Without a checksum (files larger than
+    `maxInMemoryLoadSize`) an uncertain state is `modified`.
+
+    Doesn't change the text: the caller reloads (`reload()`, #1279) or keeps it (`acceptExternalState()`).
+    */
+    FileChangeKind checkExternalChange() {
+        if (!_fileState.path.length)
+            return FileChangeKind.unchanged;
+        FileState current = FileState.read(_fileState.path);
+        if (current.unknown)
+            return FileChangeKind.unchanged; // can't tell now
+        if (_fileState.unknown && !_fileState.hasChecksum) {
+            // loading failed because the state couldn't be read: the file appeared once it can be read
+            return current.exists ? FileChangeKind.created : FileChangeKind.unchanged;
+        }
+        FileChangeKind kind = _fileState.compareTo(current);
+        if (kind == FileChangeKind.deleted || kind == FileChangeKind.created)
+            return kind;
+        if (!_fileStateUncertain && (kind == FileChangeKind.unchanged || current.size != _fileState.size))
+            return kind;
+        // compare the content: same size with another time or file, or not sure the loaded text is the file's
+        if (!_fileState.hasChecksum)
+            return FileChangeKind.modified;
+        ubyte[] data;
+        bool stable;
+        FileState full = readStateWithContent(_fileState.path, data, stable);
+        if (!stable) {
+            if (full.unknown)
+                return FileChangeKind.unchanged;
+            return full.exists ? FileChangeKind.modified : FileChangeKind.deleted; // still being written, or gone
+        }
+        if (!full.hasChecksum || full.checksum != _fileState.checksum || (_fileContent !is null && _fileContent != data))
+            return FileChangeKind.modified; // with kept bytes, exact: a checksum collision is a change
+        _fileState = full; // the same content: the new baseline, no read next time
+        _fileStateUncertain = false;
+        return FileChangeKind.unchanged;
+    }
+
+    /**
+    Makes the file as it is on disk now the baseline for `checkExternalChange()`, without changing the text: for
+    "keep my text" after an external change, or a deleted file the user keeps editing (#1278). The text then counts as
+    a change to that file: `fileState` and `fileContent` describe the file on disk, not the text. If the file keeps
+    changing while it is read, the new state is uncertain (`fileStateUncertain`).
+
+    Returns false, keeping the old baseline, if the state of the file can't be read now.
+    */
+    bool acceptExternalState() {
+        if (!_fileState.path.length)
+            return true;
+        ubyte[] data;
+        bool stable;
+        FileState state = readStateWithContent(_fileState.path, data, stable);
+        if (state.unknown)
+            return false;
+        _fileState = state;
+        _fileStateUncertain = !stable;
+        if (_keepFileContent && state.hasChecksum) {
+            import std.exception : assumeUnique;
+            _fileContent = assumeUnique(data); // not used after this
+        } else {
+            _fileContent = null;
+        }
+        return true;
+    }
+
+    // the name to open a file with: on Windows the \\?\ form of long paths
+    private static string osFileName(string filename) {
+        version (Windows) {
+            import dlangui.core.filewatch : longPathName, normalizedFilePath;
+            return longPathName(normalizedFilePath(filename));
+        } else {
+            return filename;
+        }
+    }
+
+    // a file of this size is read into memory, with a checksum (#1276); larger ones are decoded while read
+    private static bool fitsInMemory(ulong size) {
+        return size <= maxInMemoryLoadSize && size < size_t.max / 2;
+    }
+
+    // reads all bytes of an open file and its state after reading, again while it changes (up to LOAD_RETRIES
+    // times); true if the last read was stable: the bytes belong to `after`
+    private static bool readStable(ref std.stdio.File file, string filename, FileState before, out ubyte[] data,
+            out FileState after) {
+        for (int attempt = 0; ; attempt++) {
+            data = readAllBytes(file, before.size);
+            version (unittest) {
+                if (testHookAfterRead)
+                    testHookAfterRead(attempt);
+            }
+            after = FileState.read(file, filename, data);
+            if (isStableRead(before, after, data.length))
+                return true;
+            if (attempt >= LOAD_RETRIES)
+                return false;
+            debug(FileFormats) Log.d("file changed while it was read, reading again: ", filename);
+            before = after;
+        }
+    }
+
+    // the bytes of a file and its state from one stable read (readStable), with their checksum; `stable` false if
+    // the file kept changing (the last state and bytes read). A missing file, or one too large for memory: its state
+    // without a checksum and no data (stable). On an error: the state without a checksum, not stable.
+    private static FileState readStateWithContent(string path, out ubyte[] data, out bool stable) {
+        FileState state = FileState.read(path);
+        if (!state.exists || state.unknown) {
+            stable = !state.unknown;
+            return state;
+        }
+        try {
+            std.stdio.File file = std.stdio.File(osFileName(path), "rb");
+            scope (exit)
+                file.close();
+            FileState before = FileState.read(file, path);
+            if (!before.unknown && !fitsInMemory(before.size)) {
+                stable = true;
+                return before;
+            }
+            FileState after;
+            stable = readStable(file, path, before, data, after);
+            return after;
+        } catch (Exception e) {
+            data = null;
+            stable = false;
+            return FileState.read(path);
+        }
+    }
 
     /// load content form input stream; the content then has no `fileState` (load(filename) sets it)
     bool load(InputStream f, string fname = null) {
@@ -1634,36 +1770,24 @@ class EditableContent {
         _fileState = FileState.init;
         _fileStateUncertain = false;
         _fileContent = null;
-        if (!filename.exists || !filename.isFile) {
+        string osName = osFileName(filename);
+        if (!osName.exists || !osName.isFile) {
             Log.e("Editable.load: File not found ", filename);
             ensureLineExists();
-            if (!filename.exists)
+            if (!osName.exists)
                 _fileState = FileState.read(filename); // a missing file: a later check can tell it appeared
             return false;
         }
         try {
-            File file = File(filename, "rb");
+            File file = File(osName, "rb");
             scope(exit) file.close();
             FileState before = FileState.read(file, filename);
             // beyond the limit, and on 32-bit systems for sizes that don't fit a buffer: decoded while read
-            if (before.size > maxInMemoryLoadSize || before.size >= size_t.max / 2)
+            if (!fitsInMemory(before.size))
                 return loadWhileReading(file, filename, before);
             ubyte[] data;
             FileState after;
-            bool stable = false;
-            for (int attempt = 0; ; attempt++) {
-                data = readAllBytes(file, before.size);
-                version (unittest) {
-                    if (testHookAfterRead)
-                        testHookAfterRead(attempt);
-                }
-                after = FileState.read(file, filename, data);
-                stable = isStableRead(before, after, data.length);
-                if (stable || attempt >= LOAD_RETRIES)
-                    break;
-                debug(FileFormats) Log.d("file changed while loading, reading again: ", filename);
-                before = after;
-            }
+            bool stable = readStable(file, filename, before, data, after);
             if (!stable)
                 Log.w("Editable.load: file ", filename, " kept changing while it was loaded");
             bool res = load(new MemoryInputStream(data), filename);
@@ -2495,4 +2619,170 @@ unittest {
     content.text = cast(dstring)(zalgo ~ " b"d);
     assert(word(0, 0, 31));
     assert(move(0, 1, 100_001) && move(100_001, -1, 0));
+}
+
+// checkExternalChange() and acceptExternalState() (#1278)
+unittest {
+    import std.file : write, remove, tempDir, exists, setTimes, timeLastModified;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.datetime : Clock, SysTime, seconds;
+    string fn = buildPath(tempDir, "dlangui-check-external-" ~ to!string(Clock.currStdTime) ~ ".txt");
+    scope (exit)
+        if (exists(fn))
+            remove(fn);
+    // a file write with a later time, also on file systems with a coarse time
+    void rewrite(string text) {
+        SysTime t = exists(fn) ? timeLastModified(fn) + 10.seconds : Clock.currTime;
+        write(fn, text);
+        setTimes(fn, t, t);
+    }
+    void touch() {
+        SysTime t = timeLastModified(fn) + 10.seconds;
+        setTimes(fn, t, t);
+    }
+    auto content = new EditableContent(true);
+    assert(content.checkExternalChange() == FileChangeKind.unchanged); // not from a file
+
+    write(fn, "one\ntwo\n");
+    assert(content.load(fn));
+    assert(content.checkExternalChange() == FileChangeKind.unchanged);
+    // touched: the content decides, and becomes the new baseline
+    touch();
+    assert(content.checkExternalChange() == FileChangeKind.unchanged);
+    assert(content.fileState.modified == timeLastModified(fn));
+    // same size, other content; other size
+    rewrite("one\ntwX\n");
+    assert(content.checkExternalChange() == FileChangeKind.modified);
+    rewrite("one\ntwo\nthree\n");
+    assert(content.checkExternalChange() == FileChangeKind.modified);
+    assert(content.checkExternalChange() == FileChangeKind.modified); // until it is accepted or reloaded
+    // keep mine: the disk is the baseline, the text stays
+    content.acceptExternalState();
+    assert(content.checkExternalChange() == FileChangeKind.unchanged);
+    assert(content.text == "one\ntwo"d && content.fileState.size == 14 && content.fileState.hasChecksum);
+    // deleted; kept; created again
+    remove(fn);
+    assert(content.checkExternalChange() == FileChangeKind.deleted);
+    content.acceptExternalState();
+    assert(!content.fileState.exists && content.checkExternalChange() == FileChangeKind.unchanged);
+    rewrite("new");
+    assert(content.checkExternalChange() == FileChangeKind.created);
+    // missing when loaded, then created
+    remove(fn);
+    assert(!content.load(fn) && content.checkExternalChange() == FileChangeKind.unchanged);
+    rewrite("appeared");
+    assert(content.checkExternalChange() == FileChangeKind.created);
+
+    // with keepFileContent the bytes are compared exactly, not only their checksum; accepting keeps the disk bytes
+    content.keepFileContent = true;
+    rewrite("same size");
+    assert(content.load(fn));
+    touch();
+    assert(content.checkExternalChange() == FileChangeKind.unchanged);
+    content._fileContent = cast(immutable(ubyte)[])"SAME SIZE"; // as if the checksums collided
+    touch();
+    assert(content.checkExternalChange() == FileChangeKind.modified);
+    content.acceptExternalState();
+    assert(content.fileContent == cast(immutable(ubyte)[])"same size");
+    content.keepFileContent = false;
+
+    // a file loaded without a checksum (large): a touch counts as modified
+    ulong savedLimit = EditableContent.maxInMemoryLoadSize;
+    EditableContent.maxInMemoryLoadSize = 4;
+    scope (exit)
+        EditableContent.maxInMemoryLoadSize = savedLimit;
+    assert(content.load(fn) && !content.fileState.hasChecksum);
+    touch();
+    assert(content.checkExternalChange() == FileChangeKind.modified);
+    EditableContent.maxInMemoryLoadSize = savedLimit;
+
+    // a saved file is the baseline
+    rewrite("x");
+    assert(content.load(fn));
+    rewrite("from another program");
+    assert(content.checkExternalChange() == FileChangeKind.modified);
+    assert(content.save(fn));
+    assert(content.checkExternalChange() == FileChangeKind.unchanged);
+
+    // writes through a handle that shares the file: Windows refuses std.file.write while the file is open
+    void writeShared(const(char)[] text) {
+        auto f = std.stdio.File(fn, "wb");
+        f.rawWrite(text);
+        f.close();
+    }
+    // a file rewritten while the check reads it: no baseline from bytes and a time that don't belong together
+    rewrite("one\ntwo\n");
+    assert(content.load(fn));
+    touch();
+    EditableContent.testHookAfterRead = (int attempt) {
+        if (attempt == 0)
+            writeShared("one\ntwX\n");
+    };
+    FileChangeKind kind = content.checkExternalChange();
+    EditableContent.testHookAfterRead = null;
+    assert(kind == FileChangeKind.modified);
+    assert(content.checkExternalChange() == FileChangeKind.modified);
+
+    // a load while the file keeps changing: its state is known, but the text isn't the file's
+    {
+        import std.array : replicate;
+        content.keepFileContent = true;
+        rewrite("v");
+        int n = 0;
+        EditableContent.testHookAfterRead = (int attempt) { writeShared("v" ~ "x".replicate(++n)); };
+        bool loaded = content.load(fn);
+        EditableContent.testHookAfterRead = null;
+        assert(loaded && content.fileStateUncertain);
+        assert(content.checkExternalChange() == FileChangeKind.modified);
+        // the file gets the loaded bytes again: verified, no longer uncertain
+        writeShared(cast(const(char)[])content.fileContent);
+        assert(content.checkExternalChange() == FileChangeKind.unchanged && !content.fileStateUncertain);
+        content.keepFileContent = false;
+    }
+
+    // a state that can't be read: accepting it keeps the old baseline; a load that failed because of it reports
+    // the file as created once it can be read
+    version (Posix) {
+        import std.file : mkdir, rmdirRecurse, setAttributes;
+        import std.conv : octal;
+        string dir = fn ~ ".dir";
+        mkdir(dir);
+        scope (exit) {
+            setAttributes(dir, octal!755);
+            rmdirRecurse(dir);
+        }
+        string inner = buildPath(dir, "f.txt");
+        write(inner, "inner");
+        assert(content.load(inner));
+        setAttributes(dir, 0);
+        if (FileState.read(inner).unknown) { // not when running as root
+            assert(!content.acceptExternalState() && content.fileState.exists && !content.fileState.unknown);
+            assert(content.checkExternalChange() == FileChangeKind.unchanged);
+            assert(!content.load(inner) && content.fileState.unknown);
+            assert(content.checkExternalChange() == FileChangeKind.unchanged);
+            setAttributes(dir, octal!755);
+            assert(content.checkExternalChange() == FileChangeKind.created);
+        }
+    }
+
+    // a path longer than MAX_PATH: loaded, and compared by content when touched
+    version (Windows) {
+        import std.array : replicate;
+        import std.file : mkdir, rmdir;
+        string longDir = fn ~ "." ~ "d".replicate(150);
+        string longName = buildPath(longDir, "f".replicate(60) ~ ".txt");
+        assert(longName.length > 260);
+        mkdir(longDir);
+        scope (exit) {
+            if (exists(`\\?\` ~ longName))
+                remove(`\\?\` ~ longName);
+            rmdir(longDir);
+        }
+        write(`\\?\` ~ longName, "long");
+        assert(content.load(longName) && content.text == "long"d);
+        SysTime t = timeLastModified(`\\?\` ~ longName) + 10.seconds;
+        setTimes(`\\?\` ~ longName, t, t);
+        assert(content.checkExternalChange() == FileChangeKind.unchanged && content.fileState.modified == t);
+    }
 }
