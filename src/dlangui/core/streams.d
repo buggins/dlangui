@@ -21,6 +21,10 @@ class FileInputStream : InputStream {
     this(string filename) {
         _file = std.stdio.File(filename, "rb");
     }
+    /// reads from a file that is already open (closing the stream closes it)
+    this(std.stdio.File file) {
+        _file = file;
+    }
     void close() {
         if (isOpen)
             _file.close();
@@ -69,10 +73,10 @@ class MemoryInputStream : InputStream {
         return !_closed;
     }
     size_t read(ubyte[] buffer) {
-        size_t bytesRead = 0;
-        for (size_t i = 0; i < buffer.length && _pos < _data.length; bytesRead++) {
-            buffer[i++] = _data[_pos++];
-        }
+        import std.algorithm : min;
+        size_t bytesRead = min(buffer.length, _data.length - _pos);
+        buffer[0 .. bytesRead] = _data[_pos .. _pos + bytesRead];
+        _pos += bytesRead;
         return bytesRead;
     }
     @property bool eof() {
