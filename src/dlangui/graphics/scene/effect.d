@@ -172,6 +172,13 @@ class EffectCache {
         return _instance;
     }
 
+    /// forgets the cached effects, after their GL programs went away with the last GL context (#1265); the cache
+    /// doesn't own them
+    static void forgetAll() {
+        if (_instance)
+            _instance._map = null;
+    }
+
     static private void onObjectDestroyed(EffectId id) {
         if (id in _instance._map) {
             Log.d("Destroyed effect instance: ", id);

@@ -315,12 +315,14 @@ private int correctTextureSize(int n) {
 
 /// object deletion listener callback function type
 void onObjectDestroyedCallback(uint pobject) {
-    glImageCache.onCachedObjectDeleted(pobject);
+    if (glImageCache)
+        glImageCache.onCachedObjectDeleted(pobject);
 }
 
 /// object deletion listener callback function type
 void onGlyphDestroyedCallback(uint pobject) {
-    glGlyphCache.onCachedObjectDeleted(pobject);
+    if (glGlyphCache)
+        glGlyphCache.onCachedObjectDeleted(pobject);
 }
 
 private __gshared GLImageCache glImageCache;
@@ -342,10 +344,31 @@ void removeDeletedGLCacheItems() {
 }
 
 void destroyGLCaches() {
-    if (glImageCache)
+    if (glImageCache) {
         destroy(glImageCache);
-    if (glGlyphCache)
+        glImageCache = null;
+    }
+    if (glGlyphCache) {
         destroy(glGlyphCache);
+        glGlyphCache = null;
+    }
+}
+
+/**
+Call while the last GL context is current, before it is destroyed (X11, SDL: a context per window, sharing their
+objects): frees the GL objects of the GL caches and of glSupport (shader programs), which go away with the last
+context. A context created later gets new ones; before, they kept the old names (#1265).
+*/
+void releaseGLObjectsOfLastContext() {
+    destroyGLCaches();
+    initGLCaches();
+    uninitGLSupport();
+    // the textures of OpenGL drawables and the 3D effects (shader programs): a later lookup creates new ones; the
+    // caches don't own their objects, one an application still holds keeps its old GL name
+    if (GLTextureCache._instance)
+        GLTextureCache._instance._map = null;
+    import dlangui.graphics.scene.effect : EffectCache;
+    EffectCache.forgetAll();
 }
 
 private abstract class GLCache

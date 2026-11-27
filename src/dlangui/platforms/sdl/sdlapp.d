@@ -135,14 +135,21 @@ class SDLWindow : Window {
                 savedContext = SDL_GL_GetCurrentContext();
                 SDL_GL_MakeCurrent(_win, _context);
                 destroyWidgets();
+                // the last context: the global GL objects go away with it, a later window gets new ones (#1265)
+                if (!otherWindowWithContext())
+                    releaseGLObjectsOfLastContext();
             }
         }
         if (_renderer)
             SDL_DestroyRenderer(_renderer);
         static if (ENABLE_OPENGL) {
-            if (_context)
+            if (savedContext && savedContext is _context)
+                savedContext = null; // nothing to restore
+            if (_context) {
                 SDL_GL_DeleteContext(_context);
-            if (savedContext && savedContext !is _context)
+                _context = null; // for the other windows' last context check (#1265)
+            }
+            if (savedContext)
                 SDL_GL_MakeCurrent(savedWindow, savedContext);
         }
         if (_win)
@@ -263,12 +270,29 @@ class SDLWindow : Window {
         static private bool _gl3Reloaded = false;
         private SDL_GLContext _context;
 
+        /// another window that has a GL context (they share their objects), or null (#1265)
+        private SDLWindow otherWindowWithContext() {
+            // the platform's destructor sets the slots of the windows it destroyed to null
+            foreach (w; _platform._windowMap)
+                if (w && w !is this && w._context && w._win)
+                    return w;
+            return null;
+        }
+
         protected bool createContext(int versionMajor, int versionMinor) {
             Log.i("Trying to create OpenGL ", versionMajor, ".", versionMinor, " context");
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, versionMajor);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, versionMinor);
             // SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, _platform.instance.getMultisamples());
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            // the new context shares the objects of the others (set for each context: SDL resets its GL attributes
+            // when the last GL window is gone); with the current context only: none is current after the window
+            // whose context was current is destroyed, then the new context would share nothing (#1265)
+            SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+            if (!SDL_GL_GetCurrentContext()) {
+                if (SDLWindow other = otherWindowWithContext())
+                    SDL_GL_MakeCurrent(other._win, other._context);
+            }
             _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
             if (!_context)
                 Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
