@@ -514,6 +514,35 @@ class Window : CustomEventTarget {
         }
     }
 
+    // the size restoreWindowState() applied, for the next show() of a window with WindowFlag.MeasureSize (#1206);
+    // 0, 0: none
+    protected Point _restoredWindowSize;
+
+    /**
+    For show(), before the window is shown: measures the main widget and sizes the window. With
+    WindowFlag.MeasureSize, to its content; after restoreWindowState(), the restored size, grown to the content if
+    that needs more (#1206; only restoreWindowState() counts, not a resizeWindow() before show()). Without the flag,
+    grown to the content as windowOrContentResizeMode says.
+    */
+    protected void sizeWindowToContentOnShow() {
+        if (!_mainWidget)
+            return;
+        import std.algorithm : max;
+        _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+        int width = _mainWidget.measuredWidth;
+        int height = _mainWidget.measuredHeight;
+        if (flags & WindowFlag.MeasureSize) {
+            if (_restoredWindowSize != Point(0, 0)) {
+                width = max(width, _restoredWindowSize.x);
+                height = max(height, _restoredWindowSize.y);
+                _restoredWindowSize = Point(0, 0); // only for the first show() after it
+            }
+            resizeWindow(Point(width, height));
+        } else {
+            adjustWindowOrContentSize(width, height);
+        }
+    }
+
     /// restore window state from setting object
     bool restoreWindowState(Setting setting) {
         if (!setting)
@@ -532,16 +561,13 @@ class Window : CustomEventTarget {
              || state == WindowState.minimized
              || state == WindowState.maximized
              || state == WindowState.normal)) {
-            if (state != WindowState.normal) {
-                // the rect is the normal window's, and backends apply a rect only to a normal window: restore it
-                // first, also for a maximized one, which gets it back when it is restored (#1200); a window closed
-                // while minimized starts normal, not minimized (#1190)
-                setWindowState(WindowState.normal, false, rect);
-                if (state == WindowState.fullscreen || state == WindowState.maximized)
-                    setWindowState(state);
-            } else {
-                setWindowState(state, false, rect);
-            }
+            // the rect is the normal window's, and backends apply a rect only to a normal window: restore it
+            // first, also for a maximized one, which gets it back when it is restored (#1200); a window closed
+            // while minimized starts normal, not minimized (#1190)
+            if (setWindowState(WindowState.normal, false, rect))
+                _restoredWindowSize = Point(rect.right, rect.bottom); // kept by show() (#1206)
+            if (state == WindowState.fullscreen || state == WindowState.maximized)
+                setWindowState(state);
             return true;
         }
         return false;
@@ -2221,12 +2247,23 @@ unittest {
         override @property void windowIcon(DrawBufRef icon) {}
         override void invalidate() {}
         override void close() {}
+        bool refuse; // setWindowState() fails
         override bool setWindowState(WindowState newState, bool activate = false,
                 Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
             calls ~= format("%s %s", newState, newWindowRect == RECT_VALUE_IS_NOT_SET ? "-" : format("%s", newWindowRect));
-            return true;
+            return !refuse;
         }
         void report(WindowState state, Rect rc) { handleWindowStateChange(state, rc); }
+        // the size show() gives a MeasureSize window with content of size content (#1206)
+        string showSize(int contentWidth, int contentHeight) {
+            _flags = WindowFlag.Resizable | WindowFlag.MeasureSize;
+            if (!_mainWidget)
+                mainWidget = new Widget("content");
+            _mainWidget.minWidth(contentWidth).minHeight(contentHeight);
+            calls = null;
+            sizeWindowToContentOnShow();
+            return calls.length ? calls[$ - 1] : null;
+        }
     }
     auto _ = useTestTheme();
     auto w = new StateTestWindow();
@@ -2247,6 +2284,24 @@ unittest {
     w.report(WindowState.normal, Rect(10, 20, 300, 200));
     w.saveWindowState(setting);
     assert(setting.getInteger("windowState") == WindowState.normal && setting.getInteger("windowWidth") == 300);
+
+    // show() sizes a MeasureSize window to its content, but keeps a size restoreWindowState() set, grown to the
+    // content if that is bigger, for the first show() after it (#1206)
+    string resized(int width, int height) {
+        return format("%s %s", WindowState.unspecified, Rect(int.min, int.min, width, height));
+    }
+    assert(w.showSize(50, 30) == resized(800, 600), w.calls[$ - 1]); // restored above
+    assert(w.showSize(50, 30) == resized(50, 30), w.calls[$ - 1]); // only the first show() after it
+    assert(w.restoreWindowState(setting)); // normal, 300 x 200
+    assert(w.showSize(50, 30) == resized(300, 200), w.calls[$ - 1]);
+    assert(w.showSize(50, 30) == resized(50, 30), w.calls[$ - 1]);
+    assert(w.restoreWindowState(setting));
+    assert(w.showSize(400, 30) == resized(400, 200), w.calls[$ - 1]);
+    // a restored size the backend didn't apply doesn't count
+    w.refuse = true;
+    w.restoreWindowState(setting);
+    w.refuse = false;
+    assert(w.showSize(50, 30) == resized(50, 30), w.calls[$ - 1]);
 }
 
 unittest {

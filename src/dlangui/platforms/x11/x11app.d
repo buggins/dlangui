@@ -665,11 +665,7 @@ class X11Window : DWindow {
     private void adjustSizeDuringShow() {
         if (!_mainWidget)
             return;
-        _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-        if (flags & WindowFlag.MeasureSize)
-            resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
-        else
-            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+        sizeWindowToContentOnShow();
         updateClientSizeLimits(true);
     }
 

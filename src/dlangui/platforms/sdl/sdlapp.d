@@ -482,13 +482,7 @@ class SDLWindow : Window {
             Log.e("Window is shown without main widget");
             _mainWidget = new Widget();
         }
-        if (_mainWidget) {
-            _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-            if (flags & WindowFlag.MeasureSize)
-                resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
-            else
-                adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
-        }
+        sizeWindowToContentOnShow();
         updateClientSizeLimits(true);
 
         adjustPositionDuringShow();
