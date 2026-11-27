@@ -58,6 +58,11 @@ class SourceEdit : EditBox {
         return false;
     }
 
+    /// Save and Overwrite of the external change message (#1280) save through save(), which subclasses may override
+    override protected bool saveAfterExternalChange() {
+        return save(_filename.length ? _filename : content.filename);
+    }
+
     bool save(string fn) {
         if (content.save(fn)) {
             _filename = fn;
