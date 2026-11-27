@@ -246,7 +246,7 @@ version (Posix) {
 
     // an absolute path in the form that works beyond MAX_PATH (260 characters) for applications that don't
     // declare long path awareness: \\?\ prefix (\\?\UNC\ for a network path)
-    private string longPathName(string path) @safe pure {
+    package string longPathName(string path) @safe pure {
         import std.algorithm : startsWith;
         if (path.length < 248 || path.startsWith(`\\?\`))
             return path;

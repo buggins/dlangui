@@ -57,6 +57,27 @@ class FileOutputStream : OutputStream {
     }
 }
 
+/// collects the written bytes in memory (`data`)
+class MemoryOutputStream : OutputStream {
+    private ubyte[] _data;
+    private bool _closed;
+    void close() {
+        _closed = true;
+    }
+    void write(ubyte[] data) {
+        if (_closed)
+            throw new Exception("MemoryOutputStream: write after close");
+        _data ~= data;
+    }
+    @property bool isOpen() {
+        return !_closed;
+    }
+    /// the bytes written so far
+    @property ubyte[] data() {
+        return _data;
+    }
+}
+
 class MemoryInputStream : InputStream {
     private ubyte[] _data;
     private size_t _pos;
