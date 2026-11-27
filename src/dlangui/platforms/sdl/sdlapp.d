@@ -123,11 +123,27 @@ class SDLWindow : Window {
             _parent = null;
         }
 
+        static if (ENABLE_OPENGL) {
+            SDL_Window* savedWindow;
+            SDL_GLContext savedContext;
+            if (_context && _win) {
+                // the widgets' GL objects belong to this window's context: destroy them while it is current, the
+                // base destructor runs after the context is deleted; onClose first, with the contexts as they are,
+                // and the current context is restored afterwards (#1250)
+                callOnClose();
+                savedWindow = SDL_GL_GetCurrentWindow();
+                savedContext = SDL_GL_GetCurrentContext();
+                SDL_GL_MakeCurrent(_win, _context);
+                destroyWidgets();
+            }
+        }
         if (_renderer)
             SDL_DestroyRenderer(_renderer);
         static if (ENABLE_OPENGL) {
             if (_context)
                 SDL_GL_DeleteContext(_context);
+            if (savedContext && savedContext !is _context)
+                SDL_GL_MakeCurrent(savedWindow, savedContext);
         }
         if (_win)
             SDL_DestroyWindow(_win);

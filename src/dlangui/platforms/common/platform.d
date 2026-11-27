@@ -1182,8 +1182,28 @@ class Window : CustomEventTarget {
     ~this() {
         if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         debug Log.d("Destroying window");
-        if (_onClose)
-            _onClose();
+        destroyWidgets();
+        destroy(_eventList);
+        destroy(_timerQueue);
+        _eventList = null;
+    }
+
+    /// calls the onClose handler, once: from destroyWidgets(), or earlier by a backend's destructor (#1250)
+    protected void callOnClose() {
+        if (_onClose) {
+            auto handler = _onClose;
+            _onClose = null;
+            handler();
+        }
+    }
+
+    /**
+    Calls onClose, then destroys the window's widgets: popups, tooltip, main widget and scrollbars. Called by the
+    destructor; a backend with a GL context per window calls it first in its own destructor, with the window's context
+    current, so the widgets' GL objects are deleted in their context (#1250). Does nothing the second time.
+    */
+    protected void destroyWidgets() {
+        callOnClose();
         if (_tooltip.popup) {
             destroy(_tooltip.popup);
             _tooltip.popup = null;
@@ -1203,9 +1223,6 @@ class Window : CustomEventTarget {
             destroy(_vScrollBar);
             _vScrollBar = null;
         }
-        destroy(_eventList);
-        destroy(_timerQueue);
-        _eventList = null;
     }
 
     /**

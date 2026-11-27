@@ -83,8 +83,10 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         glSupport.flushGL();
         destroy(_scene);
         _scene = null;
-        // the GL context is current here: delete textures of images and glyphs deleted since the last frame
+        // the GL context is current here: delete textures of images and glyphs deleted since the last frame, and
+        // GL objects destroyed while no context was current (#1250)
         removeDeletedGLCacheItems();
+        deletePendingGLObjects();
     }
 
     /// resize buffer
