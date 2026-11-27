@@ -39,7 +39,7 @@ public import dlangui.core.editable;
 import std.algorithm;
 import std.conv : to;
 import dlangui.core.streams;
-import dlangui.core.stdaction : StandardAction, ACTION_CLOSE, ACTION_IGNORE;
+import dlangui.core.stdaction : StandardAction, ACTION_CANCEL, ACTION_CLOSE, ACTION_IGNORE;
 
 /// Modified state change listener
 interface ModifiedStateListener {
@@ -225,6 +225,13 @@ enum EditorActions : int {
     FindNext,
     /// Find previous occurence - continue search backward
     FindPrev,
+
+    /// read the file again after another program changed it (external change message, #1280)
+    ReloadFile,
+    /// keep the text after another program changed or deleted the file (external change message)
+    KeepFileText,
+    /// write the text to the file although another program changed or deleted it (external change message)
+    SaveFile,
 }
 
 
@@ -254,6 +261,17 @@ const Action ACTION_EDITOR_FIND = (new Action(EditorActions.Find, "ACTION_EDITOR
 const Action ACTION_EDITOR_FIND_NEXT = (new Action(EditorActions.FindNext, "ACTION_EDITOR_FIND_NEXT"c, null, KeyCode.F3, 0));
 const Action ACTION_EDITOR_FIND_PREV = (new Action(EditorActions.FindPrev, "ACTION_EDITOR_FIND_PREV"c, null, KeyCode.F3, KeyFlag.Shift));
 const Action ACTION_EDITOR_REPLACE = (new Action(EditorActions.Replace, "ACTION_EDITOR_REPLACE"c, null, KeyCode.KEY_H, KeyFlag.Control));
+
+/// buttons of the external change message of EditBox (#1280)
+const Action ACTION_EDITOR_RELOAD_FILE = new Action(EditorActions.ReloadFile, "ACTION_EDITOR_RELOAD_FILE"c);
+/// ditto
+const Action ACTION_EDITOR_KEEP_MY_TEXT = new Action(EditorActions.KeepFileText, "ACTION_EDITOR_KEEP_MY_TEXT"c);
+/// ditto
+const Action ACTION_EDITOR_KEEP_TEXT = new Action(EditorActions.KeepFileText, "ACTION_EDITOR_KEEP_TEXT"c);
+/// ditto
+const Action ACTION_EDITOR_SAVE_FILE = new Action(EditorActions.SaveFile, "ACTION_SAVE"c);
+/// ditto
+const Action ACTION_EDITOR_OVERWRITE_FILE = new Action(EditorActions.SaveFile, "ACTION_EDITOR_OVERWRITE_FILE"c);
 
 const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE,
         ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE,
@@ -2376,6 +2394,52 @@ enum EditorMessageKind {
     Error,
 }
 
+/// what an EditBox does when another program changes its file (#1280); see EditBox.externalChangeMode
+enum ExternalChangeMode {
+    /// nothing: no checks
+    ignore,
+    /// a message (Reload / Ignore) also for text without unsaved changes
+    notify,
+    /// text without unsaved changes is reloaded at once (one undo step; the caret stays)
+    reloadUnmodified,
+}
+
+/// how an EditBox reacts to a change of its file on disk; see externalChangeReaction
+enum ExternalChangeReaction {
+    /// nothing to do; an external change message is hidden
+    none,
+    /// reload the text
+    reload,
+    /// message: the file changed; Reload / Ignore
+    notifyChanged,
+    /// message: the file changed and the text has unsaved changes; Reload / Keep mine
+    notifyConflict,
+    /// message: the file was deleted; Save / Keep
+    notifyDeleted,
+    /// message before a save: the file changed since it was loaded; Overwrite / Reload / Cancel
+    confirmSave,
+}
+
+/**
+The reaction of an editor to the result of a check of its file (#1280), for the text with or without unsaved
+changes and the editor's mode; beforeSave: the check is made right before saving the text to the file (a deleted
+file is then simply written again).
+*/
+ExternalChangeReaction externalChangeReaction(FileChangeKind kind, bool textModified, ExternalChangeMode mode,
+        bool beforeSave) @safe pure nothrow @nogc {
+    if (mode == ExternalChangeMode.ignore || kind == FileChangeKind.unchanged)
+        return ExternalChangeReaction.none;
+    if (kind == FileChangeKind.deleted)
+        return beforeSave ? ExternalChangeReaction.none : ExternalChangeReaction.notifyDeleted;
+    // modified, created again (or overflow: unknown, treated as changed)
+    if (beforeSave)
+        return ExternalChangeReaction.confirmSave;
+    if (textModified)
+        return ExternalChangeReaction.notifyConflict;
+    return mode == ExternalChangeMode.reloadUnmodified ? ExternalChangeReaction.reload
+        : ExternalChangeReaction.notifyChanged;
+}
+
 /// handles clicks on EditorMessageBar buttons; messageId is the id passed to EditBox.showMessage
 interface EditorMessageActionHandler {
     /// return true if handled; otherwise the action is dispatched as usual (except Ignore and Close)
@@ -3583,6 +3647,11 @@ class EditBox : EditWidgetBase {
     alias setTextToHighlight = EditWidgetBase.setTextToHighlight;
 
     override bool onTimer(ulong id) {
+        if (id && id == _externalChangeCheckTimer) {
+            _externalChangeCheckTimer = 0;
+            checkExternalChange();
+            return false;
+        }
         if (id == _collectMatchesTimer) {
             _collectMatchesTimer = 0;
             // the text is unchanged since the search gave up: collect all matches and show the current one
@@ -4508,6 +4577,213 @@ class EditBox : EditWidgetBase {
 
     protected ulong _messageShowCounter;
 
+    /// id of the message EditBox shows when another program changed or deleted its file (#1280)
+    enum EXTERNAL_CHANGE_MESSAGE_ID = "external-change";
+    /// id of the message EditBox shows when reloading, reading or saving the file after an external change failed
+    enum EXTERNAL_CHANGE_ERROR_ID = "external-change-error";
+
+    /**
+    The mode of editors that don't set their own `externalChangeMode`. `ignore` by default: applications opt in,
+    e.g. from their preferences, since existing ones may handle changed files themselves.
+    */
+    static __gshared ExternalChangeMode defaultExternalChangeMode = ExternalChangeMode.ignore;
+
+    protected ExternalChangeMode _externalChangeMode;
+    protected bool _externalChangeModeSet;
+    protected ExternalChangeReaction _externalChangeShown; // the external change message shown, or none
+
+    /**
+    What the editor does when another program changes its file (#1280): ignore it, show a message, or reload text
+    without unsaved changes at once. Text with unsaved changes always gets a message (Reload / Keep mine), a
+    deleted file too (Save / Keep). Default: `defaultExternalChangeMode`.
+    */
+    @property ExternalChangeMode externalChangeMode() const {
+        return _externalChangeModeSet ? _externalChangeMode : defaultExternalChangeMode;
+    }
+    /// ditto
+    @property EditBox externalChangeMode(ExternalChangeMode mode) {
+        _externalChangeMode = mode;
+        _externalChangeModeSet = true;
+        if (mode == ExternalChangeMode.ignore)
+            hideExternalChangeMessage();
+        return this;
+    }
+
+    /**
+    Checks whether another program changed the file of the content (`EditableContent.checkExternalChange()`) and
+    reacts as `externalChangeMode` says: reloads the text, or shows a message (#1280). Called when the editor gets
+    the focus, which includes the activation of its window; applications call it for editors that are visible
+    without the focus, or when a tab is selected.
+    */
+    FileChangeKind checkExternalChange() {
+        if (externalChangeMode == ExternalChangeMode.ignore || !_content.fileState.path.length) {
+            hideExternalChangeMessage(); // e.g. the mode was switched off while a message was shown
+            return FileChangeKind.unchanged;
+        }
+        FileChangeKind kind = _content.checkExternalChange();
+        applyExternalChangeReaction(externalChangeReaction(kind, _content.modified, externalChangeMode, false));
+        return kind;
+    }
+
+    /**
+    Call before saving the text to its file (the file it was loaded from): false if another program changed the file
+    since it was loaded or saved, after showing a message (Overwrite / Reload / Cancel; Escape cancels); Overwrite
+    saves with `saveAfterExternalChange()`, unless the application handles `EditorActions.SaveFile` in
+    `messageAction` with its own save.
+    */
+    bool checkBeforeSave() {
+        if (externalChangeMode == ExternalChangeMode.ignore || !_content.fileState.path.length) {
+            hideExternalChangeMessage();
+            return true;
+        }
+        FileChangeKind kind = _content.checkExternalChange();
+        ExternalChangeReaction reaction = externalChangeReaction(kind, _content.modified, externalChangeMode, true);
+        applyExternalChangeReaction(reaction);
+        return reaction != ExternalChangeReaction.confirmSave;
+    }
+
+    /// the text of an external change message
+    protected dstring externalChangeMessage(ExternalChangeReaction reaction) {
+        switch (reaction) {
+            case ExternalChangeReaction.notifyChanged:
+                return UIString.fromId("EXTERNAL_CHANGE_CHANGED"c).value;
+            case ExternalChangeReaction.notifyConflict:
+                return UIString.fromId("EXTERNAL_CHANGE_CONFLICT"c).value;
+            case ExternalChangeReaction.notifyDeleted:
+                return UIString.fromId("EXTERNAL_CHANGE_DELETED"c).value;
+            case ExternalChangeReaction.confirmSave:
+                return UIString.fromId("EXTERNAL_CHANGE_BEFORE_SAVE"c).value;
+            default:
+                return null;
+        }
+    }
+
+    /// the buttons of an external change message; override to add own ones (e.g. Close), handled in messageAction
+    protected const(Action)[] externalChangeActions(ExternalChangeReaction reaction) {
+        switch (reaction) {
+            case ExternalChangeReaction.notifyChanged:
+                return [ACTION_EDITOR_RELOAD_FILE, ACTION_IGNORE];
+            case ExternalChangeReaction.notifyConflict:
+                return [ACTION_EDITOR_RELOAD_FILE, ACTION_EDITOR_KEEP_MY_TEXT];
+            case ExternalChangeReaction.notifyDeleted:
+                return [ACTION_EDITOR_SAVE_FILE, ACTION_EDITOR_KEEP_TEXT];
+            case ExternalChangeReaction.confirmSave:
+                return [ACTION_EDITOR_OVERWRITE_FILE, ACTION_EDITOR_RELOAD_FILE, ACTION_CANCEL];
+            default:
+                return null;
+        }
+    }
+
+    /**
+    Writes the text to its file for the Save and Overwrite buttons of the external change message: the content's
+    save by default; editors with their own save (SourceEdit) override it, so their subclasses' saves run.
+    */
+    protected bool saveAfterExternalChange() {
+        return _content.save();
+    }
+
+    protected void applyExternalChangeReaction(ExternalChangeReaction reaction) {
+        final switch (reaction) {
+            case ExternalChangeReaction.none:
+                hideExternalChangeMessage(); // an error message stays until the user closes it
+                break;
+            case ExternalChangeReaction.reload:
+                hideExternalChangeMessage();
+                reloadAfterExternalChange();
+                break;
+            case ExternalChangeReaction.notifyChanged:
+            case ExternalChangeReaction.notifyConflict:
+            case ExternalChangeReaction.notifyDeleted:
+            case ExternalChangeReaction.confirmSave:
+                if (_externalChangeShown == reaction && findMessage(EXTERNAL_CHANGE_MESSAGE_ID))
+                    break; // shown already: not replaced on each check
+                EditorMessageKind kind = reaction == ExternalChangeReaction.notifyChanged
+                    ? EditorMessageKind.Info : EditorMessageKind.Warning;
+                hideExternalChangeError();
+                EditorMessageBar bar = showMessage(EXTERNAL_CHANGE_MESSAGE_ID, externalChangeMessage(reaction), kind,
+                        externalChangeActions(reaction));
+                // Escape cancels a pending save; the other choices are never made by Escape
+                bar.dismissOnEscape = reaction == ExternalChangeReaction.confirmSave;
+                _externalChangeShown = reaction;
+                break;
+        }
+    }
+
+    protected void reloadAfterExternalChange() {
+        if (_content.reload(this))
+            hideExternalChangeError();
+        else
+            showExternalChangeError("EXTERNAL_CHANGE_RELOAD_FAILED"c);
+    }
+
+    protected void hideExternalChangeMessage() {
+        if (findMessage(EXTERNAL_CHANGE_MESSAGE_ID))
+            hideMessage(EXTERNAL_CHANGE_MESSAGE_ID);
+        _externalChangeShown = ExternalChangeReaction.none;
+    }
+
+    // an error after an external change: its own message, closed by the user (the next check doesn't hide it)
+    protected void showExternalChangeError(string messageId) {
+        hideExternalChangeMessage();
+        showMessage(EXTERNAL_CHANGE_ERROR_ID, UIString.fromId(messageId).value, EditorMessageKind.Error, null,
+                EditorPanelPosition.Top, true);
+    }
+
+    protected void hideExternalChangeError() {
+        if (findMessage(EXTERNAL_CHANGE_ERROR_ID))
+            hideMessage(EXTERNAL_CHANGE_ERROR_ID);
+    }
+
+    /// handles a button of the external change message that messageAction didn't handle; true if handled
+    protected bool handleExternalChangeAction(const Action action) {
+        ExternalChangeReaction shown = _externalChangeShown;
+        int id = action.id;
+        if (id == StandardAction.Ignore && shown == ExternalChangeReaction.confirmSave)
+            id = StandardAction.Cancel; // Escape on the save question
+        if (id == StandardAction.Cancel) {
+            hideExternalChangeMessage();
+            return true;
+        }
+        if (id != EditorActions.ReloadFile && id != EditorActions.KeepFileText && id != EditorActions.SaveFile
+                && id != StandardAction.Ignore)
+            return false;
+        // the message may be stale (another editor of the content handled it, the file is back as it was, the
+        // mode was switched off): act only if the file still differs
+        if (externalChangeMode == ExternalChangeMode.ignore
+                || _content.checkExternalChange() == FileChangeKind.unchanged) {
+            hideExternalChangeMessage();
+            return true;
+        }
+        hideExternalChangeMessage();
+        if (id == EditorActions.ReloadFile) {
+            reloadAfterExternalChange();
+        } else if (id == EditorActions.SaveFile) {
+            if (saveAfterExternalChange())
+                hideExternalChangeError();
+            else
+                showExternalChangeError("EXTERNAL_CHANGE_SAVE_FAILED"c);
+        } else {
+            // Keep, Keep mine, Ignore: the file as it is now is the baseline, the message doesn't come back for it
+            if (_content.acceptExternalState())
+                hideExternalChangeError();
+            else
+                showExternalChangeError("EXTERNAL_CHANGE_RELOAD_FAILED"c);
+        }
+        return true;
+    }
+
+    protected ulong _externalChangeCheckTimer;
+
+    /// checks the file when the editor gets the focus (also when its window is activated, #1280): right after the
+    /// focus change, so a reload doesn't happen in the middle of a click or of the window's focus handling
+    override protected void handleFocusChange(bool focused, bool receivedFocusFromKeyboard = false) {
+        super.handleFocusChange(focused, receivedFocusFromKeyboard);
+        if (focused && !_externalChangeCheckTimer && externalChangeMode != ExternalChangeMode.ignore
+                && _content.fileState.path.length && window)
+            _externalChangeCheckTimer = setTimer(1);
+    }
+
+
     /// Escape closes the find panel if it's open, else dismisses the most recently shown message bar
     /// with dismissOnEscape set (one per key press)
     override bool onKeyEvent(KeyEvent event) {
@@ -4558,6 +4834,8 @@ class EditBox : EditWidgetBase {
     protected bool onMessageAction(EditorMessageBar bar, const Action action) {
         bool dismiss = action.id == StandardAction.Ignore || action.id == StandardAction.Close;
         bool handled = messageAction.assigned && messageAction(this, bar.id, action);
+        if (!handled && bar.id == EXTERNAL_CHANGE_MESSAGE_ID)
+            handled = handleExternalChangeAction(action);
         if (!handled && !dismiss)
             handled = dispatchAction(action);
         if (dismiss)
@@ -5442,3 +5720,47 @@ unittest {
 
 //import dlangui.widgets.metadata;
 //mixin(registerWidgets!(EditLine, EditBox, LogWidget)());
+
+// externalChangeReaction(): file change x text modified x mode x before a save (#1280)
+unittest {
+    alias K = FileChangeKind;
+    alias M = ExternalChangeMode;
+    alias R = ExternalChangeReaction;
+    foreach (kind; [K.unchanged, K.modified, K.deleted, K.created, K.overflow])
+        foreach (modified; [false, true])
+            foreach (beforeSave; [false, true])
+                assert(externalChangeReaction(kind, modified, M.ignore, beforeSave) == R.none);
+    foreach (mode; [M.notify, M.reloadUnmodified]) {
+        foreach (modified; [false, true])
+            foreach (beforeSave; [false, true])
+                assert(externalChangeReaction(K.unchanged, modified, mode, beforeSave) == R.none);
+        foreach (kind; [K.modified, K.created, K.overflow]) {
+            assert(externalChangeReaction(kind, true, mode, false) == R.notifyConflict);
+            assert(externalChangeReaction(kind, false, mode, true) == R.confirmSave);
+            assert(externalChangeReaction(kind, true, mode, true) == R.confirmSave);
+        }
+        foreach (modified; [false, true]) {
+            assert(externalChangeReaction(K.deleted, modified, mode, false) == R.notifyDeleted);
+            assert(externalChangeReaction(K.deleted, modified, mode, true) == R.none); // the save writes it again
+        }
+    }
+    // text without unsaved changes: the mode decides
+    foreach (kind; [K.modified, K.created]) {
+        assert(externalChangeReaction(kind, false, M.notify, false) == R.notifyChanged);
+        assert(externalChangeReaction(kind, false, M.reloadUnmodified, false) == R.reload);
+    }
+}
+
+// the external change messages and buttons are translated in every standard language
+unittest {
+    import std.algorithm : canFind;
+    static immutable string[] keys = ["ACTION_EDITOR_RELOAD_FILE", "ACTION_EDITOR_KEEP_MY_TEXT",
+        "ACTION_EDITOR_KEEP_TEXT", "ACTION_EDITOR_OVERWRITE_FILE", "ACTION_SAVE", "ACTION_IGNORE", "ACTION_CANCEL",
+        "EXTERNAL_CHANGE_CHANGED", "EXTERNAL_CHANGE_CONFLICT", "EXTERNAL_CHANGE_DELETED",
+        "EXTERNAL_CHANGE_BEFORE_SAVE", "EXTERNAL_CHANGE_RELOAD_FAILED", "EXTERNAL_CHANGE_SAVE_FAILED"];
+    static foreach (lang; ["en", "ru", "pl"]) {{
+        string text = import("res/i18n/std_" ~ lang ~ ".ini");
+        foreach (key; keys)
+            assert(text.canFind("\n" ~ key ~ "="), lang ~ ": " ~ key);
+    }}
+}

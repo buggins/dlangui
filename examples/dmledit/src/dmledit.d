@@ -201,6 +201,9 @@ class EditFrame : AppFrame {
     void saveSourceFile(string filename) {
         if (filename.length == 0)
             filename = _filename;
+        // another program changed the file since it was loaded: the editor asks first (Overwrite saves it)
+        if (filename == _filename && !_editor.checkBeforeSave())
+            return;
         import std.file;
         _filename = filename;
         window.windowCaption = toUTF32(filename);
@@ -496,6 +499,9 @@ extern (C) int UIAppMain(string[] args) {
     /// set font gamma (1.0 is neutral, < 1.0 makes glyphs lighter, >1.0 makes glyphs bolder)
     FontManager.fontGamma = 0.8;
     FontManager.hintingMode = HintingMode.Normal;
+
+    // editors reload files changed by other programs, or ask when the text has unsaved changes (#1280)
+    EditBox.defaultExternalChangeMode = ExternalChangeMode.reloadUnmodified;
 
     // create window
     Window window = Platform.instance.createWindow("DlangUI ML editor"d, null, WindowFlag.Resizable, 700, 470);
