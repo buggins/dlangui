@@ -1398,10 +1398,21 @@ class Win32Window : Window {
         _iconResourceId = resourceId;
     }
 
-    /// sets the icons from a resource rendered at the sizes; false if it isn't found or the icons aren't created
+    /// a theme change: the icons are created again from their resource, which may be another image in the new theme
+    /// (an icon id mapped to a _dark variant) or an SVG whose currentColor is the theme's text color (#1259)
+    override void dispatchThemeChanged() {
+        super.dispatchThemeChanged();
+        if (_iconResourceId.length && _iconSmallSize > 0 && _iconBigSize > 0)
+            setIconsFromResource(_iconResourceId, _iconSmallSize, _iconBigSize);
+    }
+
+    /// sets the icons from a resource rendered at the sizes; false if it isn't found or the icons aren't created.
+    /// The theme may map the id to another image (<drawable id=... value=.../>, e.g. a _dark variant) (#1259)
     private bool setIconsFromResource(string resourceId, int smallSize, int bigSize) {
-        ColorDrawBuf small = windowIconImage(resourceId, smallSize);
-        ColorDrawBuf big = windowIconImage(resourceId, bigSize);
+        import dlangui.widgets.styles : overrideCustomDrawableId;
+        string themedId = overrideCustomDrawableId(resourceId);
+        ColorDrawBuf small = windowIconImage(themedId, smallSize);
+        ColorDrawBuf big = windowIconImage(themedId, bigSize);
         scope(exit) {
             if (small)
                 destroy(small);
