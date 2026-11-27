@@ -532,7 +532,7 @@ extern(C) int DLANGUImain(string[] args) {
         result = 0;
     } else {
         try {
-                result = UIAppMain(args);
+                result = callUIAppMain(args);
                 Log.i("UIAppMain returned ", result);
         } catch (Exception e) {
             Log.e("Abnormal UIAppMain termination");

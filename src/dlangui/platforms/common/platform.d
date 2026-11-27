@@ -40,6 +40,37 @@ private import std.string;
 /// entry point - declare such function to use as main for dlangui app
 extern(C) int UIAppMain(string[] args);
 
+/// type of UIAppMain
+alias UIAppMainFunction = extern(C) int function(string[] args);
+
+/**
+The application's UIAppMain, set by `mixin APP_ENTRY_POINT` before it starts the backend. The backends call it through
+this pointer (`callUIAppMain`), so the library doesn't refer to the UIAppMain symbol itself: a test build that leaves
+out the application's module with UIAppMain still links, e.g. `dub test --coverage` with DMD, which links the backend
+modules (#270). An application with its own `main` that calls `DLANGUImain` sets it first: `uiAppMainFunction = &UIAppMain;`
+*/
+__gshared UIAppMainFunction uiAppMainFunction;
+
+/// calls the application's UIAppMain through `uiAppMainFunction`; logs an error and returns 1 if it isn't set
+int callUIAppMain(string[] args) {
+    if (uiAppMainFunction is null) {
+        Log.e("UIAppMain is not set: use mixin APP_ENTRY_POINT, or set uiAppMainFunction = &UIAppMain before starting the backend");
+        return 1;
+    }
+    return uiAppMainFunction(args);
+}
+
+unittest {
+    static extern(C) int testMain(string[] args) { return cast(int)args.length + 40; }
+    UIAppMainFunction saved = uiAppMainFunction;
+    scope (exit)
+        uiAppMainFunction = saved;
+    uiAppMainFunction = null;
+    assert(callUIAppMain(["a"]) == 1);
+    uiAppMainFunction = &testMain;
+    assert(callUIAppMain(["a", "b"]) == 42);
+}
+
 
 // specify debug=DebugMouseEvents for logging mouse handling
 // specify debug=DebugRedraw for logging drawing and layouts handling
@@ -2735,9 +2766,19 @@ mixin template APP_ENTRY_POINT() {
     version (unittest) {
         // no main in unit tests
     } else {
+        version (Android) {
+            // android_main in the library is the entry point and calls UIAppMain itself
+        } else {
+            // passes the application's UIAppMain to the backend (#270); the C symbol is the one the application defines
+            private void setUIAppMainFunction() {
+                import dlangui.platforms.common.platform : uiAppMainFunction, UIAppMain;
+                uiAppMainFunction = &UIAppMain;
+            }
+        }
         static if (BACKEND_CONSOLE) {
             int main(string[] args)
             {
+                setUIAppMainFunction();
                 return DLANGUImain(args);
             }
         } else {
@@ -2746,12 +2787,14 @@ mixin template APP_ENTRY_POINT() {
                 version (ENABLE_PROFILING) {
                     int main(string[] args)
                     {
+                        setUIAppMainFunction();
                         return DLANGUIWinMainProfile(args);
                     }
                 } else {
                     extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
                                                     char* lpCmdLine, int nCmdShow)
                     {
+                        setUIAppMainFunction();
                         try {
                             int res = DLANGUIWinMain(hInstance, hPrevInstance,
                                                         lpCmdLine, nCmdShow);
@@ -2767,6 +2810,7 @@ mixin template APP_ENTRY_POINT() {
                 } else {
                     int main(string[] args)
                     {
+                        setUIAppMainFunction();
                         return DLANGUImain(args);
                     }
                 }
