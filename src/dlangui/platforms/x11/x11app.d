@@ -3046,7 +3046,7 @@ extern(C) int DLANGUImain(string[] args)
 
     version (unittest) {
     } else {
-        res = UIAppMain(args);
+        res = callUIAppMain(args);
     }
 
     //Log.e("Widget instance count after UIAppMain: ", Widget.instanceCount());

@@ -54,9 +54,6 @@ static if (ENABLE_OPENGL) {
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
 
-/// this function should be defined in user application!
-extern (C) int UIAppMain(string[] args);
-
 immutable WIN_CLASS_NAME = "DLANGUI_APP";
 
 /* This is a pretty dirty hack to get multisampling to work */
@@ -2077,7 +2074,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     Log.i("Entering UIAppMain: ", args);
     int result = -1;
     try {
-        result = UIAppMain(args);
+        result = callUIAppMain(args);
         Log.i("UIAppMain returned ", result);
     } catch (Exception e) {
         Log.e("Abnormal UIAppMain termination");
@@ -2151,7 +2148,7 @@ int myWinMainProfile(string[] args)
     Log.i("Entering UIAppMain: ", args);
     int result = -1;
     try {
-        result = UIAppMain(args);
+        result = callUIAppMain(args);
         Log.i("UIAppMain returned ", result);
     } catch (Exception e) {
         Log.e("Abnormal UIAppMain termination");
