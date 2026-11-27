@@ -921,6 +921,9 @@ final class GLSupport {
     }
 
     void beforeRenderGUI() {
+        // the bound program belongs to the current context, GLProgram's cache of it doesn't: with a context per
+        // window (X11, SDL) the frame may be in another context than the last bind() (#1252)
+        GLProgram.currentProgram = 0;
         glEnable(GL_BLEND);
         checkgl!glDisable(GL_CULL_FACE);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
