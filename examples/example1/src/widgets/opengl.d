@@ -70,11 +70,13 @@ class OpenGLExample : VerticalLayout {
         // assign OpenGL drawable to child widget background
         w.childById("glView").backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
 
-        w.childById("rbExample1").click = delegate(Widget w) {
+        _rbNewApi = w.childById("rbExample1");
+        _rbNewApi.click = delegate(Widget w) {
             _exampleIndex = 0; // new API
             return true;
         };
-        w.childById("rbExample2").click = delegate(Widget w) {
+        _rbLegacy = w.childById("rbExample2");
+        _rbLegacy.click = delegate(Widget w) {
             _exampleIndex = 1; // old API
             return true;
         };
@@ -83,6 +85,10 @@ class OpenGLExample : VerticalLayout {
     }
 
     int _exampleIndex = 0;
+    // the examples' radio buttons; the legacy one is disabled if the OpenGL context can't run the legacy API (#620)
+    private Widget _rbNewApi, _rbLegacy;
+    private bool _legacyApiChecked;
+    private bool _legacyApiAvailable;
 
     /// returns true is widget is being animated - need to call animate() and redraw
     @property override bool animating() { return true; }
@@ -105,12 +111,61 @@ class OpenGLExample : VerticalLayout {
             Log.v("GlGears: OpenGL is disabled");
             return;
         }
-        bool canUseOldApi = !!glLightfv;
-        bool canUseNewApi = true;
-        if (_exampleIndex == 0 || !canUseOldApi)
-            drawUsingNewAPI(windowRect, rc);
-        else if (_exampleIndex == 1 || !canUseNewApi)
+        if (!_legacyApiChecked) {
+            // the context is known only here; change the radio button after drawing, in the UI event loop
+            _legacyApiChecked = true;
+            _legacyApiAvailable = legacyApiAvailable();
+            if (!_legacyApiAvailable) {
+                Log.i("GlGears: the OpenGL context has no compatibility profile, the legacy API example is disabled");
+                window.executeInUiThread(() {
+                    // a click queued before this may have selected it
+                    _exampleIndex = 0;
+                    _rbLegacy.checked = false;
+                    _rbNewApi.checked = true;
+                    _rbLegacy.text = "Legacy OpenGL API example - glxGears (needs a compatibility profile context)"d;
+                    _rbLegacy.enabled = false;
+                });
+            }
+        }
+        if (_exampleIndex == 1 && _legacyApiAvailable)
             drawUsingOldAPI(windowRect, rc);
+        else
+            drawUsingNewAPI(windowRect, rc);
+    }
+
+    /// true if the current context runs the legacy (fixed function) API: glBegin/glEnd, lights, display lists.
+    /// Core profile (OpenGL 3.2+, e.g. with SDL) and forward-compatible contexts don't, nor 3.1 without
+    /// GL_ARB_compatibility; Win32 and X11 create compatibility contexts (#620)
+    private static bool legacyApiAvailable() {
+        if (!glLightfv)
+            return false;
+        GLint major, minor;
+        glGetIntegerv(GL_MAJOR_VERSION, &major);
+        if (major < 3) {
+            // before OpenGL 3.0 GL_MAJOR_VERSION is unknown (GL_INVALID_ENUM) and the whole API is there
+            for (int i = 0; i < 4 && glGetError() != GL_NO_ERROR; i++) {}
+            return true;
+        }
+        glGetIntegerv(GL_MINOR_VERSION, &minor);
+        GLint flags;
+        glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+        if (flags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+            return false;
+        if (major == 3 && minor == 1) {
+            GLint count;
+            glGetIntegerv(GL_NUM_EXTENSIONS, &count);
+            foreach (i; 0 .. count) {
+                import std.string : fromStringz;
+                if (fromStringz(cast(const(char)*)glGetStringi(GL_EXTENSIONS, i)) == "GL_ARB_compatibility")
+                    return true;
+            }
+            return false;
+        }
+        if (major == 3 && minor == 0)
+            return true;
+        GLint profileMask;
+        glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profileMask);
+        return (profileMask & GL_CONTEXT_CORE_PROFILE_BIT) == 0;
     }
 
     /// Legacy API example (glBegin/glEnd) - glxGears
@@ -121,14 +176,24 @@ class OpenGLExample : VerticalLayout {
             _initCalled = true;
             glxgears_init();
         }
+        // the fixed function pipeline is used only without a shader program; DlangUI leaves its own one bound (#620)
+        GLint savedProgram;
+        glGetIntegerv(GL_CURRENT_PROGRAM, &savedProgram);
+        glUseProgram(0);
         glxgears_reshape(rc);
+        // the state the gears need (glxgears_init() enables it too): turned off after them, DlangUI doesn't expect it
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_NORMALIZE);
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         glEnable(GL_DEPTH_TEST);
         glxgears_draw();
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_NORMALIZE);
         glDisable(GL_LIGHTING);
         glDisable(GL_LIGHT0);
         glDisable(GL_DEPTH_TEST);
+        glUseProgram(savedProgram);
     }
 
     ~this() {
