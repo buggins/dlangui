@@ -205,12 +205,20 @@ class SDLWindow : Window {
             tempWin[i].restoreForModal();
     }
 
+    // the state the window was in when its state last changed to minimized (requested or reported):
+    // restoreForModal() brings a window minimized while maximized back maximized (#1217). A window manager that
+    // reports un-maximizing before iconifying leaves normal here
+    private WindowState _stateBeforeMinimized = WindowState.normal;
+
     /// shows a window again with its modal parent or child: restored and activated; a maximized or fullscreen one
     /// keeps its state (SDL_RestoreWindow() brings a minimized fullscreen window back fullscreen), while
-    /// restoreWindow() would make it normal (#1201)
+    /// restoreWindow() would make it normal (#1201); also one minimized while maximized: SDL clears
+    /// SDL_WINDOW_MAXIMIZED when it is minimized, and SDL_RestoreWindow() gives the previous state back (#1217)
     private void restoreForModal() {
         immutable uint sdlFlags = SDL_GetWindowFlags(_win);
-        if (_windowState == WindowState.maximized || (sdlFlags & SDL_WINDOW_FULLSCREEN)) {
+        bool maximized = _windowState == WindowState.maximized
+            || (_windowState == WindowState.minimized && _stateBeforeMinimized == WindowState.maximized);
+        if (maximized || (sdlFlags & SDL_WINDOW_FULLSCREEN)) {
             if (sdlFlags & SDL_WINDOW_MINIMIZED)
                 SDL_RestoreWindow(_win);
             activateWindow();
@@ -508,6 +516,9 @@ class SDLWindow : Window {
     }
 
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        if (newState == WindowState.minimized && _windowState != WindowState.minimized
+                && _windowState != WindowState.hidden && _windowState != WindowState.unspecified)
+            _stateBeforeMinimized = _windowState; // for restoreForModal() (#1217)
         super.handleWindowStateChange(newState, newWindowRect);
     }
 
