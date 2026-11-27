@@ -1141,7 +1141,16 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         //Log.d("onContentChange rangeBefore=", rangeBefore, " rangeAfter=", rangeAfter, " text=", operation.content);
         _contentChanged = true;
-        if (source is this) {
+        if (operation.action == EditAction.Reload) {
+            // the file was read again (#1279), or that is undone or redone, from any source: the caret stays where
+            // it was, clamped to the new text; a selection may not mean the same text any more
+            _selectionRange = TextRange(_caretPos, _caretPos);
+            correctCaretPos();
+            updateMaxLineWidth();
+            measureVisibleText();
+            requestLayout();
+            requestActionsUpdate();
+        } else if (source is this) {
             if (operation.action == EditAction.ReplaceContent) {
                 // fully replaced, e.g., loaded from file or text property is assigned
                 _caretPos = rangeAfter.end;
