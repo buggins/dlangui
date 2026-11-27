@@ -419,13 +419,8 @@ class X11Window : DWindow {
             _parent._children ~= this;
 
         if (!(flags & WindowFlag.Resizable)) {
-            XSizeHints sizeHints;
-            sizeHints.min_width = width;
-            sizeHints.min_height = height;
-            sizeHints.max_width = width;
-            sizeHints.max_height = height;
-            sizeHints.flags = PMaxSize | PMinSize;
-            XSetWMNormalHints(x11display, _win, &sizeHints);
+            _hintMinSize = _hintMaxSize = Point(width, height);
+            sendNormalHints();
         }
         // fullscreen and modal states: set when the window is mapped (prepareMapFromWithdrawn, #1189)
         if (flags & WindowFlag.Borderless) {
@@ -698,6 +693,38 @@ class X11Window : DWindow {
         return _win != None && _windowState != WindowState.minimized && !wmStateNotNormal();
     }
 
+    // WM_NORMAL_HINTS, sent by sendNormalHints(): min and max size (0, 0: none), and the position requested while
+    // the window wasn't mapped, until it is (#1262)
+    private Point _hintMinSize, _hintMaxSize;
+    private bool _hintPositionSet;
+    private Point _hintPosition;
+
+    /// sets WM_NORMAL_HINTS: XSetWMNormalHints replaces all of them
+    private void sendNormalHints() {
+        if (!_win)
+            return;
+        XSizeHints sizeHints;
+        if (_hintMinSize != Point(0, 0)) {
+            sizeHints.min_width = _hintMinSize.x;
+            sizeHints.min_height = _hintMinSize.y;
+            sizeHints.flags |= PMinSize;
+        }
+        if (_hintMaxSize != Point(0, 0)) {
+            sizeHints.max_width = _hintMaxSize.x;
+            sizeHints.max_height = _hintMaxSize.y;
+            sizeHints.flags |= PMaxSize;
+        }
+        if (_hintPositionSet) {
+            // window managers that place new windows themselves keep a position the client or user asked for; both
+            // flags: dlangui doesn't know if a position came from the user (restored) or the program, and some
+            // window managers only honor USPosition
+            sizeHints.x = _hintPosition.x;
+            sizeHints.y = _hintPosition.y;
+            sizeHints.flags |= USPosition | PPosition;
+        }
+        XSetWMNormalHints(x11display, _win, &sizeHints);
+    }
+
     /// min and max size hints of a resizable window for the window manager (#455); a window that isn't
     /// resizable keeps its fixed size hints
     override protected void applyClientSizeLimits() {
@@ -705,18 +732,11 @@ class X11Window : DWindow {
             return;
         import std.algorithm : max;
         enum NO_MAX = 32_767;
-        XSizeHints sizeHints;
-        if (_minClientSize != Point(0, 0)) {
-            sizeHints.min_width = max(1, _minClientSize.x);
-            sizeHints.min_height = max(1, _minClientSize.y);
-            sizeHints.flags |= PMinSize;
-        }
-        if (_maxClientSize != Point(0, 0)) {
-            sizeHints.max_width = _maxClientSize.x ? _maxClientSize.x : NO_MAX;
-            sizeHints.max_height = _maxClientSize.y ? _maxClientSize.y : NO_MAX;
-            sizeHints.flags |= PMaxSize;
-        }
-        XSetWMNormalHints(x11display, _win, &sizeHints);
+        _hintMinSize = _minClientSize != Point(0, 0) ? Point(max(1, _minClientSize.x), max(1, _minClientSize.y))
+            : Point(0, 0);
+        _hintMaxSize = _maxClientSize != Point(0, 0) ? Point(_maxClientSize.x ? _maxClientSize.x : NO_MAX,
+                _maxClientSize.y ? _maxClientSize.y : NO_MAX) : Point(0, 0);
+        sendNormalHints();
         XFlush(x11display);
     }
 
@@ -1237,6 +1257,13 @@ class X11Window : DWindow {
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && rectApplies) {
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
+                if (!_shown || _withdrawn) {
+                    // not mapped: without a position hint, window managers that place new windows themselves
+                    // ignore the position when the window is mapped (#1262)
+                    _hintPositionSet = true;
+                    _hintPosition = Point(newWindowRect.left, newWindowRect.top);
+                    sendNormalHints();
+                }
                 XMoveWindow(x11display, _win, newWindowRect.left, newWindowRect.top);
                 startPositionCheck(Point(newWindowRect.left, newWindowRect.top));
                 rectChanged = true;
@@ -1246,13 +1273,8 @@ class X11Window : DWindow {
             // change size
             if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                 if (!(flags & WindowFlag.Resizable)) {
-                    XSizeHints sizeHints;
-                    sizeHints.min_width = newWindowRect.right;
-                    sizeHints.min_height = newWindowRect.bottom;
-                    sizeHints.max_width = newWindowRect.right;
-                    sizeHints.max_height = newWindowRect.bottom;
-                    sizeHints.flags = PMaxSize | PMinSize;
-                    XSetWMNormalHints(x11display, _win, &sizeHints);
+                    _hintMinSize = _hintMaxSize = Point(newWindowRect.right, newWindowRect.bottom);
+                    sendNormalHints();
                 }
                 XResizeWindow(x11display, _win, newWindowRect.right, newWindowRect.bottom);
                 rectChanged = true;
@@ -2362,6 +2384,11 @@ class X11Platform : Platform {
                     w._mapRequestSerial = 0;
                     w._viewable = true;
                     w._shownIconic = false;
+                    // placed: the position hint would keep the old position for later maps and hint updates (#1262)
+                    if (w._hintPositionSet) {
+                        w._hintPositionSet = false;
+                        w.sendNormalHints();
+                    }
                     // normal without a window manager; a window restored from the taskbar can be maximized (#1190);
                     // a mapped window isn't iconified, though the window manager may remove HIDDEN only after mapping
                     WindowState state = w.wmState(true);
