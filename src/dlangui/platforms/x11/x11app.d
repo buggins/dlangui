@@ -487,6 +487,20 @@ class X11Window : DWindow {
         }
         static if (ENABLE_OPENGL) {
             if (_glc) {
+                // the widgets' GL objects belong to this window's context (contexts aren't shared): destroy them
+                // while it is current, the base destructor runs after the context is destroyed; onClose first,
+                // with the contexts as they are, and the current context is restored afterwards (#1250)
+                if (_win) {
+                    callOnClose();
+                    GLXContext savedContext = glXGetCurrentContext();
+                    GLXDrawable savedDrawable = glXGetCurrentDrawable();
+                    glXMakeCurrent(x11display, cast(uint)_win, _glc);
+                    destroyWidgets();
+                    if (savedContext && savedContext !is _glc)
+                        glXMakeCurrent(x11display, savedDrawable, savedContext);
+                    else
+                        glXMakeCurrent(x11display, 0, null);
+                }
                 glXDestroyContext(x11display, _glc);
                 _glc = null;
             }

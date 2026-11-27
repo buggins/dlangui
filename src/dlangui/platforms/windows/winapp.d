@@ -45,6 +45,11 @@ import dlangui.core.files;
 
 static if (ENABLE_OPENGL) {
     import dlangui.graphics.glsupport;
+
+    // for glContextIsCurrentFunc: the shared context is current only while a window is painted (#1250)
+    private bool wglContextIsCurrent() {
+        return sharedGLContext._hGLRC !is null && wglGetCurrentContext() is sharedGLContext._hGLRC;
+    }
 }
 
 // specify debug=DebugMouseEvents for logging mouse handling
@@ -267,6 +272,8 @@ static if (ENABLE_OPENGL) {
         {
             bind(hDC);
             scope(exit) unbind(hDC);
+            // the only context, current while a window is painted: GL objects deleted at other times are queued
+            glContextIsCurrentFunc = &wglContextIsCurrent;
             bool initialized = initGLSupport(Platform.instance.GLVersionMajor < 3);
             if (!initialized) {
                 uninit();
@@ -294,6 +301,9 @@ static if (ENABLE_OPENGL) {
             if (_hGLRC) {
                 wglDeleteContext(_hGLRC);
                 _hGLRC = null;
+                // GL objects queued for deletion died with the context: their names may be reused by the next one
+                // (re-created for every new window with multisampling) (#1250)
+                discardPendingGLObjects();
             }
         }
         /// make this context current for DC

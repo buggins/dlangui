@@ -710,6 +710,65 @@ private __gshared GLSupport _glSupport;
 
 __gshared bool glNoContext;
 
+/**
+Returns true if an OpenGL context is current on the calling thread; null means one always is when GL objects are
+deleted. Set by a backend with a single GL context that is current only part of the time: Win32 makes its context
+current only while painting, so widgets destroyed at other times (and with their window) can't delete their GL objects
+then. Their names are queued and deleted after the next frame (#1250). The queued names are deleted in whatever context
+is current then, so a backend with a context per window must not set it: SDL and X11 destroy a window's widgets with
+the window's own context current instead (`Window.destroyWidgets()`). Without GL frames (e.g. only GDI-painted windows
+left) the queue isn't emptied; it is dropped at exit and when the context is deleted (`discardPendingGLObjects()`).
+*/
+__gshared bool function() glContextIsCurrentFunc;
+
+// GL objects deleted while no context was current: deleted after the next frame (#1250)
+private struct PendingGLDelete {
+    GLObjectTypes type;
+    GLuint id;
+}
+private __gshared PendingGLDelete[] _pendingGLDeletes;
+
+private void deleteGLObjectNow(GLObjectTypes type, GLuint id) {
+    final switch (type) {
+        case GLObjectTypes.Buffer: checkgl!glDeleteBuffers(1, &id); break;
+        case GLObjectTypes.VertexArray: checkgl!glDeleteVertexArrays(1, &id); break;
+        case GLObjectTypes.Texture: checkgl!glDeleteTextures(1, &id); break;
+        case GLObjectTypes.Framebuffer: checkgl!glDeleteFramebuffers(1, &id); break;
+    }
+}
+
+/// true unless the backend reports that no GL context is current (see glContextIsCurrentFunc)
+bool glContextIsCurrent() {
+    return glContextIsCurrentFunc is null || glContextIsCurrentFunc();
+}
+
+/// deletes a GL object: now if a context is current, else after the next frame (#1250); at exit (glNoContext) the
+/// objects are freed with the context
+void deleteGLObject(GLObjectTypes type, GLuint id) {
+    if (glNoContext || id == 0)
+        return;
+    if (!glContextIsCurrent()) {
+        _pendingGLDeletes ~= PendingGLDelete(type, id);
+        return;
+    }
+    deleteGLObjectNow(type, id);
+}
+
+/// forgets the queued GL objects: call when the context they belong to is deleted (#1250)
+void discardPendingGLObjects() {
+    _pendingGLDeletes = null;
+}
+
+/// deletes the GL objects deleted while no context was current; call when the GL context is current
+void deletePendingGLObjects() {
+    if (!_pendingGLDeletes.length)
+        return;
+    PendingGLDelete[] pending = _pendingGLDeletes;
+    _pendingGLDeletes = null;
+    foreach (p; pending)
+        deleteGLObjectNow(p.type, p.id);
+}
+
 /// initialize OpenGL support helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;
@@ -1232,10 +1291,12 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
 
     ~this() {
         if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
-        if (!glNoContext) {
+        if (glNoContext)
+            return; // at exit: freed with the context
+        // without a current context (Win32 outside painting) the GL calls would fail: deleted later (#1250)
+        if (glContextIsCurrent())
             unbind();
-            mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &ID);");
-        }
+        deleteGLObject(type, ID);
     }
 
     void bind() {
@@ -1330,9 +1391,10 @@ class GLVertexBuffer : VertexBuffer {
 
     ~this() {
         if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
-        checkgl!glDeleteBuffers(1, &_vertexBuffer);
-        checkgl!glDeleteBuffers(1, &_indexBuffer);
-        checkgl!glDeleteVertexArrays(1, &_vao);
+        // now, or after the next frame if no context is current (#1250)
+        deleteGLObject(GLObjectTypes.Buffer, _vertexBuffer);
+        deleteGLObject(GLObjectTypes.Buffer, _indexBuffer);
+        deleteGLObject(GLObjectTypes.VertexArray, _vao);
     }
 
     ///// bind into current context
