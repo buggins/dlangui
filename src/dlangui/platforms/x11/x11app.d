@@ -487,8 +487,9 @@ class X11Window : DWindow {
         }
         static if (ENABLE_OPENGL) {
             if (_glc) {
-                // the widgets' GL objects belong to this window's context (contexts aren't shared): destroy them
-                // while it is current, the base destructor runs after the context is destroyed; onClose first,
+                // the widgets' GL objects are deleted with this window's context current: the per-context ones
+                // (vertex arrays, framebuffers) belong to it, shared ones stay valid while another context exists;
+                // the base destructor runs after the context is destroyed; onClose first,
                 // with the contexts as they are, and the current context is restored afterwards (#1250)
                 if (_win) {
                     callOnClose();
@@ -634,12 +635,29 @@ class X11Window : DWindow {
             sendFlagStates(ewmh);
     }
 
+    static if (ENABLE_OPENGL) {
+        /// the GL context of another window, for a new context to share its objects with; null for the first one
+        private GLXContext sharedGLContext() {
+            foreach (w; _platform._windowMap)
+                if (w !is this && w._glc)
+                    return w._glc;
+            return null;
+        }
+    }
+
     /// creates the OpenGL context in show() (also for a window that isn't mapped yet); once: show() can be called
     /// again, e.g. after hideWindow()
     private void initOpenGLDuringShow() {
         static if (ENABLE_OPENGL) {
             if (_enableOpengl && !_glc) {
-                _glc = glXCreateContext(x11display, x11visual, null, GL_TRUE);
+                // the GL caches, shader programs and buffers are global: the contexts of all windows share their
+                // objects, as with SDL; the vertex arrays (never shared) are created for each frame (#1252)
+                GLXContext share = sharedGLContext();
+                _glc = glXCreateContext(x11display, x11visual, share, GL_TRUE);
+                if (!_glc && share) {
+                    Log.w("Cannot create an OpenGL context sharing objects with the other windows: trying without");
+                    _glc = glXCreateContext(x11display, x11visual, null, GL_TRUE);
+                }
                 if (!_glc) {
                     _enableOpengl = false;
                 } else {
@@ -3067,6 +3085,10 @@ extern(C) int DLANGUImain(string[] args)
 
     Log.d("Destroying X11 platform");
     Platform.setInstance(null);
+    // the windows and their GL contexts are destroyed: the GL caches' objects went with the contexts, no GL
+    // calls to delete them (as with SDL, #1252)
+    static if (ENABLE_OPENGL)
+        glNoContext = true;
 
     releaseResourcesOnAppExit();
 
