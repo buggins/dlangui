@@ -18,6 +18,7 @@ $DLANGUI_DIR/src/dlangui/core/textsource.d \
 $DLANGUI_DIR/src/dlangui/core/css.d \
 $DLANGUI_DIR/src/dlangui/core/filemanager.d \
 $DLANGUI_DIR/src/dlangui/core/files.d \
+$DLANGUI_DIR/src/dlangui/core/filewatch.d \
 $DLANGUI_DIR/src/dlangui/core/events.d \
 $DLANGUI_DIR/src/dlangui/core/collections.d \
 $DLANGUI_DIR/src/dlangui/core/stdaction.d \
