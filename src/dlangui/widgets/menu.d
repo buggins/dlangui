@@ -167,35 +167,62 @@ class MenuItem {
         return std.uni.toUpper(ch);
     }
 
-    /// find subitem by hotkey character, returns subitem index, -1 if not found
+    /// find subitem by hotkey character, returns subitem index, -1 if not found; disabled items and separators are
+    /// skipped (#1255)
     int findSubitemByHotkey(dchar ch) {
         static import std.uni;
         if (!ch)
             return -1;
         ch = std.uni.toUpper(ch);
         for (int i = 0; i < _subitems.length; i++) {
-            if (_subitems[i].getHotkey() == ch)
+            if (_subitems[i].enabled && _subitems[i].getHotkey() == ch)
                 return i;
         }
         return -1;
     }
 
-    /// find subitem by hotkey character, returns subitem index, -1 if not found
+    /// find subitem by hotkey character in this item and its submenus, null if not found; disabled items, the
+    /// submenus of disabled items and separators are skipped (#1255)
     MenuItem findSubitemByHotkeyRecursive(dchar ch) {
         static import std.uni;
         if (!ch)
             return null;
         ch = std.uni.toUpper(ch);
         for (int i = 0; i < _subitems.length; i++) {
-            if (_subitems[i].getHotkey() == ch)
+            if (_subitems[i].enabled && _subitems[i].getHotkey() == ch)
                 return _subitems[i];
         }
         for (int i = 0; i < _subitems.length; i++) {
+            if (!_subitems[i].enabled)
+                continue;
             MenuItem res = _subitems[i].findSubitemByHotkeyRecursive(ch);
             if (res)
                 return res;
         }
         return null;
+    }
+
+    unittest {
+        MenuItem root = new MenuItem();
+        MenuItem file = new MenuItem(new Action(1, "&File"d));
+        root.add(file);
+        file.add(new Action(2, "&Open"d));
+        file.addSeparator();
+        file.add(new Action(3, "Save &As"d));
+        MenuItem saveAs = file._subitems[2];
+        assert(root.findSubitemByHotkey('f') == 0);
+        assert(root.findSubitemByHotkeyRecursive('a') is saveAs);
+        assert(file.findSubitemByHotkey('A') == 2);
+        // a disabled item isn't found
+        saveAs.enabled = false;
+        assert(root.findSubitemByHotkeyRecursive('a') is null);
+        assert(file.findSubitemByHotkey('a') == -1);
+        // nor items in the submenu of a disabled item
+        saveAs.enabled = true;
+        file.enabled = false;
+        assert(root.findSubitemByHotkey('f') == -1);
+        assert(root.findSubitemByHotkeyRecursive('a') is null);
+        assert(root.findSubitemByHotkeyRecursive('o') is null);
     }
 
     /// Add separator item
@@ -257,7 +284,8 @@ class MenuItem {
     /// sets item action
     @property MenuItem action(Action a) { _action = a; return this; }
 
-    /// menu item Enabled flag
+    /// menu item Enabled flag; for an item with an action, the action's state decides: it is updated when the menu
+    /// opens and before Alt hotkeys are matched (#1255)
     @property bool enabled() { return _enabled && type != MenuItemType.Separator; }
     /// menu item Enabled flag
     @property MenuItem enabled(bool enabled) {
@@ -1167,6 +1195,10 @@ class MainMenu : MenuWidgetBase {
             return true;
         }
         if (hotkey) {
+            // the items' enabled states, as when the menu opens: a hotkey doesn't run a disabled item (#1255); while
+            // the menu is focused they were updated when it opened, for the widget that had the focus
+            if (!focused)
+                _item.updateActionState(this);
             // a top-level item first, then a submenu item; the layout character before the Latin letter at each level
             return runTopLevelHotkey(layoutHotkey) || runTopLevelHotkey(hotkey)
                 || runSubmenuHotkey(layoutHotkey) || runSubmenuHotkey(hotkey);
