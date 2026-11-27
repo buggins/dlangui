@@ -769,6 +769,16 @@ void deletePendingGLObjects() {
         deleteGLObjectNow(p.type, p.id);
 }
 
+/// destroys the OpenGL support helper and its shader programs (call with the GL context current); initGLSupport()
+/// creates it again (#1265)
+void uninitGLSupport() {
+    if (_glSupport) {
+        destroy(_glSupport);
+        _glSupport = null;
+    }
+    GLProgram.currentProgram = 0; // a later context may give a new program the same name
+}
+
 /// initialize OpenGL support helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;

@@ -497,6 +497,10 @@ class X11Window : DWindow {
                     GLXDrawable savedDrawable = glXGetCurrentDrawable();
                     glXMakeCurrent(x11display, cast(uint)_win, _glc);
                     destroyWidgets();
+                    // the last context: the global GL objects go away with it, a later window gets new ones (#1265);
+                    // a context of its own (fallback) has none of them
+                    if (_glcShared && !sharedGLContext())
+                        releaseGLObjectsOfLastContext();
                     if (savedContext && savedContext !is _glc)
                         glXMakeCurrent(x11display, savedDrawable, savedContext);
                     else
@@ -639,10 +643,14 @@ class X11Window : DWindow {
         /// the GL context of another window, for a new context to share its objects with; null for the first one
         private GLXContext sharedGLContext() {
             foreach (w; _platform._windowMap)
-                if (w !is this && w._glc)
+                if (w !is this && w._glc && w._glcShared)
                     return w._glc;
             return null;
         }
+
+        // the context is in the share group of the windows' contexts (the first one, or created sharing with
+        // another): not after the fallback to a context of its own (#1265)
+        private bool _glcShared;
     }
 
     /// creates the OpenGL context in show() (also for a window that isn't mapped yet); once: show() can be called
@@ -654,6 +662,7 @@ class X11Window : DWindow {
                 // objects, as with SDL; the vertex arrays (never shared) are created for each frame (#1252)
                 GLXContext share = sharedGLContext();
                 _glc = glXCreateContext(x11display, x11visual, share, GL_TRUE);
+                _glcShared = _glc !is null;
                 if (!_glc && share) {
                     Log.w("Cannot create an OpenGL context sharing objects with the other windows: trying without");
                     _glc = glXCreateContext(x11display, x11visual, null, GL_TRUE);
