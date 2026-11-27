@@ -1136,28 +1136,40 @@ class MainMenu : MenuWidgetBase {
             return true;
         }
         dchar hotkey = 0;
+        // the character the key types in the keyboard layout, if the backend gives it with the KeyDown (e.g. 'ф' for
+        // KEY_A with a Russian layout on Win32): tried before the key code's Latin letter (#1245)
+        dchar layoutHotkey = 0;
         if (event.action == KeyAction.KeyDown && event.keyCode >= KeyCode.KEY_A && event.keyCode <= KeyCode.KEY_Z && altPressed && noOtherModifiers && noAltGrKey) {
 //            Log.d("Alt + a..z");
             hotkey = cast(dchar)((event.keyCode - KeyCode.KEY_A) + 'a');
+            // only a letter outside ASCII: other backends may put other things into KeyDown text
+            static import std.uni;
+            if (event.text.length && event.text[0] >= 0x80 && std.uni.isAlpha(event.text[0]))
+                layoutHotkey = event.text[0];
         }
         if (event.action == KeyAction.Text && altPressed && noOtherModifiers && noAltGrKey) {
             hotkey = event.text[0];
         }
-        if (hotkey) {
-            int index = _item.findSubitemByHotkey(hotkey);
-            if (index >= 0) {
-                activate();
-                itemClicked(index);
-                return true;
-            } else {
-                MenuItem item = _item.findSubitemByHotkeyRecursive(hotkey);
-                if (item) {
-                    Log.d("found menu item recursive");
-                    onMenuItem(item);
-                    return true;
-                }
+        bool runTopLevelHotkey(dchar ch) {
+            int index = ch ? _item.findSubitemByHotkey(ch) : -1;
+            if (index < 0)
                 return false;
-            }
+            activate();
+            itemClicked(index);
+            return true;
+        }
+        bool runSubmenuHotkey(dchar ch) {
+            MenuItem item = ch ? _item.findSubitemByHotkeyRecursive(ch) : null;
+            if (!item)
+                return false;
+            Log.d("found menu item recursive");
+            onMenuItem(item);
+            return true;
+        }
+        if (hotkey) {
+            // a top-level item first, then a submenu item; the layout character before the Latin letter at each level
+            return runTopLevelHotkey(layoutHotkey) || runTopLevelHotkey(hotkey)
+                || runSubmenuHotkey(layoutHotkey) || runSubmenuHotkey(hotkey);
         }
 
         // toggle menu by single Alt press - for Windows only!

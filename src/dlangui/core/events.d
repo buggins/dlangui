@@ -1352,7 +1352,8 @@ class KeyEvent {
     @property uint keyCode() { return _keyCode; }
     /// flags (shift, ctrl, alt...) - KeyFlag enum
     @property uint flags() { return _flags; }
-    /// entered text, for Text action
+    /// entered text, for Text action. A KeyDown may carry the character the key types in the current keyboard layout,
+    /// where the key code doesn't tell it: Win32 gives it for Alt + a letter key whose letter isn't Latin (#1245)
     @property dstring text() { return _text; }
 
     /// returns true if no modifier flags are set

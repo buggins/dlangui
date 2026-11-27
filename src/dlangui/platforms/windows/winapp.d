@@ -1609,7 +1609,9 @@ class Win32Window : Window {
                 //    Log.d("keydown, keyFlags=", _keyFlags);
             }
 
-            event = new KeyEvent(action, keyCode, _keyFlags);
+            // a KeyDown may carry the key's character in the keyboard layout (#1245)
+            dstring text = action == KeyAction.KeyDown && character ? [character].idup : null;
+            event = new KeyEvent(action, keyCode, _keyFlags, text);
         } else if (action == KeyAction.Text && character != 0) {
             bool ctrlAZKeyCode = (character >= 1 && character <= 26);
             if ((_keyFlags & (KeyFlag.Control | KeyFlag.Alt)) && ctrlAZKeyCode) {
@@ -1636,8 +1638,8 @@ class Win32Window : Window {
         return res;
     }
 
-    /// the WM_SYSCHAR characters onSysChar() tries as hotkeys: letters outside ASCII. ASCII letters were tried as
-    /// keys (KEY_A..KEY_Z) already, and digits and punctuation aren't Alt hotkeys on Win32 (#1240)
+    /// the characters onSysChar() tries as hotkeys: letters outside ASCII. ASCII letters are tried as keys
+    /// (KEY_A..KEY_Z), and digits and punctuation aren't Alt hotkeys on Win32 (#1240)
     static bool isSysCharHotkey(dchar ch) {
         import std.uni : isAlpha;
         return ch >= 0x80 && isAlpha(ch); // also no halves of surrogate pairs (not letters)
@@ -1648,6 +1650,32 @@ class Win32Window : Window {
         assert(!isSysCharHotkey('a') && !isSysCharHotkey('F')); // tried as keys
         assert(!isSysCharHotkey('1') && !isSysCharHotkey('.') && !isSysCharHotkey(' ') && !isSysCharHotkey('\x1B'));
         assert(!isSysCharHotkey(0xD83D) && !isSysCharHotkey('§'));
+    }
+
+    /// the character of letter key vk (VK_A..VK_Z, the keys MainMenu also matches by key code) with scan code
+    /// scancode in the thread's keyboard layout, without modifiers; 0 for other keys, a dead key or no character (#1245)
+    static dchar layoutLetterKeyChar(uint vk, uint scancode) {
+        if (vk < 'A' || vk > 'Z')
+            return 0;
+        // ToUnicodeEx leaves the keyboard state (a pending dead key) alone only with DONT_CHANGE_KEYBOARD_STATE,
+        // Windows 10 1607+; older versions ignore the flag: no layout character there. GetDpiForWindow is new in
+        // the same version
+        static bool supported, checked;
+        if (!checked) {
+            checked = true;
+            HMODULE user32 = GetModuleHandleA("user32.dll");
+            supported = user32 && GetProcAddress(user32, "GetDpiForWindow") !is null;
+        }
+        if (!supported)
+            return 0;
+        // (MapVirtualKeyEx(MAPVK_VK_TO_CHAR) gives the Latin letter for these keys in any layout)
+        HKL layout = GetKeyboardLayout(0);
+        ubyte[256] noModifiers;
+        wchar[4] buf;
+        enum DONT_CHANGE_KEYBOARD_STATE = 4;
+        int count = ToUnicodeEx(vk, scancode, noModifiers.ptr, buf.ptr, cast(int)buf.length,
+                DONT_CHANGE_KEYBOARD_STATE, layout);
+        return count == 1 ? cast(dchar)buf[0] : 0;
     }
 
     /// the character of an Alt+key that no widget took as a key (WM_SYSCHAR): tried as a hotkey of widgets with
@@ -2348,7 +2376,13 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         break;
                 }
 
-                bool handled = window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)new_vk, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN);
+                // Alt+letter key whose letter in the keyboard layout isn't Latin: the KeyDown carries that character,
+                // MainMenu tries it as a hotkey before the key code's Latin letter, e.g. Alt+Ф (KEY_A) opens "&Файл"
+                // even if a "Save &As" item exists (#1245)
+                dchar layoutChar = message == WM_SYSKEYDOWN ? Win32Window.layoutLetterKeyChar(cast(uint)vk, scancode) : 0;
+                if (!Win32Window.isSysCharHotkey(layoutChar))
+                    layoutChar = 0;
+                bool handled = window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)new_vk, repeatCount, layoutChar, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN);
                 // set by every key message: only the WM_SYSCHAR right after a handled WM_SYSKEYDOWN is dropped
                 window._sysKeyDownHandled = message == WM_SYSKEYDOWN && handled;
                 if (handled)
