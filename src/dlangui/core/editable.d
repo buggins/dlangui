@@ -242,6 +242,9 @@ enum EditAction {
     ReplaceContent,
     /// saved content
     SaveContent,
+    /// replaced with the file's content on disk (`EditableContent.reload()`, #1279): an undoable edit like Replace,
+    /// after which the content is saved; editors keep the caret where it was, clamped to the new text
+    Reload,
 }
 
 /// values for editable line state
@@ -305,6 +308,8 @@ class EditOperation {
     }
     /// try to merge two operations (simple entering of characters in the same line), return true if succeded
     bool merge(EditOperation op) {
+        if (_action != EditAction.Replace || op._action != EditAction.Replace) // e.g. a reload is a step of its own
+            return false;
         if (_range.start.line != op._range.start.line) // both ops whould be on the same line
             return false;
         if (_content.length != 1 || op._content.length != 1) // both ops should operate the same line
@@ -1414,6 +1419,16 @@ class EditableContent {
         if (_readOnly)
             throw new Exception("content is readonly");
         if (op.action == EditAction.Replace) {
+            applyReplace(op, source);
+            return true;
+        }
+        return false;
+    }
+
+    // replaces op.range with op.content, saves op for undo and notifies listeners; markSaved: the content is saved
+    // after op (a reload), already when listeners are notified
+    protected void applyReplace(EditOperation op, Object source, bool markSaved = false) {
+        {
             TextRange rangeBefore = op.range;
             assert(rangeBefore.start <= rangeBefore.end);
             //correctRange(rangeBefore);
@@ -1438,10 +1453,10 @@ class EditableContent {
             op.oldEditMarks = oldmarks;
             replaceRange(rangeBefore, rangeAfter, newcontent);
             _undoBuffer.saveForUndo(op);
+            if (markSaved)
+                _undoBuffer.saved();
             handleContentChange(op, rangeBefore, rangeAfter, source);
-            return true;
         }
-        return false;
     }
 
     /// return true if there is at least one operation in undo buffer
@@ -1709,6 +1724,156 @@ class EditableContent {
         }
     }
 
+    // text decoded from a stream, not yet in the content
+    protected static struct DecodedText {
+        dstring[] lines; // none for an empty file
+        TextFileFormat format;
+        uint invalidCharCount;
+        LineStream.InvalidCharPosition[] invalidCharPositions;
+    }
+
+    // decodes all lines of a stream (format detected by LineStream); false, logged, on a read or decoding error
+    protected static bool decodeText(InputStream f, string fname, out DecodedText decoded) {
+        LineStream lines = LineStream.create(f, fname);
+        for (;;) {
+            dchar[] s = lines.readLine();
+            if (s is null)
+                break;
+            decoded.lines ~= s.idup;
+        }
+        if (lines.errorCode != 0) {
+            Log.e("Error ", lines.errorCode, " ", lines.errorMessage, " -- at line ", lines.errorLine, " position ", lines.errorPos);
+            return false;
+        }
+        decoded.format = lines.textFormat;
+        decoded.invalidCharCount = lines.invalidCharCount;
+        decoded.invalidCharPositions = lines.invalidCharPositions.dup;
+        if (decoded.invalidCharCount)
+            Log.w(invalidCharsMessage(fname, decoded.invalidCharCount, decoded.invalidCharPositions, decoded.format.encoding));
+        return true;
+    }
+
+    /**
+    The edit that turns `oldLines` into `newLines` by replacing only the lines between their common first and last
+    lines (#1279), so line icons and positions in the unchanged lines stay. False if the lines are the same.
+    Both have at least one line.
+    */
+    static bool reloadReplacement(const(dstring)[] oldLines, const(dstring)[] newLines, out TextRange range,
+            out dstring[] content) @safe pure {
+        size_t common = oldLines.length < newLines.length ? oldLines.length : newLines.length;
+        size_t prefix = 0;
+        while (prefix < common && oldLines[prefix] == newLines[prefix])
+            prefix++;
+        if (prefix == oldLines.length && prefix == newLines.length)
+            return false;
+        size_t suffix = 0;
+        while (suffix < common - prefix && oldLines[$ - 1 - suffix] == newLines[$ - 1 - suffix])
+            suffix++;
+        size_t oldEnd = oldLines.length - suffix; // the first line of the common end, or the line count
+        size_t newEnd = newLines.length - suffix;
+        if (suffix > 0) {
+            // whole lines [prefix, oldEnd) with their line breaks
+            range = TextRange(TextPosition(cast(int)prefix, 0), TextPosition(cast(int)oldEnd, 0));
+            content = newLines[prefix .. newEnd].dup ~ ""d; // copies the array of slices, not the text
+        } else if (prefix > 0) {
+            // to the end: from the line break after the last common line
+            range = TextRange(TextPosition(cast(int)prefix - 1, cast(int)oldLines[prefix - 1].length),
+                    TextPosition(cast(int)oldLines.length - 1, cast(int)oldLines[$ - 1].length));
+            content = ""d ~ newLines[prefix .. $].dup;
+        } else {
+            // everything
+            range = TextRange(TextPosition(0, 0),
+                    TextPosition(cast(int)oldLines.length - 1, cast(int)oldLines[$ - 1].length));
+            content = newLines.dup;
+        }
+        return true;
+    }
+
+    /**
+    Reads the file again (#1279), after another program changed it, and replaces the text with its content as one
+    undoable edit (`EditAction.Reload`): only the lines between the common first and last lines are replaced, and the
+    undo history stays, so undo restores the text from before the reload, and earlier edits before that. The content
+    is then saved (not modified), with the new `fileState`, format and invalid characters; undoing the reload makes it
+    modified. Works for read-only content too.
+
+    Editors keep the caret where it was, clamped to the new text, and clear the selection. Listeners see the new file
+    state and the saved state already in the reload notification.
+
+    The undo history keeps the replaced lines, so reloading a huge file with many changed lines costs memory like
+    any large edit.
+
+    Returns false, leaving the content as it was, if the content didn't come from a file, or the file can't be read
+    or decoded (e.g. it was deleted).
+    */
+    bool reload(Object source = null) {
+        if (!_fileState.path.length)
+            return false;
+        string path = _fileState.path;
+        string fname = _filename.length ? _filename : path;
+        DecodedText decoded;
+        FileState state;
+        bool stable;
+        ubyte[] data;
+        try {
+            state = readStateWithContent(path, data, stable);
+            if (!state.exists || state.unknown) {
+                Log.e("Editable.reload: cannot read ", path);
+                return false;
+            }
+            if (fitsInMemory(state.size)) {
+                if (!state.hasChecksum) {
+                    Log.e("Editable.reload: cannot read ", path);
+                    return false; // a read error
+                }
+                if (!decodeText(new MemoryInputStream(data), fname, decoded))
+                    return false;
+            } else {
+                // too large for memory: decoded while read, as load() does
+                std.stdio.File file = std.stdio.File(osFileName(path), "rb");
+                scope (exit)
+                    file.close();
+                FileState before = FileState.read(file, path);
+                file.seek(0);
+                if (!decodeText(new FileInputStream(file), fname, decoded))
+                    return false;
+                state = FileState.read(file, path);
+                stable = isStableRead(before, state, file.tell);
+                data = null;
+            }
+        } catch (Exception e) {
+            Log.e("Editable.reload: exception while reading ", path, " ", e.toString);
+            return false;
+        }
+        if (!stable)
+            Log.w("Editable.reload: file ", path, " kept changing while it was read");
+        if (!decoded.lines.length)
+            decoded.lines ~= ""d;
+        // the file's state first: listeners of the reload edit see it
+        _format = decoded.format;
+        _invalidCharCount = decoded.invalidCharCount;
+        _invalidCharPositions = decoded.invalidCharPositions;
+        _fileState = state;
+        _fileStateUncertain = !stable;
+        if (_keepFileContent && data !is null) {
+            import std.exception : assumeUnique;
+            _fileContent = assumeUnique(data); // not used after this
+        } else {
+            _fileContent = null;
+        }
+        TextRange range;
+        dstring[] content;
+        if (reloadReplacement(_lines, decoded.lines, range, content)) {
+            auto op = new EditOperation(EditAction.Reload);
+            op._range = range;
+            op._content = content; // the decoded lines, not copied again
+            applyReplace(op, source, true);
+        } else {
+            _undoBuffer.saved();
+        }
+        notifyContentSaved();
+        return true;
+    }
+
     /// load content form input stream; the content then has no `fileState` (load(filename) sets it)
     bool load(InputStream f, string fname = null) {
         import dlangui.core.linestream;
@@ -1719,30 +1884,21 @@ class EditableContent {
         _fileStateUncertain = false;
         _fileContent = null;
         try {
-            LineStream lines = LineStream.create(f, fname);
-            for (;;) {
-                dchar[] s = lines.readLine();
-                if (s is null)
-                    break;
-                int pos = cast(int)(_lines.length++);
-                _tokenProps.length = _lines.length;
-                _lines[pos] = s.dup;
-                clearTokenProps(pos, pos + 1);
-            }
-            if (lines.errorCode != 0) {
+            DecodedText decoded;
+            if (!decodeText(f, fname, decoded)) {
                 clear();
                 ensureLineExists();
-                Log.e("Error ", lines.errorCode, " ", lines.errorMessage, " -- at line ", lines.errorLine, " position ", lines.errorPos);
                 notifyContentReplaced();
                 return false;
             }
+            _lines = decoded.lines;
+            _tokenProps.length = _lines.length;
+            clearTokenProps(0, cast(int)_lines.length);
             // EOF; an empty file has no lines, but content needs at least one
             ensureLineExists();
-            _format = lines.textFormat;
-            _invalidCharCount = lines.invalidCharCount;
-            _invalidCharPositions = lines.invalidCharPositions.dup;
-            if (_invalidCharCount)
-                Log.w(invalidCharsMessage(fname, _invalidCharCount, _invalidCharPositions, _format.encoding));
+            _format = decoded.format;
+            _invalidCharCount = decoded.invalidCharCount;
+            _invalidCharPositions = decoded.invalidCharPositions;
             _undoBuffer.clear();
             debug(FileFormats)Log.d("loaded file:", filename, " format detected:", _format);
             notifyContentReplaced();
@@ -2109,6 +2265,31 @@ struct LineIcons {
         moved = null;
         removed = null;
         bool res = false;
+        // whole lines replaced, removed or inserted (all positions at column 0, #1279): the line the old range ends at
+        // isn't touched and moves with the following lines; replaced lines keep their icons while new lines remain
+        if (rangeBefore.start.pos == 0 && rangeBefore.end.pos == 0 && rangeAfter.end.pos == 0
+                && (rangeBefore.end.line > rangeBefore.start.line || rangeAfter.end.line > rangeAfter.start.line)) {
+            int first = rangeBefore.start.line;
+            int deltaLines = rangeAfter.end.line - rangeBefore.end.line;
+            int newLines = rangeAfter.end.line - rangeAfter.start.line;
+            for (int i = _len - 1; i >= 0; i--) {
+                LineIcon item = _items[i];
+                if (item.line < first)
+                    continue;
+                if (item.line >= rangeBefore.end.line) {
+                    if (deltaLines) {
+                        item.line += deltaLines;
+                        moved ~= item;
+                        res = true;
+                    }
+                } else if (item.line - first >= newLines) {
+                    removed ~= item;
+                    remove(i);
+                    res = true;
+                }
+            }
+            return res;
+        }
         for (int i = _len - 1; i >= 0; i--) {
             LineIcon item = _items[i];
             if (rangeBefore.start.line > item.line && rangeAfter.start.line > item.line)
@@ -2785,4 +2966,178 @@ unittest {
         setTimes(`\\?\` ~ longName, t, t);
         assert(content.checkExternalChange() == FileChangeKind.unchanged && content.fileState.modified == t);
     }
+}
+
+// reloadReplacement(): replacing only the changed lines turns the old lines into the new ones (#1279)
+unittest {
+    import std.array : join;
+    import std.conv : to;
+    static class OldLine {
+        size_t line;
+        this(size_t line) {
+            this.line = line;
+        }
+    }
+    dstring[][2][] cases = [
+        [["a"d, "b", "c"], ["a"d, "X", "c"]],      // a middle line
+        [["a"d, "b"], ["a"d, "b", "c"]],           // appended
+        [["a"d, "b", "c"], ["a"d]],                // removed at the end
+        [["a"d, "b"], ["X"d, "b"]],                // the first line
+        [["b"d], ["a"d, "b"]],                     // inserted at the start
+        [["a"d], ["x"d, "y", "z"]],                // all different
+        [[""d], ["a"d, "b"]],                      // was empty
+        [["a"d, "b"], [""d]],                      // now empty
+        [["a"d, "a"], ["a"d]],                     // repeated lines
+        [["a"d], ["a"d, "a"]],
+        [["a"d, "b", "a"], ["a"d, "a"]],
+        [["a"d, "b", "c", "d"], ["a"d, "x", "y", "z", "d"]],
+    ];
+    foreach (i, c; cases) {
+        auto content = new EditableContent(true);
+        content.text = c[0].join("\n"d);
+        TextRange range;
+        dstring[] newContent;
+        assert(EditableContent.reloadReplacement(c[0], c[1], range, newContent), to!string(i));
+        assert(content.performOperation(new EditOperation(EditAction.Replace, range, newContent), null));
+        assert(content.text == c[1].join("\n"d), to!string(i) ~ ": " ~ to!string(content.text));
+        assert(content.undo(null) && content.text == c[0].join("\n"d));
+        // a bookmark on every old line: the unchanged first and last lines keep theirs at their new positions,
+        // and no line has two
+        foreach (l; 0 .. c[0].length)
+            content.lineIcons.add(new LineIcon(LineIconType.bookmark, cast(int)l, new OldLine(l)));
+        assert(content.redo(null));
+        size_t prefix = 0;
+        while (prefix < c[0].length && prefix < c[1].length && c[0][prefix] == c[1][prefix])
+            prefix++;
+        size_t suffix = 0;
+        while (suffix < c[0].length - prefix && suffix < c[1].length - prefix
+                && c[0][$ - 1 - suffix] == c[1][$ - 1 - suffix])
+            suffix++;
+        size_t[int] iconLine; // new line -> old line of its icon
+        foreach (k; 0 .. content.lineIcons.length) {
+            LineIcon icon = content.lineIcons[k];
+            assert(icon.line >= 0 && icon.line < c[1].length && icon.line !in iconLine,
+                    to!string(i) ~ ": icon on line " ~ to!string(icon.line));
+            iconLine[icon.line] = (cast(OldLine)icon.objectParam).line;
+        }
+        foreach (l; 0 .. prefix)
+            assert(iconLine.get(cast(int)l, size_t.max) == l, to!string(i));
+        foreach (j; 0 .. suffix)
+            assert(iconLine.get(cast(int)(c[1].length - 1 - j), size_t.max) == c[0].length - 1 - j,
+                    to!string(i) ~ ": " ~ to!string(iconLine));
+    }
+    TextRange range;
+    dstring[] newContent;
+    assert(!EditableContent.reloadReplacement(["a"d, "b"], ["a"d, "b"], range, newContent));
+}
+
+// reload(): one undoable edit; the history before it stays usable (#1279)
+unittest {
+    import std.file : write, remove, tempDir, exists;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.datetime : Clock;
+    string fn = buildPath(tempDir, "dlangui-reload-" ~ to!string(Clock.currStdTime) ~ ".txt");
+    scope (exit)
+        if (exists(fn))
+            remove(fn);
+    void insertText(EditableContent c, int line, int pos, dstring text) {
+        assert(c.performOperation(new EditOperation(EditAction.Replace,
+                TextRange(TextPosition(line, pos), TextPosition(line, pos)), [text]), null));
+    }
+    auto content = new EditableContent(true);
+    write(fn, "one\ntwo\nthree\n");
+    assert(content.load(fn));
+    insertText(content, 1, 0, "X");
+    assert(content.save(fn));
+    content.lineIcons.add(new LineIcon(LineIconType.bookmark, 2)); // on "three"
+    // another program inserts a line; the text has an unsaved edit
+    write(fn, "one\nXtwo\nnew\nthree\n");
+    insertText(content, 0, 0, "Y");
+    assert(content.modified);
+    int notifications = 0;
+    EditAction lastAction;
+    bool savedAtReload, fileStateAtReload;
+    content.contentChanged = delegate(EditableContent c, EditOperation op, ref TextRange before, ref TextRange after,
+            Object source) {
+        notifications++;
+        lastAction = op.action;
+        if (op.action == EditAction.Reload) {
+            // listeners see the reloaded state already: no modified flicker, no stale file state
+            savedAtReload = !c.modified;
+            fileStateAtReload = c.checkExternalChange() == FileChangeKind.unchanged;
+        }
+    };
+    assert(content.reload());
+    assert(content.text == "one\nXtwo\nnew\nthree"d && !content.modified);
+    assert(content.checkExternalChange() == FileChangeKind.unchanged);
+    assert(notifications == 2 && lastAction == EditAction.SaveContent); // the reload edit, then saved
+    assert(savedAtReload && fileStateAtReload);
+    // the bookmark moved with its line, which wasn't replaced
+    assert(content.lineIcons.findNext(LineIconType.bookmark, 0, 1).line == 3);
+    // typing after the reload is a separate undo step
+    insertText(content, 3, 5, "!");
+    assert(content.modified && content.undo(null));
+    assert(content.text == "one\nXtwo\nnew\nthree"d && !content.modified);
+    // undo: the text before the reload, with its unsaved edit; then the saved text; then the loaded one
+    assert(content.undo(null) && content.text == "Yone\nXtwo\nthree"d && content.modified);
+    assert(content.undo(null) && content.text == "one\nXtwo\nthree"d && content.modified);
+    assert(content.undo(null) && content.text == "one\ntwo\nthree"d && !content.hasUndo);
+    // redo back to the reloaded text, which is the saved state
+    foreach (i; 0 .. 3)
+        assert(content.redo(null));
+    assert(content.text == "one\nXtwo\nnew\nthree"d && !content.modified);
+    content.contentChanged.clear();
+
+    // the same content on disk: no edit, the text is saved
+    insertText(content, 0, 0, "Z");
+    assert(content.undo(null));
+    size_t before = content.text.length;
+    assert(content.reload() && content.text.length == before && !content.modified);
+
+    // another encoding: the content gets the file's format
+    {
+        import dlangui.core.linestream : EncodingType;
+        ubyte[] utf16 = [0xFF, 0xFE, 'a', 0, '\n', 0, 'b', 0];
+        write(fn, utf16);
+        content.keepFileContent = true;
+        assert(content.reload() && content.text == "a\nb"d && content._format.encoding == EncodingType.UTF16LE);
+        assert(content.fileContent == cast(immutable(ubyte)[])utf16);
+        content.keepFileContent = false;
+    }
+
+    // typing is never merged into the reload step, also when the reload isn't the saved state
+    write(fn, "");
+    assert(content.reload() && content.text == ""d);
+    write(fn, "x");
+    assert(content.reload() && content.text == "x"d); // Reload (0,0)-(0,0) -> ["x"]
+    insertText(content, 0, 1, "y");
+    assert(content.save(fn) && content.undo(null) && content.text == "x"d);
+    insertText(content, 0, 1, "z");
+    assert(content.undo(null) && content.text == "x"d);
+
+    // a file too large for memory is decoded while read
+    {
+        ulong savedLimit = EditableContent.maxInMemoryLoadSize;
+        EditableContent.maxInMemoryLoadSize = 4;
+        scope (exit)
+            EditableContent.maxInMemoryLoadSize = savedLimit;
+        write(fn, "large\nfile\n");
+        assert(content.reload() && content.text == "large\nfile"d);
+        assert(!content.fileState.hasChecksum && !content.fileStateUncertain && content.fileState.size == 11);
+    }
+
+    // read-only content reloads too
+    write(fn, "read only\n");
+    content.readOnly = true;
+    assert(content.reload() && content.text == "read only"d);
+    content.readOnly = false;
+
+    // a file that can't be read: the content stays as it was
+    remove(fn);
+    assert(!content.reload() && content.text == "read only"d);
+    // content that didn't come from a file
+    auto other = new EditableContent(true);
+    other.text = "no file";
+    assert(!other.reload() && other.text == "no file"d);
 }
