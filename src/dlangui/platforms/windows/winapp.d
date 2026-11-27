@@ -691,6 +691,9 @@ class Win32Window : Window {
     /// window covers the new monitor. A maximized or minimized one keeps its size (the suggested rectangle is for a
     /// restored window), only its frame is recomputed for the new DPI
     void onDpiChanged(uint dpi, RECT* suggested) {
+        // the window icons for the new DPI (#1185)
+        scope (exit)
+            updateIconsForDpi(dpi);
         bool keepsScale = overrideScreenDPI != 0 || !isSupportedScreenDpi(dpi);
         int oldScreenDpi = SCREEN_DPI;
         _platform.setSystemScreenDpi(dpi);
@@ -798,6 +801,7 @@ class Win32Window : Window {
             _drawbuf = null;
         }
         destroyIcons();
+        _iconImage.clear();
 
         /*
         static if (ENABLE_OPENGL) {
@@ -1205,6 +1209,11 @@ class Win32Window : Window {
 
     HICON _icon; // ICON_BIG
     HICON _iconSmall; // ICON_SMALL
+    // the sizes of _iconSmall and _icon
+    private int _iconSmallSize, _iconBigSize;
+    // the source of the window icon, to create the icons again for another DPI (#1185): a resource id or an image
+    private string _iconResourceId;
+    private DrawBufRef _iconImage;
 
     uint _cursorType;
 
@@ -1276,14 +1285,46 @@ class Win32Window : Window {
         onSetCursorType();
     }
 
-    /// window icon sizes for the current DPI: ICON_SMALL (title bar) and ICON_BIG (taskbar, Alt+Tab) (#835)
-    private static void systemIconSizes(out int small, out int big) {
-        small = GetSystemMetrics(SM_CXSMICON);
-        big = GetSystemMetrics(SM_CXICON);
+    /// window icon sizes for DPI dpi: ICON_SMALL (title bar) and ICON_BIG (taskbar, Alt+Tab) (#835). With per-monitor
+    /// DPI awareness, Windows doesn't scale the icons of a window on a monitor with another scale than the system's:
+    /// GetSystemMetricsForDpi (Windows 10 1607+); without it or for dpi 0, the system DPI's sizes (#1185)
+    private static void iconSizesForDpi(uint dpi, out int small, out int big) {
+        alias GetSystemMetricsForDpiFunc = extern(Windows) int function(int, UINT);
+        static GetSystemMetricsForDpiFunc metricsForDpi;
+        static bool loaded;
+        if (!loaded) {
+            loaded = true;
+            if (HMODULE user32 = GetModuleHandleA("user32.dll"))
+                metricsForDpi = cast(GetSystemMetricsForDpiFunc)GetProcAddress(user32, "GetSystemMetricsForDpi");
+        }
+        if (dpi && metricsForDpi) {
+            small = metricsForDpi(SM_CXSMICON, dpi);
+            big = metricsForDpi(SM_CXICON, dpi);
+        } else {
+            small = GetSystemMetrics(SM_CXSMICON);
+            big = GetSystemMetrics(SM_CXICON);
+        }
         if (small <= 0)
             small = 16;
         if (big <= 0)
             big = 32;
+    }
+
+    /// window icon sizes for the DPI of the window's monitor
+    private void windowIconSizes(out int small, out int big) {
+        iconSizesForDpi(_hwnd ? windowDpi(_hwnd) : 0, small, big);
+    }
+
+    /// creates the icons from their source again if the icon sizes for DPI dpi differ (#1185)
+    private void updateIconsForDpi(uint dpi) {
+        int smallSize, bigSize;
+        iconSizesForDpi(dpi, smallSize, bigSize);
+        if (smallSize == _iconSmallSize && bigSize == _iconBigSize)
+            return;
+        if (_iconResourceId.length)
+            setIconsFromResource(_iconResourceId, smallSize, bigSize);
+        else if (!_iconImage.isNull)
+            setIcons(cast(ColorDrawBuf)_iconImage.get, cast(ColorDrawBuf)_iconImage.get, smallSize, bigSize);
     }
 
     /// HICON from image, scaled to size x size if it has another size; null on failure
@@ -1314,10 +1355,9 @@ class Win32Window : Window {
         _iconSmall = null;
     }
 
-    /// sets ICON_SMALL and ICON_BIG from images of these sizes (scaled if they have other sizes)
-    private void setIcons(ColorDrawBuf small, ColorDrawBuf big) {
-        int smallSize, bigSize;
-        systemIconSizes(smallSize, bigSize);
+    /// sets ICON_SMALL and ICON_BIG of sizes smallSize and bigSize from images (scaled if they have other sizes);
+    /// false if the icons can't be created
+    private bool setIcons(ColorDrawBuf small, ColorDrawBuf big, int smallSize, int bigSize) {
         HICON iconSmall = createIcon(small, smallSize);
         HICON icon = createIcon(big, bigSize);
         if (!iconSmall || !icon) {
@@ -1326,30 +1366,46 @@ class Win32Window : Window {
                 DestroyIcon(iconSmall);
             if (icon)
                 DestroyIcon(icon);
-            return;
+            return false;
         }
         SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, cast(LPARAM)iconSmall);
         SendMessageW(_hwnd, WM_SETICON, ICON_BIG, cast(LPARAM)icon);
         destroyIcons(); // the old icons, no longer used by the window
         _iconSmall = iconSmall;
         _icon = icon;
+        _iconSmallSize = smallSize;
+        _iconBigSize = bigSize;
         debug Log.d("Window icon sizes: ", smallSize, " and ", bigSize);
+        return true;
     }
 
-    /// sets window icon: scaled to the system icon sizes
+    /// sets window icon: scaled to the icon sizes for the window's DPI. The window keeps the image and scales it again
+    /// when the DPI changes (#1185): don't draw into it afterwards
     @property override void windowIcon(DrawBufRef buf) {
         ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
         if (!icon) {
             Log.e("Trying to set null icon for window");
             return;
         }
-        setIcons(icon, icon);
+        _iconResourceId = null;
+        _iconImage = buf;
+        int smallSize, bigSize;
+        windowIconSizes(smallSize, bigSize);
+        setIcons(icon, icon, smallSize, bigSize);
     }
 
-    /// sets window icon from a resource: an SVG resource is rendered at the system icon sizes (#835)
+    /// sets window icon from a resource: an SVG resource is rendered at the icon sizes for the window's DPI (#835)
     @property override void windowIconId(string resourceId) {
         int smallSize, bigSize;
-        systemIconSizes(smallSize, bigSize);
+        windowIconSizes(smallSize, bigSize);
+        if (!setIconsFromResource(resourceId, smallSize, bigSize))
+            return; // the previous icon and its source stay
+        _iconImage.clear();
+        _iconResourceId = resourceId;
+    }
+
+    /// sets the icons from a resource rendered at the sizes; false if it isn't found or the icons aren't created
+    private bool setIconsFromResource(string resourceId, int smallSize, int bigSize) {
         ColorDrawBuf small = windowIconImage(resourceId, smallSize);
         ColorDrawBuf big = windowIconImage(resourceId, bigSize);
         scope(exit) {
@@ -1360,9 +1416,9 @@ class Win32Window : Window {
         }
         if (!small || !big) {
             Log.e("Window icon resource not found: ", resourceId);
-            return;
+            return false;
         }
-        setIcons(small, big);
+        return setIcons(small, big, smallSize, bigSize);
     }
 
     private void paintUsingGDI() {
