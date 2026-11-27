@@ -22,6 +22,8 @@ import dlangui.core.signals;
 import dlangui.core.collections;
 import dlangui.core.linestream;
 import dlangui.core.streams;
+import dlangui.core.filewatch : FileState;
+static import std.stdio;
 import std.algorithm;
 import std.conv : to;
 static import std.uni;
@@ -1519,13 +1521,67 @@ class EditableContent {
         return _filename;
     }
 
+    protected FileState _fileState;
+    protected bool _fileStateUncertain;
+    protected bool _keepFileContent;
+    protected immutable(ubyte)[] _fileContent;
 
-    /// load content form input stream
+    /**
+    The state of the file when the content was loaded from it (#1276): size, time, file id, and the checksum of the
+    bytes read unless the file was loaded without a copy in memory (larger than `maxInMemoryLoadSize`). Compare it
+    with `FileState.read(filename, true)` to find out whether another program changed the file. A successful save
+    to a file makes that file the new baseline; changing the text doesn't change it (it describes the file, not the
+    text). `exists` is false when the content didn't come from a file, or loading it failed.
+    */
+    @property ref const(FileState) fileState() const {
+        return _fileState;
+    }
+
+    /// true if the file kept changing while it was loaded (another program still writing it): the content was
+    /// loaded anyway, and `fileState` may not match it
+    @property bool fileStateUncertain() const {
+        return _fileStateUncertain;
+    }
+
+    /// keep the raw bytes of the loaded file in `fileContent`, for an exact compare with the disk and a diff view
+    @property bool keepFileContent() const {
+        return _keepFileContent;
+    }
+    /// ditto
+    @property EditableContent keepFileContent(bool keep) {
+        _keepFileContent = keep;
+        if (!keep)
+            _fileContent = null;
+        return this;
+    }
+
+    /// the bytes of the loaded file, with `keepFileContent` (null otherwise, and for files loaded without a copy)
+    @property immutable(ubyte)[] fileContent() const {
+        return _fileContent;
+    }
+
+    /// files larger than this are decoded while they are read, without a copy in memory: their `fileState` has no
+    /// checksum and `fileContent` stays null
+    static __gshared ulong maxInMemoryLoadSize = 64 * 1024 * 1024;
+
+    /// how often load(filename) reads a file again when it changes while it is read
+    enum LOAD_RETRIES = 3;
+
+    version (unittest) {
+        // called after the bytes of a file are read and before its state is read again (attempt 0, 1, ...)
+        static void delegate(int attempt) testHookAfterRead;
+    }
+
+
+    /// load content form input stream; the content then has no `fileState` (load(filename) sets it)
     bool load(InputStream f, string fname = null) {
         import dlangui.core.linestream;
         clear();
         _filename = fname;
         _format = TextFileFormat.init;
+        _fileState = FileState.init;
+        _fileStateUncertain = false;
+        _fileContent = null;
         try {
             LineStream lines = LineStream.create(f, fname);
             for (;;) {
@@ -1563,21 +1619,62 @@ class EditableContent {
             return false;
         }
     }
-    /// load content from file
+    /**
+    Load content from file. The bytes and the file's state (`fileState`) come from the same open file: its state is
+    read before and after reading all bytes, and the file is read again (up to LOAD_RETRIES times) if it changed
+    meanwhile, e.g. while another program writes it (#1276). The bytes are then decoded from memory; files larger
+    than `maxInMemoryLoadSize` are decoded while read.
+    */
     bool load(string filename) {
         import std.file : exists, isFile;
         import std.exception : ErrnoException;
+        import std.stdio : File;
         clear();
+        // nothing of a previous file stays, also if this load fails
+        _fileState = FileState.init;
+        _fileStateUncertain = false;
+        _fileContent = null;
         if (!filename.exists || !filename.isFile) {
             Log.e("Editable.load: File not found ", filename);
             ensureLineExists();
+            if (!filename.exists)
+                _fileState = FileState.read(filename); // a missing file: a later check can tell it appeared
             return false;
         }
         try {
-            InputStream f;
-            f = new FileInputStream(filename);
-            scope(exit) { f.close(); }
-            bool res = load(f, filename);
+            File file = File(filename, "rb");
+            scope(exit) file.close();
+            FileState before = FileState.read(file, filename);
+            // beyond the limit, and on 32-bit systems for sizes that don't fit a buffer: decoded while read
+            if (before.size > maxInMemoryLoadSize || before.size >= size_t.max / 2)
+                return loadWhileReading(file, filename, before);
+            ubyte[] data;
+            FileState after;
+            bool stable = false;
+            for (int attempt = 0; ; attempt++) {
+                data = readAllBytes(file, before.size);
+                version (unittest) {
+                    if (testHookAfterRead)
+                        testHookAfterRead(attempt);
+                }
+                after = FileState.read(file, filename, data);
+                stable = isStableRead(before, after, data.length);
+                if (stable || attempt >= LOAD_RETRIES)
+                    break;
+                debug(FileFormats) Log.d("file changed while loading, reading again: ", filename);
+                before = after;
+            }
+            if (!stable)
+                Log.w("Editable.load: file ", filename, " kept changing while it was loaded");
+            bool res = load(new MemoryInputStream(data), filename);
+            if (res) {
+                _fileState = after;
+                _fileStateUncertain = !stable;
+                if (_keepFileContent) {
+                    import std.exception : assumeUnique;
+                    _fileContent = assumeUnique(data); // the buffer isn't used after this
+                }
+            }
             return res;
         } catch (ErrnoException e) {
             Log.e("Editable.load: Exception while trying to read file ", filename, " ", e.toString);
@@ -1591,6 +1688,43 @@ class EditableContent {
             return false;
         }
     }
+    // the file didn't change while `length` bytes were read: its state before and after reading is known and the
+    // same, and has that size; a pseudo file reporting size 0 (/proc, sysfs) counts as stable when nothing changed
+    private static bool isStableRead(const FileState before, const FileState after, ulong length) {
+        if (before.unknown || after.unknown || !before.sameAs(after))
+            return false;
+        return after.size == length || (after.size == 0 && before.size == 0);
+    }
+
+    // all bytes of an open file from its start; expectedSize is a hint for the buffer
+    private static ubyte[] readAllBytes(ref std.stdio.File file, ulong expectedSize) {
+        file.seek(0);
+        ubyte[] data = new ubyte[cast(size_t)expectedSize + 1];
+        size_t len = 0;
+        for (;;) {
+            if (len == data.length)
+                data.length = data.length * 2 + 4096;
+            size_t n = file.rawRead(data[len .. $]).length;
+            if (n == 0)
+                break;
+            len += n;
+        }
+        return data[0 .. len];
+    }
+
+    // load(filename) for a large file: decoded while it is read, no copy and no checksum
+    private bool loadWhileReading(ref std.stdio.File file, string filename, FileState before) {
+        file.seek(0);
+        bool res = load(new FileInputStream(file), filename);
+        if (res) {
+            FileState after = FileState.read(file, filename);
+            _fileState = after;
+            // the decoder read to the end: the position is the number of bytes read
+            _fileStateUncertain = !isStableRead(before, after, file.tell);
+        }
+        return res;
+    }
+
     /// save to output stream in specified format
     bool save(OutputStream stream, string filename, TextFileFormat format) {
         if (!filename)
@@ -1627,9 +1761,20 @@ class EditableContent {
         if (!filename)
             filename = _filename;
         try {
-            OutputStream f = new FileOutputStream(filename);
-            scope(exit) { f.close(); }
-            return save(f, filename, format);
+            bool res;
+            {
+                OutputStream f = new FileOutputStream(filename);
+                scope(exit) { f.close(); }
+                res = save(f, filename, format);
+            }
+            if (res) {
+                // the saved file is the new baseline; read after closing it (#1276; #1277 captures it exactly and
+                // keeps the saved bytes for fileContent)
+                _fileState = FileState.read(filename, true);
+                _fileStateUncertain = false;
+                _fileContent = null;
+            }
+            return res;
         } catch (Exception e) {
             Log.e("Exception while trying to save file ", filename, " ", e.toString);
             return false;
@@ -1875,6 +2020,109 @@ unittest {
     auto content2 = new EditableContent(true);
     assert(!content2.load(fn ~ ".does-not-exist"));
     assert(content2.length == 1);
+}
+
+/// load(filename) keeps the state of the file it read, with the checksum of the bytes (#1276)
+unittest {
+    import std.file : write, remove, tempDir, exists;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    import std.stdio : File;
+    import std.array : replicate;
+    import dlangui.core.filewatch : FileState, FileChangeKind, fileChecksum;
+    string fn = buildPath(tempDir, "dlangui-atomic-load-test-" ~ to!string(thisProcessID) ~ ".txt");
+    write(fn, "one\ntwo\n");
+    scope(exit) if (exists(fn)) remove(fn);
+
+    // the state and checksum of what was read; no content copy unless asked
+    auto content = new EditableContent(true);
+    assert(content.load(fn));
+    assert(content.text == "one\ntwo"d); // the final line break doesn't make an empty line
+    assert(content.fileState.exists && content.fileState.size == 8 && content.fileState.hasChecksum);
+    assert(content.fileState.checksum == fileChecksum(cast(const(ubyte)[])"one\ntwo\n"));
+    assert(content.fileState.compareTo(FileState.read(fn, true)) == FileChangeKind.unchanged);
+    assert(!content.fileStateUncertain && content.fileContent is null);
+    content.keepFileContent = true;
+    assert(content.load(fn) && content.fileContent == cast(immutable(ubyte)[])"one\ntwo\n");
+    content.keepFileContent = false;
+    assert(content.fileContent is null);
+
+    // a file changed while it is read (another program writing it) is read again: the state matches the content.
+    // The writer shares the file (as fopen does): std.file.write opens it exclusively, which Windows refuses while
+    // the file is open for reading
+    void rewrite(string text) {
+        auto w = File(fn, "wb");
+        w.rawWrite(text);
+        w.close();
+    }
+    int changes = 0;
+    EditableContent.testHookAfterRead = (int attempt) {
+        if (attempt < 2) {
+            changes++;
+            rewrite("longer and longer " ~ to!string(attempt) ~ "\n" ~ "x".replicate(attempt + 1));
+        }
+    };
+    assert(content.load(fn));
+    assert(changes == 2 && !content.fileStateUncertain);
+    assert(content.text == "longer and longer 1\nxx"d);
+    assert(content.fileState.compareTo(FileState.read(fn, true)) == FileChangeKind.unchanged);
+
+    // ... and loaded anyway, marked uncertain, when it keeps changing
+    EditableContent.testHookAfterRead = (int attempt) {
+        rewrite("changing " ~ "y".replicate(attempt + 1));
+    };
+    assert(content.load(fn));
+    assert(content.fileStateUncertain);
+    EditableContent.testHookAfterRead = null;
+
+    // a large file is decoded while read: a state without a checksum, no content copy
+    write(fn, "big file\n");
+    ulong oldMax = EditableContent.maxInMemoryLoadSize;
+    EditableContent.maxInMemoryLoadSize = 4;
+    scope(exit) EditableContent.maxInMemoryLoadSize = oldMax;
+    content.keepFileContent = true;
+    assert(content.load(fn) && content.text == "big file"d);
+    assert(content.fileState.exists && content.fileState.size == 9 && !content.fileState.hasChecksum);
+    assert(content.fileContent is null && !content.fileStateUncertain);
+    assert(content.fileState.compareTo(FileState.read(fn)) == FileChangeKind.unchanged);
+    EditableContent.maxInMemoryLoadSize = oldMax;
+
+    // content from a stream has no file state; a missing file has a missing one
+    {
+        auto stream = new FileInputStream(File(fn, "rb"));
+        assert(content.load(stream, fn));
+        stream.close(); // or the file stays open, and Windows doesn't delete an open file
+    }
+    assert(!content.fileState.exists && content.fileContent is null);
+    // a saved file is the new baseline: comparing with the disk after the own save finds no change
+    write(fn, "abc");
+    content.keepFileContent = true;
+    assert(content.load(fn) && content.fileContent !is null);
+    auto op = new EditOperation(EditAction.Replace, TextRange(TextPosition(0, 3), TextPosition(0, 3)), ["def"d]);
+    assert(content.performOperation(op, null));
+    assert(content.save(fn));
+    import std.file : getSize;
+    assert(content.fileState.size == getSize(fn) && content.fileState.hasChecksum && content.fileContent is null);
+    assert(content.fileState.compareTo(FileState.read(fn, true)) == FileChangeKind.unchanged);
+    content.keepFileContent = false;
+
+    // a failed load leaves nothing of the previous file: a directory isn't loaded, and has no file state
+    assert(content.load(fn) && content.fileState.exists);
+    assert(!content.load(tempDir));
+    assert(!content.fileState.exists && content.fileContent is null && !content.fileStateUncertain);
+
+    // a pseudo file reporting size 0 loads as stable when nothing changed
+    version (linux) {
+        if (exists("/proc/self/stat")) {
+            assert(content.load("/proc/self/stat") && content.length >= 1);
+            assert(!content.fileStateUncertain && content.fileState.size == 0);
+        }
+    }
+
+    remove(fn);
+    assert(!content.load(fn));
+    assert(!content.fileState.exists && !content.fileState.unknown);
 }
 
 /// a file with invalid bytes for its encoding loads completely, with U+FFFD for them (#924)
