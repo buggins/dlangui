@@ -2,8 +2,8 @@
 The state of a file on disk, and how to compare a remembered state with the current one.
 
 Editors remember the state of the file they loaded or saved, and later compare it with the disk to find out whether
-another program changed or deleted the file (#783, #1275). The file watch service (#785) joins this module later and
-reports changes as the same `FileChangeKind`.
+another program changed or deleted the file (#783, #1275). The file watch service (`FileWatchService`, #785, #1301)
+watches files and directories for many subscribers and reports changes as the same `FileChangeKind`, on the UI thread.
 
 Synopsis:
 ----
@@ -436,4 +436,1206 @@ unittest {
             assert(seen.compareTo(s) == FileChangeKind.unchanged);
         }
     }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// File watch service (#785, #1301): subscriptions, delivery on the UI thread, polling backend
+
+import dlangui.core.events : CustomEventTarget;
+import core.sync.mutex : Mutex;
+import core.time : Duration, MonoTime, msecs, seconds;
+
+/// one change reported by `FileWatchService`
+struct FileChange {
+    /// how the file changed (never `unchanged`)
+    FileChangeKind kind;
+    /// absolute, normalized path of the file (for a directory subscription: of the entry)
+    string path;
+    /// the file's state as the service read it (with a checksum when the subscription's baseline has one)
+    FileState state;
+}
+
+/**
+Called on the UI thread with the changes found since the last call; `subscription` is the one the handler was given
+to. Not called after `subscription.cancel()` returns.
+*/
+alias FileChangeHandler = void delegate(FileWatchSubscription subscription, const(FileChange)[] changes);
+
+/// what a directory subscription watches
+struct DirectoryWatchOptions {
+    /// also the subdirectories (and theirs)
+    bool recursive;
+    /// glob patterns for file names to report (`std.path.globMatch`); empty = all files and the directories
+    /// themselves (when they appear or disappear); with patterns, matching files only
+    string[] include;
+    /// glob patterns for names of files and directories to skip; a skipped directory isn't even scanned
+    string[] exclude;
+}
+
+/// how the service's polling backend runs
+enum FileWatchMode {
+    /// a background thread scans the watched paths every `pollInterval` (default)
+    thread,
+    /// no thread: the application calls `FileWatchService.poll()`, e.g. from a timer of a widget
+    manual,
+}
+
+/**
+A subscription to changes of a file or a directory (`FileWatchService.watchFile`, `watchDirectory`). The handler runs
+on the UI thread of the target window; `update()` and `cancel()` are UI-thread calls too.
+*/
+final class FileWatchSubscription {
+    private FileWatchService _service;
+    private CustomEventTarget _target;
+    private string _path;
+    private bool _isDirectory;
+    private DirectoryWatchOptions _options;
+    // guarded by _mutex: shared with the watcher thread
+    private Mutex _mutex;
+    private FileChangeHandler _handler;
+    private FileState _baseline;            // file: the state the subscriber trusts
+    private FileState _reported;            // file: the last state reported, or the baseline
+    private DirectoryListing _listing;      // directory: the listing reported, or the one at subscribe time
+    private FileChange[] _pending;
+    private bool _deliveryQueued;
+    private bool _cancelled;
+    private bool _wantChecksum;             // file: the baseline has a checksum, so the service computes them
+    private bool _needsCheck = true;        // file: compare with the disk at the next scan (new, or update())
+
+    private this(FileWatchService service, CustomEventTarget target, string path, bool isDirectory,
+            FileChangeHandler handler) {
+        _service = service;
+        _target = target;
+        _path = path;
+        _isDirectory = isDirectory;
+        _handler = handler;
+        _mutex = new Mutex();
+    }
+
+    /// absolute, normalized path of the watched file or directory
+    @property string path() const { return _path; }
+    /// true for a directory subscription
+    @property bool isDirectory() const { return _isDirectory; }
+    /// the window (or other target) whose UI thread runs the handler
+    @property CustomEventTarget target() { return _target; }
+
+    /// true after `cancel()`, or when the service stopped (target window destroyed, shutdown)
+    @property bool cancelled() {
+        _mutex.lock();
+        scope (exit) _mutex.unlock();
+        return _cancelled;
+    }
+
+    /**
+    A file subscription's new baseline, e.g. after a save, a reload, or "keep my text": changes found so far that the
+    handler wasn't called for yet are dropped when they match it.
+    */
+    void update(FileState newBaseline) {
+        assert(!_isDirectory, "update(FileState) is for file subscriptions");
+        _mutex.lock();
+        scope (exit) _mutex.unlock();
+        _baseline = newBaseline;
+        _reported = newBaseline;
+        _wantChecksum = newBaseline.hasChecksum;
+        _needsCheck = true; // the next scan compares the new baseline with the disk
+    }
+
+    /// stops the notifications: the handler is not called after this returns (idempotent)
+    void cancel() {
+        _mutex.lock();
+        bool wasCancelled = _cancelled;
+        _cancelled = true;
+        _handler = null; // a destroyed subscriber's closure isn't kept alive or called
+        _pending = null;
+        _mutex.unlock();
+        if (!wasCancelled && _service)
+            _service.removeSubscription(this);
+    }
+
+    // watcher side: queues a change; returns true if a delivery has to be posted
+    private bool queueChange(FileChange change) {
+        if (_cancelled)
+            return false;
+        _pending ~= change;
+        if (_deliveryQueued)
+            return false;
+        _deliveryQueued = true;
+        return true;
+    }
+
+    // UI side: the posted delivery
+    private void deliver() {
+        FileChange[] changes;
+        FileChangeHandler handler;
+        FileState baseline;
+        _mutex.lock();
+        if (_cancelled) {
+            _mutex.unlock();
+            return;
+        }
+        changes = _pending;
+        _pending = null;
+        _deliveryQueued = false;
+        handler = _handler;
+        baseline = _baseline;
+        _mutex.unlock();
+        if (!changes.length || !handler)
+            return;
+        if (!_isDirectory && !stillChanged(baseline, changes[$ - 1].state))
+            return; // the app's own save, or changed and changed back
+        handler(this, changes); // on the UI thread, outside the lock
+    }
+
+    // recheck on the UI thread: size and time only, plus the checksum the watcher computed for the same state
+    private bool stillChanged(const FileState baseline, const FileState reported) {
+        FileState current = FileState.read(_path);
+        if (current.unknown)
+            return true;
+        if (reported.hasChecksum && current.exists == reported.exists && current.size == reported.size
+                && current.modified == reported.modified) {
+            current.checksum = reported.checksum;
+            current.hasChecksum = true;
+        }
+        return !baseline.sameAs(current);
+    }
+}
+
+// a directory listing: relative path -> state of the entry
+private alias DirectoryListing = FileState[string];
+
+// a watched file, shared by all subscriptions to its path
+private final class WatchedFile {
+    string path;
+    FileWatchSubscription[] subscriptions;
+    // watcher side only
+    FileState observed;     // the state of the last scan
+    bool observedValid;
+    FileState settling;     // a new state, waiting to stay the same for settleTime
+    bool isSettling;
+    MonoTime changedAt;
+}
+
+// a watched directory, shared by subscriptions with the same path and options
+private final class WatchedDirectory {
+    string key;
+    string path;
+    DirectoryWatchOptions options;
+    FileWatchSubscription[] subscriptions;
+    // watcher side only
+    DirectoryListing observed;
+    bool observedValid;
+    DirectoryListing settling;
+    bool isSettling;
+    MonoTime changedAt;
+}
+
+/**
+Watches files and directories for many subscribers (#785, #1301), one service per process (`instance`). A
+subscriber states the file state it trusts (`watchFile`) or gets the directory listing at subscribe time
+(`watchDirectory`), and its handler is called on the UI thread of its target window when the disk no longer matches.
+
+Changes for a path are held until it is quiet for `settleTime` (writers truncate, write in parts, or write a temporary
+file and rename it over). Before a file subscription's handler runs, the file state is read again on the UI thread:
+the notification is dropped when it equals the baseline (the app's own save after `update()`, or a file changed and
+changed back). The backend polls (a background thread by default, see `mode`); watches are shared per path.
+
+All methods are UI-thread calls.
+*/
+final class FileWatchService {
+    private static __gshared FileWatchService _instance;
+
+    /**
+    The target of subscriptions created with a null target: set by the platform (its first window). Called on the
+    UI thread when subscribing.
+    */
+    static __gshared CustomEventTarget delegate() defaultTarget;
+
+    /// the service of this process, created on first use
+    static @property FileWatchService instance() {
+        if (!_instance)
+            _instance = new FileWatchService();
+        return _instance;
+    }
+
+    /// true if the service exists (`instance` creates it)
+    static @property bool hasInstance() {
+        return _instance !is null;
+    }
+
+    /// stops the service: cancels all subscriptions and stops the watcher thread (the platform calls it on exit)
+    static void shutdown() {
+        if (!_instance)
+            return;
+        _instance.stop();
+        _instance = null;
+    }
+
+    /// cancels the subscriptions whose handlers run on `target` (the platform calls it when a window is destroyed)
+    static void cancelTarget(CustomEventTarget target) {
+        if (!_instance || !target)
+            return;
+        foreach (s; _instance.subscriptionsOf(target))
+            s.cancel();
+    }
+
+    private Mutex _lock; // guards the watch lists and the thread state
+    private Mutex _scanLock; // one scan at a time (the watcher thread, poll())
+    private WatchedFile[string] _files;
+    private WatchedDirectory[string] _directories;
+    private FileWatchMode _mode = FileWatchMode.thread;
+    private Duration _pollInterval = 2.seconds;
+    private Duration _settleTime = 300.msecs;
+    private WatcherThread _thread;
+
+    private this() {
+        _lock = new Mutex();
+        _scanLock = new Mutex();
+    }
+
+    /// how the backend runs; changing it stops or starts the watcher thread
+    @property FileWatchMode mode() const { return _mode; }
+    /// ditto
+    @property FileWatchService mode(FileWatchMode mode) {
+        _mode = mode;
+        if (mode == FileWatchMode.manual)
+            stopThread();
+        else
+            startThreadIfNeeded();
+        return this;
+    }
+
+    /// time between scans of the polling backend (default 2 s)
+    @property Duration pollInterval() const { return _pollInterval; }
+    /// ditto
+    @property FileWatchService pollInterval(Duration interval) {
+        _lock.lock();
+        _pollInterval = interval;
+        _lock.unlock();
+        wake();
+        return this;
+    }
+
+    /// how long a changed path has to stay unchanged before it is reported (default 300 ms)
+    @property Duration settleTime() const { return _settleTime; }
+    /// ditto
+    @property FileWatchService settleTime(Duration time) {
+        _lock.lock();
+        _settleTime = time;
+        _lock.unlock();
+        return this;
+    }
+
+    /**
+    Watches a file: `handler` is called (on `target`'s UI thread) when the file no longer matches `baseline`
+    (`FileState.compareTo`), e.g. modified, deleted, or created when the baseline is a missing file; also when it
+    differs already at subscribe time. With a checksum in the baseline, the service computes checksums for changed
+    sizes or times too, so a file touched or written with the same content isn't reported.
+
+    The subscription is cancelled when its target window is destroyed. A null target is `defaultTarget` at subscribe
+    time (the platform's first window): pass the window the subscriber lives in.
+    */
+    FileWatchSubscription watchFile(FileState baseline, FileChangeHandler handler, CustomEventTarget target = null) {
+        assert(baseline.path.length, "watchFile: the baseline has no path");
+        target = resolveTarget(target);
+        string path = normalizedFilePath(baseline.path);
+        auto s = new FileWatchSubscription(this, target, path, false, handler);
+        s._baseline = baseline;
+        s._reported = baseline;
+        s._wantChecksum = baseline.hasChecksum;
+        _lock.lock();
+        WatchedFile* found = path in _files;
+        WatchedFile w = found ? *found : null;
+        if (!w) {
+            w = new WatchedFile();
+            w.path = path;
+            _files[path] = w;
+        }
+        w.subscriptions ~= s;
+        _lock.unlock();
+        startThreadIfNeeded();
+        wake();
+        return s;
+    }
+
+    /**
+    Watches a directory: `handler` is called (on `target`'s UI thread; null = `defaultTarget`) with the entries
+    added (`created`), removed (`deleted`) and changed (`modified`) since the listing at subscribe time, or since
+    the last call. Entries are files and, with `options.recursive`, the subdirectories' files; without
+    `options.include` patterns, directories themselves are reported too when they appear or disappear.
+
+    The baseline listing is read in this call, on the UI thread: for a large tree it takes a while, so exclude
+    what isn't needed (`options.exclude`). Target: as for `watchFile`.
+    */
+    FileWatchSubscription watchDirectory(string path, DirectoryWatchOptions options, FileChangeHandler handler,
+            CustomEventTarget target = null) {
+        assert(path.length, "watchDirectory: no path");
+        target = resolveTarget(target);
+        path = normalizedFilePath(path);
+        auto s = new FileWatchSubscription(this, target, path, true, handler);
+        s._options = options;
+        s._listing = readListing(path, options); // the baseline: the listing at subscribe time
+        string key = directoryKey(path, options);
+        _lock.lock();
+        WatchedDirectory* found = key in _directories;
+        WatchedDirectory w = found ? *found : null;
+        if (!w) {
+            w = new WatchedDirectory();
+            w.key = key;
+            w.path = path;
+            w.options = options;
+            _directories[key] = w;
+        }
+        w.subscriptions ~= s;
+        _lock.unlock();
+        startThreadIfNeeded();
+        wake();
+        return s;
+    }
+
+    /// scans the watched paths now instead of at the next interval, e.g. when a window is activated
+    void checkNow() {
+        if (_mode == FileWatchMode.manual) {
+            poll();
+        } else {
+            startThreadIfNeeded(); // also restarts a thread an error ended
+            wake();
+        }
+    }
+
+    /**
+    One scan of all watched paths in the calling thread, as the watcher thread does: for `FileWatchMode.manual`
+    (call it from a timer) and for tests. A changed path is reported by a later call, after `settleTime`.
+    */
+    void poll() {
+        scan();
+    }
+
+    /// number of watched paths (files and directories), shared by subscriptions; for tests and diagnostics
+    @property size_t watchedPathCount() {
+        _lock.lock();
+        scope (exit) _lock.unlock();
+        return _files.length + _directories.length;
+    }
+
+    private CustomEventTarget resolveTarget(CustomEventTarget target) {
+        if (!target && defaultTarget)
+            target = defaultTarget();
+        if (!target)
+            throw new Exception("FileWatchService: no target window to deliver changes to");
+        return target;
+    }
+
+    private static string directoryKey(string path, const DirectoryWatchOptions options) {
+        import std.array : join;
+        import std.conv : to;
+        return path ~ "\n" ~ to!string(options.recursive) ~ "\n" ~ options.include.join("\t") ~ "\n"
+            ~ options.exclude.join("\t");
+    }
+
+    // removes a cancelled subscription; drops the watch when it was the last one
+    private void removeSubscription(FileWatchSubscription s) {
+        import std.algorithm : remove;
+        _lock.lock();
+        scope (exit) _lock.unlock();
+        if (s._isDirectory) {
+            string key = directoryKey(s._path, s._options);
+            if (WatchedDirectory* w = key in _directories) {
+                (*w).subscriptions = (*w).subscriptions.remove!(x => x is s);
+                if (!(*w).subscriptions.length)
+                    _directories.remove(key);
+            }
+        } else if (WatchedFile* w = s._path in _files) {
+            (*w).subscriptions = (*w).subscriptions.remove!(x => x is s);
+            if (!(*w).subscriptions.length)
+                _files.remove(s._path);
+        }
+    }
+
+    private FileWatchSubscription[] subscriptionsOf(CustomEventTarget target) {
+        FileWatchSubscription[] res;
+        _lock.lock();
+        scope (exit) _lock.unlock();
+        foreach (w; _files)
+            foreach (s; w.subscriptions)
+                if (s._target is target)
+                    res ~= s;
+        foreach (w; _directories)
+            foreach (s; w.subscriptions)
+                if (s._target is target)
+                    res ~= s;
+        return res;
+    }
+
+    private void stop() {
+        stopThread();
+        FileWatchSubscription[] all;
+        _lock.lock();
+        foreach (w; _files)
+            all ~= w.subscriptions;
+        foreach (w; _directories)
+            all ~= w.subscriptions;
+        _lock.unlock();
+        foreach (s; all)
+            s.cancel();
+    }
+
+    // ---- polling backend
+
+    // one scan: reads the states without the lock, then reports what settled
+    private void scan() {
+        _scanLock.lock();
+        scope (exit) _scanLock.unlock();
+        WatchedFile[] files;
+        WatchedDirectory[] directories;
+        Duration settle;
+        _lock.lock();
+        files = _files.values;
+        directories = _directories.values;
+        settle = _settleTime;
+        _lock.unlock();
+        MonoTime now = MonoTime.currTime;
+        foreach (w; files)
+            scanFile(w, now, settle);
+        foreach (w; directories)
+            scanDirectory(w, now, settle);
+    }
+
+    // true while some path waits for its settle time: the next scan comes sooner
+    private bool anySettling() {
+        _lock.lock();
+        scope (exit) _lock.unlock();
+        foreach (w; _files)
+            if (w.isSettling)
+                return true;
+        foreach (w; _directories)
+            if (w.isSettling)
+                return true;
+        return false;
+    }
+
+    private void scanFile(WatchedFile w, MonoTime now, Duration settle) {
+        FileState current = FileState.read(w.path);
+        if (current.unknown)
+            return; // no news: check again later
+        if (!w.isSettling) {
+            if (w.observedValid && sameMetadata(w.observed, current)) {
+                // no change on disk; a new subscription or a new baseline is still compared with it
+                if (anyNeedsCheck(w))
+                    reportFile(w, current);
+                return;
+            }
+            // first scan, or a change: wait until it stays the same for the settle time
+            w.settling = current;
+            w.isSettling = true;
+            w.changedAt = now;
+            if (settle > Duration.zero)
+                return;
+        } else if (!sameMetadata(w.settling, current)) {
+            w.settling = current; // still changing
+            w.changedAt = now;
+            return;
+        } else if (now - w.changedAt < settle) {
+            return;
+        }
+        w.isSettling = false;
+        w.observed = current;
+        w.observedValid = true;
+        reportFile(w, current);
+    }
+
+    // compares the settled state with each subscription's last reported state; queues and posts the changes
+    private void reportFile(WatchedFile w, FileState current) {
+        FileWatchSubscription[] subs;
+        _lock.lock();
+        subs = w.subscriptions.dup;
+        _lock.unlock();
+        FileState withChecksum;
+        bool checksumRead;
+        foreach (s; subs) {
+            s._mutex.lock();
+            FileState reported = s._reported;
+            bool wantChecksum = s._wantChecksum;
+            s._mutex.unlock();
+            FileState state = current;
+            if (wantChecksum && current.exists && !sameMetadata(reported, current)) {
+                // the checksum decides when only the time (or the file id) differs: read once per scan
+                if (!checksumRead) {
+                    withChecksum = FileState.read(w.path, true);
+                    checksumRead = true;
+                }
+                if (sameMetadata(withChecksum, current))
+                    state = withChecksum;
+            }
+            s._mutex.lock();
+            scope (exit) s._mutex.unlock();
+            s._needsCheck = false;
+            // against the current baseline: update() may have come meanwhile
+            FileChangeKind kind = s._reported.compareTo(state);
+            if (kind == FileChangeKind.unchanged)
+                continue;
+            s._reported = state;
+            // posted under the lock: once cancel() has returned, nothing is posted to the target
+            if (s.queueChange(FileChange(kind, w.path, state)))
+                s._target.executeInUiThread(&s.deliver);
+        }
+    }
+
+    // true if a subscription of the watched file wants a comparison with the disk (new, or update())
+    private bool anyNeedsCheck(WatchedFile w) {
+        FileWatchSubscription[] subs;
+        _lock.lock();
+        subs = w.subscriptions.dup;
+        _lock.unlock();
+        foreach (s; subs) {
+            s._mutex.lock();
+            bool check = s._needsCheck && !s._cancelled;
+            s._mutex.unlock();
+            if (check)
+                return true;
+        }
+        return false;
+    }
+
+    private void scanDirectory(WatchedDirectory w, MonoTime now, Duration settle) {
+        DirectoryListing current = readListing(w.path, w.options);
+        if (!w.isSettling) {
+            if (w.observedValid && sameListing(w.observed, current))
+                return;
+            w.settling = current;
+            w.isSettling = true;
+            w.changedAt = now;
+            if (settle > Duration.zero)
+                return;
+        } else if (!sameListing(w.settling, current)) {
+            w.settling = current;
+            w.changedAt = now;
+            return;
+        } else if (now - w.changedAt < settle) {
+            return;
+        }
+        w.isSettling = false;
+        w.observed = current;
+        w.observedValid = true;
+        FileWatchSubscription[] subs;
+        _lock.lock();
+        subs = w.subscriptions.dup;
+        _lock.unlock();
+        foreach (s; subs) {
+            s._mutex.lock();
+            scope (exit) s._mutex.unlock();
+            FileChange[] changes = listingChanges(w.path, s._listing, current);
+            bool post;
+            foreach (c; changes)
+                post = s.queueChange(c) || post;
+            if (changes.length)
+                s._listing = current;
+            // posted under the lock: once cancel() has returned, nothing is posted to the target
+            if (post)
+                s._target.executeInUiThread(&s.deliver);
+        }
+    }
+
+    // ---- watcher thread
+
+    private void startThreadIfNeeded() {
+        _lock.lock();
+        scope (exit) _lock.unlock();
+        if (_thread && !_thread.isRunning)
+            _thread = null; // ended by an error: start a new one
+        if (_mode != FileWatchMode.thread || _thread || (!_files.length && !_directories.length))
+            return;
+        _thread = new WatcherThread(this);
+        _thread.start();
+    }
+
+    private void stopThread() {
+        WatcherThread t;
+        _lock.lock();
+        t = _thread;
+        _thread = null;
+        _lock.unlock();
+        if (t)
+            t.stopAndJoin();
+    }
+
+    private void wake() {
+        _lock.lock();
+        WatcherThread t = _thread;
+        _lock.unlock();
+        if (t)
+            t.wake();
+    }
+
+    // the time until the next scan
+    private Duration nextScanDelay() {
+        _lock.lock();
+        Duration interval = _pollInterval;
+        Duration settle = _settleTime;
+        _lock.unlock();
+        if (anySettling() && settle < interval)
+            return settle > Duration.zero ? settle : 1.msecs;
+        return interval;
+    }
+}
+
+// the polling backend's thread: scans, then waits for the next interval, a wake() or the stop
+private final class WatcherThread {
+    import core.sync.condition : Condition;
+    import core.thread : Thread;
+
+    private FileWatchService _service;
+    private Thread _thread;
+    private Mutex _mutex;
+    private Condition _condition;
+    private bool _stopping;
+    private bool _woken;
+    debug private int _failures; // scan failures logged (the first few)
+
+    this(FileWatchService service) {
+        _service = service;
+        _mutex = new Mutex();
+        _condition = new Condition(_mutex);
+        _thread = new Thread(&run);
+        _thread.isDaemon = true; // never keeps the process alive
+    }
+
+    void start() {
+        _thread.start();
+    }
+
+    @property bool isRunning() {
+        return _thread.isRunning;
+    }
+
+    void wake() {
+        _mutex.lock();
+        _woken = true;
+        _condition.notify();
+        _mutex.unlock();
+    }
+
+    void stopAndJoin() {
+        _mutex.lock();
+        _stopping = true;
+        _condition.notify();
+        _mutex.unlock();
+        _thread.join(false);
+    }
+
+    private void run() {
+        for (;;) {
+            _mutex.lock();
+            bool stopping = _stopping;
+            _woken = false;
+            _mutex.unlock();
+            if (stopping)
+                return;
+            try {
+                _service.scan();
+            } catch (Exception e) {
+                // a scan error (e.g. a directory removed while listed) is retried at the next scan
+                debug {
+                    if (_failures++ < 3) {
+                        import dlangui.core.logger : Log;
+                        Log.w("FileWatchService: scan failed: ", e.msg);
+                    }
+                }
+            }
+            Duration delay = _service.nextScanDelay();
+            _mutex.lock();
+            if (!_stopping && !_woken)
+                _condition.wait(delay);
+            _mutex.unlock();
+        }
+    }
+}
+
+// same existence, size, time and identity (no checksums): what the watcher compares between scans
+private bool sameMetadata(const FileState a, const FileState b) @safe pure nothrow @nogc {
+    if (a.exists != b.exists)
+        return false;
+    if (!a.exists)
+        return true;
+    if (a.size != b.size || a.modified != b.modified)
+        return false;
+    return !(a.hasFileId && b.hasFileId && a.fileId != b.fileId);
+}
+
+private bool sameListing(const DirectoryListing a, const DirectoryListing b) {
+    if (a.length != b.length)
+        return false;
+    foreach (name, state; a) {
+        const(FileState)* other = name in b;
+        if (!other || !sameMetadata(state, *other))
+            return false;
+    }
+    return true;
+}
+
+// the changes from listing `before` to `after`, sorted by path
+private FileChange[] listingChanges(string dir, const DirectoryListing before, const DirectoryListing after) {
+    import std.algorithm : sort;
+    import std.path : buildPath;
+    import std.string : chomp;
+    string entryPath(string name) {
+        return buildPath(dir, name.chomp("/")); // directories are keyed with a trailing "/"
+    }
+    FileChange[] res;
+    foreach (name, state; after) {
+        const(FileState)* old = name in before;
+        if (!old)
+            res ~= FileChange(FileChangeKind.created, entryPath(name), state);
+        else if (!sameMetadata(*old, state))
+            res ~= FileChange(FileChangeKind.modified, entryPath(name), state);
+    }
+    foreach (name, state; before) {
+        if (name !in after) {
+            FileState gone;
+            gone.path = state.path;
+            res ~= FileChange(FileChangeKind.deleted, entryPath(name), gone);
+        }
+    }
+    sort!((a, b) => a.path < b.path)(res);
+    return res;
+}
+
+// the listing of a directory: files (and directories) by path relative to dir; a missing directory = empty
+private DirectoryListing readListing(string dir, const DirectoryWatchOptions options) {
+    import std.file : DirEntry, dirEntries, SpanMode, FileException;
+    import std.path : baseName, buildPath, globMatch;
+    DirectoryListing res;
+    bool matchesAny(string name, const string[] patterns) {
+        foreach (p; patterns)
+            if (globMatch(name, p))
+                return true;
+        return false;
+    }
+    void walk(string path, string relative) {
+        DirEntry[] entries;
+        try {
+            foreach (DirEntry e; dirEntries(path, SpanMode.shallow, false))
+                entries ~= e;
+        } catch (FileException) {
+            return; // missing or unreadable: listed as empty
+        }
+        foreach (e; entries) {
+            string name = baseName(e.name);
+            if (matchesAny(name, options.exclude))
+                continue;
+            string rel = relative.length ? buildPath(relative, name) : name;
+            bool isDir;
+            FileState state;
+            try {
+                isDir = e.isDir;
+                state.path = normalizedFilePath(e.name);
+                state.exists = true;
+                state.size = isDir ? 0 : e.size;
+                state.modified = isDir ? state.modified : e.timeLastModified;
+            } catch (FileException) {
+                continue; // removed while listed
+            }
+            if (isDir) {
+                if (!options.include.length)
+                    res[rel ~ "/"] = state; // a directory: reported when it appears or disappears
+                if (options.recursive)
+                    walk(e.name, rel);
+            } else if (!options.include.length || matchesAny(name, options.include)) {
+                res[rel] = state;
+            }
+        }
+    }
+    walk(dir, null);
+    return res;
+}
+
+version (unittest) {
+    import dlangui.core.events : CustomEvent;
+
+    // stands in for a window: queues the posted deliveries until run() (the "UI thread") executes them
+    private final class TestTarget : CustomEventTarget {
+        private Mutex _m;
+        private void delegate()[] _queue;
+        this() { _m = new Mutex(); }
+        void postEvent(CustomEvent event) { assert(0, "not used"); }
+        void executeInUiThread(void delegate() runnable) {
+            _m.lock();
+            _queue ~= runnable;
+            _m.unlock();
+        }
+        @property size_t queued() {
+            _m.lock();
+            scope (exit) _m.unlock();
+            return _queue.length;
+        }
+        // runs the queued deliveries; returns how many there were
+        size_t run() {
+            _m.lock();
+            auto q = _queue;
+            _queue = null;
+            _m.unlock();
+            foreach (r; q)
+                r();
+            return q.length;
+        }
+    }
+
+    // a test service in manual mode with no settle time: a change is reported by the second poll()
+    private FileWatchService testService() {
+        auto svc = new FileWatchService();
+        svc._mode = FileWatchMode.manual;
+        svc._settleTime = Duration.zero;
+        return svc;
+    }
+}
+
+// file subscriptions: modified, deleted, created; delivered through the target; the app's own save is dropped
+unittest {
+    import std.conv : to;
+    import std.file : mkdirRecurse, rmdirRecurse, tempDir, write, remove, rename, exists, setTimes, timeLastModified;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    string dir = buildPath(tempDir, "dlangui-filewatch-svc-" ~ to!string(thisProcessID));
+    mkdirRecurse(dir);
+    scope (exit) rmdirRecurse(dir);
+    string fn = buildPath(dir, "a.txt");
+    write(fn, "one\n");
+
+    auto svc = testService();
+    scope (exit) svc.stop();
+    auto target = new TestTarget();
+    FileChange[] got;
+    int calls;
+    void handler(FileWatchSubscription s, const(FileChange)[] changes) {
+        calls++;
+        got = changes.dup;
+    }
+    auto sub = svc.watchFile(FileState.read(fn, true), &handler, target);
+    assert(svc.watchedPathCount == 1 && !sub.isDirectory && sub.path == normalizedFilePath(fn));
+
+    // nothing changed: nothing posted
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0 && calls == 0);
+
+    // modified: reported by the second scan (the first one waits for the settle time, here zero scans)
+    write(fn, "one two\n");
+    svc.poll();
+    svc.poll();
+    assert(target.queued == 1 && calls == 0); // only on the "UI thread"
+    assert(target.run() == 1);
+    assert(calls == 1 && got.length == 1 && got[0].kind == FileChangeKind.modified);
+    assert(got[0].path == normalizedFilePath(fn) && got[0].state.size == 8 && got[0].state.hasChecksum);
+    // reported once: the next scans see the same state
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0 && calls == 1);
+
+    // the app's own save: seen by the watcher before update(), dropped by the recheck on the UI thread
+    write(fn, "saved by the app\n");
+    svc.poll();
+    svc.poll();
+    assert(target.queued == 1);
+    sub.update(FileState.read(fn, true));
+    target.run();
+    assert(calls == 1);
+    // ... and after update() the state isn't reported at all
+    write(fn, "saved again\n");
+    FileState saved = FileState.read(fn, true);
+    sub.update(saved);
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0 && calls == 1);
+
+    // touched: with a checksum in the baseline, the same content is no change
+    setTimes(fn, timeLastModified(fn), timeLastModified(fn) + 5.seconds);
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0 && calls == 1);
+
+    // changed and changed back (content and time) before the handler runs: dropped
+    write(fn, "changed for a moment\n");
+    svc.poll();
+    svc.poll();
+    assert(target.queued == 1);
+    write(fn, "saved again\n");
+    setTimes(fn, saved.modified, saved.modified);
+    target.run();
+    assert(calls == 1);
+
+    // replaced by another file (a rename-over save by another program)
+    string tmp = buildPath(dir, "a.tmp");
+    write(tmp, "written by another program\n");
+    rename(tmp, fn);
+    svc.poll();
+    svc.poll();
+    target.run();
+    assert(calls == 2 && got.length == 1 && got[0].kind == FileChangeKind.modified);
+
+    // deleted, then created again
+    remove(fn);
+    svc.poll();
+    svc.poll();
+    target.run();
+    assert(calls == 3 && got[0].kind == FileChangeKind.deleted && !got[0].state.exists);
+    write(fn, "back\n");
+    svc.poll();
+    svc.poll();
+    target.run();
+    assert(calls == 4 && got[0].kind == FileChangeKind.created && got[0].state.exists);
+
+    // a file that doesn't exist yet: created
+    string later = buildPath(dir, "later.txt");
+    auto sub2 = svc.watchFile(FileState.read(later), &handler, target);
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0);
+    write(later, "x");
+    svc.poll();
+    svc.poll();
+    target.run();
+    assert(calls == 5 && got[0].kind == FileChangeKind.created && got[0].path == normalizedFilePath(later));
+    sub2.cancel();
+    sub.cancel();
+    assert(svc.watchedPathCount == 0 && sub.cancelled);
+}
+
+// cancel: a delivery already posted doesn't call the handler; shared, counted watches; cancelTarget; settle time
+unittest {
+    import std.conv : to;
+    import std.file : mkdirRecurse, rmdirRecurse, tempDir, write;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    import core.thread : Thread;
+    string dir = buildPath(tempDir, "dlangui-filewatch-cancel-" ~ to!string(thisProcessID));
+    mkdirRecurse(dir);
+    scope (exit) rmdirRecurse(dir);
+    string fn = buildPath(dir, "a.txt");
+    write(fn, "one\n");
+
+    auto svc = testService();
+    scope (exit) svc.stop();
+    auto t1 = new TestTarget();
+    auto t2 = new TestTarget();
+    int calls1, calls2;
+    auto a = svc.watchFile(FileState.read(fn), (s, c) { calls1++; }, t1);
+    auto b = svc.watchFile(FileState.read(fn), (s, c) { calls2++; }, t2);
+    assert(svc.watchedPathCount == 1); // one watch for both
+
+    // cancel after the delivery was posted, before it runs: the handler isn't called
+    write(fn, "one two\n");
+    svc.poll();
+    svc.poll();
+    assert(t1.queued == 1 && t2.queued == 1);
+    a.cancel();
+    a.cancel(); // idempotent
+    t1.run();
+    t2.run();
+    assert(calls1 == 0 && calls2 == 1);
+    assert(svc.watchedPathCount == 1); // still watched for b
+
+    // the target is destroyed: its subscriptions are cancelled
+    auto c = svc.watchFile(FileState.read(fn), (s, ch) { calls1++; }, t1);
+    FileWatchService saved = FileWatchService._instance;
+    FileWatchService._instance = svc;
+    scope (exit) FileWatchService._instance = saved;
+    FileWatchService.cancelTarget(t1);
+    assert(c.cancelled && !b.cancelled);
+
+    // settle time: a file still being written is reported once it stays the same for settleTime
+    svc._settleTime = 50.msecs;
+    write(fn, "a\n");
+    svc.poll(); // the change is seen
+    write(fn, "ab\n");
+    svc.poll(); // still changing: wait again
+    svc.poll();
+    assert(t2.queued == 0);
+    Thread.sleep(80.msecs);
+    svc.poll();
+    assert(t2.run() == 1 && calls2 == 2);
+    b.cancel();
+    assert(svc.watchedPathCount == 0);
+
+    // no target and no default target: an error, not a subscription that can't deliver
+    bool thrown;
+    try
+        svc.watchFile(FileState.read(fn), (s, ch) {}, null);
+    catch (Exception)
+        thrown = true;
+    assert(thrown && svc.watchedPathCount == 0);
+}
+
+// directory subscriptions: added, removed, modified entries; recursive; exclude and include filters
+unittest {
+    import std.algorithm : canFind, map;
+    import std.array : array;
+    import std.conv : to;
+    import std.file : mkdirRecurse, rmdirRecurse, tempDir, write, remove;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    string dir = buildPath(tempDir, "dlangui-filewatch-dir-" ~ to!string(thisProcessID));
+    mkdirRecurse(buildPath(dir, "sub"));
+    mkdirRecurse(buildPath(dir, ".git"));
+    scope (exit) rmdirRecurse(dir);
+    write(buildPath(dir, "a.d"), "a");
+    write(buildPath(dir, "notes.txt"), "n");
+    write(buildPath(dir, "sub", "b.d"), "b");
+    write(buildPath(dir, ".git", "HEAD"), "h");
+
+    auto svc = testService();
+    scope (exit) svc.stop();
+    auto target = new TestTarget();
+    FileChange[] all, flat, onlyD;
+    auto rec = svc.watchDirectory(dir, DirectoryWatchOptions(true, null, [".git"]),
+            (s, c) { all ~= c; }, target);
+    auto shallow = svc.watchDirectory(dir, DirectoryWatchOptions(false, null, [".git"]),
+            (s, c) { flat ~= c; }, target);
+    auto dfiles = svc.watchDirectory(dir, DirectoryWatchOptions(true, ["*.d"], [".git"]),
+            (s, c) { onlyD ~= c; }, target);
+    assert(rec.isDirectory && svc.watchedPathCount == 3);
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0);
+
+    write(buildPath(dir, "a.d"), "a changed");
+    write(buildPath(dir, "c.d"), "c");
+    write(buildPath(dir, "notes.txt"), "more notes");
+    remove(buildPath(dir, "sub", "b.d"));
+    mkdirRecurse(buildPath(dir, "newdir"));
+    write(buildPath(dir, ".git", "index"), "excluded");
+    svc.poll();
+    svc.poll();
+    target.run();
+
+    string p(string[] parts...) { return normalizedFilePath(buildPath(dir ~ parts)); }
+    bool has(FileChange[] list, FileChangeKind kind, string path) {
+        foreach (c; list)
+            if (c.kind == kind && c.path == path)
+                return true;
+        return false;
+    }
+    assert(has(all, FileChangeKind.modified, p("a.d")));
+    assert(has(all, FileChangeKind.created, p("c.d")));
+    assert(has(all, FileChangeKind.modified, p("notes.txt")));
+    assert(has(all, FileChangeKind.deleted, p("sub", "b.d")));
+    assert(has(all, FileChangeKind.created, p("newdir")));
+    assert(all.length == 5, to!string(all.map!(c => c.path).array)); // nothing from the excluded .git
+    // not recursive: the subdirectory's file isn't listed
+    assert(!has(flat, FileChangeKind.deleted, p("sub", "b.d")) && flat.length == 4);
+    // include *.d: no notes.txt, no directories
+    assert(onlyD.length == 3 && has(onlyD, FileChangeKind.deleted, p("sub", "b.d")));
+    assert(!onlyD.map!(c => c.path).canFind(p("notes.txt")));
+
+    // reported once
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0);
+    rec.cancel();
+    shallow.cancel();
+    dfiles.cancel();
+    assert(svc.watchedPathCount == 0);
+}
+
+// the watcher thread: a change is delivered without poll(); the thread stops with the service
+unittest {
+    import std.conv : to;
+    import std.file : mkdirRecurse, rmdirRecurse, tempDir, write;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    import core.thread : Thread;
+    string dir = buildPath(tempDir, "dlangui-filewatch-thread-" ~ to!string(thisProcessID));
+    mkdirRecurse(dir);
+    scope (exit) rmdirRecurse(dir);
+    string fn = buildPath(dir, "a.txt");
+    write(fn, "one\n");
+
+    auto svc = new FileWatchService();
+    svc._pollInterval = 10.msecs;
+    svc._settleTime = 20.msecs;
+    auto target = new TestTarget();
+    int calls;
+    FileChangeKind kind;
+    auto sub = svc.watchFile(FileState.read(fn), (s, c) { calls++; kind = c[$ - 1].kind; }, target);
+    assert(svc._thread !is null); // started by the first subscription
+    write(fn, "one two\n");
+    foreach (i; 0 .. 300) {
+        if (target.queued)
+            break;
+        Thread.sleep(10.msecs);
+    }
+    target.run();
+    assert(calls == 1 && kind == FileChangeKind.modified);
+    // manual mode stops the thread; thread mode starts it again
+    svc.mode = FileWatchMode.manual;
+    assert(svc._thread is null);
+    svc.mode = FileWatchMode.thread;
+    assert(svc._thread !is null);
+    sub.cancel();
+    svc.stop();
+    assert(svc._thread is null);
+}
+
+// review fixes: a subscriber joining an existing watch (or after update()) with a baseline the disk no longer
+// matches is told at the next scan; checksums follow the baseline, also after a delete; a dead thread restarts
+unittest {
+    import std.conv : to;
+    import std.file : mkdirRecurse, rmdirRecurse, tempDir, write, remove, setTimes, timeLastModified;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    string dir = buildPath(tempDir, "dlangui-filewatch-review-" ~ to!string(thisProcessID));
+    mkdirRecurse(dir);
+    scope (exit) rmdirRecurse(dir);
+    string fn = buildPath(dir, "a.txt");
+    write(fn, "one\n");
+    FileState old = FileState.read(fn, true);
+    write(fn, "one changed\n");
+
+    auto svc = testService();
+    scope (exit) svc.stop();
+    auto target = new TestTarget();
+    int callsA, callsB;
+    FileChangeKind kindB;
+    auto a = svc.watchFile(FileState.read(fn, true), (s, c) { callsA++; }, target);
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0 && callsA == 0);
+    // B joins the existing watch with the state it loaded before the file changed
+    auto b = svc.watchFile(old, (s, c) { callsB++; kindB = c[$ - 1].kind; }, target);
+    svc.poll();
+    target.run();
+    assert(callsB == 1 && kindB == FileChangeKind.modified && callsA == 0);
+    // update() with a state the disk doesn't match: reported at the next scan too
+    b.update(old);
+    svc.poll();
+    target.run();
+    assert(callsB == 2);
+    b.cancel();
+
+    // checksums follow the baseline: after a delete and a create, a touch is still no change
+    remove(fn);
+    svc.poll();
+    svc.poll();
+    target.run();
+    write(fn, "back\n");
+    svc.poll();
+    svc.poll();
+    target.run();
+    assert(callsA == 2);
+    setTimes(fn, timeLastModified(fn), timeLastModified(fn) + 5.seconds);
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0 && callsA == 2);
+    a.cancel();
+
+    // a watcher thread that ended (here: stopped behind the service's back) is started again by checkNow()
+    auto svc2 = new FileWatchService();
+    scope (exit) svc2.stop();
+    svc2._pollInterval = 10.msecs;
+    auto c = svc2.watchFile(FileState.read(fn), (s, ch) {}, target);
+    WatcherThread first = svc2._thread;
+    assert(first !is null);
+    first.stopAndJoin();
+    assert(!first.isRunning);
+    svc2.checkNow();
+    assert(svc2._thread !is null && svc2._thread !is first && svc2._thread.isRunning);
+    c.cancel();
 }

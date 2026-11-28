@@ -1208,6 +1208,9 @@ class Window : CustomEventTarget {
     ~this() {
         if (destroyedByGC(this.classinfo.name)) return; // finalized by the GC: report the leak (#975)
         debug Log.d("Destroying window");
+        // file watch subscriptions delivering to this window end with it (#1301)
+        import dlangui.core.filewatch : FileWatchService;
+        FileWatchService.cancelTarget(this);
         destroyWidgets();
         destroy(_eventList);
         destroy(_timerQueue);
@@ -2424,9 +2427,24 @@ unittest {
 class Platform {
     static __gshared Platform _instance;
     static void setInstance(Platform instance) {
-        if (_instance)
+        import dlangui.core.filewatch : FileWatchService;
+        if (_instance) {
+            FileWatchService.shutdown(); // its subscriptions deliver to the old platform's windows (#1301)
             destroy(_instance);
+        }
         _instance = instance;
+        // file watch subscriptions without a target window deliver to the platform's first window
+        FileWatchService.defaultTarget = instance ? &instance.defaultFileWatchTarget : null;
+    }
+
+    /// the window that file watch subscriptions without a target deliver to: the first window (#1301)
+    protected CustomEventTarget defaultFileWatchTarget() {
+        Window first;
+        forEachWindow((Window w) {
+            if (!first)
+                first = w;
+        });
+        return first;
     }
     @property static Platform instance() {
         return _instance;
@@ -2903,3 +2921,61 @@ extern(C) void initResourceManagers();
 extern (C) void initSharedResourceManagers();
 
 
+
+// file watch subscriptions without a target go to the platform's first window, and end when it is destroyed;
+// the service stops with the platform (#1301)
+unittest {
+    import dlangui.core.filewatch;
+    import std.conv : to;
+    import std.file : remove, tempDir, write;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    static class FwTestWindow : Window {
+        override void show() {}
+        override @property dstring windowCaption() const { return null; }
+        override @property void windowCaption(dstring caption) {}
+        override @property void windowIcon(DrawBufRef icon) {}
+        override void invalidate() {}
+        override void close() {}
+    }
+    static class FwTestPlatform : Platform {
+        override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable,
+                uint width = 0, uint height = 0) { return null; }
+        override void closeWindow(Window w) {}
+        override int enterMessageLoop() { return 0; }
+        override bool hasClipboardText(bool mouseBuffer = false) { return false; }
+        override dstring getClipboardText(bool mouseBuffer = false) { return null; }
+        override void setClipboardText(dstring text, bool mouseBuffer = false) {}
+        override void requestLayout() {}
+        Window window;
+        override protected void forEachWindow(scope void delegate(Window) dg) {
+            if (window)
+                dg(window);
+        }
+    }
+    if (Platform.instance !is null || FileWatchService.hasInstance)
+        return; // the test sets the process's platform and service
+    string fn = buildPath(tempDir, "dlangui-filewatch-platform-" ~ to!string(thisProcessID) ~ ".txt");
+    write(fn, "x");
+    scope (exit) remove(fn);
+    auto platform = new FwTestPlatform();
+    platform.window = new FwTestWindow();
+    Platform.setInstance(platform);
+    scope (exit) Platform.setInstance(null); // destroys the platform and stops the service
+    FileWatchService.instance.mode = FileWatchMode.manual;
+    auto sub = FileWatchService.instance.watchFile(FileState.read(fn), (s, c) {});
+    assert(sub.target is platform.window);
+    destroy(platform.window);
+    platform.window = null;
+    assert(sub.cancelled && FileWatchService.instance.watchedPathCount == 0);
+    // no window left: a subscription without a target is an error
+    bool thrown;
+    try
+        FileWatchService.instance.watchFile(FileState.read(fn), (s, c) {});
+    catch (Exception)
+        thrown = true;
+    assert(thrown);
+    auto another = new FwTestPlatform();
+    Platform.setInstance(another); // the old platform goes: the service stops
+    assert(!FileWatchService.hasInstance && FileWatchService.defaultTarget !is null);
+}
