@@ -1249,10 +1249,9 @@ private DirectoryListing readListing(string dir, const DirectoryWatchOptions opt
 }
 
 version (unittest) {
-    import dlangui.core.events : CustomEvent;
-
     // stands in for a window: queues the posted deliveries until run() (the "UI thread") executes them
     private final class TestTarget : CustomEventTarget {
+        import dlangui.core.events : CustomEvent;
         private Mutex _m;
         private void delegate()[] _queue;
         this() { _m = new Mutex(); }

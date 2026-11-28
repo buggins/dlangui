@@ -69,6 +69,22 @@ DlangUI is a cross-platform GUI library for the D programming language.
   - Indent with 4 spaces, never tabs.
   - Class names are `CamelCase`. Methods and properties are `camelCase`. Private and protected fields are `_camelCase`.
   - PRs that only change styling will **not** be merged. Restyling code you are already changing is fine.
+- Safer D practices for new and changed code (#1304; adapted from [camunda/safer-d](https://github.com/camunda/safer-d),
+  whose checker and no-null style don't fit this library):
+  - Never catch `Throwable` or `Error` (an assert, a range error, out of memory: the program is broken), except in an
+    entry point's last-resort handler (the backends' `DLANGUIWinMain`, `DLANGUImain`). A `catch (Exception)` that
+    swallows the exception says why in a comment.
+  - A `switch` over an enum whose value is always exactly one member, set by our own code, is a `final switch`: list
+    the members it skips as empty cases instead of `default:`, so a new member breaks the build wherever it needs
+    handling. Flag sets (`State`, `KeyFlag`, `WindowFlag`) and values from the OS, files or casts (key codes) keep
+    `default:`: a `final switch` on a value that matches no member throws `SwitchError`, or is undefined in release
+    builds.
+  - `size_t` subtraction wraps (`0 - 1` is huge): compare before subtracting lengths, offsets and indices, or compute
+    in `ptrdiff_t`; keep the comparison and the subtraction together, so an edit can't flip one side.
+  - Test-only imports go into the `unittest` block or the test helper that uses them (a helper class or struct can
+    import inside its body; an attribute can use `imported!"module".name`), not into a module-level
+    `version (unittest)` block: non-test code that uses such an import passes `dub test` and breaks the release build.
+  - A comment directly above every `@trusted` says why it is safe (see the `@safe` notes under CI).
 - `AGENTS.md` is tracked (since 2026-11-28; untracked before). `AGENTS.local.md`, `PLAN.md`, `BACKLOG.md` and
   `WORDWRAP.md` are local files (`.git/info/exclude`): never commit them.
 
