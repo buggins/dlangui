@@ -495,7 +495,9 @@ final class FileWatchSubscription {
     private FileChangeHandler _handler;
     private FileState _baseline;            // file: the state the subscriber trusts
     private FileState _reported;            // file: the last state reported, or the baseline
-    private DirectoryListing _listing;      // directory: the listing reported, or the one at subscribe time
+    private DirectoryListing _listing;      // directory: the listing reported, or the one of the first scan
+    private bool _listingReady;             // directory: the first scan has read the baseline listing
+    private ulong _createdGeneration;       // directory: scans started before it subscribed
     private FileChange[] _pending;
     private bool _deliveryQueued;
     private bool _cancelled;
@@ -631,8 +633,8 @@ private final class WatchedDirectory {
 
 /**
 Watches files and directories for many subscribers (#785, #1301), one service per process (`instance`). A
-subscriber states the file state it trusts (`watchFile`) or gets the directory listing at subscribe time
-(`watchDirectory`), and its handler is called on the UI thread of its target window when the disk no longer matches.
+subscriber states the file state it trusts (`watchFile`) or gets the directory listing of the first scan after it
+subscribed (`watchDirectory`), and its handler is called on the UI thread of its target window when the disk no longer matches.
 
 Changes for a path are held until it is quiet for `settleTime` (writers truncate, write in parts, or write a temporary
 file and rename it over). Before a file subscription's handler runs, the file state is read again on the UI thread:
@@ -680,6 +682,7 @@ final class FileWatchService {
 
     private Mutex _lock; // guards the watch lists and the thread state
     private Mutex _scanLock; // one scan at a time (the watcher thread, poll())
+    private ulong _scanGeneration; // scans started; a directory subscription is adopted by a later scan (#1303)
     private WatchedFile[string] _files;
     private WatchedDirectory[string] _directories;
     private FileWatchMode _mode = FileWatchMode.thread;
@@ -759,12 +762,13 @@ final class FileWatchService {
 
     /**
     Watches a directory: `handler` is called (on `target`'s UI thread; null = `defaultTarget`) with the entries
-    added (`created`), removed (`deleted`) and changed (`modified`) since the listing at subscribe time, or since
+    added (`created`), removed (`deleted`) and changed (`modified`) since the first scan's listing, or since
     the last call. Entries are files and, with `options.recursive`, the subdirectories' files; without
     `options.include` patterns, directories themselves are reported too when they appear or disappear.
 
-    The baseline listing is read in this call, on the UI thread: for a large tree it takes a while, so exclude
-    what isn't needed (`options.exclude`). Target: as for `watchFile`.
+    The baseline listing is read by the next scan, off the UI thread (in `FileWatchMode.manual`: by the next
+    `poll()`), so subscribing doesn't wait for a large tree; changes made before that scan aren't reported.
+    Excluding what isn't needed (`options.exclude`) still makes each scan cheaper. Target: as for `watchFile`.
     */
     FileWatchSubscription watchDirectory(string path, DirectoryWatchOptions options, FileChangeHandler handler,
             CustomEventTarget target = null) {
@@ -772,8 +776,7 @@ final class FileWatchService {
         target = resolveTarget(target);
         path = normalizedFilePath(path);
         auto s = new FileWatchSubscription(this, target, path, true, handler);
-        s._options = options;
-        s._listing = readListing(path, options); // the baseline: the listing at subscribe time
+        s._options = options; // the baseline listing comes with the next scan (#1303)
         string key = directoryKey(path, options);
         _lock.lock();
         WatchedDirectory* found = key in _directories;
@@ -785,6 +788,7 @@ final class FileWatchService {
             w.options = options;
             _directories[key] = w;
         }
+        s._createdGeneration = _scanGeneration;
         w.subscriptions ~= s;
         _lock.unlock();
         startThreadIfNeeded();
@@ -807,7 +811,7 @@ final class FileWatchService {
     (call it from a timer) and for tests. A changed path is reported by a later call, after `settleTime`.
     */
     void poll() {
-        scan();
+        scan(null);
     }
 
     /// number of watched paths (files and directories), shared by subscriptions; for tests and diagnostics
@@ -882,22 +886,31 @@ final class FileWatchService {
     // ---- polling backend
 
     // one scan: reads the states without the lock, then reports what settled
-    private void scan() {
+    // one scan; aborted (the watcher thread's stop) ends it early, between paths and directory entries
+    private void scan(scope bool delegate() aborted) {
         _scanLock.lock();
         scope (exit) _scanLock.unlock();
         WatchedFile[] files;
         WatchedDirectory[] directories;
         Duration settle;
+        ulong generation;
         _lock.lock();
+        generation = ++_scanGeneration;
         files = _files.values;
         directories = _directories.values;
         settle = _settleTime;
         _lock.unlock();
         MonoTime now = MonoTime.currTime;
-        foreach (w; files)
+        foreach (w; files) {
+            if (aborted && aborted())
+                return;
             scanFile(w, now, settle);
-        foreach (w; directories)
-            scanDirectory(w, now, settle);
+        }
+        foreach (w; directories) {
+            if (aborted && aborted())
+                return;
+            scanDirectory(w, now, settle, generation, aborted);
+        }
     }
 
     // true while some path waits for its settle time: the next scan comes sooner
@@ -996,8 +1009,12 @@ final class FileWatchService {
         return false;
     }
 
-    private void scanDirectory(WatchedDirectory w, MonoTime now, Duration settle) {
-        DirectoryListing current = readListing(w.path, w.options);
+    private void scanDirectory(WatchedDirectory w, MonoTime now, Duration settle, ulong generation,
+            scope bool delegate() aborted) {
+        DirectoryListing current;
+        if (!readListing(w.path, w.options, current, aborted))
+            return; // stopped in the middle: a partial listing is neither compared nor adopted
+        adoptBaselines(w, current, generation);
         if (!w.isSettling) {
             if (w.observedValid && sameListing(w.observed, current))
                 return;
@@ -1023,6 +1040,8 @@ final class FileWatchService {
         foreach (s; subs) {
             s._mutex.lock();
             scope (exit) s._mutex.unlock();
+            if (!s._listingReady)
+                continue; // subscribed after this scan's adoption; its baseline comes with the next scan
             FileChange[] changes = listingChanges(w.path, s._listing, current);
             bool post;
             foreach (c; changes)
@@ -1032,6 +1051,23 @@ final class FileWatchService {
             // posted under the lock: once cancel() has returned, nothing is posted to the target
             if (post)
                 s._target.executeInUiThread(&s.deliver);
+        }
+    }
+
+    // new subscriptions of the directory take the listing of this scan as their baseline (#1303); only those created
+    // before the scan started: one created while the listing was read waits for the next scan
+    private void adoptBaselines(WatchedDirectory w, DirectoryListing current, ulong generation) {
+        FileWatchSubscription[] subs;
+        _lock.lock();
+        subs = w.subscriptions.dup;
+        _lock.unlock();
+        foreach (s; subs) {
+            s._mutex.lock();
+            if (!s._listingReady && s._createdGeneration < generation) {
+                s._listing = current;
+                s._listingReady = true;
+            }
+            s._mutex.unlock();
         }
     }
 
@@ -1055,7 +1091,7 @@ final class FileWatchService {
         _thread = null;
         _lock.unlock();
         if (t)
-            t.stopAndJoin();
+            t.stopAndJoin(); // a long directory walk in progress ends at its next entry
     }
 
     private void wake() {
@@ -1089,6 +1125,7 @@ private final class WatcherThread {
     private Condition _condition;
     private bool _stopping;
     private bool _woken;
+    private shared bool _abort; // set by stopAndJoin(): the scan in progress ends early (#1303)
     debug private int _failures; // scan failures logged (the first few)
 
     this(FileWatchService service) {
@@ -1107,6 +1144,12 @@ private final class WatcherThread {
         return _thread.isRunning;
     }
 
+    // checked by the scan between paths and directory entries
+    private bool aborted() {
+        import core.atomic : atomicLoad;
+        return atomicLoad(_abort);
+    }
+
     void wake() {
         _mutex.lock();
         _woken = true;
@@ -1115,6 +1158,8 @@ private final class WatcherThread {
     }
 
     void stopAndJoin() {
+        import core.atomic : atomicStore;
+        atomicStore(_abort, true);
         _mutex.lock();
         _stopping = true;
         _condition.notify();
@@ -1131,7 +1176,7 @@ private final class WatcherThread {
             if (stopping)
                 return;
             try {
-                _service.scan();
+                _service.scan(&aborted);
             } catch (Exception e) {
                 // a scan error (e.g. a directory removed while listed) is retried at the next scan
                 debug {
@@ -1199,11 +1244,13 @@ private FileChange[] listingChanges(string dir, const DirectoryListing before, c
     return res;
 }
 
-// the listing of a directory: files (and directories) by path relative to dir; a missing directory = empty
-private DirectoryListing readListing(string dir, const DirectoryWatchOptions options) {
+// the listing of a directory: files (and directories) by path relative to dir; a missing directory = empty; false if
+// aborted() said to stop in the middle (res is then partial)
+private bool readListing(string dir, const DirectoryWatchOptions options, out DirectoryListing res,
+        scope bool delegate() aborted = null) {
     import std.file : DirEntry, dirEntries, SpanMode, FileException;
     import std.path : baseName, buildPath, globMatch;
-    DirectoryListing res;
+    bool stopped;
     bool matchesAny(string name, const string[] patterns) {
         foreach (p; patterns)
             if (globMatch(name, p))
@@ -1213,12 +1260,21 @@ private DirectoryListing readListing(string dir, const DirectoryWatchOptions opt
     void walk(string path, string relative) {
         DirEntry[] entries;
         try {
-            foreach (DirEntry e; dirEntries(path, SpanMode.shallow, false))
+            foreach (DirEntry e; dirEntries(path, SpanMode.shallow, false)) {
+                if (aborted && aborted()) {
+                    stopped = true; // also in the middle of a huge directory
+                    return;
+                }
                 entries ~= e;
+            }
         } catch (FileException) {
             return; // missing or unreadable: listed as empty
         }
         foreach (e; entries) {
+            if (stopped || (aborted && aborted())) {
+                stopped = true;
+                return;
+            }
             string name = baseName(e.name);
             if (matchesAny(name, options.exclude))
                 continue;
@@ -1245,7 +1301,7 @@ private DirectoryListing readListing(string dir, const DirectoryWatchOptions opt
         }
     }
     walk(dir, null);
-    return res;
+    return !stopped;
 }
 
 version (unittest) {
@@ -1491,7 +1547,10 @@ unittest {
     auto dfiles = svc.watchDirectory(dir, DirectoryWatchOptions(true, ["*.d"], [".git"]),
             (s, c) { onlyD ~= c; }, target);
     assert(rec.isDirectory && svc.watchedPathCount == 3);
+    // subscribing reads no listing: the first scan does (#1303)
+    assert(!rec._listingReady && rec._listing is null);
     svc.poll();
+    assert(rec._listingReady && rec._listing.length);
     svc.poll();
     assert(target.run() == 0);
 
@@ -1637,4 +1696,77 @@ unittest {
     svc2.checkNow();
     assert(svc2._thread !is null && svc2._thread !is first && svc2._thread.isRunning);
     c.cancel();
+}
+
+// #1303: the directory baseline comes with the first scan; joining a shared watch; an aborted scan reports and
+// adopts nothing; stopping the thread resets the abort flag
+unittest {
+    import std.conv : to;
+    import std.file : mkdirRecurse, rmdirRecurse, tempDir, write;
+    import std.path : buildPath;
+    import std.process : thisProcessID;
+    string dir = buildPath(tempDir, "dlangui-filewatch-1303-" ~ to!string(thisProcessID));
+    mkdirRecurse(dir);
+    scope (exit) rmdirRecurse(dir);
+    write(buildPath(dir, "a.d"), "a");
+
+    auto svc = testService();
+    scope (exit) svc.stop();
+    auto target = new TestTarget();
+    FileChange[] gotA, gotB;
+    auto a = svc.watchDirectory(dir, DirectoryWatchOptions(), (s, c) { gotA ~= c; }, target);
+    // a change before the first scan is part of the baseline, not reported
+    write(buildPath(dir, "early.d"), "e");
+    svc.poll();
+    svc.poll();
+    assert(target.run() == 0 && a._listingReady);
+
+    // an aborted scan (the thread is being stopped): nothing reported, no baseline adopted
+    auto b = svc.watchDirectory(dir, DirectoryWatchOptions(), (s, c) { gotB ~= c; }, target);
+    assert(svc.watchedPathCount == 1); // shares a's watch
+    write(buildPath(dir, "late.d"), "l");
+    svc.scan(() => true); // stops before the first path
+    WatchedDirectory w = svc._directories.values[0];
+    svc.scanDirectory(w, MonoTime.currTime, Duration.zero, ulong.max, () => true); // stops in the walk
+    assert(target.run() == 0 && !b._listingReady);
+    // the next scan: b adopts the current listing (late.d included), a gets late.d
+    svc.poll();
+    svc.poll();
+    target.run();
+    assert(b._listingReady && !gotB.length);
+    assert(gotA.length == 1 && gotA[0].kind == FileChangeKind.created
+        && gotA[0].path == normalizedFilePath(buildPath(dir, "late.d")));
+    // from now on both see changes
+    write(buildPath(dir, "both.d"), "b");
+    svc.poll();
+    svc.poll();
+    target.run();
+    assert(gotA.length == 2 && gotB.length == 1);
+    // a subscription created while a scan reads the listing waits for the next scan
+    ulong generation = svc._scanGeneration; // the scan "started" before the subscribe
+    auto d = svc.watchDirectory(dir, DirectoryWatchOptions(), (s, c) {}, target);
+    svc.scanDirectory(w, MonoTime.currTime, Duration.zero, generation, null);
+    assert(!d._listingReady && b._listingReady);
+    svc.poll();
+    assert(d._listingReady);
+    d.cancel();
+    a.cancel();
+    b.cancel();
+
+    // a directory walk stops at its next entry when told to, and says so
+    DirectoryListing listing;
+    assert(!readListing(dir, DirectoryWatchOptions(true), listing, () => true));
+    assert(readListing(dir, DirectoryWatchOptions(true), listing, () => false) && listing.length == 4);
+
+    // stopping the thread sets the abort flag only while it waits for the thread
+    auto svc2 = new FileWatchService();
+    svc2._pollInterval = 10.msecs;
+    auto c = svc2.watchDirectory(dir, DirectoryWatchOptions(true), (s, ch) {}, target);
+    assert(svc2._thread !is null);
+    svc2.mode = FileWatchMode.manual;
+    assert(svc2._thread is null);
+    svc2.poll(); // manual polls still scan
+    assert(c._listingReady);
+    c.cancel();
+    svc2.stop();
 }
