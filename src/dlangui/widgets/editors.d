@@ -2440,6 +2440,19 @@ ExternalChangeReaction externalChangeReaction(FileChangeKind kind, bool textModi
         : ExternalChangeReaction.notifyChanged;
 }
 
+/**
+True if a shown external change message stays when a later check of the file gives the reaction next (#1290): the
+save question (Overwrite / Reload / Cancel) is not replaced by a message about the same change. The focus check
+right after the save reports it when the menu or dialog that started the save closes; the user answers the
+question, or Escape cancels it. fileUnchanged: the file is still as it was when the question was shown; if another
+change came meanwhile, the newer message replaces the question, so Overwrite doesn't hide that change.
+*/
+bool keepsExternalChangeMessage(ExternalChangeReaction shown, ExternalChangeReaction next, bool fileUnchanged)
+        @safe pure nothrow @nogc {
+    return shown == ExternalChangeReaction.confirmSave && fileUnchanged
+        && (next == ExternalChangeReaction.notifyChanged || next == ExternalChangeReaction.notifyConflict);
+}
+
 /// handles clicks on EditorMessageBar buttons; messageId is the id passed to EditBox.showMessage
 interface EditorMessageActionHandler {
     /// return true if handled; otherwise the action is dispatched as usual (except Ignore and Close)
@@ -4591,6 +4604,7 @@ class EditBox : EditWidgetBase {
     protected ExternalChangeMode _externalChangeMode;
     protected bool _externalChangeModeSet;
     protected ExternalChangeReaction _externalChangeShown; // the external change message shown, or none
+    protected FileState _saveQuestionFileState; // the file when the save question was shown (#1290)
 
     /**
     What the editor does when another program changes its file (#1280): ignore it, show a message, or reload text
@@ -4683,6 +4697,10 @@ class EditBox : EditWidgetBase {
     }
 
     protected void applyExternalChangeReaction(ExternalChangeReaction reaction) {
+        if (findMessage(EXTERNAL_CHANGE_MESSAGE_ID) && _externalChangeShown == ExternalChangeReaction.confirmSave
+                && keepsExternalChangeMessage(_externalChangeShown, reaction,
+                    _saveQuestionFileState.sameAs(FileState.read(_content.fileState.path))))
+            return; // the save question stays (#1290)
         final switch (reaction) {
             case ExternalChangeReaction.none:
                 hideExternalChangeMessage(); // an error message stays until the user closes it
@@ -4695,6 +4713,8 @@ class EditBox : EditWidgetBase {
             case ExternalChangeReaction.notifyConflict:
             case ExternalChangeReaction.notifyDeleted:
             case ExternalChangeReaction.confirmSave:
+                if (reaction == ExternalChangeReaction.confirmSave) // asked again: about the file as it is now
+                    _saveQuestionFileState = FileState.read(_content.fileState.path);
                 if (_externalChangeShown == reaction && findMessage(EXTERNAL_CHANGE_MESSAGE_ID))
                     break; // shown already: not replaced on each check
                 EditorMessageKind kind = reaction == ExternalChangeReaction.notifyChanged
@@ -4838,8 +4858,13 @@ class EditBox : EditWidgetBase {
             handled = handleExternalChangeAction(action);
         if (!handled && !dismiss)
             handled = dispatchAction(action);
-        if (dismiss)
-            hideMessage(bar.id); // Ignore and Close are never dispatched further (Close could close a tab or window)
+        if (dismiss) {
+            // Ignore and Close are never dispatched further (Close could close a tab or window)
+            if (bar.id == EXTERNAL_CHANGE_MESSAGE_ID)
+                hideExternalChangeMessage(); // also forgets which message it was
+            else
+                hideMessage(bar.id);
+        }
         return handled || dismiss;
     }
 }
@@ -5763,4 +5788,24 @@ unittest {
         foreach (key; keys)
             assert(text.canFind("\n" ~ key ~ "="), lang ~ ": " ~ key);
     }}
+}
+
+// #1290: only the save question stays, and only for a message about the same change
+@safe unittest {
+    alias R = ExternalChangeReaction;
+    // the focus check after the save: modified text gives notifyConflict, unmodified text in notify mode notifyChanged
+    assert(keepsExternalChangeMessage(R.confirmSave, R.notifyConflict, true));
+    assert(keepsExternalChangeMessage(R.confirmSave, R.notifyChanged, true));
+    // the file changed again since the question was shown: the newer message replaces it
+    assert(!keepsExternalChangeMessage(R.confirmSave, R.notifyConflict, false));
+    assert(!keepsExternalChangeMessage(R.confirmSave, R.notifyChanged, false));
+    // a deleted file, a file back as it was, an unmodified text reloaded at once: the question is gone
+    assert(!keepsExternalChangeMessage(R.confirmSave, R.notifyDeleted, true));
+    assert(!keepsExternalChangeMessage(R.confirmSave, R.none, true));
+    assert(!keepsExternalChangeMessage(R.confirmSave, R.reload, true));
+    // other messages are replaced as before, e.g. "changed" becomes a conflict once the text is edited
+    assert(!keepsExternalChangeMessage(R.notifyChanged, R.notifyConflict, true));
+    assert(!keepsExternalChangeMessage(R.notifyConflict, R.notifyChanged, true));
+    assert(!keepsExternalChangeMessage(R.notifyDeleted, R.notifyConflict, true));
+    assert(!keepsExternalChangeMessage(R.none, R.notifyConflict, true));
 }
