@@ -1922,7 +1922,9 @@ class EditableContent {
         import std.exception : ErrnoException;
         import std.stdio : File;
         clear();
-        // nothing of a previous file stays, also if this load fails
+        // nothing of a previous file stays, also if this load fails: the content is the (empty) text of this file
+        _filename = filename;
+        _format = TextFileFormat.init;
         _fileState = FileState.init;
         _fileStateUncertain = false;
         _fileContent = null;
@@ -1932,6 +1934,7 @@ class EditableContent {
             ensureLineExists();
             if (!osName.exists)
                 _fileState = FileState.read(filename); // a missing file: a later check can tell it appeared
+            notifyContentReplaced(); // listeners drop the layout of the old text (#1282)
             return false;
         }
         try {
@@ -1960,11 +1963,13 @@ class EditableContent {
             Log.e("Editable.load: Exception while trying to read file ", filename, " ", e.toString);
             clear();
             ensureLineExists();
+            notifyContentReplaced();
             return false;
         } catch (Exception e) {
             Log.e("Editable.load: Exception while trying to read file ", filename, " ", e.toString);
             clear();
             ensureLineExists();
+            notifyContentReplaced();
             return false;
         }
     }
@@ -2509,6 +2514,49 @@ unittest {
     remove(fn);
     assert(!content.load(fn));
     assert(!content.fileState.exists && !content.fileState.unknown);
+}
+
+/// a failed load(filename) tells the listeners that the content is replaced, as load(InputStream) does (#1282)
+unittest {
+    import std.file : write, remove, tempDir, exists;
+    import std.exception : ErrnoException;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    import dlangui.core.linestream : TextFileFormat, EncodingType, LineEnding;
+    string fn = buildPath(tempDir, "dlangui-load-notify-test-" ~ to!string(thisProcessID) ~ ".txt");
+    scope(exit) if (exists(fn)) remove(fn);
+    write(fn, "one\ntwo\nthree\n");
+    auto content = new EditableContent(true);
+    int replaced = 0;
+    content.contentChanged = delegate(EditableContent c, EditOperation op, ref TextRange before, ref TextRange after,
+            Object source) {
+        if (op.action == EditAction.ReplaceContent)
+            replaced++;
+    };
+    scope(exit) content.contentChanged.clear();
+    // hook: runs while the file is read, in the failing load only
+    void expectFailedLoad(string path, void delegate(int attempt) hook = null) {
+        assert(content.load(fn) && content.line(0) == "one"d, path);
+        assert(content.save(fn, TextFileFormat(EncodingType.UTF16LE, LineEnding.CRLF, true)), path);
+        replaced = 0;
+        bool loaded;
+        {
+            EditableContent.testHookAfterRead = hook;
+            scope(exit) EditableContent.testHookAfterRead = null;
+            loaded = content.load(path);
+        }
+        assert(!loaded, path);
+        assert(replaced == 1 && content.length == 1 && content.line(0).length == 0, path);
+        // the content is the empty text of the new file, not the previous file's (name, format)
+        assert(content.filename == path && content._format == TextFileFormat.init, path);
+    }
+    // not found, and not a file
+    expectFailedLoad(fn ~ ".missing");
+    expectFailedLoad(tempDir);
+    // an error while reading: an I/O error, another exception
+    expectFailedLoad(fn, (int attempt) { throw new ErrnoException("simulated read error"); });
+    expectFailedLoad(fn, (int attempt) { throw new Exception("simulated failure"); });
 }
 
 /// a file with invalid bytes for its encoding loads completely, with U+FFFD for them (#924)
