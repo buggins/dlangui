@@ -113,6 +113,9 @@ class SDLWindow : Window {
 
     ~this() {
         if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
+        // before the native window goes: the file watch thread must not post to it any more (#1301)
+        import dlangui.core.filewatch : FileWatchService;
+        FileWatchService.cancelTarget(this);
         debug Log.d("Destroying SDL window");
 
         if (_parent) {

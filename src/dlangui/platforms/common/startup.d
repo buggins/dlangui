@@ -485,6 +485,10 @@ extern (C) void releaseResourcesOnAppExit() {
         }
     }
 
+    // the file watch service's thread and subscriptions (#1301); setInstance(null) stops it too
+    import dlangui.core.filewatch : FileWatchService;
+    FileWatchService.shutdown();
+
     currentTheme = null;
     drawableCache = null;
     static if (BACKEND_GUI) {

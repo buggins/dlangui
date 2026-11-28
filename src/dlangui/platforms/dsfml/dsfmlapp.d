@@ -40,6 +40,9 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
 
     ~this() {
         if (inGCFinalizer()) return; // finalized by the GC: a leak, touch nothing (#975)
+        // before the native window goes: the file watch thread must not post to it any more (#1301)
+        import dlangui.core.filewatch : FileWatchService;
+        FileWatchService.cancelTarget(this);
         if (_ownRenderWindow) {
             destroy(_wnd);
         }
