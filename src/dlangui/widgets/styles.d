@@ -1827,14 +1827,12 @@ Theme createDefaultTheme() {
 }
 
 version (unittest) {
-    import core.attribute : mustuse;
-
     /// Theme for unittests that create widgets (#987): `auto _ = useTestTheme();` sets the default theme when
     /// there is none, and removes it at the end of the scope. The currentTheme setter destroys the previous
     /// theme, so a theme set by someone else is kept. The SVG current color, which the setter changes, is
     /// restored too. A drawable cache is set the same way, when there is none: styles with text or color drawables
     /// (the console theme) get their background drawables from it (#1211). Image ids still need an image cache.
-    @mustuse struct TestThemeGuard {
+    @(imported!"core.attribute".mustuse) struct TestThemeGuard {
         private Theme _createdTheme;
         private uint _savedSvgColor;
         private DrawableCache _createdDrawableCache;
