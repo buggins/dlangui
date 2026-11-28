@@ -63,18 +63,16 @@ class SourceEdit : EditBox {
         return save(_filename.length ? _filename : content.filename);
     }
 
+    /// save to file fn (null: the content's file); the editor's file name becomes fn only if saving succeeds (a
+    /// failure keeps it, #1291)
     bool save(string fn) {
-        if (content.save(fn)) {
+        bool res = content.save(fn);
+        if (res && fn.length)
             _filename = fn;
-            requestLayout();
-            window.update();
-            return true;
-        }
-        // failed
         requestLayout();
-        window.update();
-        _filename = null;
-        return false;
+        if (window)
+            window.update();
+        return res;
     }
 
 }

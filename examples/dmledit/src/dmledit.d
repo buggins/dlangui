@@ -204,10 +204,14 @@ class EditFrame : AppFrame {
         // another program changed the file since it was loaded: the editor asks first (Overwrite saves it)
         if (filename == _filename && !_editor.checkBeforeSave())
             return;
-        import std.file;
+        // the file name and caption change only if the file is written (#1291)
+        if (!_editor.save(filename)) {
+            window.showMessageBox(UIString.fromRaw("Save DML File"d),
+                    UIString.fromRaw("Cannot save file "d ~ toUTF32(filename)));
+            return;
+        }
         _filename = filename;
         window.windowCaption = toUTF32(filename);
-        _editor.save(filename);
     }
 
     bool onCanClose() {
