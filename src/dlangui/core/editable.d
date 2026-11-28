@@ -2054,7 +2054,10 @@ class EditableContent {
         notifyContentSaved();
     }
 
-    /// save to output stream in specified format
+    /**
+    Save to output stream in specified format. The content's file (`filename`, `fileState`) doesn't change: a stream
+    isn't a file the content can check or reload.
+    */
     bool save(OutputStream stream, string filename, TextFileFormat format) {
         if (!filename)
             filename = _filename;
@@ -2082,7 +2085,8 @@ class EditableContent {
     Save to file in specified format: through a temporary file that replaces it (`atomicSave`, #1277), so a failed
     save leaves the file as it was. The whole text is encoded in memory first. The content is marked saved only after the file is completely written, and the
     saved file becomes the new `fileState`, with the checksum of the bytes written (and `fileContent`, with
-    `keepFileContent`).
+    `keepFileContent`). A successful save to another file makes it the content's file: `filename` is that name when
+    listeners are told the text is saved, and later saves and reloads use it (#1294). A failed save changes neither.
     */
     bool save(string filename, TextFileFormat format) {
         import dlangui.core.files : writeFileSafely;
@@ -2094,7 +2098,6 @@ class EditableContent {
             FileState written;
             if (!writeFileSafely(filename, data, written, _atomicSave, _syncOnSave))
                 return false;
-            markSaved(format);
             // the new baseline: the file now under that name, if it is the one written (same identity, size and time
             // as read from the written file's handle); else another program changed it meanwhile
             FileState now = FileState.read(filename);
@@ -2105,6 +2108,8 @@ class EditableContent {
                 now.checksum = fileChecksum(data);
                 now.hasChecksum = true;
             }
+            // file name, state and content change together, before listeners hear that the text is saved
+            _filename = filename; // the text is now that file's (later saves, reload, #1294)
             _fileState = now;
             _fileStateUncertain = !ours;
             if (_keepFileContent) {
@@ -2113,6 +2118,7 @@ class EditableContent {
             } else {
                 _fileContent = null;
             }
+            markSaved(format);
             return true;
         } catch (Exception e) {
             Log.e("Exception while trying to save file ", filename, " ", e.toString);
@@ -2606,6 +2612,34 @@ unittest {
     // undo back to the saved state: not modified; redo: modified
     assert(content.undo(null) && !content.modified && content.text == "abcde"d);
     assert(content.redo(null) && content.modified && content.text == "abcd"d);
+}
+
+/// after a save to another file, the content belongs to that file: save() writes it, not the old one (#1294)
+unittest {
+    import std.file : readText, remove, tempDir, exists, write;
+    import std.path : buildPath;
+    import std.conv : to;
+    import std.process : thisProcessID;
+    string a = buildPath(tempDir, "dlangui-save-as-a-" ~ to!string(thisProcessID) ~ ".txt");
+    string b = buildPath(tempDir, "dlangui-save-as-b-" ~ to!string(thisProcessID) ~ ".txt");
+    scope(exit) {
+        if (exists(a)) remove(a);
+        if (exists(b)) remove(b);
+    }
+    write(a, "one\n");
+    auto content = new EditableContent(true);
+    assert(content.load(a) && content.filename == a);
+    auto pos = TextPosition(0, 3);
+    assert(content.performOperation(new EditOperation(EditAction.Replace, TextRange(pos, pos), ["!"d]), null));
+    assert(content.save(b));
+    assert(content.filename == b);
+    assert(content.performOperation(new EditOperation(EditAction.Replace, TextRange(pos, pos), ["?"d]), null));
+    assert(content.save());
+    assert(readText(b) == "one?!\n" && readText(a) == "one\n");
+    assert(content.checkExternalChange() == FileChangeKind.unchanged);
+    // a failed save to another name keeps the file name
+    assert(!content.save(buildPath(tempDir, "dlangui-no-such-dir-" ~ to!string(thisProcessID), "c.txt")));
+    assert(content.filename == b);
 }
 
 /// a failed save (here: a full device) doesn't mark the content saved (#956)
